@@ -50,63 +50,84 @@
 
                 <requestFocus/>
 
-                <de.symeda.sormas.app.component.controls.ControlSpinnerField
+                <de.symeda.sormas.app.component.controls.ControlTextReadField
                     android:id="@+id/task_taskType"
-                    style="@style/ControlSingleColumnStyle"
-                    app:required="true"
-                    app:value="@={data.taskType}" />
+                    app:value="@{data.taskType}"
+                    style="@style/ControlSingleColumnStyle" />
 
                 <de.symeda.sormas.app.component.controls.ControlLinkField
                     android:id="@+id/task_caze"
-                    style="@style/ControlSingleColumnStyle"
                     app:goneIfEmpty="@{data.caze}"
-                    app:value="@{data.caze.toString()}" />
+                    app:value="@{data.caze.toString()}"
+                    style="@style/ControlSingleColumnStyle" />
 
                 <de.symeda.sormas.app.component.controls.ControlLinkField
                     android:id="@+id/task_contact"
-                    style="@style/ControlSingleColumnStyle"
                     app:goneIfEmpty="@{data.contact}"
-                    app:value="@{data.contact.toString()}" />
+                    app:value="@{data.contact.toString()}"
+                    style="@style/ControlSingleColumnStyle" />
 
                 <de.symeda.sormas.app.component.controls.ControlLinkField
                     android:id="@+id/task_event"
-                    style="@style/ControlSingleColumnStyle"
                     app:goneIfEmpty="@{data.event}"
-                    app:value="@{data.event.toString()}" />
+                    app:value="@{data.event.toString()}"
+                    style="@style/ControlSingleColumnStyle" />
 
-                <de.symeda.sormas.app.component.controls.ControlDateTimeField
-                    android:id="@+id/task_suggestedStart"
-                    style="@style/ControlSingleColumnStyle"
-                    app:allowedDaysInFuture="-1"
-                    app:value="@={data.suggestedStart}" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
-                <de.symeda.sormas.app.component.controls.ControlDateTimeField
-                    android:id="@+id/task_dueDate"
-                    style="@style/ControlSingleColumnStyle"
-                    app:required="true"
-                    app:allowedDaysInFuture="-1"
-                    app:value="@={data.dueDate}" />
+                    <de.symeda.sormas.app.component.controls.ControlTextImageField
+                        android:id="@+id/task_priority"
+                        app:image="@drawable/indicator_status_circle"
+                        app:imageWidth="@dimen/readControlSmallIconWidth"
+                        app:imageHeight="@dimen/readControlSmallIconHeight"
+                        app:taskPriorityValue="@{data.priority}"
+                        style="@style/ControlFirstOfTwoColumnsStyle" />
 
-                <de.symeda.sormas.app.component.controls.ControlSpinnerField
+                    <de.symeda.sormas.app.component.controls.ControlTextImageField
+                        android:id="@+id/task_taskStatus"
+                        app:image="@drawable/indicator_status_circle"
+                        app:imageWidth="@dimen/readControlSmallIconWidth"
+                        app:imageHeight="@dimen/readControlSmallIconHeight"
+                        app:taskStatusValue="@{data.taskStatus}"
+                        style="@style/ControlSecondOfTwoColumnsStyle" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <de.symeda.sormas.app.component.controls.ControlTextReadField
+                        android:id="@+id/task_suggestedStart"
+                        app:value="@{data.suggestedStart}"
+                        style="@style/ControlFirstOfTwoColumnsStyle" />
+
+                    <de.symeda.sormas.app.component.controls.ControlTextReadField
+                        android:id="@+id/task_dueDate"
+                        app:value="@{data.dueDate}"
+                        style="@style/ControlSecondOfTwoColumnsStyle" />
+
+                </LinearLayout>
+
+                <de.symeda.sormas.app.component.controls.ControlTextReadField
                     android:id="@+id/task_assigneeUser"
-                    style="@style/ControlSingleColumnStyle"
-                    app:required="true"
-                    app:value="@={data.assigneeUser}" />
+                    app:value="@{data.assigneeUser}"
+                    style="@style/ControlSingleColumnStyle" />
 
-                <de.symeda.sormas.app.component.controls.ControlSpinnerField
-                    android:id="@+id/task_priority"
-                    style="@style/ControlSingleColumnStyle"
-                    app:value="@={data.priority}" />
-
-                <de.symeda.sormas.app.component.controls.ControlTextEditField
+                <de.symeda.sormas.app.component.controls.ControlTextReadField
                     android:id="@+id/task_creatorComment"
-                    style="@style/ControlSingleColumnStyle"
-                    app:value="@={data.creatorComment}" />
+                    app:value="@{data.creatorComment}"
+                    app:goneIfEmpty="@{taskCreatorComment}"
+                    style="@style/ControlSingleColumnStyle" />
 
                 <de.symeda.sormas.app.component.controls.ControlTextEditField
                     android:id="@+id/task_assigneeReply"
-                    style="@style/ControlSingleColumnStyle"
-                    app:value="@={data.assigneeReply}" />
+                    app:value="@={data.assigneeReply}"
+                    style="@style/ControlSingleColumnStyle" />
 
             </LinearLayout>
 
@@ -155,4 +176,3 @@
     </ScrollView>
 
 </layout>
-
