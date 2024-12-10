@@ -142,9 +142,8 @@ public class CampaignDataView extends VerticalLayout
 	List<CommunityReferenceDto> communities;
 	List<CampaignFormMetaReferenceDto> campaignForms;
 	Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
-	Anchor transposdeDataAnchor = new Anchor("", I18nProperties.getCaption(Captions.export) + "Transposed Data");
-	Anchor transposdeDataDictionaryAnchor = new Anchor("",
-			I18nProperties.getCaption(Captions.export) + "Transposed Data Guide");
+	Anchor transposdeDataAnchor = new Anchor("", "Export Transposed Data");
+	Anchor transposdeDataDictionaryAnchor = new Anchor("","Export Transposed Data Guide");
 
 	CampaignFormDataCriteria transposedDataCriteriaListener = new CampaignFormDataCriteria();
 
@@ -175,9 +174,8 @@ public class CampaignDataView extends VerticalLayout
 	ComboBox<CampaignFormMetaReferenceDto> importFormData = new ComboBox<>();
 
 	HorizontalLayout actionButtonlayout = new HorizontalLayout();
-	Button exportTransposedDataButton = new Button(I18nProperties.getCaption(Captions.export) + " Transposed Data");
-	Button exporttransposeDataDictionary = new Button(
-			I18nProperties.getCaption(Captions.export) + " Transposed Data Guide");
+	Button exportTransposedDataButton = new Button();
+	Button exporttransposeDataDictionary = new Button();
 
 	GridMultiSelectionModel<CampaignFormDataIndexDto> selectionModel;
 	private Set<CampaignFormDataIndexDto> selectedItems = new HashSet<>();
@@ -195,16 +193,7 @@ public class CampaignDataView extends VerticalLayout
 	protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
 
 	public CampaignDataView() {
-
-		if (I18nProperties.getUserLanguage() == null) {
-
-			I18nProperties.setUserLanguage(Language.EN);
-		} else {
-
-			I18nProperties.setUserLanguage(userProvider.getUser().getLanguage());
-			I18nProperties.getUserLanguage();
-		}
-		FacadeProvider.getI18nFacade().setUserLanguage(userProvider.getUser().getLanguage());
+		languageHandler();
 		setSizeFull();
 		setSpacing(false);
 		criteria = new CampaignFormDataCriteria();
@@ -252,6 +241,9 @@ public class CampaignDataView extends VerticalLayout
 		importFormData.setTooltipText(I18nProperties.getDescription(Descriptions.campaign_dataImport));
 		importFormData.setClearButtonVisible(true);
 		importFormData.getStyle().set("padding-top", "0px !important");
+		
+		exportTransposedDataButton = new Button("Export Transposed Data");
+		exporttransposeDataDictionary = new Button("Export Transposed Data Guide");
 
 		VerticalLayout filterBlock = new VerticalLayout();
 		filterBlock.setSpacing(true);
@@ -1332,10 +1324,9 @@ public class CampaignDataView extends VerticalLayout
 		transposdeDataDictionaryAnchor = new Anchor("", "TransposeDaywiseData");
 		transposdeDataDictionaryAnchor.getStyle().set("display", "none");
 
-		exportTransposedDataButton = new Button(I18nProperties.getCaption(Captions.export) + " Transposed Data");
+		exportTransposedDataButton = new Button("Export Transposed Data");
 
-		exporttransposeDataDictionary = new Button(
-				I18nProperties.getCaption(Captions.export) + " Transposed Data Guide");
+		exporttransposeDataDictionary = new Button("Export Transposed Data Guide");
 
 		if (transposdeDataAnchor.getElement().getAttribute("href") != "") {
 			transposdeDataAnchor.setHref("");
@@ -1353,14 +1344,16 @@ public class CampaignDataView extends VerticalLayout
 			DownloadTransposedDaywiseDataUtility downloadTransposedDaywiseDataUtility = new DownloadTransposedDaywiseDataUtility();
 			transposdeDataAnchor.setHref(downloadTransposedDaywiseDataUtility.createTransposedDataFromIndexList(
 					transposedDataCriteria, formName, campaignz.getValue().toString()));
-			transposdeDataDictionaryAnchor.setHref(downloadTransposedDaywiseDataUtility.createTransposedDataFormExpressions(transposedDataCriteria));
+			transposdeDataDictionaryAnchor.setHref(
+					downloadTransposedDaywiseDataUtility.createTransposedDataFormExpressions(transposedDataCriteria));
 
 		} else if (formName.toString().contains("LQAS")) {
 
 			DownloadTransposedLqasDataUtility downloadTransposedDaywiseDataUtility = new DownloadTransposedLqasDataUtility();
 			transposdeDataAnchor.setHref(downloadTransposedDaywiseDataUtility.createTransposedLqasDataFromIndexList(
 					transposedDataCriteria, formName, campaignz.getValue().toString()));
-			transposdeDataDictionaryAnchor.setHref(downloadTransposedDaywiseDataUtility.createTransposedDataFormExpressions(transposedDataCriteria));
+			transposdeDataDictionaryAnchor.setHref(
+					downloadTransposedDaywiseDataUtility.createTransposedDataFormExpressions(transposedDataCriteria));
 
 		}
 
@@ -1376,10 +1369,6 @@ public class CampaignDataView extends VerticalLayout
 		});
 
 	}
-
-
-
-
 
 	public void removeColumnsSelectionn() {
 		grid.setSelectionMode(SelectionMode.NONE);
@@ -1458,7 +1447,6 @@ public class CampaignDataView extends VerticalLayout
 				}
 			}
 
-			
 			filterdList.sort(Comparator.comparing(CampaignFormMetaReferenceDto::getCaption));
 
 //			campaignForms = FacadeProvider.getCampaignFormMetaFacade()
@@ -1796,6 +1784,7 @@ public class CampaignDataView extends VerticalLayout
 	@SuppressWarnings("deprecation")
 	private void configureGrid(CampaignFormDataCriteria criteria) {
 		System.out.println("Configure grid calllllleddddddddddddd");
+		languageHandler();
 		setMargin(false);
 		grid = new Grid<>(CampaignFormDataIndexDto.class, false);
 //		grid.setSelectionMode(SelectionMode.SINGLE);
@@ -2324,6 +2313,19 @@ public class CampaignDataView extends VerticalLayout
 //			System.out.println("----------------------------");
 //		}
 //	}
+	
+	public void languageHandler() {
+		
+		if (I18nProperties.getUserLanguage() == null) {
+
+			I18nProperties.setUserLanguage(Language.EN);
+		} else {
+
+			I18nProperties.setUserLanguage(userProvider.getUser().getLanguage());
+			I18nProperties.getUserLanguage();
+		}
+		FacadeProvider.getI18nFacade().setUserLanguage(userProvider.getUser().getLanguage());
+	}
 
 	@Override
 	public void beforeEnter(BeforeEnterEvent event) {
@@ -2341,6 +2343,6 @@ public class CampaignDataView extends VerticalLayout
 	public UserProvider getUserProvider() {
 		// TODO Auto-generated method stub
 		return null;
-	}
+	}	
 
 }
