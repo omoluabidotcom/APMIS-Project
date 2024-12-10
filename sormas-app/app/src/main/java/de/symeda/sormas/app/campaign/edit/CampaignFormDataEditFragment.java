@@ -149,9 +149,9 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
         final CampaignFormMeta campaignFormMeta = DatabaseHelper.getCampaignFormMetaDao().queryForId(record.getCampaignFormMeta().getId());
         final List<CampaignFormDataEntry> formValues = record.getFormValues();
         final List<CampaignFormTranslations> translationsOpt = record.getCampaignFormMeta().getCampaignFormTranslations();
-        campaign = DatabaseHelper.getCampaignDao().queryForId(record.getCampaign().getId());
-        criteria.setCampaign(campaign);
-        criteria.setCampaignFormMeta(campaignFormMeta);
+//        campaign = DatabaseHelper.getCampaignDao().queryForId(record.getCampaign().getId());
+//        criteria.setCampaign(campaign);
+//        criteria.setCampaignFormMeta(campaignFormMeta);
 
 
         final Map<String, String> formValuesMap = new HashMap<>();
@@ -257,6 +257,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet1);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
+                        value = value == null ? null : value.replace(".0", "");
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -278,6 +279,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
                                 isRangeandExpression = true;
                             }
+
 
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
 
@@ -357,6 +359,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet2);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
+                        value = value == null ? null : value.replace(".0", "");
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -378,6 +381,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
                                 isRangeandExpression = true;
                             }
+
+
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
 
                         } else if (type == CampaignFormElementType.DROPDOWN) {
@@ -456,6 +461,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet3);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
+                        value = value == null ? null : value.replace(".0", "");
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -477,6 +483,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
                                 isRangeandExpression = true;
                             }
+
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
                             dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
@@ -553,6 +560,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet4);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
+                        value = value == null ? null : value.replace(".0", "");
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -574,6 +582,26 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
                                 isRangeandExpression = true;
                             }
+
+//                            if (value != null) {
+//                                // Check if the value is a String or a Decimal
+//                                if (value instanceof String ) {
+//                                    try {
+//                                        // Parse the value to a Double
+//                                        double numericValue = Double.parseDouble(value.toString());
+//
+//                                        // If it's a whole number (e.g., ends with .0), convert to integer
+//                                        if (numericValue % 1 == 0) {
+//                                            value = String.valueOf((int) numericValue); // Convert to whole number
+//                                        }
+//                                    } catch (NumberFormatException e) {
+//                                        // Handle cases where value is not a valid number
+//                                        System.err.println("Value is not a valid number: " + value);
+//                                    }
+//                                }
+//                                // Set the value to the field
+////                                ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
+//                            }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
                             dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
@@ -649,6 +677,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet5);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
+                        value = value == null ? null : value.replace(".0", "");
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -670,6 +699,26 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
                                 isRangeandExpression = true;
                             }
+//
+//                            if (value != null) {
+//                                // Check if the value is a String or a Decimal
+//                                if (value instanceof String ) {
+//                                    try {
+//                                        // Parse the value to a Double
+//                                        double numericValue = Double.parseDouble(value.toString());
+//
+//                                        // If it's a whole number (e.g., ends with .0), convert to integer
+//                                        if (numericValue % 1 == 0) {
+//                                            value = String.valueOf((int) numericValue); // Convert to whole number
+//                                        }
+//                                    } catch (NumberFormatException e) {
+//                                        // Handle cases where value is not a valid number
+//                                        System.err.println("Value is not a valid number: " + value);
+//                                    }
+//                                }
+//                                // Set the value to the field
+////                                ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
+//                            }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
                             dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
@@ -744,6 +793,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet6);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
+                        value = value == null ? null : value.replace(".0", "");
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -839,6 +889,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet7);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
+                        value = value == null ? null : value.replace(".0", "");
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -934,6 +985,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet8);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
+                        value = value == null ? null : value.replace(".0", "");
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -1003,22 +1055,6 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         });
 
-                        if (type == CampaignFormElementType.NUMBER && campaignFormElement.getId().equalsIgnoreCase("villageCode")) {
-                            dynamicField.addValueChangedListener(e->{
-                                if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != ""){
-                                    if (record != null && record.getCommunity() != null) {
-
-
-                                        if ( dynamicField.getValue().toString().length() == 3) {
-                                            String inputValue = e.getValue().toString();
-                                            if (inputValue.length() == 3) {
-                                                handleVillageCodeValueGeneration(inputValue, dynamicField);
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                        }
 
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
@@ -1049,10 +1085,12 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                 final LinearLayout dynamicLayout = view.findViewById(R.id.dynamicLayoutxXEd);
                 if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                     String value = formValuesMap.get(campaignFormElement.getId());
-
+                    value = value == null ? null : value.replace(".0", "");
+                    String yes_no = "";
                     ControlPropertyField dynamicField;
                     boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                     if (type == CampaignFormElementType.YES_NO) {
+
                         dynamicField = createControlYesNoUnknownField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         ControlSwitchField.setValue((ControlSwitchField) dynamicField, value, true, YesNo.class, null);
                     } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
@@ -1149,15 +1187,16 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
 
                                     for (String string : listLotClusterNo) {
+                                    	
                                         int index = listLotClusterNo.indexOf(string);
                                         if (listLotNo.size() > 0) {
                                             if ((Long.parseLong(string) - Long.parseLong(lotClusterNo.getValue().toString()) == 0)
                                                     && (Long.parseLong(listLotNo.get(index))
                                                     - Long.parseLong(lotChangedValue) == 0)
                                             ) {
-                                                System.out.println((Long.parseLong(string) - Long.parseLong(lotClusterNo.getValue().toString()) == 0)
-                                                        && (Long.parseLong(listLotNo.get(index))
-                                                        - Long.parseLong(lotNo.getValue().toString()) == 0));
+//                                                System.out.println((Long.parseLong(string) - Long.parseLong(lotClusterNo.getValue().toString()) == 0)
+//                                                        && (Long.parseLong(listLotNo.get(index))
+//                                                        - Long.parseLong(lotNo.getValue().toString()) == 0));
                                                 doubleLotChecker = doubleLotChecker + 1;
                                             }
                                         }
@@ -1221,6 +1260,23 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 field.setVisibility(View.GONE);
                             }
 
+                        });
+                    }
+
+                    if (type == CampaignFormElementType.NUMBER && campaignFormElement.getId().equalsIgnoreCase("villageCode")) {
+                        dynamicField.addValueChangedListener(e->{
+                            if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != ""){
+                                if (record != null && record.getCommunity() != null) {
+
+
+                                    if ( dynamicField.getValue().toString().length() == 3) {
+                                        String inputValue = e.getValue().toString();
+                                        if (inputValue.length() == 3) {
+                                            handleVillageCodeValueGeneration(inputValue, dynamicField);
+                                        }
+                                    }
+                                }
+                            }
                         });
                     }
 
