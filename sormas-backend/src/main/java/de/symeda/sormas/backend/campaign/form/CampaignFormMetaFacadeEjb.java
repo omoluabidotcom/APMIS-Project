@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,6 +59,9 @@ import de.symeda.sormas.api.utils.HtmlHelper;
 import de.symeda.sormas.api.utils.SortProperty;
 import de.symeda.sormas.api.utils.ValidationRuntimeException;
 import de.symeda.sormas.backend.disease.DiseaseConfigurationFacadeEjb;
+import de.symeda.sormas.backend.infrastructure.area.Area;
+import de.symeda.sormas.backend.infrastructure.area.AreaFacadeEjb;
+import de.symeda.sormas.backend.infrastructure.area.AreaService;
 import de.symeda.sormas.backend.user.User;
 import de.symeda.sormas.backend.user.UserService;
 import de.symeda.sormas.backend.util.DtoHelper;
@@ -76,6 +80,8 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 	private CampaignFormMetaService service;
 	@EJB
 	private UserService userService;
+	@EJB
+	private AreaService areaService;
 
 	public CampaignFormMeta fromDto(@NotNull CampaignFormMetaDto source, boolean checkChangeDate) {
 		CampaignFormMeta target = DtoHelper.fillOrBuildEntity(source, service.getByUuid(source.getUuid()),
@@ -89,6 +95,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		target.setFormName(source.getFormName());
 		target.setModality(source.getModality().toString());
 		target.setFormCategory(source.getFormCategory());
+		if (source.getArea() != null) {target.setArea(areaService.getByReferenceDto(source.getArea()));}		
 		target.setLanguageCode(source.getLanguageCode());
 		target.setCampaignFormElements(source.getCampaignFormElements());
 		target.setCampaignFormTranslations(source.getCampaignFormTranslations());
@@ -120,6 +127,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 					: source.getModality().equals(Modality.HF2HF.toString()) ? Modality.HF2HF
 							: source.getModality().equals(Modality.M2M.toString()) ? Modality.M2M : Modality.H2H);
 		target.setFormCategory(source.getFormCategory());
+		if (source.getArea() != null) {target.setArea(AreaFacadeEjb.toReferenceDto(source.getArea()));}
 		target.setLanguageCode(source.getLanguageCode());
 		target.setCampaignFormElements(source.getCampaignFormElements());
 		target.setCampaignFormTranslations(source.getCampaignFormTranslations());
