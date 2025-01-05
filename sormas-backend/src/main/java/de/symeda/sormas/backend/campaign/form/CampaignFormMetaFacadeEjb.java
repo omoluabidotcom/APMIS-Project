@@ -62,6 +62,7 @@ import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Validations;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityHistoryExtractDto;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.utils.HtmlHelper;
@@ -104,7 +105,9 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		target.setFormName(source.getFormName());
 		target.setModality(source.getModality().toString());
 		target.setFormCategory(source.getFormCategory());
-		if (source.getArea() != null) {target.setArea(areaService.getByReferenceDto(source.getArea()));}		
+		if (source.getArea() != null) {
+			target.setArea(areaService.getByReferenceDto(source.getArea()));
+		}
 		target.setLanguageCode(source.getLanguageCode());
 		target.setCampaignFormElements(source.getCampaignFormElements());
 		target.setCampaignFormTranslations(source.getCampaignFormTranslations());
@@ -136,7 +139,9 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 					: source.getModality().equals(Modality.HF2HF.toString()) ? Modality.HF2HF
 							: source.getModality().equals(Modality.M2M.toString()) ? Modality.M2M : Modality.H2H);
 		target.setFormCategory(source.getFormCategory());
-		if (source.getArea() != null) {target.setArea(AreaFacadeEjb.toReferenceDto(source.getArea()));}
+		if (source.getArea() != null) {
+			target.setArea(AreaFacadeEjb.toReferenceDto(source.getArea()));
+		}
 		target.setLanguageCode(source.getLanguageCode());
 		target.setCampaignFormElements(source.getCampaignFormElements());
 		target.setCampaignFormTranslations(source.getCampaignFormTranslations());
@@ -306,15 +311,33 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 	}
 
 	@Override
+	public List<CampaignFormMetaReferenceDto> getAllCampaignFormMetasAsReferencesByRoundandCampaignx(String round,
+			String campaignUUID, AreaReferenceDto areaReferenceDto) {
+		return service.getCampaignFormMetasAsReferencesByCampaignandRoundx(round, campaignUUID, areaReferenceDto);
+	}
+
+	@Override
 	public List<CampaignFormMetaReferenceDto> getCampaignFormMetasAsReferencesByCampaignandRoundAndPashto(String round,
 			String campaignUUID) {
 		return service.getCampaignFormMetasAsReferencesByCampaignandRoundAndPashto(round, campaignUUID);
 	}
 
 	@Override
+	public List<CampaignFormMetaReferenceDto> getCampaignFormMetasAsReferencesByCampaignandRoundAndPashtox(String round,
+			String campaignUUID, AreaReferenceDto areaReferenceDto) {
+		return service.getCampaignFormMetasAsReferencesByCampaignandRoundAndPashtox(round, campaignUUID, areaReferenceDto);
+	}
+
+	@Override
 	public List<CampaignFormMetaReferenceDto> getAllCampaignFormMetasAsReferencesByRoundandCampaignRoundAndDari(
 			String round, String campaignUUID) {
 		return service.getCampaignFormMetasAsReferencesByCampaignandRoundAndDari(round, campaignUUID);
+	}
+	
+	@Override
+	public List<CampaignFormMetaReferenceDto> getAllCampaignFormMetasAsReferencesByRoundandCampaignRoundAndDarix(
+			String round, String campaignUUID, AreaReferenceDto areaReferenceDto) {
+		return service.getCampaignFormMetasAsReferencesByCampaignandRoundAndDarix(round, campaignUUID, areaReferenceDto);
 	}
 
 	@Override
@@ -797,35 +820,29 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 	@Override
 	public List<CampaignFormMetaIndexDto> getFormExpressions(String formUuid) {
 
-		String getFormExpressionQuery = "SELECT \n" +
-			    "    elements->>'id' AS variableName, \n" +
-			    "    elements->>'type' AS format, \n" +
-			    "    elements->>'caption' AS variableCaption, \n" +
-			    "    elements->>'expression' AS description \n" +
-			    "FROM campaignformmeta, \n" +
-			    "     LATERAL json_array_elements(campaignformelements) AS elements \n" +
-			    "WHERE \n" +
-			    "    elements->>'expression' IS NOT NULL AND \n" +
-			    "    elements->>'caption' IS NOT NULL AND \n" +
-			    "    campaignformmeta.\"uuid\" = '" + formUuid + "';";
-		
+		String getFormExpressionQuery = "SELECT \n" + "    elements->>'id' AS variableName, \n"
+				+ "    elements->>'type' AS format, \n" + "    elements->>'caption' AS variableCaption, \n"
+				+ "    elements->>'expression' AS description \n" + "FROM campaignformmeta, \n"
+				+ "     LATERAL json_array_elements(campaignformelements) AS elements \n" + "WHERE \n"
+				+ "    elements->>'expression' IS NOT NULL AND \n" + "    elements->>'caption' IS NOT NULL AND \n"
+				+ "    campaignformmeta.\"uuid\" = '" + formUuid + "';";
+
 		Query getFormExpressionsQuery = em.createNativeQuery(getFormExpressionQuery);
 		//
 		List<CampaignFormMetaIndexDto> resultData = new ArrayList<>();
-		
+
 		@SuppressWarnings("unchecked")
-		
+
 		List<Object[]> resultList = getFormExpressionsQuery.getResultList();
 		// Iterate over the result list and create DTO objects
-		
 
 		resultData.addAll(resultList.stream()
 				.map((result) -> new CampaignFormMetaIndexDto(
-				(String) result[0].toString() == null ? "" : (String) result[0].toString(), 
-				(String) result[1].toString() == null ? "" : (String) result[1].toString(),
-				(String) result[2].toString() == null ? "" : (String) result[2].toString(),
-				(String) result[3].toString() == null ? "" : (String) result[3].toString()
-				)).collect(Collectors.toList()));
+						(String) result[0].toString() == null ? "" : (String) result[0].toString(),
+						(String) result[1].toString() == null ? "" : (String) result[1].toString(),
+						(String) result[2].toString() == null ? "" : (String) result[2].toString(),
+						(String) result[3].toString() == null ? "" : (String) result[3].toString()))
+				.collect(Collectors.toList()));
 		return resultData;
 	}
 
@@ -1031,8 +1048,5 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		public CampaignFormMetaFacadeEjbLocal() {
 		}
 	}
-
-
-	
 
 }

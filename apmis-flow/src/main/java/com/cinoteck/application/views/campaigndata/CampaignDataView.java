@@ -144,7 +144,7 @@ public class CampaignDataView extends VerticalLayout
 	List<CampaignFormMetaReferenceDto> campaignForms;
 	Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
 	Anchor transposdeDataAnchor = new Anchor("", "Export Transposed Data");
-	Anchor transposdeDataDictionaryAnchor = new Anchor("","Export Transposed Data Guide");
+	Anchor transposdeDataDictionaryAnchor = new Anchor("", "Export Transposed Data Guide");
 
 	CampaignFormDataCriteria transposedDataCriteriaListener = new CampaignFormDataCriteria();
 
@@ -242,7 +242,7 @@ public class CampaignDataView extends VerticalLayout
 		importFormData.setTooltipText(I18nProperties.getDescription(Descriptions.campaign_dataImport));
 		importFormData.setClearButtonVisible(true);
 		importFormData.getStyle().set("padding-top", "0px !important");
-		
+
 		exportTransposedDataButton = new Button("Export Transposed Data");
 		exporttransposeDataDictionary = new Button("Export Transposed Data Guide");
 
@@ -1349,7 +1349,8 @@ public class CampaignDataView extends VerticalLayout
 //			transposdeDataDictionaryAnchor.setHref(
 //					downloadTransposedDaywiseDataUtility.createTransposedDataFormExpressions(transposedDataCriteria));
 ////=======
-			transposdeDataDictionaryAnchor.setHref(downloadTransposedDaywiseICMDataUtility.createTransposedDataFormExpressions(transposedDataCriteria));
+			transposdeDataDictionaryAnchor.setHref(downloadTransposedDaywiseICMDataUtility
+					.createTransposedDataFormExpressions(transposedDataCriteria));
 //
 //>>>>>>> branch 'development' of https://github.com/omoluabidotcom/APMIS-Project.git
 
@@ -1362,7 +1363,8 @@ public class CampaignDataView extends VerticalLayout
 //			transposdeDataDictionaryAnchor.setHref(
 //					downloadTransposedDaywiseDataUtility.createTransposedDataFormExpressions(transposedDataCriteria));
 //=======
-			transposdeDataDictionaryAnchor.setHref(downloadTransposedLqasDaywiseDataUtility.createTransposedDataFormExpressions(transposedDataCriteria));
+			transposdeDataDictionaryAnchor.setHref(downloadTransposedLqasDaywiseDataUtility
+					.createTransposedDataFormExpressions(transposedDataCriteria));
 //>>>>>>> branch 'development' of https://github.com/omoluabidotcom/APMIS-Project.git
 
 		}
@@ -1405,10 +1407,20 @@ public class CampaignDataView extends VerticalLayout
 
 		switch (language) {
 		case "Pashto":
-			campaignForms = FacadeProvider.getCampaignFormMetaFacade()
-					.getCampaignFormMetasAsReferencesByCampaignandRoundAndPashto(
-							campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
 
+			if (userProvider.getUser().getArea() != null) {
+				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
+						.getCampaignFormMetasAsReferencesByCampaignandRoundAndPashtox(
+								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid(),
+								userProvider.getUser().getArea());
+				System.out.println("11111111111111111111111111111111111111");
+			} else {
+				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
+						.getCampaignFormMetasAsReferencesByCampaignandRoundAndPashto(
+								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
+				System.out.println("22222222222222222222222222222222222222");
+			}
+			
 			for (FormAccess n : xx) {
 				boolean yn = campaignForms.stream().filter(e -> !e.getFormCategory().equals(null))
 						.filter(ee -> ee.getFormCategory().equals(n)).collect(Collectors.toList()).size() > 0;
@@ -1444,9 +1456,18 @@ public class CampaignDataView extends VerticalLayout
 
 		case "Dari":
 
-			campaignForms = FacadeProvider.getCampaignFormMetaFacade()
-					.getAllCampaignFormMetasAsReferencesByRoundandCampaignRoundAndDari(
-							campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
+			if (userProvider.getUser().getArea() != null) {
+				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
+						.getAllCampaignFormMetasAsReferencesByRoundandCampaignRoundAndDarix(
+								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid(),
+								userProvider.getUser().getArea());
+				System.out.println("33333333333333333333333333333333333333333");
+			} else {
+				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
+						.getAllCampaignFormMetasAsReferencesByRoundandCampaignRoundAndDari(
+								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
+				System.out.println("444444444444444444444444444444444444444444");
+			}
 
 			for (FormAccess n : xx) {
 				boolean yn = campaignForms.stream().filter(e -> !e.getFormCategory().equals(null))
@@ -1481,9 +1502,18 @@ public class CampaignDataView extends VerticalLayout
 			break;
 
 		default:
-			campaignForms = FacadeProvider.getCampaignFormMetaFacade()
-					.getAllCampaignFormMetasAsReferencesByRoundandCampaign(
-							campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
+			if (userProvider.getUser().getArea() != null) {
+				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
+						.getAllCampaignFormMetasAsReferencesByRoundandCampaignx(
+								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid(),
+								userProvider.getUser().getArea());
+				System.out.println("555555555555555555555555555555555555555555555555");
+			} else {
+				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
+						.getAllCampaignFormMetasAsReferencesByRoundandCampaign(
+								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
+				System.out.println("666666666666666666666666666666666666666666666666");
+			}
 
 			campaignForms.removeIf(e -> e.getFormCategory() == null);
 
@@ -2243,25 +2273,16 @@ public class CampaignDataView extends VerticalLayout
 		if (!property.toString().contains("readonly")) {
 //			System.out.println(caption + "_--------------------UUUUUUUUUUUUUUUUUUUUUUUUUUUUu");
 			grid.addColumn(e -> {
-		    return removeTrailingDecimal(e.getFormValues().stream()
-	                    .filter(v -> v.getId().equals(property))
-	                    .findFirst()
-	                    .orElse(null));
-			})
-			.setHeader(caption)
-			.setFooter(property)
-			.setSortProperty(property)
-			.setSortable(false)
-			.setResizable(true)
-			.setAutoWidth(true)
-			.setTooltipGenerator(e -> caption + " : " + 
-				    removeTrailingDecimal(e.getFormValues().stream()
-				    .filter(v -> v.getId().equals(property))
-				    .findFirst()
-				    .orElse(null)))
-			.setClassNameGenerator(item -> "full-width-column");
+				return removeTrailingDecimal(
+						e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+			}).setHeader(caption).setFooter(property).setSortProperty(property).setSortable(false).setResizable(true)
+					.setAutoWidth(true)
+					.setTooltipGenerator(
+							e -> caption + " : "
+									+ removeTrailingDecimal(e.getFormValues().stream()
+											.filter(v -> v.getId().equals(property)).findFirst().orElse(null)))
+					.setClassNameGenerator(item -> "full-width-column");
 
-			
 //			grid.addColumn(
 //					e -> e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null))
 //			 		.setHeader(caption)
@@ -2275,15 +2296,14 @@ public class CampaignDataView extends VerticalLayout
 		}
 
 	}
-	
-	private String removeTrailingDecimal(CampaignFormDataEntry value) {
-		String valueCleaned = value == null ? null :  value.toString();
-	    if (valueCleaned != null && valueCleaned.endsWith(".0")) {
-	        return valueCleaned.substring(0, valueCleaned.length() - 2);
-	    }
-	    return valueCleaned;
-	}
 
+	private String removeTrailingDecimal(CampaignFormDataEntry value) {
+		String valueCleaned = value == null ? null : value.toString();
+		if (valueCleaned != null && valueCleaned.endsWith(".0")) {
+			return valueCleaned.substring(0, valueCleaned.length() - 2);
+		}
+		return valueCleaned;
+	}
 
 	public void updateRowCount() {
 		int numberOfRows = (int) FacadeProvider.getCampaignFormDataFacade().count(criteria);
@@ -2352,9 +2372,9 @@ public class CampaignDataView extends VerticalLayout
 //			System.out.println("----------------------------");
 //		}
 //	}
-	
+
 	public void languageHandler() {
-		
+
 		if (I18nProperties.getUserLanguage() == null) {
 
 			I18nProperties.setUserLanguage(Language.EN);
@@ -2382,6 +2402,6 @@ public class CampaignDataView extends VerticalLayout
 	public UserProvider getUserProvider() {
 		// TODO Auto-generated method stub
 		return null;
-	}	
+	}
 
 }

@@ -10,6 +10,7 @@ import javax.ejb.Remote;
 import javax.validation.Valid;
 
 import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.campaign.CampaignCriteria;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.utils.SortProperty;
@@ -37,8 +38,11 @@ public interface CampaignFormMetaFacade {
 	
 	List<CampaignFormMetaReferenceDto> getAllCampaignFormMetasAsReferencesByRoundAndUserLanguage(String round, String userLanguage); 
 	
-	List<CampaignFormMetaReferenceDto> getAllCampaignFormMetasAsReferencesByRoundandCampaign(String round, String campaignUUID);	
-	List<CampaignFormMetaReferenceDto> getCampaignFormMetasAsReferencesByCampaignandRoundAndPashto(String round, String campaignUUID);	
+	List<CampaignFormMetaReferenceDto> getAllCampaignFormMetasAsReferencesByRoundandCampaignx(String round, String campaignUUID, AreaReferenceDto areaReferenceDto);	
+	List<CampaignFormMetaReferenceDto> getAllCampaignFormMetasAsReferencesByRoundandCampaign(String round, String campaignUUID);
+	List<CampaignFormMetaReferenceDto> getCampaignFormMetasAsReferencesByCampaignandRoundAndPashtox(String round, String campaignUUID, AreaReferenceDto areaReferenceDto);
+	List<CampaignFormMetaReferenceDto> getCampaignFormMetasAsReferencesByCampaignandRoundAndPashto(String round, String campaignUUID);
+	List<CampaignFormMetaReferenceDto> getAllCampaignFormMetasAsReferencesByRoundandCampaignRoundAndDarix(String round, String campaignUUID, AreaReferenceDto areaReferenceDto);
 	List<CampaignFormMetaReferenceDto> getAllCampaignFormMetasAsReferencesByRoundandCampaignRoundAndDari(String round, String campaignUUID);
 	
 	List<CampaignFormMetaReferenceDto> getAllCampaignFormMetasAsReferencesByRoundUserLanguageCampaignandForm(String round, String campaignUUID, Set<FormAccess> userFormAccess, String userLanguage);

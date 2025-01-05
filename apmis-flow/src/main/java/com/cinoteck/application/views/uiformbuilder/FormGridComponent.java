@@ -145,7 +145,7 @@ public class FormGridComponent extends VerticalLayout {
 		formTypeAll.remove(CampaignFormElementType.RADIOBASIC);
 		caption.setHelperText("Enter the Label size by wrapping your Label with a <h1> to <h6> tag");
 		options.setHelperText("Enter your option in this format [[key:bike, caption:bike, order:0]]");
-		expression.setHelperText("Please enter expression value with care");
+		expression.setHelperText("Please use the Edit Expression button to enter Expression");
 		formId.setHelperText("Append \"-readonly\" at the end of the Id value. If you want it to be Read Only");
 		dependingOnValues.setItems("true", "false");
 		formType.setItems(formTypeAll);
@@ -1129,6 +1129,8 @@ public class FormGridComponent extends VerticalLayout {
 
 		expressions.addClickListener(e -> {
 			dialog = new Dialog();
+			dialog.setHeight("500px");
+			dialog.setWidth("600px");
 			dialog.open();
 			expressionPopUp(expression.getValue());
 		});
@@ -1137,8 +1139,8 @@ public class FormGridComponent extends VerticalLayout {
 
 	public void expressionPopUp(String expressions) {
 
-		dialog.setWidth("250px");
-		dialog.setHeaderTitle("Expression Magic");
+//		dialog.setWidth("250px");	
+		dialog.setHeaderTitle("Expression");
 		dialog.setClassName("expressionDialog");
 
 		VerticalLayout expressionLayout = new VerticalLayout();
