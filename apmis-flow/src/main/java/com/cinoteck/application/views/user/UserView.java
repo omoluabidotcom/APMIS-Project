@@ -743,9 +743,9 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 			notification.open();
 			return;
 		} else {
-			BulkUsersEditDataDialog bulkUsersEditDataDialog = new BulkUsersEditDataDialog(selectedItems, userDto,
-					filterDataProvider);
-			bulkUsersEditDataDialog.open();
+//			BulkUsersEditDataDialog bulkUsersEditDataDialog = new BulkUsersEditDataDialog(selectedItems, userDto,
+//					filterDataProvider);
+//			bulkUsersEditDataDialog.open();
 
 		}
 

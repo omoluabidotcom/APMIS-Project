@@ -2306,6 +2306,7 @@ public class CampaignDataView extends VerticalLayout
 	}
 
 	public void updateRowCount() {
+		languageHandler();
 		int numberOfRows = (int) FacadeProvider.getCampaignFormDataFacade().count(criteria);
 		String newText = I18nProperties.getCaption(Captions.rows) + numberOfRows;
 
