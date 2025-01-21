@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import com.cinoteck.application.UserProvider;
@@ -39,6 +40,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridMultiSelectionModel;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
@@ -83,6 +85,7 @@ import com.vaadin.flow.component.contextmenu.SubMenu;
 import de.symeda.sormas.api.AuthProvider;
 import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.Language;
+import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
 import de.symeda.sormas.api.caze.CaseDataDto;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.I18nProperties;
@@ -142,6 +145,13 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 //	Button exportRolesButton = new Button(I18nProperties.getCaption(Captions.exportUserRoles));
 	Button bulkModeButton = new Button(I18nProperties.getCaption(Captions.actionEnterBulkEditMode));
 	Button leaveBulkModeButton = new Button(I18nProperties.getCaption(Captions.actionLeaveBulkEditMode));
+	GridMultiSelectionModel<UserDto> selectionModel;
+	private Set<UserDto> selectedItems = new HashSet<>();
+	Button selectAllButton = new Button();
+	Button selectAllButtonpLACEHOLDER = new Button();
+
+
+
 	TextField searchField = new TextField();
 	Button exportUsers = new Button(I18nProperties.getCaption(Captions.export));
 	Button importUsers = new Button(I18nProperties.getCaption(Captions.actionImport));
@@ -171,11 +181,6 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 		FacadeProvider.getI18nFacade().setUserLanguage(userProvider.getUser().getLanguage());
 		filterDataProvider = usersDataProvider.withConfigurableFilter();
 
-//		if (userProvider.hasUserRight(UserRight.PERFORM_BULK_OPERATIONS)) {
-//			bulkModeButton = new Button(I18nProperties.getCaption(Captions.actionEnterBulkEditMode));
-//			leaveBulkModeButton = new Button();
-//			menuBar = new MenuBar();
-//		}
 		setSpacing(false);
 		setHeightFull();
 		addFilters();
@@ -226,9 +231,6 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 				ImportUsersDataDialog dialogx = new ImportUsersDataDialog();
 				dialogx.open();
 			}
-
-			// anchor.getElement().callJsFunction("click");
-
 		});
 
 		anchor.getStyle().set("display", "none");
@@ -256,6 +258,7 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 		bulkModeButton.addClickListener(e -> {
 			grid.setSelectionMode(Grid.SelectionMode.MULTI);
 			bulkModeButton.setVisible(false);
+			configureGridMultiSelect();
 			leaveBulkModeButton.setVisible(true);
 			menuBar.setVisible(true);
 		});
@@ -288,8 +291,7 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 				e -> handleUserBulkEditDialog(grid.getSelectedItems(), userDto, filterDataProvider));
 
 		menuBar.getStyle().set("margin-top", "5px");
-//		enable.addClickListener(e -> enableUserPopup());
-//		disable.addClickListener(e -> disableUserPopup());
+
 		layout.add(menuBar);
 
 		layout.setPadding(false);
@@ -362,37 +364,6 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 
 		filterLayout.add(activeFilter);
 
-//		userRolesFilter = new ComboBox<UserRole>();
-//		userRolesFilter.setWidth("145px");
-//
-//		userRolesFilter.setId(UserDto.USER_ROLES);
-//		userRolesFilter.setLabel(I18nProperties.getPrefixCaption(UserDto.I18N_PREFIX, UserDto.USER_ROLES));
-//		userRolesFilter.setPlaceholder(I18nProperties.getCaption(Captions.User_userRoles));
-//		userRolesFilter.getStyle().set("margin-left", "0.1rem");
-//		userRolesFilter.getStyle().set("padding-top", "0px!important");
-//		userRolesFilter.setClearButtonVisible(true);
-//	
-//		
-//		Set<UserRole> roles = FacadeProvider.getUserRoleConfigFacade().getEnabledUserRoles();
-//		roles.remove(UserRole.BAG_USER);
-//
-//		List<UserRole> rolesz = new ArrayList<>(roles); // Convert Set to List
-//		roles.remove(UserRole.BAG_USER);
-//
-//		// Sorting the user roles usng comprtor
-//		Collections.sort(rolesz, new UserRoleCustomComparator());
-//		Set<UserRole> sortedUserRoless = new TreeSet<>(rolesz);
-//
-//		userRolesFilter.setItems(sortedUserRoless);
-//		userRolesFilter.addValueChangeListener(e -> {
-//
-//			UserRole userRole = e.getValue();
-//			criteria.userRole(userRole);
-//			filterDataProvider.setFilter(criteria);
-//			filterDataProvider.refreshAll();
-//			updateRowCount();
-//
-//		});
 
 //		Recieve FacadeProvider.getUserRoleConfigFacade().getEnabledUserRoles(); into an appropriate collection 
 //		convert the system into a list 
@@ -750,6 +721,50 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 		}
 
 	}
+	
+	private void configureGridMultiSelect() {
+		selectionModel = (GridMultiSelectionModel<UserDto>) grid
+				.setSelectionMode(Grid.SelectionMode.MULTI);
+
+		selectionModel.setSelectAllCheckboxVisibility(GridMultiSelectionModel.SelectAllCheckboxVisibility.VISIBLE);
+
+		selectionModel.addSelectionListener(event -> {
+			if (event.getAllSelectedItems().isEmpty()) {
+				selectedItems.clear();
+			} else if (event.getAllSelectedItems().size() == getDataProviderSize()) {
+				selectedItems.addAll(fetchAllItems());
+			}
+			grid.getDataProvider().refreshAll();
+		});
+
+		ComponentRenderer<Checkbox, UserDto> checkboxRenderer = new ComponentRenderer<>(item -> {
+			Checkbox checkboxx = new Checkbox();
+			checkboxx.setValue(grid.getSelectedItems().contains(item)); // Set the initial value
+			checkboxx.addValueChangeListener(event -> {
+				if (event.getValue()) {
+					grid.select(item);
+				} else {
+					grid.deselect(item);
+				}
+			});
+			return checkboxx;
+		});
+
+		grid.addColumn(checkboxRenderer).setHeader(selectAllButton).setSortable(false).setResizable(true)
+				.setAutoWidth(true).setVisible(false);
+	}
+	
+	private Set<UserDto> fetchAllItems() {
+		Stream<UserDto> stream = dataProvider.fetch(new Query<>());
+		Set<UserDto> allItems = new HashSet<>();
+		stream.forEach(allItems::add);
+		return allItems;
+	}
+	
+	private int getDataProviderSize() {
+		return dataProvider.size(new Query<>());
+	}
+	
 
 	private String rolesConf(UserDto usrdto) {
 		UserProvider usrProv = new UserProvider();
