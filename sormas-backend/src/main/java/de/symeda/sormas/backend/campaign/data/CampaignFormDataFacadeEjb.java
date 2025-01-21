@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
@@ -1726,87 +1727,156 @@ if(criteria.getUserLanguage() != null) {
 		return Integer.parseInt(((BigInteger) em.createNativeQuery(joinBuilder).getSingleResult()).toString());
 		
 	};
-
+	
 	@Override
 	public List<String> getAllActiveUuids() {
-		if (userService.getCurrentUser() == null) {
-			return Collections.emptyList();
-		}
-		Date date = new Date(0);
+	    if (userService.getCurrentUser() == null) {
+	        return Collections.emptyList();
+	    }
 
-		 List<CampaignFormMeta> allAfter = campaignFormMetaService.getAllAfter(date, userService.getCurrentUser());
-			List<CampaignFormMeta> filtered = new ArrayList<>();
-			allAfter.removeIf(e -> e.getFormCategory() == null);
-			
-			for (FormAccess n : userService.getCurrentUser().getFormAccess()) {
-				boolean yn = allAfter.stream().filter(e -> !e.getFormCategory().equals(null))
-						.filter(ee -> ee.getFormCategory().equals(n)).collect(Collectors.toList()).size() > 0;
-				if (yn) {
-					filtered.addAll(allAfter.stream().filter(e -> !e.getFormCategory().equals(null))
-							.filter(ee -> ee.getFormCategory().equals(n)).collect(Collectors.toList()));
-				}
-			}
-			
-			List<Long> formMetaIdList = new ArrayList<>();
-			for (CampaignFormMeta met : filtered) {
-				formMetaIdList.add(met.getId());
-			}
-			
-			List<Long> commIdList = new ArrayList<>();
-			if(userService.getCurrentUser().getCommunity().size() > 0) {
-				for (Community commm : userService.getCurrentUser().getCommunity()) {
-					commIdList.add(commm.getId());
-				}
-			}
-			
-			List<Long> distrIdList = new ArrayList<>();
-			if(userService.getCurrentUser().getDistricts().size() > 0) {
-				for (District distr : userService.getCurrentUser().getDistricts()) {
-				
-					distrIdList.add(distr.getId());
-					}
-			}
-			
-			
-			List<CampaignFormData> newlst = campaignFormDataService.getAllActiveAfter(date, formMetaIdList, commIdList, distrIdList);
-			List<CampaignFormData> filterednewlst = new ArrayList<>();
-			for (CampaignFormMeta met : filtered) {
-				
-				boolean ynn = newlst.stream().filter(eee -> eee.getCampaignFormMeta().getId() != null).filter(ee -> ee.getCampaignFormMeta().getId().equals(met.getId())).collect(Collectors.toList()).size() > 0;
-				
-				
-				if (ynn) {
-					
-					filterednewlst.addAll(newlst.stream().filter(eee -> eee.getCampaignFormMeta().getId() != null).filter(ee -> ee.getCampaignFormMeta().getId().equals(met.getId())).collect(Collectors.toList()));
-				}
-			}
-			
-			 List<CampaignFormData> filterednewlstLst = new ArrayList<>();
-				for (Community commm : userService.getCurrentUser().getCommunity()) {
-					////System.out.println(">>>>>>>>>>>>getCommunity>>>>>>>>>"+commm.getId());
-					boolean ynn = filterednewlst.stream().filter(comf -> comf.getCommunity().getId().equals(commm.getId())).collect(Collectors.toList()).size() > 0;
-						
-					if (ynn) {
-						filterednewlstLst.addAll(filterednewlst.stream().filter(comf -> comf.getCommunity().getId().equals(commm.getId())).filter(comdf -> comdf.getCampaign().isOpenandclose() == true).collect(Collectors.toList()));
-					}
-				}
-				
-				
-			
-			List<String> lstfinal = new ArrayList<>();
-			
-			 for(CampaignFormData dtfiltere : filterednewlstLst) {
-				 ////System.out.println(">>>>>>>>>>>>>>>>>_____>>>>>>>>>>>>>>>>>>>"+dtfiltere.getUuid());
-				 lstfinal.addAll(campaignFormDataService.getAllActiveUuids().stream().filter(eed -> eed.equals(dtfiltere.getUuid())).collect(Collectors.toList()));
-				 }
-			 
-			 
+	    Date date = new Date(0);
+	    List<CampaignFormMeta> allAfter = campaignFormMetaService.getAllAfter(date, userService.getCurrentUser());
+	    if (allAfter == null) {
+	        return Collections.emptyList();
+	    }
 
-			 
-			 ////System.out.println(">>>>>> "+lstfinal.size());
+	    // Filter out null FormCategory entries
+	    allAfter.removeIf(e -> e.getFormCategory() == null);
 
-		return lstfinal;
+	    // Filter based on user form access
+	    List<CampaignFormMeta> filtered = new ArrayList<>();
+	    Set<FormAccess> formAccessSet = userService.getCurrentUser().getFormAccess();
+
+	    
+	    List<FormAccess> formAccessList = new ArrayList<>();
+	    formAccessList.addAll(formAccessSet);
+	    for (FormAccess access : formAccessList) {
+	        filtered.addAll(allAfter.stream()
+	            .filter(e -> e.getFormCategory() != null && e.getFormCategory().equals(access))
+	            .collect(Collectors.toList()));
+	    }
+
+	    // Extract FormMeta IDs
+	    List<Long> formMetaIdList = filtered.stream()
+	        .map(CampaignFormMeta::getId)
+	        .filter(Objects::nonNull)
+	        .collect(Collectors.toList());
+
+	    // Collect community and district IDs
+	    List<Long> commIdList = userService.getCurrentUser().getCommunity().stream()
+	        .map(Community::getId)
+	        .filter(Objects::nonNull)
+	        .collect(Collectors.toList());
+
+	    List<Long> distrIdList = userService.getCurrentUser().getDistricts().stream()
+	        .map(District::getId)
+	        .filter(Objects::nonNull)
+	        .collect(Collectors.toList());
+
+	    // Fetch CampaignFormData
+	    List<CampaignFormData> newlst = campaignFormDataService.getAllActiveAfter(date, formMetaIdList, commIdList, distrIdList);
+	    if (newlst == null) {
+	        return Collections.emptyList();
+	    }
+
+	    // Filter CampaignFormData based on FormMeta
+	    List<CampaignFormData> filterednewlst = newlst.stream()
+	        .filter(data -> filtered.stream()
+	            .anyMatch(meta -> meta.getId().equals(data.getCampaignFormMeta().getId())))
+	        .collect(Collectors.toList());
+
+	    // Further filter CampaignFormData based on user's communities
+	    List<CampaignFormData> filterednewlstLst = filterednewlst.stream()
+	        .filter(data -> data.getCommunity() != null && 
+	                        userService.getCurrentUser().getCommunity().stream()
+	                            .anyMatch(comm -> comm.getId().equals(data.getCommunity().getId()) && 
+	                                              data.getCampaign().isOpenandclose()))
+	        .collect(Collectors.toList());
+
+	    // Get the final list of UUIDs
+	    return filterednewlstLst.stream()
+	        .map(CampaignFormData::getUuid)
+	        .filter(Objects::nonNull)
+	        .distinct()
+	        .collect(Collectors.toList());
 	}
+
+
+//	@Override
+//	public List<String> getAllActiveUuids() {
+//		if (userService.getCurrentUser() == null) {
+//			return Collections.emptyList();
+//		}
+//		Date date = new Date(0);
+//
+//		 List<CampaignFormMeta> allAfter = campaignFormMetaService.getAllAfter(date, userService.getCurrentUser());
+//			List<CampaignFormMeta> filtered = new ArrayList<>();
+//			allAfter.removeIf(e -> e.getFormCategory() == null);
+//			
+//			for (FormAccess n : userService.getCurrentUser().getFormAccess()) {
+//				boolean yn = allAfter.stream().filter(e -> !e.getFormCategory().equals(null))
+//						.filter(ee -> ee.getFormCategory().equals(n)).collect(Collectors.toList()).size() > 0;
+//				if (yn) {
+//					filtered.addAll(allAfter.stream().filter(e -> !e.getFormCategory().equals(null))
+//							.filter(ee -> ee.getFormCategory().equals(n)).collect(Collectors.toList()));
+//				}
+//			}
+//			
+//			List<Long> formMetaIdList = new ArrayList<>();
+//			for (CampaignFormMeta met : filtered) {
+//				formMetaIdList.add(met.getId());
+//			}
+//			
+//			List<Long> commIdList = new ArrayList<>();
+//			if(userService.getCurrentUser().getCommunity().size() > 0) {
+//				for (Community commm : userService.getCurrentUser().getCommunity()) {
+//					commIdList.add(commm.getId());
+//				}
+//			}
+//			
+//			List<Long> distrIdList = new ArrayList<>();
+//			if(userService.getCurrentUser().getDistricts().size() > 0) {
+//				for (District distr : userService.getCurrentUser().getDistricts()) {
+//				
+//					distrIdList.add(distr.getId());
+//					}
+//			}
+//			
+//			
+//			List<CampaignFormData> newlst = campaignFormDataService.getAllActiveAfter(date, formMetaIdList, commIdList, distrIdList);
+//			List<CampaignFormData> filterednewlst = new ArrayList<>();
+//			for (CampaignFormMeta met : filtered) {
+//				
+//				boolean ynn = newlst.stream().filter(eee -> eee.getCampaignFormMeta().getId() != null).filter(ee -> ee.getCampaignFormMeta().getId().equals(met.getId())).collect(Collectors.toList()).size() > 0;
+//				
+//				
+//				if (ynn) {
+//					
+//					filterednewlst.addAll(newlst.stream().filter(eee -> eee.getCampaignFormMeta().getId() != null).filter(ee -> ee.getCampaignFormMeta().getId().equals(met.getId())).collect(Collectors.toList()));
+//				}
+//			}
+//			
+//			 List<CampaignFormData> filterednewlstLst = new ArrayList<>();
+//				for (Community commm : userService.getCurrentUser().getCommunity()) {
+//					////System.out.println(">>>>>>>>>>>>getCommunity>>>>>>>>>"+commm.getId());
+//					boolean ynn = filterednewlst.stream().filter(comf -> comf.getCommunity().getId().equals(commm.getId())).collect(Collectors.toList()).size() > 0;
+//						
+//					if (ynn) {
+//						filterednewlstLst.addAll(filterednewlst.stream().filter(comf -> comf.getCommunity().getId().equals(commm.getId())).filter(comdf -> comdf.getCampaign().isOpenandclose() == true).collect(Collectors.toList()));
+//					}
+//				}
+//				
+//				
+//			
+//			List<String> lstfinal = new ArrayList<>();
+//			
+//			 for(CampaignFormData dtfiltere : filterednewlstLst) {
+//				 //System.out.println(">>>>>>>>>>>>>>>>>_____>>>>>>>>>>>>>>>>>>>"+dtfiltere.getUuid());
+//				 lstfinal.addAll(campaignFormDataService.getAllActiveUuids().stream().filter(eed -> eed.equals(dtfiltere.getUuid())).collect(Collectors.toList()));
+//				 }
+//
+//		return lstfinal;
+//	}
 
 	@Override
 	public List<CampaignFormDataDto> getAllActiveAfter(Date date) {

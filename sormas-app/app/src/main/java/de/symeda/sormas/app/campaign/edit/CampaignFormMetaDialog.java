@@ -18,6 +18,8 @@
 
 package de.symeda.sormas.app.campaign.edit;
 
+import static android.view.View.GONE;
+
 import android.content.Context;
 
 import androidx.databinding.ViewDataBinding;
@@ -31,17 +33,25 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import de.symeda.sormas.api.infrastructure.InfrastructureHelper;
+import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.api.utils.ValidationException;
 import de.symeda.sormas.api.utils.fieldaccess.UiFieldAccessCheckers;
 import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.campaign.Campaign;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
+import de.symeda.sormas.app.backend.config.ConfigProvider;
+import de.symeda.sormas.app.backend.region.District;
+import de.symeda.sormas.app.backend.region.PopulationData;
+import de.symeda.sormas.app.backend.user.User;
+import de.symeda.sormas.app.component.Item;
 import de.symeda.sormas.app.component.dialog.FormDialog;
 import de.symeda.sormas.app.component.validation.FragmentValidator;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
 import de.symeda.sormas.app.databinding.DialogSelectCampaignFormMetaLayoutBinding;
 import de.symeda.sormas.app.util.DataUtils;
+import de.symeda.sormas.app.util.InfrastructureDaoHelper;
 
 import static de.symeda.sormas.app.core.notification.NotificationType.ERROR;
 
@@ -70,24 +80,23 @@ public class CampaignFormMetaDialog extends FormDialog {
 
     @Override
     protected void initializeContentView(ViewDataBinding rootBinding, ViewDataBinding buttonPanelBinding) {
+
         List<CampaignFormMeta> allFormsForCampaign = campaign.getCampaignFormMetas();
         List<CampaignFormMeta> allUnexpiredFormsForCampaign = new ArrayList<>();
         for (CampaignFormMeta campaignFormMeta : allFormsForCampaign) {
             Date expiryDate = DatabaseHelper.getCampaignFormMetaWithExpDao().getCampaignFormExpiryDateByCampaignIdAndFormId(campaign.getUuid(), campaignFormMeta.getUuid());
+
+
             LocalDate currentDate = LocalDate.now();
             if (expiryDate != null) {
             LocalDate expiryLocalDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-
                 if (currentDate.isBefore(expiryLocalDate) || expiryLocalDate.isEqual(currentDate)) {
-                    System.out.println("Checking for form  " + campaignFormMeta.getFormName());
-                    System.out.println("This form has Expired Dte is " + expiryLocalDate + " current date is " + currentDate);
-                    allUnexpiredFormsForCampaign.add(campaignFormMeta);
+                 allUnexpiredFormsForCampaign.add(campaignFormMeta);
 //                // expiryDate is before currentDate or equals tob the current date itshold be added to my new list
             }  else {
                 // expiryDate is after currentDate
-                    System.out.println("This form has Expired Dte is " + expiryLocalDate + " current date is " + currentDate);
-                    System.out.println("This form has Expired For Data Entry " + campaignFormMeta.getFormName());
+//                    System.out.println("This form has Expired Dte is " + expiryLocalDate + " current date is " + currentDate);
+//                    System.out.println("This form has Expired For Data Entry " + campaignFormMeta.getFormName());
             }
             } else {
                 System.out.println("This form does not have an expiry date set  " + campaignFormMeta.getFormName());
@@ -95,7 +104,8 @@ public class CampaignFormMetaDialog extends FormDialog {
             }
 }
         Collections.sort(allUnexpiredFormsForCampaign, Comparator.comparing(CampaignFormMeta::getFormName));
-        contentBinding.campaignFormMeta.initializeSpinner(DataUtils.toItems(allUnexpiredFormsForCampaign));
+
+            contentBinding.campaignFormMeta.initializeSpinner(DataUtils.toItems(allUnexpiredFormsForCampaign));
     }
 
     public CampaignFormMeta getCampaignFormMeta() {
@@ -104,6 +114,8 @@ public class CampaignFormMetaDialog extends FormDialog {
 
     @Override
     protected void onPositiveClick() {
+
+        System.out.println("Positvite ccallback clicked -------------------------");
         setLiveValidationDisabled(false);
         try {
             FragmentValidator.validate(getContext(), contentBinding);

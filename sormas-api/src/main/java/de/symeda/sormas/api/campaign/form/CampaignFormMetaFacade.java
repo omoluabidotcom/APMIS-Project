@@ -85,4 +85,12 @@ public interface CampaignFormMetaFacade {
 	
 	List<CampaignFormMetaHistoryExtractDto> getFormsMetaHistory(String formUuid);
 	
+//	void cloneForm(String uuid, String formVersionUuid , long newVersion);
+	
+//	long getFormCountByUuid(String uuid);
+	
+//	List<CampaignFormMetaDto> getByUuidANdFormVersionUuids(List<String> uuids, List<String> formVersionsUuids);
+
+//	CampaignFormMetaDto getByUuidAndFormVersionUuid(String uuid, String formVersionUuid);
+	
 }

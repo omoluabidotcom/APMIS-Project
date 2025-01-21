@@ -52,6 +52,12 @@ public class CampaignFormMeta extends AbstractDomainObject {
 	public static final String FORM_NAME_PASHTO = "formname_ps_af"; 
 	public static final String FORM_NAME_DARI = "formname_fa_af"; 
 	public static final String ARCHIVED = "archived";
+	public static final String FORMVERSIONUUID = "formversionuuid";
+	public static final String FORMVERSION = "formversion";
+
+	
+	
+	
 
 	private String formId;
 	private String formType;
@@ -76,6 +82,10 @@ public class CampaignFormMeta extends AbstractDomainObject {
 //	private String campaignFormTranslations;
 //	private List<CampaignFormTranslations> campaignFormTranslationsList;
 	private boolean archived = false;
+	
+	private String formversionuuid;
+	private Long formversion;
+	
 
 	@Column
 	public boolean getArchived() {
@@ -246,6 +256,23 @@ public class CampaignFormMeta extends AbstractDomainObject {
 
 	public void setModality(String modality) {
 		this.modality = modality;
+	}
+	
+	@Column
+	public String getFormversionuuid() {
+		return formversionuuid;
+	}
+
+	public void setFormversionuuid(String formversionuuid) {
+		this.formversionuuid = formversionuuid;
+	}
+
+	public Long getFormversion() {
+		return formversion;
+	}
+
+	public void setFormversion(Long formversion) {
+		this.formversion = formversion;
 	}
 
 //	@Transient

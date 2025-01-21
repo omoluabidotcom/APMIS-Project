@@ -958,6 +958,8 @@ public class CampaignForm extends VerticalLayout {
 
 			for (CampaignTreeGridDto areax : treeGrid.getTreeData().getRootItems()) {
 
+				
+				System.out.println(areax.getUuid() + "areax.getUuid()" + root.getUuid() + "root.getUuid(root.getUuid(" );
 				if (areax.getUuid().equals(root.getUuid())) {
 
 					if (isDeletePopulationData) {

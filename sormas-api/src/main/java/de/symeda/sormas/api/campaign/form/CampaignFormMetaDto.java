@@ -34,6 +34,10 @@ public class CampaignFormMetaDto extends EntityDto {
 	public static final String FORM_NAME_PASHTO = "formname_ps_af"; 
 	public static final String FORM_NAME_DARI = "formname_fa_af"; 
 	public static final String ARCHIVED = "archived";
+	public static final String FORMVERSIONUUID = "formversionuuid";
+	public static final String FORMVERSION = "formversion";
+
+	
 
 	@Size(max = FieldConstraints.CHARACTER_LIMIT_SMALL, message = Validations.textTooLong)
 	private String formId;
@@ -68,6 +72,9 @@ public class CampaignFormMetaDto extends EntityDto {
 	private String fieldCaption;
 	private String fieldExpression;
 	
+	private String formversionuuid;
+	private Long formversion;
+	
 	
 
 
@@ -100,6 +107,12 @@ public class CampaignFormMetaDto extends EntityDto {
 	public static CampaignFormMetaDto build() {
 		CampaignFormMetaDto campaignMeta = new CampaignFormMetaDto();
 		campaignMeta.setUuid(DataHelper.createUuid());
+		return campaignMeta;
+	}
+	
+	public static CampaignFormMetaDto buildNewFormVersion() {
+		CampaignFormMetaDto campaignMeta = new CampaignFormMetaDto();
+		campaignMeta.setFormversionuuid(DataHelper.createUuid()); 
 		return campaignMeta;
 	}
 	
@@ -213,6 +226,22 @@ public class CampaignFormMetaDto extends EntityDto {
 
 	public void setDistrictentry(boolean districtentry) {
 		this.districtentry = districtentry;
+	}
+
+	public String getFormversionuuid() {
+		return formversionuuid;
+	}
+
+	public void setFormversionuuid(String formversionuuid) {
+		this.formversionuuid = formversionuuid;
+	}
+
+	public Long getFormversion() {
+		return formversion;
+	}
+
+	public void setFormversion(Long formversion) {
+		this.formversion = formversion;
 	}
 	
 	
