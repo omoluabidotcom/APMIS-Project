@@ -26,6 +26,7 @@ import de.symeda.sormas.backend.infrastructure.facility.FacilityFacadeEjb.Facili
 import de.symeda.sormas.backend.infrastructure.facility.FacilityService;
 import de.symeda.sormas.backend.feature.FeatureConfigurationFacadeEjb.FeatureConfigurationFacadeEjbLocal;
 import de.symeda.sormas.backend.infrastructure.pointofentry.PointOfEntryFacadeEjb.PointOfEntryFacadeEjbLocal;
+import de.symeda.sormas.backend.infrastructure.PopulationDataFacadeEjb.PopulationDataFacadeEjbLocal;
 import de.symeda.sormas.backend.infrastructure.area.AreaFacadeEjb;
 import de.symeda.sormas.backend.infrastructure.community.CommunityFacadeEjb.CommunityFacadeEjbLocal;
 import de.symeda.sormas.backend.infrastructure.community.Community;
@@ -53,6 +54,9 @@ public class InfrastructureSyncFacadeEjb implements InfrastructureSyncFacade {
 	private AreaFacadeEjb.AreaFacadeEjbLocal areaFacade;
 	@EJB
 	private DistrictFacadeEjbLocal districtFacade;
+	@EJB
+	private PopulationDataFacadeEjbLocal populationFacade;
+	
 	@EJB
 	private CommunityFacadeEjbLocal communityFacade;
 	@EJB
@@ -96,6 +100,9 @@ public class InfrastructureSyncFacadeEjb implements InfrastructureSyncFacade {
 		sync.setCountries(countryFacade.getAllAfter(changeDates.getCountryChangeDate()));
 		sync.setRegions(regionFacade.getAllAfter(changeDates.getRegionChangeDate()));
 		sync.setDistricts(districtFacade.getAllAfter(changeDates.getDistrictChangeDate()));
+//		sync.setDistricts(districtFacade.getAllAfter(changeDates.getDistrictChangeDate()));
+		sync.setPopulationData(populationFacade.getAllAfter(changeDates.getPopulationDataChangeDate()));
+
 		
 		
 		final Set<CommunityReferenceDto> rdto = userFacade.getCurrentUser().getCommunity();	
