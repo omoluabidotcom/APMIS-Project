@@ -47,6 +47,7 @@ public class InfrastructureSyncDto implements Serializable {
 	private List<CampaignDto> campaigns;
 	private List<CampaignFormMetaDto> campaignFormMetas;
 	private List<CampaignFormMetaExpiryDto> campaignFormMetaExpiry;
+	private List<PopulationDataDto> populationData;
 
 	public boolean isInitialSyncRequired() {
 		return initialSyncRequired;
@@ -208,6 +209,13 @@ public class InfrastructureSyncDto implements Serializable {
 	public void setCampaignFormMetaExpiry(List<CampaignFormMetaExpiryDto> campaignFormMetaExpiry) {
 		this.campaignFormMetaExpiry = campaignFormMetaExpiry;
 	}
-	
 
+	public List<PopulationDataDto> getPopulationData() {
+		return populationData;
+	}
+
+	public void setPopulationData(List<PopulationDataDto> populationData) {
+		this.populationData = populationData;
+	}
+	
 }
