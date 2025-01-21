@@ -566,7 +566,10 @@ public class CampaignFormBuilder extends VerticalLayout {
 		System.out.println(isDistrictEntry + "campaignFormBuildercampaignFormBuildercampaignFormBuilder");
 
 		if(!isDistrictEntry) {
-			reassigmentLayout.add(reassignDataConfigUnit, updateFormDataUnitAssignment, cancelFormDataUnitAssignment);
+			if(currentUser.getUserRoles().contains(UserRole.EDITOR_USER)) {
+				reassigmentLayout.add(reassignDataConfigUnit, updateFormDataUnitAssignment, cancelFormDataUnitAssignment);
+	
+			}
 		}
 
 		if (uuidForm != null) {

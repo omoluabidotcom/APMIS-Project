@@ -22,6 +22,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
@@ -47,12 +48,18 @@ import de.symeda.sormas.app.backend.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
+import de.symeda.sormas.app.backend.region.District;
+import de.symeda.sormas.app.backend.region.DistrictDao;
+import de.symeda.sormas.app.backend.region.PopulationData;
+import de.symeda.sormas.app.backend.user.User;
 import de.symeda.sormas.app.campaign.edit.CampaignFormDataNewActivity;
 import de.symeda.sormas.app.campaign.edit.CampaignFormMetaDialog;
 import de.symeda.sormas.app.component.Item;
 import de.symeda.sormas.app.component.menu.PageMenuItem;
 import de.symeda.sormas.app.databinding.FilterCampaignFormDataListLayoutBinding;
 import de.symeda.sormas.app.util.Callback;
+import de.symeda.sormas.app.util.DataUtils;
+import de.symeda.sormas.app.util.InfrastructureDaoHelper;
 
 public class CampaignFormDataListActivity extends PagedBaseListActivity<CampaignFormData> {
 
@@ -68,6 +75,7 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        System.out.println(savedInstanceState + "savedInstanceStatesavedInstanceStatesavedInstanceState");
         super.onCreate(savedInstanceState);
 
         showPreloader();
@@ -163,11 +171,51 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
     public void goToNewView() {
 
         final CampaignFormDataCriteria criteria = model.getCriteria();
-        final CampaignFormMetaDialog campaignFormMetaDialog = new CampaignFormMetaDialog(BaseActivity.getActiveActivity(), criteria.getCampaign());
-        campaignFormMetaDialog.setPositiveCallback(() -> CampaignFormDataNewActivity.startActivity(getContext(), criteria.getCampaign().getUuid(), campaignFormMetaDialog.getCampaignFormMeta().getUuid()));
-        campaignFormMetaDialog.show();
-        campaignFormMetaDialog.setLiveValidationDisabled(true);
+        List<PopulationData> list = DatabaseHelper.getPopulationDataDao().getSelectedDistrictByUsersDistrict(ConfigProvider.getUser().getDistrict().getUuid(), criteria.getCampaign().getUuid());
+
+        if(list.size() > 0 ){
+            final CampaignFormMetaDialog campaignFormMetaDialog = new CampaignFormMetaDialog(BaseActivity.getActiveActivity(), criteria.getCampaign());
+            campaignFormMetaDialog.setPositiveCallback(() ->{
+                CampaignFormDataNewActivity.startActivity(getContext(), criteria.getCampaign().getUuid(), campaignFormMetaDialog.getCampaignFormMeta().getUuid());});
+            campaignFormMetaDialog.show();
+            campaignFormMetaDialog.setLiveValidationDisabled(true);
+        }else{
+            showCustomDialog(this,
+                    "Data Entry Error",
+                    "Users distcrict is not selected for data entry in this campaign.");
+        }
+
     }
+    private void showCustomDialog(Context context, String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .setCancelable(true);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+
+// Usage example:
+/*
+showCustomDialog(
+    "Error",
+    "Something went wrong",
+    "Retry",
+    "Cancel",
+    () -> {
+        // Add retry logic here
+        retryOperation();
+    }
+);
+*/
+
+// Usage example:
+// showErrorDialog("An error occurred while processing your request");
 
 
 
