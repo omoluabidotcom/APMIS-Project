@@ -342,25 +342,26 @@ public class CampaignFormBuilder extends VerticalLayout {
 				} else {
 					List<DistrictReferenceDto> districtsList = FacadeProvider.getDistrictFacade()
 							.getAllActiveByRegion(e.getValue().getUuid());
-					
-					System.out.println(districtsList + "districtsListdistrictsListdistrictsListdistrictsList============================");
+
+					System.out.println(districtsList
+							+ "districtsListdistrictsListdistrictsListdistrictsList============================");
 					List<DistrictReferenceDto> allDistrictList = new ArrayList<>();
 
 					popDto.forEach(popDtoc -> allDistrictList.add(popDtoc.getDistrict()));
-					
-					System.out.println(allDistrictList + "allDistrictListallDistrictListallDistrictList=============2222222222222222222222");
 
+					System.out.println(allDistrictList
+							+ "allDistrictListallDistrictListallDistrictList=============2222222222222222222222");
 
 					List<DistrictReferenceDto> filteredDistrictListwithDup = districtsList.stream()
 							.filter(allDistrictList::contains).collect(Collectors.toList());
-					
 
 					// Remove duplicates using Set
 					Set<DistrictReferenceDto> uniqueSet = new HashSet<>(filteredDistrictListwithDup);
 
 					// Convert the set back to a list (if needed)
 					List<DistrictReferenceDto> filteredDistrictList = new ArrayList<>(uniqueSet);
-					System.out.println(filteredDistrictList + "filteredDistrictListfilteredDistrictListfilteredDistrictList=============3333333333333333");
+					System.out.println(filteredDistrictList
+							+ "filteredDistrictListfilteredDistrictListfilteredDistrictList=============3333333333333333");
 
 					districts = filteredDistrictList;
 //					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegion(e.getValue().getUuid());
@@ -562,7 +563,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 			}
 		});
-		
+
 		System.out.println(isDistrictEntry + "campaignFormBuildercampaignFormBuildercampaignFormBuilder");
 
 		if(!isDistrictEntry) {
@@ -570,19 +571,20 @@ public class CampaignFormBuilder extends VerticalLayout {
 				reassigmentLayout.add(reassignDataConfigUnit, updateFormDataUnitAssignment, cancelFormDataUnitAssignment);
 	
 			}
+
 		}
 
 		if (uuidForm != null) {
 			if (currentUser.getUserRoles().contains(UserRole.ADMIN)
 					|| currentUser.getUserRoles().contains(UserRole.COMMUNITY_INFORMANT)) {
 				System.out.println(isDistrictEntry + "campaignFormBuildercampaignFormBuildercampaignFormBuilder");
-				
+
 //				
 //					vertical_.add(cbCampaign, formDate, cbArea, cbRegion, cbDistrict, cbCommunity);
 //
 //				}else {
-					vertical_.add(cbCampaign, formDate, cbArea, cbRegion, cbDistrict, cbCommunity, reassigmentLayout);
-	
+				vertical_.add(cbCampaign, formDate, cbArea, cbRegion, cbDistrict, cbCommunity, reassigmentLayout);
+
 //				}
 			} else {
 				vertical_.add(cbCampaign, formDate, cbArea, cbRegion, cbDistrict, cbCommunity);
@@ -1489,13 +1491,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 	public <T extends Component> void setFieldValue(T field, CampaignFormElementType type, Object value,
 			Map<String, String> options, String defaultvalue, Boolean isErrored, Object defaultErrorMsgr) {
-		
-	
-		
+
 		Boolean isExpressionValue = false;
 		switch (type) {
-		
-		
 
 		case YES_NO:
 
@@ -1548,40 +1546,38 @@ public class CampaignFormBuilder extends VerticalLayout {
 				// Notification.show("Error found", tempz.toString(),
 				// Notification.TYPE_TRAY_NOTIFICATION);
 			}
-			
+
 			if (value != null) {
-				
+
 //				System.out.println( value + " VALUE FROM FORMBUILDER RANGE +===============");
-				
+
 				if (value.toString().equals("")) {
 //					System.out.println( value + " VALUE FROM FORMBUILDER RANGE +===============IFFFF-----");
 
 //					logger.debug("))))))))))))))))))))))))))):setting empty value to nulll --- not sure");
 					((IntegerField) field).setValue(null);
 				} else {
-					
+
 //					System.out.println( value + " VALUE FROM FORMBUILDER RANGE +===============ELSE-----");
 					String cleanValue = value.toString().replace(".0", "");
-					
-					
-					System.out.println( value + " VALUE FROM FORMBUILDER RANGE +===============ELSE-----" + cleanValue);
 
-					
+					System.out.println(value + " VALUE FROM FORMBUILDER RANGE +===============ELSE-----" + cleanValue);
+
 //					System.out.println( value + " VALUE FROM FORMBUILDER RANGE +===============ELSE-----");
-					
-					    String cleancleanvalue = value.toString(); // Assuming getValue() retrieves the value as a String
-					    if (cleancleanvalue.endsWith(".0")) {
-					    	cleancleanvalue = cleancleanvalue.substring(0, cleancleanvalue.length() - 2); // Remove the ".0"
-					    }
-					
-					    System.out.println( value + " VALUE FROM FORMBUILDER RANGE +===============ELSE-----" + cleancleanvalue);
 
-					
+					String cleancleanvalue = value.toString(); // Assuming getValue() retrieves the value as a String
+					if (cleancleanvalue.endsWith(".0")) {
+						cleancleanvalue = cleancleanvalue.substring(0, cleancleanvalue.length() - 2); // Remove the ".0"
+					}
+
+					System.out.println(
+							value + " VALUE FROM FORMBUILDER RANGE +===============ELSE-----" + cleancleanvalue);
+
 					((IntegerField) field).setValue(Integer.parseInt(cleancleanvalue));
 				}
 
 			} else if (defaultvalue != null) {
-				
+
 //				System.out.println( defaultvalue + " defaultvalue FROM FORMBUILDER RANGE +===============ELSE-----");
 
 				((IntegerField) field).setValue(Integer.parseInt(defaultvalue));
@@ -1589,7 +1585,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 //				System.out.println( "not nullllllll  defaultvalue FROM FORMBUILDER RANGE +===============ELSE-----");
 				((IntegerField) field).setValue(null);
 			}
-
 
 //			if (value != null) {
 //
@@ -1635,7 +1630,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 			}
 			break;
 		case NUMBER:
-			
+
 			if (value != null) {
 				String cvalue = value.toString().replace("null", "").trim();
 				if (cvalue.equals("") || cvalue.equals("null")) {
@@ -2092,6 +2087,15 @@ public class CampaignFormBuilder extends VerticalLayout {
 					decimalFormat.setMaximumFractionDigits(0);
 					String formattedNumber = decimalFormat.format(number);
 					return new CampaignFormDataEntry(id, formattedNumber);
+				} else if (id.equals("LotNo")) {
+					String doubletoParse = ((AbstractField) field).getValue() != null
+							? ((AbstractField) field).getValue().toString()
+							: "0";
+					double number = Double.parseDouble(doubletoParse);
+					DecimalFormat decimalFormat = new DecimalFormat("0");
+					decimalFormat.setMaximumFractionDigits(0);
+					String formattedNumber = decimalFormat.format(number);
+					return new CampaignFormDataEntry(id, formattedNumber);
 				} else {
 					return new CampaignFormDataEntry(id, ((AbstractField) field).getValue());
 				}
@@ -2199,8 +2203,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 				boolean saveChecker = true;
 				UserProvider userProvider = new UserProvider();
 				List<CampaignFormDataEntry> entries = getFormValues();
-				
-				
 
 				CampaignFormDataEntry lotNo = new CampaignFormDataEntry();
 				CampaignFormDataEntry lotClusterNo = new CampaignFormDataEntry();
@@ -2209,9 +2211,11 @@ public class CampaignFormBuilder extends VerticalLayout {
 					logger.debug(sdxc.getId() + "____values____ " + sdxc.getValue());
 					if (sdxc.getId().equalsIgnoreCase("LotNo")) {
 						lotNo = sdxc;
+						System.out.println(lotNo + " lotnumber");
 					}
 					if (sdxc.getId().equalsIgnoreCase("LotClusterNo")) {
 						lotClusterNo = sdxc;
+						System.out.println(lotClusterNo + "lotclusternumber");
 					}
 				}
 
@@ -2221,6 +2225,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 								cbCommunity.getValue().getCaption());
 
 				lotchecker.removeIf(e -> e.getUuid().equals(uuidForm));
+				System.out.println(lotchecker.size() + " vwvwvwvwvwvwvwvwvwvwvwv1234321");
 
 				List<String> listLotNo = new ArrayList();
 				List<String> listLotClusterNo = new ArrayList();
@@ -2230,10 +2235,14 @@ public class CampaignFormBuilder extends VerticalLayout {
 						List<CampaignFormDataEntry> lotOwnSec = campaignFormDataIndexDto.getFormValues();
 						if (lotOwnSec.contains(lotNo)) {
 							listLotNo.add(lotOwnSec.get(lotOwnSec.indexOf(lotNo)).getValue().toString());
+							System.out.println(lotOwnSec.get(lotOwnSec.indexOf(lotNo)).getValue().toString()
+									+ " checking and adding");
 						}
 
 						if (lotOwnSec.contains(lotClusterNo) && lotOwnSec.contains(lotNo)) {
 							listLotClusterNo.add(lotOwnSec.get(lotOwnSec.indexOf(lotClusterNo)).getValue().toString());
+							System.out.println(lotOwnSec.get(lotOwnSec.indexOf(lotClusterNo)).getValue().toString()
+									+ " checking and addinggggg");
 						}
 					}
 				}
@@ -2244,6 +2253,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 								&& (Long.parseLong(listLotNo.get(0))
 										- Long.parseLong(lotNo.getValue().toString()) == 0)) {
 							saveChecker = false;
+							System.out.println("falseeeee3333333333333333333333333");
 							break;
 						}
 					}
@@ -2295,9 +2305,11 @@ public class CampaignFormBuilder extends VerticalLayout {
 //					logger.debug(sdxc.getId() + "____values____ " + sdxc.getValue());
 					if (sdxc.getId().equalsIgnoreCase("LotNo")) {
 						lotNo = sdxc;
+						System.out.println(lotNo);
 					}
 					if (sdxc.getId().equalsIgnoreCase("LotClusterNo")) {
 						lotClusterNo = sdxc;
+						System.out.println(lotClusterNo);
 					}
 				}
 
@@ -2314,10 +2326,14 @@ public class CampaignFormBuilder extends VerticalLayout {
 						List<CampaignFormDataEntry> lotOwnSec = campaignFormDataIndexDto.getFormValues();
 						if (lotOwnSec.contains(lotNo)) {
 							listLotNo.add(lotOwnSec.get(lotOwnSec.indexOf(lotNo)).getValue().toString());
+							System.out.println(
+									lotOwnSec.get(lotOwnSec.indexOf(lotNo)).getValue().toString() + " hereeeeeeeeeee");
 						}
 
 						if (lotOwnSec.contains(lotClusterNo) && lotOwnSec.contains(lotNo)) {
 							listLotClusterNo.add(lotOwnSec.get(lotOwnSec.indexOf(lotClusterNo)).getValue().toString());
+							System.out.println(lotOwnSec.get(lotOwnSec.indexOf(lotClusterNo)).getValue().toString()
+									+ " jereeeeeeeeeee");
 						}
 					}
 				}
@@ -2328,6 +2344,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 								&& (Long.parseLong(listLotNo.get(0))
 										- Long.parseLong(lotNo.getValue().toString()) == 0)) {
 							saveChecker = false;
+							System.out.println("falseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
 							break;
 						}
 					}
@@ -2348,6 +2365,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
 
 					Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
+					System.out.println("logginggggggggggg");
 					return true;
 
 				} else {

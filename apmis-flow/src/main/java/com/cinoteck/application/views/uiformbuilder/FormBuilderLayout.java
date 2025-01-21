@@ -20,6 +20,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Anchor;
@@ -49,6 +50,8 @@ import de.symeda.sormas.api.campaign.CampaignReferenceDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
+import de.symeda.sormas.api.messaging.MessageDto;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserActivitySummaryDto;
 import de.symeda.sormas.api.utils.DataHelper;
@@ -64,11 +67,13 @@ public class FormBuilderLayout extends VerticalLayout {
 	TextField formId;
 	ComboBox<CampaignPhase> formType;
 	ComboBox<FormAccess> formCategory;
+	MultiSelectComboBox<AreaReferenceDto> areaSelector;
 	ComboBox<Modality> modality;
 	IntegerField daysExpired;
 	ComboBox<Boolean> districtEntry;
 	ComboBox<String> languageCode;
-
+	List<AreaReferenceDto> regions = FacadeProvider.getAreaFacade().getAllActiveAsReference();
+	
 	FormGridComponent formGridComponent;
 	TranslationGridComponent translationGridComponent;
 
@@ -124,6 +129,8 @@ public class FormBuilderLayout extends VerticalLayout {
 		formType.setItems(CampaignPhase.values());
 		formCategory = new ComboBox<FormAccess>("Form Category");
 		formCategory.setItems(FormAccess.values());
+		areaSelector = new MultiSelectComboBox<AreaReferenceDto>("Region");
+		areaSelector.setItems(regions);
 		modality = new ComboBox<Modality>("Modality");
 		modality.setItems(Modality.values());
 		daysExpired = new IntegerField("Days Expired");
@@ -144,19 +151,21 @@ public class FormBuilderLayout extends VerticalLayout {
 		binder.forField(formCategory).asRequired("Form Category is Required").bind(CampaignFormMetaDto::getFormCategory,
 				CampaignFormMetaDto::setFormCategory);
 
+		binder.forField(areaSelector).bind(CampaignFormMetaDto::getArea, CampaignFormMetaDto::setArea);
+		
 		binder.forField(modality).asRequired("Modality is Required").bind(CampaignFormMetaDto::getModality,
 				CampaignFormMetaDto::setModality);
 
 		binder.forField(daysExpired).asRequired("Days Expired is Required").bind(CampaignFormMetaDto::getDaysExpired,
 				CampaignFormMetaDto::setDaysExpired);
 
-		binder.forField(districtEntry).asRequired("Dsitrict Entry is Required")
+		binder.forField(districtEntry).asRequired("District Entry is Required")
 				.bind(CampaignFormMetaDto::isDistrictentry, CampaignFormMetaDto::setDistrictentry);
 
 		binder.forField(languageCode).asRequired("Language Code is Required").bind(CampaignFormMetaDto::getLanguageCode,
 				CampaignFormMetaDto::setLanguageCode);
 
-		formLayout.add(formBasics, formName, formId, formType, formCategory, modality, daysExpired, languageCode,
+		formLayout.add(formBasics, formName, formId, formType, formCategory, areaSelector, modality, daysExpired, languageCode,
 				districtEntry);
 
 		formLayout.setColspan(formBasics, 2);

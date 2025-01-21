@@ -154,9 +154,8 @@ public class CampaignDataView extends VerticalLayout
 	List<CommunityReferenceDto> communities;
 	List<CampaignFormMetaReferenceDto> campaignForms;
 	Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
-	Anchor transposdeDataAnchor = new Anchor("", I18nProperties.getCaption(Captions.export) + "Transposed Data");
-	Anchor transposdeDataDictionaryAnchor = new Anchor("",
-			I18nProperties.getCaption(Captions.export) + "Transposed Data Guide");
+	Anchor transposdeDataAnchor = new Anchor("", "Export Transposed Data");
+	Anchor transposdeDataDictionaryAnchor = new Anchor("", "Export Transposed Data Guide");
 
 	CampaignFormDataCriteria transposedDataCriteriaListener = new CampaignFormDataCriteria();
 
@@ -187,9 +186,8 @@ public class CampaignDataView extends VerticalLayout
 	ComboBox<CampaignFormMetaReferenceDto> importFormData = new ComboBox<>();
 
 	HorizontalLayout actionButtonlayout = new HorizontalLayout();
-	Button exportTransposedDataButton = new Button(I18nProperties.getCaption(Captions.export) + " Transposed Data");
-	Button exporttransposeDataDictionary = new Button(
-			I18nProperties.getCaption(Captions.export) + " Transposed Data Guide");
+	Button exportTransposedDataButton = new Button();
+	Button exporttransposeDataDictionary = new Button();
 
 	GridMultiSelectionModel<CampaignFormDataIndexDto> selectionModel;
 	private Set<CampaignFormDataIndexDto> selectedItems = new HashSet<>();
@@ -207,16 +205,7 @@ public class CampaignDataView extends VerticalLayout
 	protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
 
 	public CampaignDataView() {
-
-		if (I18nProperties.getUserLanguage() == null) {
-
-			I18nProperties.setUserLanguage(Language.EN);
-		} else {
-
-			I18nProperties.setUserLanguage(userProvider.getUser().getLanguage());
-			I18nProperties.getUserLanguage();
-		}
-		FacadeProvider.getI18nFacade().setUserLanguage(userProvider.getUser().getLanguage());
+		languageHandler();
 		setSizeFull();
 		setSpacing(false);
 		criteria = new CampaignFormDataCriteria();
@@ -264,6 +253,9 @@ public class CampaignDataView extends VerticalLayout
 		importFormData.setTooltipText(I18nProperties.getDescription(Descriptions.campaign_dataImport));
 		importFormData.setClearButtonVisible(true);
 		importFormData.getStyle().set("padding-top", "0px !important");
+
+		exportTransposedDataButton = new Button("Export Transposed Data");
+		exporttransposeDataDictionary = new Button("Export Transposed Data Guide");
 
 		VerticalLayout filterBlock = new VerticalLayout();
 		filterBlock.setSpacing(true);
@@ -1439,10 +1431,9 @@ public class CampaignDataView extends VerticalLayout
 		transposdeDataDictionaryAnchor = new Anchor("", "TransposeDaywiseData");
 		transposdeDataDictionaryAnchor.getStyle().set("display", "none");
 
-		exportTransposedDataButton = new Button(I18nProperties.getCaption(Captions.export) + " Transposed Data");
+		exportTransposedDataButton = new Button("Export Transposed Data");
 
-		exporttransposeDataDictionary = new Button(
-				I18nProperties.getCaption(Captions.export) + " Transposed Data Guide");
+		exporttransposeDataDictionary = new Button("Export Transposed Data Guide");
 
 		if (transposdeDataAnchor.getElement().getAttribute("href") != "") {
 			transposdeDataAnchor.setHref("");
@@ -1511,10 +1502,20 @@ public class CampaignDataView extends VerticalLayout
 
 		switch (language) {
 		case "Pashto":
-			campaignForms = FacadeProvider.getCampaignFormMetaFacade()
-					.getCampaignFormMetasAsReferencesByCampaignandRoundAndPashto(
-							campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
 
+			if (userProvider.getUser().getArea() != null) {
+				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
+						.getCampaignFormMetasAsReferencesByCampaignandRoundAndPashtox(
+								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid(),
+								userProvider.getUser().getArea());
+				System.out.println("11111111111111111111111111111111111111");
+			} else {
+				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
+						.getCampaignFormMetasAsReferencesByCampaignandRoundAndPashto(
+								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
+				System.out.println("22222222222222222222222222222222222222");
+			}
+			
 			for (FormAccess n : xx) {
 				boolean yn = campaignForms.stream().filter(e -> !e.getFormCategory().equals(null))
 						.filter(ee -> ee.getFormCategory().equals(n)).collect(Collectors.toList()).size() > 0;
@@ -1550,9 +1551,18 @@ public class CampaignDataView extends VerticalLayout
 
 		case "Dari":
 
-			campaignForms = FacadeProvider.getCampaignFormMetaFacade()
-					.getAllCampaignFormMetasAsReferencesByRoundandCampaignRoundAndDari(
-							campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
+			if (userProvider.getUser().getArea() != null) {
+				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
+						.getAllCampaignFormMetasAsReferencesByRoundandCampaignRoundAndDarix(
+								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid(),
+								userProvider.getUser().getArea());
+				System.out.println("33333333333333333333333333333333333333333");
+			} else {
+				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
+						.getAllCampaignFormMetasAsReferencesByRoundandCampaignRoundAndDari(
+								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
+				System.out.println("444444444444444444444444444444444444444444");
+			}
 
 			for (FormAccess n : xx) {
 				boolean yn = campaignForms.stream().filter(e -> !e.getFormCategory().equals(null))
@@ -1587,9 +1597,18 @@ public class CampaignDataView extends VerticalLayout
 			break;
 
 		default:
-			campaignForms = FacadeProvider.getCampaignFormMetaFacade()
-					.getAllCampaignFormMetasAsReferencesByRoundandCampaign(
-							campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
+			if (userProvider.getUser().getArea() != null) {
+				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
+						.getAllCampaignFormMetasAsReferencesByRoundandCampaignx(
+								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid(),
+								userProvider.getUser().getArea());
+				System.out.println("555555555555555555555555555555555555555555555555");
+			} else {
+				campaignForms = FacadeProvider.getCampaignFormMetaFacade()
+						.getAllCampaignFormMetasAsReferencesByRoundandCampaign(
+								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
+				System.out.println("666666666666666666666666666666666666666666666666");
+			}
 
 			campaignForms.removeIf(e -> e.getFormCategory() == null);
 
@@ -1900,6 +1919,7 @@ public class CampaignDataView extends VerticalLayout
 	@SuppressWarnings("deprecation")
 	private void configureGrid(CampaignFormDataCriteria criteria) {
 		System.out.println("Configure grid calllllleddddddddddddd");
+		languageHandler();
 		setMargin(false);
 		grid = new Grid<>(CampaignFormDataIndexDto.class, false);
 //		grid.setSelectionMode(SelectionMode.SINGLE);
@@ -2360,6 +2380,17 @@ public class CampaignDataView extends VerticalLayout
 											.filter(v -> v.getId().equals(property)).findFirst().orElse(null)))
 					.setClassNameGenerator(item -> "full-width-column");
 
+
+//			grid.addColumn(
+//					e -> e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null))
+//			 		.setHeader(caption)
+////							createHeaderComponent(caption, caption))
+//					.setFooter(property).setSortProperty(property).setSortable(false).setResizable(true)
+//					.setAutoWidth(true)
+//					.setTooltipGenerator(e -> caption + " : " + e.getFormValues().stream()
+//							.filter(v -> v.getId().equals(property)).findFirst().orElse(null))
+//					.setClassNameGenerator(item -> "full-width-column");
+
 		}
 
 	}
@@ -2372,7 +2403,9 @@ public class CampaignDataView extends VerticalLayout
 		return valueCleaned;
 	}
 
-	public void updateRowCount() {
+
+public void updateRowCount() {
+		languageHandler();
 		int numberOfRows = (int) FacadeProvider.getCampaignFormDataFacade().count(criteria);
 		String newText = I18nProperties.getCaption(Captions.rows) + numberOfRows;
 
@@ -2384,6 +2417,21 @@ public class CampaignDataView extends VerticalLayout
 		campaignFormDataEditForm.setVisible(false);
 		grid.setVisible(true);
 		removeClassName("editing");
+	}
+
+
+
+	public void languageHandler() {
+
+		if (I18nProperties.getUserLanguage() == null) {
+
+			I18nProperties.setUserLanguage(Language.EN);
+		} else {
+
+			I18nProperties.setUserLanguage(userProvider.getUser().getLanguage());
+			I18nProperties.getUserLanguage();
+		}
+		FacadeProvider.getI18nFacade().setUserLanguage(userProvider.getUser().getLanguage());
 	}
 
 	@Override

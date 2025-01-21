@@ -1,6 +1,7 @@
 package de.symeda.sormas.api.campaign.form;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -13,6 +14,8 @@ import de.symeda.sormas.api.EntityDto;
 import de.symeda.sormas.api.Modality;
 import de.symeda.sormas.api.campaign.CampaignPhase;
 import de.symeda.sormas.api.i18n.Validations;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
+import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.utils.DataHelper;
 import de.symeda.sormas.api.utils.FieldConstraints;
@@ -38,6 +41,7 @@ public class CampaignFormMetaDto extends EntityDto {
 	public static final String FORMVERSION = "formversion";
 
 	
+	public static final String AREA = "area";
 
 	@Size(max = FieldConstraints.CHARACTER_LIMIT_SMALL, message = Validations.textTooLong)
 	private String formId;
@@ -71,14 +75,9 @@ public class CampaignFormMetaDto extends EntityDto {
 	private String fielType;
 	private String fieldCaption;
 	private String fieldExpression;
-	
 	private String formversionuuid;
 	private Long formversion;
-	
-	
-
-
-
+	private Set<AreaReferenceDto> area;
 
 	public boolean getArchived() {
 		return archived;
@@ -244,6 +243,11 @@ public class CampaignFormMetaDto extends EntityDto {
 		this.formversion = formversion;
 	}
 	
-	
+	public Set<AreaReferenceDto> getArea() {
+		return area;
+	}
+	public void setArea(Set<AreaReferenceDto> area) {
+		this.area = area;
+	}
 	
 }
