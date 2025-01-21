@@ -31,8 +31,6 @@ public class PopulationDataDto extends EntityDto {
 	public static final String MODALITY = "modality";
 	public static final String DISTRICT_STATUS = "districtstatus";
 
-
-
 	private RegionReferenceDto region;
 	private DistrictReferenceDto district;
 	private CommunityReferenceDto community;
@@ -45,6 +43,25 @@ public class PopulationDataDto extends EntityDto {
 	private String modality;
 	private String districtStatus;
 
+	private String campaign_id;
+	private String district_id;
+	private String uuid;
+	private Date changeDate;
+	
+	public PopulationDataDto() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public PopulationDataDto(String campaign_id, String district_id, String selected, String uuid, Date changeDate) {
+		this.uuid = uuid;
+		this.changeDate = changeDate;
+		this.campaign_id = campaign_id;
+		this.district_id = district_id;
+		this.selected = selected;
+
+
+		// TODO Auto-generated constructor stub
+	}
 
 
 	public static PopulationDataDto build(Date collectionDate) {
@@ -135,7 +152,7 @@ public class PopulationDataDto extends EntityDto {
 	public void setModality(String modality) {
 		this.modality = modality;
 	}
-	
+
 	public String getDistrictStatus() {
 		return districtStatus;
 	}
@@ -143,7 +160,40 @@ public class PopulationDataDto extends EntityDto {
 	public void setDistrictStatus(String districtStatus) {
 		this.districtStatus = districtStatus;
 	}
+
+	public String getCampaign_id() {
+		return campaign_id;
+	}
+
+	public void setCampaign_id(String campaign_id) {
+		this.campaign_id = campaign_id;
+	}
+
+	public String getDistrict_id() {
+		return district_id;
+	}
+
+	public void setDistrict_id(String district_id) {
+		this.district_id = district_id;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+
+	public Date getChangeDate() {
+		return changeDate;
+	}
+
+	public void setChangeDate(Date changeDate) {
+		this.changeDate = changeDate;
+	}
+
+
 	
-	
-	
+
 }

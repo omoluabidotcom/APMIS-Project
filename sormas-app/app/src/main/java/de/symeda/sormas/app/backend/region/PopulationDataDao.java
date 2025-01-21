@@ -1,0 +1,84 @@
+package de.symeda.sormas.app.backend.region;
+
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.stmt.PreparedQuery;
+import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.Where;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+
+import de.symeda.sormas.app.backend.common.AbstractAdoDao;
+
+public class PopulationDataDao extends AbstractAdoDao<PopulationData> {
+    public PopulationDataDao(Dao<PopulationData, Long> innerDao) {
+        super(innerDao);
+
+    }
+    @Override
+    protected Class<PopulationData> getAdoClass() {
+        return PopulationData.class;
+    }
+    @Override
+    public String getTableName() {
+        return PopulationData.TABLE_NAME;
+    }
+
+    public List<PopulationData> getDistrictsByCampaignId(Long campaignId) {
+        try {
+            QueryBuilder<PopulationData, Long> queryBuilder = queryBuilder();
+            queryBuilder.where().eq("campaign_id", campaignId);
+            return queryBuilder.query();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error retrieving districts for campaign ID: " + campaignId, e);
+        }
+    }
+
+    public List<PopulationData> getCampaignsByDistrictId(Long districtId) {
+        try {
+            QueryBuilder<PopulationData, Long> queryBuilder = queryBuilder();
+            queryBuilder.where().eq("district_id", districtId);
+            return queryBuilder.query();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error retrieving campaigns for district ID: " + districtId, e);
+        }
+    }
+
+//    public List<PopulationData> getSelectedDistrictByUsersDistrict(String districtUuid, String campaignUuid) {
+//        List<PopulationData> selecTedDistricts = new ArrayList<>();
+//        try {
+//            QueryBuilder<PopulationData, Long> queryBuilder = queryBuilder();
+//            Where<PopulationData, Long> where = queryBuilder.where();
+//            where.eq("campaign_id", campaignUuid).and().eq("district_id", districtUuid);
+//            PreparedQuery<PopulationData> preparedQuery = queryBuilder.prepare();
+//            List<PopulationData> results = queryBuilder.query(); // Here is the change
+//            for(PopulationData result : results){
+//                if (result != null) {
+//                    selecTedDistricts.add(result);
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return selecTedDistricts;
+//    }
+
+    public List<PopulationData> getSelectedDistrictByUsersDistrict(String districtUuid, String campaignUuid) {
+        try {
+            QueryBuilder<PopulationData, Long> queryBuilder = queryBuilder();
+            return queryBuilder.where()
+                    .eq("campaign_id", campaignUuid)
+                    .and()
+                    .eq("district_id", districtUuid)
+                    .query();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+
+}
