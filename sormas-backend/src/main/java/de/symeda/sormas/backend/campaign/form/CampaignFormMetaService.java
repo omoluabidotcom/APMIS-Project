@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.persistence.TypedQuery;
@@ -12,6 +13,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.ParameterExpression;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
@@ -20,6 +22,8 @@ import com.vladmihalcea.hibernate.type.util.SQLExtractor;
 import de.symeda.sormas.api.EntityRelevanceStatus;
 import de.symeda.sormas.api.campaign.form.CampaignFormCriteria;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
+import de.symeda.sormas.api.messaging.MessageCriteria;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserType;
 import de.symeda.sormas.api.utils.DataHelper;
@@ -27,11 +31,17 @@ import de.symeda.sormas.backend.campaign.Campaign;
 import de.symeda.sormas.backend.common.AbstractDomainObject;
 import de.symeda.sormas.backend.common.AdoServiceWithUserFilter;
 import de.symeda.sormas.backend.common.CriteriaBuilderHelper;
+import de.symeda.sormas.backend.infrastructure.area.Area;
+import de.symeda.sormas.backend.infrastructure.area.AreaService;
+import de.symeda.sormas.backend.messaging.Message;
 import de.symeda.sormas.backend.user.User;
 
 @Stateless
 @LocalBean
 public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFormMeta> {
+
+	@EJB
+	private AreaService areaService;
 
 	public CampaignFormMetaService() {
 		super(CampaignFormMeta.class);
@@ -279,6 +289,32 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 		return em.createQuery(cq).getResultList();
 	}
 
+	public List<CampaignFormMetaReferenceDto> getCampaignFormMetasAsReferencesByCampaignandRoundx(String round,
+			String uuid, AreaReferenceDto areaReferenceDto) {
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<CampaignFormMetaReferenceDto> cq = cb.createQuery(CampaignFormMetaReferenceDto.class);
+		Root<Campaign> campaignRoot = cq.from(Campaign.class);
+		Join<Campaign, CampaignFormMeta> campaignFormMetaJoin = campaignRoot.join(Campaign.CAMPAIGN_FORM_METAS);
+		Predicate filterc = cb.equal(campaignRoot.get(Campaign.UUID), uuid);
+		Predicate filterx = cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE), round);
+		Predicate filtery = null;
+
+		if (areaReferenceDto != null) {
+			filtery = buildCriteriaFilterArea(areaReferenceDto, cb, campaignFormMetaJoin);
+		}
+
+		Predicate filter = cb.and(filterc, filterx, filtery);
+		// TODO: post campaign implementations
+		cq = cq.where(filter);
+		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID),
+				campaignFormMetaJoin.get(CampaignFormMeta.FORM_NAME),
+				campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
+				campaignFormMetaJoin.get(CampaignFormMeta.FORM_CATEGORY),
+				campaignFormMetaJoin.get(CampaignFormMeta.DAYSTOEXPIRE));
+
+		return em.createQuery(cq).getResultList();
+	}
+
 	public List<CampaignFormMetaReferenceDto> getCampaignFormMetasAsReferencesByCampaignandRoundAndPashto(String round,
 			String uuid) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -289,6 +325,33 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 		Predicate filterx = cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE), round);
 
 		Predicate filter = cb.and(filterc, filterx);
+		// TODO: post campaign implementations
+		cq = cq.where(filter);
+		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID),
+				campaignFormMetaJoin.get(CampaignFormMeta.FORM_NAME_PASHTO),
+				campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
+				campaignFormMetaJoin.get(CampaignFormMeta.FORM_CATEGORY),
+				campaignFormMetaJoin.get(CampaignFormMeta.DAYSTOEXPIRE));
+
+		System.out.println("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" + SQLExtractor.from(em.createQuery(cq)));
+
+		return em.createQuery(cq).getResultList();
+	}
+
+	public List<CampaignFormMetaReferenceDto> getCampaignFormMetasAsReferencesByCampaignandRoundAndPashtox(String round,
+			String uuid, AreaReferenceDto areaReferenceDto) {
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<CampaignFormMetaReferenceDto> cq = cb.createQuery(CampaignFormMetaReferenceDto.class);
+		Root<Campaign> campaignRoot = cq.from(Campaign.class);
+		Join<Campaign, CampaignFormMeta> campaignFormMetaJoin = campaignRoot.join(Campaign.CAMPAIGN_FORM_METAS);
+		Predicate filterc = cb.equal(campaignRoot.get(Campaign.UUID), uuid);
+		Predicate filterx = cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE), round);
+		Predicate filtery = null;
+
+		if (areaReferenceDto != null) {
+			filtery = buildCriteriaFilterArea(areaReferenceDto, cb, campaignFormMetaJoin);
+		}
+		Predicate filter = cb.and(filterc, filterx, filtery);
 		// TODO: post campaign implementations
 		cq = cq.where(filter);
 		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID),
@@ -321,6 +384,44 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 				campaignFormMetaJoin.get(CampaignFormMeta.DAYSTOEXPIRE));
 
 		return em.createQuery(cq).getResultList();
+	}
+	
+	public List<CampaignFormMetaReferenceDto> getCampaignFormMetasAsReferencesByCampaignandRoundAndDarix(String round,
+			String uuid, AreaReferenceDto areaReferenceDto) {
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<CampaignFormMetaReferenceDto> cq = cb.createQuery(CampaignFormMetaReferenceDto.class);
+		Root<Campaign> campaignRoot = cq.from(Campaign.class);
+		Join<Campaign, CampaignFormMeta> campaignFormMetaJoin = campaignRoot.join(Campaign.CAMPAIGN_FORM_METAS);
+		Predicate filterc = cb.equal(campaignRoot.get(Campaign.UUID), uuid);
+		Predicate filterx = cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE), round);
+		Predicate filtery = null;
+
+		if (areaReferenceDto != null) {
+			filtery = buildCriteriaFilterArea(areaReferenceDto, cb, campaignFormMetaJoin);
+		}
+		
+		Predicate filter = cb.and(filterc, filterx, filtery);
+		// TODO: post campaign implementations
+		cq = cq.where(filter);
+		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID),
+				campaignFormMetaJoin.get(CampaignFormMeta.FORM_NAME_DARI),
+				campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
+				campaignFormMetaJoin.get(CampaignFormMeta.FORM_CATEGORY),
+				campaignFormMetaJoin.get(CampaignFormMeta.DAYSTOEXPIRE));
+
+		return em.createQuery(cq).getResultList();
+	}
+	
+	public Predicate buildCriteriaFilterArea(AreaReferenceDto areaReferenceDto, CriteriaBuilder cb, Join from) {
+
+		Predicate filter = null;
+		if (areaReferenceDto != null) {
+			Join<CampaignFormMeta, Area> joinAreas = from.join(CampaignFormMeta.AREA, JoinType.LEFT);
+			Predicate areaFilter = cb.or(joinAreas.in(areaService.getByUuid(areaReferenceDto.getUuid())),
+					cb.isNull(joinAreas));
+			filter = CriteriaBuilderHelper.and(cb, filter, areaFilter);
+		}
+		return filter;
 	}
 
 	public List<CampaignFormMetaReferenceDto> getCampaignFormMetasAsReferencesByCampaignandRoundandForm(String round,
