@@ -23,6 +23,7 @@ import javax.persistence.EntityExistsException;
 import javax.validation.constraints.NotNull;
 
 import de.symeda.sormas.backend.campaign.Campaign;
+import de.symeda.sormas.backend.campaign.form.CampaignFormMeta;
 
 public interface AdoService<ADO extends AbstractDomainObject> {
 
@@ -70,6 +71,8 @@ public interface AdoService<ADO extends AbstractDomainObject> {
 	 * JPA-Session flushen
 	 */
 	void doFlush();
+
+	List<CampaignFormMeta> getByUuidANdFormVersionUuid(String uuid, String formVersionUuid);
 
 //	List<ADO> getByRoundAndExpiryDate(String round);
 

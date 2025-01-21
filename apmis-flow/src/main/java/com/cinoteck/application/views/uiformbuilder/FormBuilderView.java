@@ -399,6 +399,8 @@ public class FormBuilderView extends VerticalLayout {
 		formLayout.setForm(formData);
 		
 		formLayout.addSaveListener(this::saveForm);
+		formLayout.addDuplicateListener(this::duplicateForm);
+
 		Dialog dialog = new Dialog();
 		dialog.add(formLayout);
 		dialog.setHeaderTitle("Editing Form");
@@ -536,6 +538,14 @@ public class FormBuilderView extends VerticalLayout {
 
 	private void saveForm(FormBuilderLayout.SaveEvent event) {	
 		FacadeProvider.getCampaignFormMetaFacade().saveCampaignFormMeta(event.getForm());
+	}
+	
+
+	
+	private void duplicateForm(FormBuilderLayout.DuplicateEvent event) {
+		FacadeProvider.getCampaignFormMetaFacade().saveCampaignFormMeta(event.getForm());
+
+//		FacadeProvider.getCampaignFormMetaFacade().cloneForm(event.getForm().getUuid(), event.getForm().getFormversionuuid());
 	}
 	
 	private void refreshGridData() {
