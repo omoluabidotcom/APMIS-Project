@@ -17,6 +17,7 @@
  *******************************************************************************/
 package de.symeda.sormas.api.user;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -138,7 +139,7 @@ public interface UserFacade {
 
 	public void updateLastLoginDate(Date lastUserLoginDate, String userName);
 	
-//	public void updatePreviousLoginDate(Date previousUserLoginDate, String userName);
+	public void updateNotificationLastOpenedDate(Timestamp notificationLastOpenedDate, String userName);
 
 	public void deactivateInactiveUsers();
 	
