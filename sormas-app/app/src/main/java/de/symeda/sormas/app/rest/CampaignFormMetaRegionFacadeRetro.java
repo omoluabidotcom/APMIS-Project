@@ -28,15 +28,15 @@ import retrofit2.http.Path;
 
 public interface CampaignFormMetaRegionFacadeRetro {
 
-	@GET("campaignFormMetaRegion/uuids")
+	@GET("campaignforms_region/uuids")
 	Call<List<String>> pullUuids();
 
-	@GET("campaignFormMetaRegion/selectedAreas")
+	@GET("campaignforms_region/selectedCampaignFormMetaByRegion")
 	Call<List<CampaignFormMetaRegionDto>> fetchSelectionnByUserArea();
 
-	@GET("campaignFormMetaRegion/all/{since}")
+	@GET("campaignforms_region/all/{since}")
 	Call<List<CampaignFormMetaRegionDto>> pullAllSince(@Path("since") long since);
 
-	@POST("campaignFormMetaRegion/getByUuids")
+	@POST("campaignforms_region/getByUuids")
 	Call<List<String>> pullByUuids(@Body List<String> uuids);
 }

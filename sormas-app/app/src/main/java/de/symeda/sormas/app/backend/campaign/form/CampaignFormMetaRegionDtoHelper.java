@@ -53,7 +53,7 @@ public class CampaignFormMetaRegionDtoHelper extends AdoDtoHelper<CampaignFormMe
 
     @Override
     protected Call<List<CampaignFormMetaRegionDto>> pullAllSince(long since) throws NoConnectionException {
-        return RetroProvider.getCampaignFormMetaRegionFacade().pullAllSince(since);
+        return RetroProvider.getCampaignFormMetaRegionFacade().fetchSelectionnByUserArea();
     }
 
     @Override
@@ -68,13 +68,16 @@ public class CampaignFormMetaRegionDtoHelper extends AdoDtoHelper<CampaignFormMe
 
     @Override
     protected void fillInnerFromDto(CampaignFormMetaRegion target, CampaignFormMetaRegionDto source) {
-        target.setCampaignformmeta_id(source.getCampaignformelements_id().toString());
-        target.setArea_id(source.getArea_id().toString());
+        target.setUuid(source.getUuid());
+        target.setUuid(source.getUuid());
+        target.setCampaignformmeta_id(source.getCampaignformmeta_id());
+        target.setArea_id(source.getArea_id());
 
     }
 
     @Override
     protected void fillInnerFromAdo(CampaignFormMetaRegionDto dto, CampaignFormMetaRegion campaignFormMeta) {
-        dto.setCampaignformelements_id(campaignFormMeta.getCampaignformmeta_id());
+        dto.setUuid(campaignFormMeta.getUuid());
+        dto.setCampaignformmeta_id(campaignFormMeta.getCampaignformmeta_id());
         dto.setArea_id(campaignFormMeta.getArea_id());    }
 }

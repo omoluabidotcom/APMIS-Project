@@ -3230,10 +3230,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 				case 345:
 					currentVersion = 345;
-					getDao(PopulationData.class).executeRaw(
-							"DROP TABLE  populationdata");
-
-					getDao(PopulationData.class).executeRaw(
+				getDao(PopulationData.class).executeRaw(
 							"CREATE TABLE IF NOT EXISTS populationdata (" +
 									" 	id INTEGER PRIMARY KEY,"
 									+ "		campaign_id VARCHAR NOT NULL,"

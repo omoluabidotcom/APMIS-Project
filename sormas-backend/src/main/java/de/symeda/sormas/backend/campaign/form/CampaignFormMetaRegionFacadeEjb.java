@@ -133,7 +133,7 @@ public class CampaignFormMetaRegionFacadeEjb implements CampaignFormMetaRegionFa
 	    }
 
 	    String executeQuery = 
-	        "SELECT cm.id as campaignformmeta_id, a.uuid as area_id " +
+	        "SELECT cm.uuid as campaignformmeta_id, a.uuid as area_id , cma.uuid as uuid, cm.changedate " +
 	        "FROM campaignformmeta_areas cma " +
 	        "JOIN campaignformmeta cm ON cma.campaignformmeta_id = cm.id " +
 	        "JOIN areas a ON cma.area_id = a.id " +
@@ -148,7 +148,9 @@ public class CampaignFormMetaRegionFacadeEjb implements CampaignFormMetaRegionFa
 	    return resultList.stream()
 	        .map(result -> new CampaignFormMetaRegionDto(
 	            result[0] != null ? result[0].toString() : "",
-	            result[1] != null ? result[1].toString() : ""))
+	    	    result[1] != null ? result[1].toString() : "",
+	            result[2] != null ? result[2].toString() : "",
+	            result[3] != null ? (Date) result[3] : null))
 	        .collect(Collectors.toList());
 	}
 	

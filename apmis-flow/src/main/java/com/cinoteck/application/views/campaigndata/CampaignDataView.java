@@ -1161,7 +1161,7 @@ public class CampaignDataView extends VerticalLayout
 			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 			notification.setPosition(Position.TOP_END);
 			Div text = new Div(new Text(
-			        "This Campaign has been Closed for Data Entry. Please contact System Administrator."),
+			        "This Campaign has been Closed for Data Import. Please contact System Administrator."),
 			        new HtmlComponent("br"),
 			        new Text("Close this warning to continue working in APMIS."));
 

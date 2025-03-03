@@ -164,7 +164,7 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 		// "intra-campaign"); //
 
 		cq = cq.where(filter);
-		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID),
+		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignFormMetaJoin.get(CampaignFormMeta.FORMGROUPUUID), campaignFormMetaJoin.get(CampaignFormMeta.FORMVERSION),
 				campaignFormMetaJoin.get(CampaignFormMeta.FORM_NAME));
 
 		return em.createQuery(cq).getResultList();
@@ -443,7 +443,7 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 	}
 	
 //	@Override
-//	public CampaignFormMeta getByUuidANdFormVersionUuid(String uuid, String formVersionUuid) {
+//	public CampaignFormMeta getByUuidAndFormVersionUuid(String uuid, String formVersionUuid) {
 //
 //	    if (uuid == null || formVersionUuid == null) {
 //	        return null;
@@ -460,7 +460,7 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 //	    // Build the query
 //	    cq.where(
 //	        cb.equal(from.get(AbstractDomainObject.UUID), uuidParam),
-//	        cb.equal(from.get(CampaignFormMeta.FORMVERSIONUUID), formVersionUuidParam)
+//	        cb.equal(from.get(CampaignFormMeta.FORMGROUPUUID), formVersionUuidParam)
 //	    );
 //
 //	    // Create and execute the query
