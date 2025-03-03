@@ -621,7 +621,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 			}
 
 			// Validate form elements
-			validateCampaignFormElementType(element.getId(), element.getType());
+//			validateCampaignFormElementType(element.getId(), element.getType());
 			validateCampaignFormElementStyles(element.getId(), element.getStyles());
 			if (StringUtils.isNotBlank(element.getDependingOn())
 					&& ArrayUtils.isEmpty(element.getDependingOnValues())) {

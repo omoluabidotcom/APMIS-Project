@@ -38,7 +38,8 @@ public class CampaignFormElement implements Serializable {
 			CampaignFormElementType.TEXTBOX.toString(), CampaignFormElementType.CHECKBOX.toString(),
 			CampaignFormElementType.RADIOBASIC.toString(), CampaignFormElementType.DECIMAL.toString(),
 			CampaignFormElementType.DATE.toString(), CampaignFormElementType.CHECKBOXBASIC.toString(),
-			CampaignFormElementType.RANGE.toString(), CampaignFormElementType.ARRAY.toString() };
+			CampaignFormElementType.RANGE.toString(), CampaignFormElementType.ARRAY.toString(),
+			CampaignFormElementType.DAYWISE.toString()};
 
 	public static final String[] VALID_STYLES = { CampaignFormElementStyle.INLINE.toString(),
 			CampaignFormElementStyle.ROW.toString(), CampaignFormElementStyle.FIRST.toString(),

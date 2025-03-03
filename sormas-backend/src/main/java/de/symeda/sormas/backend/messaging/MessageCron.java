@@ -30,18 +30,18 @@ import de.symeda.sormas.backend.infrastructure.district.District;
 import de.symeda.sormas.backend.infrastructure.region.Region;
 import de.symeda.sormas.backend.user.User;
 
-@Entity(name = "messages")
-public class Message extends AbstractDomainObject{
+@Entity(name = "messagescron")
+public class MessageCron extends AbstractDomainObject{
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -9087365913720202358L;
 	
-	public static final String TABLE_NAME = "messages";
-	public static final String TABLE_NAME_USERROLES = "messages_userroles";
-	public static final String TABLE_NAME_USERTYPES = "messages_usertypes";
-	public static final String TABLE_NAME_STATUS = "messages_status";
+	public static final String TABLE_NAME = "messagescron";
+	public static final String TABLE_NAME_USERROLES = "messagescron_userroles";
+	public static final String TABLE_NAME_USERTYPES = "messagescron_usertypes";
+	public static final String TABLE_NAME_STATUS = "messagescron_status";
 	
 	public static final String MESSAGE_CONTENT = "messageContent";
 	public static final String USER_ROLES = "userRoles";
@@ -69,131 +69,100 @@ public class Message extends AbstractDomainObject{
 	public String getMessageContent() {
 		return messageContent;
 	}
-	
 	public void setMessageContent(String messageContent) {
 		this.messageContent = messageContent;
 	}	
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Enumerated(EnumType.STRING)
-	@CollectionTable(name = "messages_userroles",
-		joinColumns = @JoinColumn(name = "message_id", referencedColumnName = Message.ID, nullable = false),
+	@CollectionTable(name = "messagescron_userroles",
+		joinColumns = @JoinColumn(name = "messagecron_id", referencedColumnName = MessageCron.ID, nullable = false),
 		uniqueConstraints = @UniqueConstraint(columnNames = {
-			"message_id",
+			"messagecron_id",
 			"userrole" }))
 	@Column(name = "userrole", nullable = false)
 	public Set<UserRole> getUserRoles() {
 		return userRoles;
 	}
-
 	public void setUserRoles(Set<UserRole> userRoles) {
 		this.userRoles = userRoles;
 	}
-
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Enumerated(EnumType.STRING)
-	@CollectionTable(name = "messages_formaccess",
-		joinColumns = @JoinColumn(name = "message_id", referencedColumnName = Message.ID, nullable = false),
+	@CollectionTable(name = "messagecron_formaccess",
+		joinColumns = @JoinColumn(name = "messagecron_id", referencedColumnName = MessageCron.ID, nullable = false),
 		uniqueConstraints = @UniqueConstraint(columnNames = {
-			"message_id",
+			"messagecron_id",
 			"formAccess" }))
 	@Column(name = "formAccess", nullable = false)
 	public Set<FormAccess> getFormAccess() {
 		return formAccess;
 	}
-
 	public void setFormAccess(Set<FormAccess> formAccess) {
 		this.formAccess = formAccess;
 	}
-	
 	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(name = "messages_areas",
-		joinColumns = @JoinColumn(name = "message_id", referencedColumnName = Message.ID, nullable = false),
+	@CollectionTable(name = "messagecron_areas",
+		joinColumns = @JoinColumn(name = "messagecron_id", referencedColumnName = MessageCron.ID, nullable = false),
 		uniqueConstraints = @UniqueConstraint(columnNames = {
-			"message_id",
+			"messagecron_id",
 			"area_id" }))
 	@ManyToMany(cascade = {})
 	public Set<Area> getArea() {
 		return area;
 	}
-	
 	public void setArea(Set<Area> area) {
 		this.area = area;
 	}
-	
 	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(name = "messages_region",
-		joinColumns = @JoinColumn(name = "message_id", referencedColumnName = Message.ID, nullable = false),
+	@CollectionTable(name = "messagecron_region",
+		joinColumns = @JoinColumn(name = "messagecron_id", referencedColumnName = MessageCron.ID, nullable = false),
 		uniqueConstraints = @UniqueConstraint(columnNames = {
-			"message_id",
+			"messagecron_id",
 			"region_id" }))
 	@ManyToMany(cascade = {})
 	public Set<Region> getRegion() {
 		return region;
 	}
-	
 	public void setRegion(Set<Region> region) {
 		this.region = region;
 	}
-	
 	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(name = "messages_district",
-		joinColumns = @JoinColumn(name = "message_id", referencedColumnName = Message.ID, nullable = false),
+	@CollectionTable(name = "messagecron_district",
+		joinColumns = @JoinColumn(name = "messagecron_id", referencedColumnName = MessageCron.ID, nullable = false),
 		uniqueConstraints = @UniqueConstraint(columnNames = {
-			"message_id",
+			"messagecron_id",
 			"district_id" }))
 	@ManyToMany(cascade = {})
 	public Set<District> getDistrict() {
 		return district;
 	}
-	
 	public void setDistrict(Set<District> district) {
 		this.district = district;
 	}	
-	
 	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(name = "messages_community",
-		joinColumns = @JoinColumn(name = "message_id", referencedColumnName = Message.ID, nullable = false),
+	@CollectionTable(name = "messagecron_community",
+		joinColumns = @JoinColumn(name = "messagecron_id", referencedColumnName = MessageCron.ID, nullable = false),
 		uniqueConstraints = @UniqueConstraint(columnNames = {
-			"message_id",
+			"messagecron_id",
 			"community_id" }))
 	@ManyToMany(cascade = {})
 	public Set<Community> getCommunity() {
 		return community;
 	}
-	
 	public void setCommunity(Set<Community> community) {
 		this.community = community;
 	}	
-	
-	@Enumerated(EnumType.STRING)
-	@CollectionTable(name = TABLE_NAME_STATUS,
-	joinColumns = @JoinColumn(name = "messages_id", referencedColumnName = Message.ID, nullable = false),
-	uniqueConstraints = @UniqueConstraint(columnNames = {
-		"messages_id",
-		"status" }))
-	@Column(name = "status", nullable = true)
-	public Status getStatus() {
-		return status;
-	}
-
-	public void setStatus(Status status) {
-		this.status = status;
-	}
-
 	@ManyToOne
 	@JoinColumn(name ="creatinguser_id")
 	public User getCreatingUser() {
 		return creatingUser;
 	}
-
 	public void setCreatingUser(User creatingUser) {
 		this.creatingUser = creatingUser;
 	}
-
 	public Timestamp getChgDate() {
 		return chgDate;
 	}
-
 	public void setChgDate(Timestamp chgDate) {
 		this.chgDate = chgDate;
 	}

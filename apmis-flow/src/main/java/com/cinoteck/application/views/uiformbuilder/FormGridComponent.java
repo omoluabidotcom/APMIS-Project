@@ -1145,7 +1145,9 @@ public class FormGridComponent extends VerticalLayout {
 
 		VerticalLayout expressionLayout = new VerticalLayout();
 		ComboBox<String> ids = new ComboBox<String>("Form Ids");
+		ids.setWidthFull();
 		TextField expressionEdit = new TextField("Expression Editor");
+		expressionEdit.setWidthFull();
 		expressionEdit.setValue(expressions);
 		expressionEdit.setClassName("expressionEdit");
 
