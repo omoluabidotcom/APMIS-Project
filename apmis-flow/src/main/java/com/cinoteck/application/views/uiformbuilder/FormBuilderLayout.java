@@ -248,22 +248,6 @@ public class FormBuilderLayout extends VerticalLayout {
 		        campaignFormMetaDtoDupli.setCreationDate(new Timestamp(new Date().getTime()));
 		        campaignFormMetaDtoDupli.setArchived(false);
 
-
-
-//		        campaignFormMetaDtoDupli.setFormGroupUuid(campaignFormMetaDto_.getFormGroupUuid()); // New unique version uuid
-//		        campaignFormMetaDtoDupli.setFormName(campaignFormMetaDto_.getFormName());
-//		        campaignFormMetaDtoDupli.setArea(campaignFormMetaDto_.getArea());
-//		        campaignFormMetaDtoDupli.setCampaignFormTranslations(campaignFormMetaDto_.getCampaignFormTranslations());
-//		        campaignFormMetaDtoDupli.setDaysExpired(campaignFormMetaDto_.getDaysExpired());
-//		        campaignFormMetaDtoDupli.setDistrictentry(campaignFormMetaDto_.isDistrictentry());
-//		        campaignFormMetaDtoDupli.setFormCategory(campaignFormMetaDto_.getFormCategory());
-//		        campaignFormMetaDtoDupli.setFormname_fa_af(campaignFormMetaDto_.getFormname_fa_af());
-//		        campaignFormMetaDtoDupli.setFormname_ps_af(campaignFormMetaDto_.getFormname_ps_af());
-//		        campaignFormMetaDtoDupli.setFormType(campaignFormMetaDto_.getFormType());
-//		        campaignFormMetaDtoDupli.setLanguageCode(campaignFormMetaDto_.getLanguageCode());
-//		        campaignFormMetaDtoDupli.setModality(campaignFormMetaDto_.getModality());
-//		        campaignFormMetaDtoDupli.setCampaignFormElements(campaignFormMetaDto_.getCampaignFormElements());
-
 		        // Save the new duplicate
 		        fireEvent(new DuplicateEvent(this, campaignFormMetaDtoDupli));
 
@@ -281,7 +265,6 @@ public class FormBuilderLayout extends VerticalLayout {
 		    discardChanges();
 		});
 		
-
 	}
 
 		

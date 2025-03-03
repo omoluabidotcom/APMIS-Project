@@ -1,6 +1,8 @@
 package com.cinoteck.application.messaging;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -9,6 +11,7 @@ import java.util.List;
 import com.cinoteck.application.UserProvider;
 import com.cinoteck.application.views.MainLayout;
 import com.cinoteck.application.views.uiformbuilder.FormBuilderLayout;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -69,12 +72,14 @@ public class UserMessageView extends VerticalLayout {
 		dialog.add(grid);
 		Button closeButton = new Button("Close", e -> {
 			dialog.close();
-			getUI().ifPresent(ui -> ui.navigate("about"));
+			UI.getCurrent().getPage().setLocation("/apmis-flow/useraccount");
+
 		});
 		dialog.getFooter().add(closeButton);
 
 		dialog.open();
 		add(dialog);
+		FacadeProvider.getUserFacade().updateNotificationLastOpenedDate(Timestamp.from(Instant.now()), userProvider.getUser().getUserName());
 //		VaadinSession.getCurrent().getSession().setAttribute("messageLength", "0");
 	}
 
@@ -106,8 +111,8 @@ public class UserMessageView extends VerticalLayout {
 			return dateFormat.format(timestamp);
 		});
 
-		grid.addColumn(MessageDto.MESSAGE_CONTENT).setHeader("Message").setSortable(true).setResizable(true);
-		grid.addColumn(changeDateRenderer).setHeader("Broadcasted at").setSortable(true).setResizable(true);
+		grid.addColumn(MessageDto.MESSAGE_CONTENT).setHeader("Message").setResizable(true);
+		grid.addColumn(changeDateRenderer).setHeader("Broadcasted at").setResizable(true);
 
 		List<MessageDto> listOfMessagesToRemoveExpiredMessages = FacadeProvider.getMessageFacade()
 				.getMessageByUserRoles(messageCriteria, userProvider.getUser().getUsertype(), 0, 10,

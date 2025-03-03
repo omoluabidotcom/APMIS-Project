@@ -14,7 +14,7 @@ import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.api.user.UserType;
 import de.symeda.sormas.api.utils.DataHelper;
 
-public class MessageDto extends EntityDto {
+public class MessageScheduleDto extends EntityDto {
 
 	/**
 	 * 
@@ -26,6 +26,7 @@ public class MessageDto extends EntityDto {
 	public static final String TABLE_NAME_COMMUNITY = "messages_community";
 	
 	public static final String MESSAGE_CONTENT = "messageContent";
+//	public static final String USER_TYPE = "userTypes";
 	public static final String USER_ROLES = "userRoles";
 	public static final String FORM_ACCESS = "formAccess";
 	public static final String AREA = "area";
@@ -39,22 +40,46 @@ public class MessageDto extends EntityDto {
 	
 	private String title;
 	private String messageContent;
+//	private UserType userTypes;
 	private Set<UserRole> userRoles;
 	private Set<FormAccess> formAccess;
 	private Set<AreaReferenceDto> area;
 	private Set<RegionReferenceDto> region;
 	private Set<DistrictReferenceDto> district;			
 	private Set<CommunityReferenceDto> community;
+	private Set<String> communitynos;
 	private Timestamp chgDate;
 	private Status status;
 	private String creatingUser;
 	
-	public static MessageDto build() {
-		MessageDto messageDto = new MessageDto();
-		messageDto.setUuid(DataHelper.createUuid());
-		return messageDto;
-	}
+	public static MessageScheduleDto build() {
+		MessageScheduleDto messageScheduleDto = new MessageScheduleDto();
+		messageScheduleDto.setUuid(DataHelper.createUuid());
+		return messageScheduleDto;
+	}		
 	
+	public MessageScheduleDto(String title, String messageContent, Set<UserRole> userRoles, Set<FormAccess> formAccess,
+			Set<AreaReferenceDto> area, Set<RegionReferenceDto> region, Set<DistrictReferenceDto> district,
+			Set<CommunityReferenceDto> community, Set<String> communitynos, Timestamp chgDate, Status status,
+			String creatingUser) {
+		super();
+		this.title = title;
+		this.messageContent = messageContent;
+		this.userRoles = userRoles;
+		this.formAccess = formAccess;
+		this.area = area;
+		this.region = region;
+		this.district = district;
+		this.community = community;
+		this.communitynos = communitynos;
+		this.chgDate = chgDate;
+		this.status = status;
+		this.creatingUser = creatingUser;
+	}
+
+	public MessageScheduleDto() {
+	}
+
 	public String getTitle() {
 		return title;
 	}
@@ -117,7 +142,8 @@ public class MessageDto extends EntityDto {
 	}
 	public void setCreatingUser(String creatingUser) {
 		this.creatingUser = creatingUser;
-	}	
+	}
+	
 	public Timestamp getChgDate() {
 		return chgDate;
 	}

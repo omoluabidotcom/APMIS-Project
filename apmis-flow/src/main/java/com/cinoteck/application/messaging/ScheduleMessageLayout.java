@@ -8,18 +8,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.cinoteck.application.UserProvider;
+import com.cinoteck.application.messaging.MessagingLayout.MessageEvent;
+import com.cinoteck.application.messaging.MessagingLayout.SaveEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
@@ -37,28 +36,26 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.shared.Registration;
 
 import de.symeda.sormas.api.FacadeProvider;
-import de.symeda.sormas.api.i18n.Captions;
-import de.symeda.sormas.api.i18n.I18nProperties;
-import de.symeda.sormas.api.i18n.Strings;
 import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
 import de.symeda.sormas.api.messaging.MessageDto;
+import de.symeda.sormas.api.messaging.MessageScheduleDto;
 import de.symeda.sormas.api.messaging.MessageTemplateDto;
 import de.symeda.sormas.api.user.FormAccess;
-import de.symeda.sormas.api.user.UserReferenceDto;
 import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.api.user.UserType;
 
-public class MessagingLayout extends VerticalLayout {
+public class ScheduleMessageLayout extends VerticalLayout{
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 6287328469071497747L;
+	private static final long serialVersionUID = 207602334407422169L;		
 
-	MessageDto messageDto;
+
+	MessageScheduleDto messageScheduleDto;
 
 	H3 pushNotificationHeader = new H3("Push Notication Configuration");
 	TextField titleField;
@@ -76,7 +73,7 @@ public class MessagingLayout extends VerticalLayout {
 	List<DistrictReferenceDto> districts = FacadeProvider.getDistrictFacade().getAllActiveAsReference();
 	List<CommunityReferenceDto> communities;
 
-	Binder<MessageDto> binder = new BeanValidationBinder<>(MessageDto.class);
+	Binder<MessageScheduleDto> binder = new BeanValidationBinder<>(MessageScheduleDto.class);
 	FormLayout formLayout = new FormLayout();
 
 	UserProvider userProvider = new UserProvider();
@@ -92,15 +89,15 @@ public class MessagingLayout extends VerticalLayout {
 		
 	private ComboBox<String> templateCombo = new ComboBox<String>("Message Template");
 
-	public MessagingLayout(MessageDto messageDto_, boolean isNew) {
+	public ScheduleMessageLayout(MessageScheduleDto messageScheduleDto_, boolean isNew) {
 
 		this.isNew = isNew;
 		if (isNew) {
-			MessageDto messageDtoNew = new MessageDto();
+			MessageScheduleDto messeMessageScheduleDtoNew = new MessageScheduleDto();
 
-			this.messageDto = messageDtoNew.build();
+			this.messageScheduleDto = messeMessageScheduleDtoNew.build();
 		} else {
-			this.messageDto = messageDto_;
+			this.messageScheduleDto = messageScheduleDto_;
 		}
 		
 		List<MessageTemplateDto> listOfMessageTemplate = FacadeProvider.getMessageFacade().getIndexListForMessageTemplate(null, null, null, null);
@@ -153,21 +150,21 @@ public class MessagingLayout extends VerticalLayout {
 		formAccessSelector.setItems(FormAccess.values());
 		formAccessSelector.setClearButtonVisible(true);
 
-		binder.forField(messageContent).asRequired("Message Content is Required").bind(MessageDto::getMessageContent,
-				MessageDto::setMessageContent);
+		binder.forField(messageContent).asRequired("Message Content is Required").bind(MessageScheduleDto::getMessageContent,
+				MessageScheduleDto::setMessageContent);
 
-		binder.forField(userRoles).asRequired("User Role is Required").bind(MessageDto::getUserRoles,
-				MessageDto::setUserRoles);
+		binder.forField(userRoles).asRequired("User Role is Required").bind(MessageScheduleDto::getUserRoles,
+				MessageScheduleDto::setUserRoles);
 
-		binder.forField(formAccessSelector).bind(MessageDto::getFormAccess, MessageDto::setFormAccess);
+		binder.forField(formAccessSelector).bind(MessageScheduleDto::getFormAccess, MessageScheduleDto::setFormAccess);
 
-		binder.forField(areaSelector).bind(MessageDto::getArea, MessageDto::setArea);
+		binder.forField(areaSelector).bind(MessageScheduleDto::getArea, MessageScheduleDto::setArea);
 
-		binder.forField(regionSelector).bind(MessageDto::getRegion, MessageDto::setRegion);
+		binder.forField(regionSelector).bind(MessageScheduleDto::getRegion, MessageScheduleDto::setRegion);
 
-		binder.forField(districtSelector).bind(MessageDto::getDistrict, MessageDto::setDistrict);
+		binder.forField(districtSelector).bind(MessageScheduleDto::getDistrict, MessageScheduleDto::setDistrict);
 
-		binder.forField(communitySelector).bind(MessageDto::getCommunity, MessageDto::setCommunity);
+		binder.forField(communitySelector).bind(MessageScheduleDto::getCommunity, MessageScheduleDto::setCommunity);
 
 		formLayout.add(templateCombo, messageContent, userRoles, formAccessSelector, areaSelector, regionSelector, districtSelector,
 				communitySelector);
@@ -284,10 +281,10 @@ public class MessagingLayout extends VerticalLayout {
 
 		if (binder.validate().isOk()) {
 
-			messageDto = binder.getBean();
-			messageDto.setChgDate(Timestamp.from(Instant.now()));
-			messageDto.setCreatingUser(userProvider.getUser().getUserName());
-			fireEvent(new SaveEvent(this, messageDto));
+			messageScheduleDto = binder.getBean();
+			messageScheduleDto.setChgDate(Timestamp.from(Instant.now()));
+			messageScheduleDto.setCreatingUser(userProvider.getUser().getUserName());
+			fireEvent(new SaveEvent(this, messageScheduleDto));
 
 			Notification notification = new Notification("New Message Created", 3000, Position.MIDDLE);
 			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
@@ -314,47 +311,47 @@ public class MessagingLayout extends VerticalLayout {
 		}
 	}
 
-	public void preView(MessageDto messageDto) {
+	public void preView(MessageScheduleDto messageScheduleDto) {
 
 		TextArea message = new TextArea("Message");
-		message.setValue(messageDto.getMessageContent());
+		message.setValue(messageScheduleDto.getMessageContent());
 		message.setReadOnly(true);
 		message.getStyle().set("margin", "10px");
 		message.setHeight("250px");
 
 		MultiSelectComboBox<UserRole> userRoles = new MultiSelectComboBox<>("Userroles");
-		userRoles.setItems(messageDto.getUserRoles());
-		userRoles.setValue(messageDto.getUserRoles());
+		userRoles.setItems(messageScheduleDto.getUserRoles());
+		userRoles.setValue(messageScheduleDto.getUserRoles());
 		userRoles.setReadOnly(true);
 		userRoles.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<FormAccess> formAccess = new MultiSelectComboBox<>("FormAccess");
-		formAccess.setItems(messageDto.getFormAccess());
-		formAccess.setValue(messageDto.getFormAccess());
+		formAccess.setItems(messageScheduleDto.getFormAccess());
+		formAccess.setValue(messageScheduleDto.getFormAccess());
 		formAccess.setReadOnly(true);
 		userRoles.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<AreaReferenceDto> areas = new MultiSelectComboBox<>("Regions");
-		areas.setItems(messageDto.getArea());
-		areas.setValue(messageDto.getArea());
+		areas.setItems(messageScheduleDto.getArea());
+		areas.setValue(messageScheduleDto.getArea());
 		areas.setReadOnly(true);
 		areas.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<RegionReferenceDto> region = new MultiSelectComboBox<>("Provinces");
-		region.setItems(messageDto.getRegion());
-		region.setValue(messageDto.getRegion());
+		region.setItems(messageScheduleDto.getRegion());
+		region.setValue(messageScheduleDto.getRegion());
 		region.setReadOnly(true);
 		region.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<DistrictReferenceDto> district = new MultiSelectComboBox<>("Districts");
-		district.setItems(messageDto.getDistrict());
-		district.setValue(messageDto.getDistrict());
+		district.setItems(messageScheduleDto.getDistrict());
+		district.setValue(messageScheduleDto.getDistrict());
 		district.setReadOnly(true);
 		district.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<CommunityReferenceDto> community = new MultiSelectComboBox<>("Clusters");
-		community.setItems(messageDto.getCommunity());
-		community.setValue(messageDto.getCommunity());
+		community.setItems(messageScheduleDto.getCommunity());
+		community.setValue(messageScheduleDto.getCommunity());
 		community.setReadOnly(true);
 		community.getStyle().set("margin", "10px");
 
@@ -378,36 +375,37 @@ public class MessagingLayout extends VerticalLayout {
 		preViewDialog.getFooter().add(closePreviewButton, savePreviewButton);
 	}
 
-	public void setMessage(MessageDto messageDto) {
-		messageDto.setCreatingUser(userProvider.getUser().getUserName());
-		binder.setBean(messageDto);
+	public void setScheduleMessage(MessageScheduleDto messageScheduleDto) {
+		messageScheduleDto.setCreatingUser(userProvider.getUser().getUserName());
+		binder.setBean(messageScheduleDto);
 	}
 
-	public static abstract class MessageEvent extends ComponentEvent<MessagingLayout> {
-		private MessageDto messageDto;
+	public static abstract class MessageEvent extends ComponentEvent<ScheduleMessageLayout> {
+		private MessageScheduleDto messageScheduleDto;
 
-		protected MessageEvent(MessagingLayout source, MessageDto messageDto) {
+		protected MessageEvent(ScheduleMessageLayout source, MessageScheduleDto messageScheduleDto) {
 			super(source, false);
-			this.messageDto = messageDto;
+			this.messageScheduleDto = messageScheduleDto;
 		}
 
-		public MessageDto getMessage() {
-			if (messageDto == null) {
-				messageDto = new MessageDto();
-				return messageDto;
+		public MessageScheduleDto getScheduleMessage() {
+			if (messageScheduleDto == null) {
+				messageScheduleDto = new MessageScheduleDto();
+				return messageScheduleDto;
 			} else {
-				return messageDto;
+				return messageScheduleDto;
 			}
 		}
 	}
 
 	public static class SaveEvent extends MessageEvent {
-		SaveEvent(MessagingLayout source, MessageDto messageDto) {
-			super(source, messageDto);
+		SaveEvent(ScheduleMessageLayout source, MessageScheduleDto messageScheduleDto) {
+			super(source, messageScheduleDto);
 		}
 	}
 
 	public Registration addSaveListener(ComponentEventListener<SaveEvent> listener) {
 		return addListener(SaveEvent.class, listener);
 	}
+		
 }

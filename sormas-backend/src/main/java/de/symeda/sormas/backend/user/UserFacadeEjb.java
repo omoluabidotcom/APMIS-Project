@@ -19,6 +19,7 @@ package de.symeda.sormas.backend.user;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -197,7 +198,6 @@ public class UserFacadeEjb implements UserFacade {
 		target.setUserOrganisation(source.getUserOrganisation());
 		target.setUserEmail(source.getUserEmail());
 		target.setPhone(source.getPhone());
-		target.setToken(source.getToken());
 		target.setAddress(LocationFacadeEjb.toDto(source.getAddress()));
 		target.setArea(AreaFacadeEjb.toReferenceDto(source.getArea()));
 		target.setRegion(RegionFacadeEjb.toReferenceDto(source.getRegion()));
@@ -235,6 +235,8 @@ public class UserFacadeEjb implements UserFacade {
 			}
 			target.setCommunitynos(communitynos);
 		}
+		target.setToken(source.getToken());
+		target.setNotificationlastopendate(source.getNotificationlastopendate());
 		return target;
 	}
 
@@ -804,7 +806,8 @@ public class UserFacadeEjb implements UserFacade {
 
 		target.setUserRoles(new HashSet<UserRole>(source.getUserRoles()));
 		target.setFormAccess(new HashSet<FormAccess>(source.getFormAccess()));
-
+		target.setNotificationlastopendate(source.getNotificationlastopendate());
+		
 		return target;
 	}
 
@@ -1163,14 +1166,14 @@ public class UserFacadeEjb implements UserFacade {
 
 	}
 	
-//	@Override
-//	public void updatePreviousLoginDate(Date previousUserLoginDate, String username) {
-//		User user = userService.getByUserName(username);
-//
-//		user.setPreviouslogindate(previousUserLoginDate);
-//		userService.ensurePersisted(user);
-//		userUpdateEvent.fire(new UserUpdateEvent(user));
-//	}
+	@Override
+	public void updateNotificationLastOpenedDate(Timestamp notificationLastOpenedDate, String username) {
+		User user = userService.getByUserName(username);
+
+		user.setNotificationlastopendate(notificationLastOpenedDate);
+		userService.ensurePersisted(user);
+		userUpdateEvent.fire(new UserUpdateEvent(user));
+	}
 
 	@Schedule(second = "0", minute = "0", hour = "2", persistent = false)
 	public void deactivateInactiveUsers() {
