@@ -67,6 +67,8 @@ import de.symeda.sormas.app.backend.campaign.data.CampaignFormData;
 import de.symeda.sormas.app.backend.campaign.data.CampaignFormDataDao;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaDao;
+import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaRegion;
+import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaRegionDao;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaWithExp;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaWithExpDao;
 import de.symeda.sormas.app.backend.caze.Case;
@@ -186,7 +188,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	public static final String DATABASE_NAME = "sormas.db";
 	// any time you make changes to your database objects, you may have to increase the database version
 
-	public static final int DATABASE_VERSION = 347;
+	public static final int DATABASE_VERSION = 346;
 
 	private static DatabaseHelper instance = null;
 
@@ -265,6 +267,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.clearTable(connectionSource, CampaignFormMeta.class);
 			TableUtils.clearTable(connectionSource, CampaignFormMetaWithExp.class);
 			TableUtils.clearTable(connectionSource, PopulationData.class);
+			TableUtils.clearTable(connectionSource, CampaignFormMetaRegion.class);
+
 
 
 			if (clearInfrastructure) {
@@ -286,6 +290,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 				TableUtils.clearTable(connectionSource, CampaignFormMeta.class);
 				TableUtils.clearTable(connectionSource, CampaignFormMetaWithExp.class);
 				TableUtils.clearTable(connectionSource, PopulationData.class);
+				TableUtils.clearTable(connectionSource, CampaignFormMetaRegion.class);
+
 
 
 				ConfigProvider.init(instance.context);
@@ -348,6 +354,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.clearTable(connectionSource, CampaignFormMeta.class);
 			TableUtils.clearTable(connectionSource, CampaignFormMetaWithExp.class);
 			TableUtils.clearTable(connectionSource, PopulationData.class);
+			TableUtils.clearTable(connectionSource, CampaignFormMetaRegion.class);
+
 
 
 			if (clearUserInfrastructure) {
@@ -372,6 +380,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 				TableUtils.clearTable(connectionSource, CampaignFormMeta.class);
 				TableUtils.clearTable(connectionSource, CampaignFormMetaWithExp.class);
 				TableUtils.clearTable(connectionSource, PopulationData.class);
+				TableUtils.clearTable(connectionSource, CampaignFormMetaRegion.class);
+
 
 
 
@@ -467,6 +477,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, CampaignFormMeta.class);
 			TableUtils.createTable(connectionSource, CampaignFormMetaWithExp.class);
 			TableUtils.createTable(connectionSource, PopulationData.class);
+			TableUtils.createTable(connectionSource, CampaignFormMetaRegion.class);
 			TableUtils.createTable(connectionSource, LbdsSync.class);
 			updatePatchForTriggers();
 		} catch (SQLException e) {
@@ -3216,35 +3227,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 							"WHERE rowid = NEW.rowid; \n" +
 							"END;");
 
+
 				case 345:
 					currentVersion = 345;
-					getDao(PopulationData.class).executeRaw(
-							"CREATE TABLE IF NOT EXISTS populationdata ("
-									+ "		campaign_id VARCHAR NOT NULL,"
-									+ "		district_id VARCHAR NOT NULL,"
-									+ "		selected boolean);");
-
-					// ATTENTION: break should only be done after last version
-
-
-				case 346:
-
-					currentVersion = 346;
-					getDao(PopulationData.class).executeRaw(
-							"DROP TABLE  populationdata");
-
-					getDao(PopulationData.class).executeRaw(
-							"CREATE TABLE IF NOT EXISTS populationdata (" +
-									" 	id INTEGER PRIMARY KEY,"
-									+ "		campaign_id VARCHAR NOT NULL,"
-									+ "		district_id VARCHAR NOT NULL," +
-									" uuid varchar not null, "
-									+ "		selected boolean);");
-
-
-				case 347:
-
-					currentVersion = 347;
 					getDao(PopulationData.class).executeRaw(
 							"DROP TABLE  populationdata");
 
@@ -3256,6 +3241,13 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 									" uuid varchar not null, "
 									+ "		selected varchar not null);");
 
+
+				case 346:
+					currentVersion = 346;
+					getDao(CampaignFormMetaRegion.class).executeRaw(
+							"CREATE TABLE IF NOT EXISTS campaignformmeta_area ("
+									+ "		campaign_id VARCHAR NOT NULL,"
+									+ "		area_id VARCHAR NOT NULL);");
 
 
 
@@ -3834,6 +3826,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, Campaign.class, true);
 			TableUtils.dropTable(connectionSource, CampaignFormMeta.class, true);
 			TableUtils.dropTable(connectionSource, CampaignFormData.class, true);
+			TableUtils.dropTable(connectionSource, CampaignFormMetaRegion.class, true);
+			TableUtils.dropTable(connectionSource, PopulationData.class, true);
+
 			TableUtils.dropTable(connectionSource, LbdsSync.class, true);
 
 			if (oldVersion < 30) {
@@ -3965,6 +3960,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 				dao = (AbstractAdoDao<ADO>) new CampaignFormMetaWithExpDao((Dao<CampaignFormMetaWithExp, Long>) innerDao);
 				}else if (type.equals(PopulationData.class)) {
 					dao = (AbstractAdoDao<ADO>) new PopulationDataDao((Dao<PopulationData, Long>) innerDao);
+				}else if (type.equals(CampaignFormMetaRegion.class)) {
+					dao = (AbstractAdoDao<ADO>) new CampaignFormMetaRegionDao((Dao<CampaignFormMetaRegion, Long>) innerDao);
 				}
 				else {
 					throw new UnsupportedOperationException(type.toString());
@@ -4246,6 +4243,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	public static PopulationDataDao getPopulationDataDao() {
 
 		return (PopulationDataDao) getAdoDao(PopulationData.class);
+	}
+
+	public static CampaignFormMetaRegionDao getCampaignFormMetaRegionDao() {
+
+		return (CampaignFormMetaRegionDao) getAdoDao(CampaignFormMetaRegion.class);
 	}
 
 	/**

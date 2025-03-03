@@ -122,6 +122,7 @@ public final class RetroProvider {
 	private CampaignFormMetaFacadeRetro campaignFormMetaFacadeRetro;
 	private CampaignFormMetaWithExpiryFacadeRetro campaignFormMetaWithExpiryFacadeRetro;
 	private PopulationDataFacadeRetro populationDataFacadeRetro;
+	private CampaignFormMetaRegionFacadeRetro campaignFormMetaRegionFacadeRetro;
 
 	private CampaignFormDataFacadeRetro campaignFormDataFacadeRetro;
 	private FeatureConfigurationFacadeRetro featureConfigurationFacadeRetro;
@@ -494,7 +495,7 @@ System.out.println(isConnected() + "connecting +++++++++"+connecting);
 
 
 			if (!serverApiVersion.equals(appApiVersion)) {
-				// Retrieve the app URL
+				// Retrieve the app URLS
 				Response<String> appUrlResponse;
 				Call<String> appUrlCall = infoFacadeRetro.getAppUrl(InfoProvider.get().getVersion());
 
@@ -1002,6 +1003,20 @@ System.out.println(isConnected() + "connecting +++++++++"+connecting);
 			}
 		}
 		return instance.populationDataFacadeRetro;
+	}
+
+	//New Line addded for retro
+	public static CampaignFormMetaRegionFacadeRetro getCampaignFormMetaRegionFacade() throws NoConnectionException {
+		if (instance == null)
+			throw new NoConnectionException();
+		if (instance.campaignFormMetaRegionFacadeRetro == null) {
+			synchronized ((RetroProvider.class)) {
+				if (instance.campaignFormMetaRegionFacadeRetro == null) {
+					instance.campaignFormMetaRegionFacadeRetro = instance.retrofit.create(CampaignFormMetaRegionFacadeRetro.class);
+				}
+			}
+		}
+		return instance.campaignFormMetaRegionFacadeRetro;
 	}
 
 
