@@ -10830,10 +10830,7 @@ ALTER TABLE community ADD COLUMN sys_period tstzrange NOT NULL DEFAULT tstzrange
 ALTER TABLE community_history ADD COLUMN sys_period tstzrange NOT NULL;
 
 
-
-
 INSERT INTO schema_version (version_number, comment) VALUES (480, 'Geography: Tracking Active Status over Time #750');
-
 
 
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<artifactId>sormas-base</artifactId>
 		<groupId>de.symeda.sormas</groupId>
@@ -50,7 +52,7 @@
 			<artifactId>joda-time</artifactId>
 		</dependency>
 
-		
+
 		<dependency>
 			<groupId>com.nexmo</groupId>
 			<artifactId>client</artifactId>
@@ -98,8 +100,8 @@
 		<!-- Testing -->
 
 		<dependency>
-		    <groupId>org.hibernate</groupId>
-		    <artifactId>hibernate-core</artifactId>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
 		</dependency>
 
 		<dependency>
@@ -113,8 +115,8 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>org.glassfish</groupId>
-		    <artifactId>javax.el</artifactId>
+			<groupId>org.glassfish</groupId>
+			<artifactId>javax.el</artifactId>
 		</dependency>
 
 		<dependency>
@@ -132,8 +134,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-	    	<groupId>org.glassfish.jersey.inject</groupId>
-	    	<artifactId>jersey-hk2</artifactId>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
 			<scope>test</scope>
 		</dependency>
 
@@ -142,9 +144,11 @@
 			<artifactId>p6spy</artifactId>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
+			<version>42.7.5</version>
 		</dependency>
 
 		<dependency>
@@ -217,5 +221,5 @@
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
-    </build>
+	</build>
 </project>

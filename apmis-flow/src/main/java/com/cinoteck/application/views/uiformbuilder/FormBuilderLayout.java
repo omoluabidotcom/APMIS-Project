@@ -55,6 +55,7 @@ import de.symeda.sormas.api.user.UserActivitySummaryDto;
 public class FormBuilderLayout extends VerticalLayout {
 
 	CampaignFormMetaDto campaignFormMetaDto;
+	CampaignFormMetaDto campaignFormMetaDtoDupli;
 	List<CampaignFormElement> campaignFormElements;
 	List<CampaignFormElement> savedCampaignFormElements;
 
@@ -197,6 +198,9 @@ public class FormBuilderLayout extends VerticalLayout {
 		Icon saveIcon = new Icon(VaadinIcon.CHECK_CIRCLE_O);
 		saveIcon.getStyle().set("color", "green");
 		Button saved = new Button("Save", saveIcon);
+		
+		Button duplicateForm = new Button("Duplicate Form");
+		duplicateForm.setText("Duplicate Form");
 
 		Icon downloadIcon = new Icon(VaadinIcon.DOWNLOAD);
 		Button downloadButton = new Button("Export JSON", downloadIcon);
@@ -206,7 +210,7 @@ public class FormBuilderLayout extends VerticalLayout {
 	    downloadLink.getElement().setAttribute("download", true);
 	    downloadLink.add(downloadButton);	   
 	    
-		HorizontalLayout buttonLayout = new HorizontalLayout(downloadButton, downloadLink, discardChanges, saved);
+		HorizontalLayout buttonLayout = new HorizontalLayout(duplicateForm, downloadButton, downloadLink, discardChanges, saved);
 		downloadLink.getStyle().set("display", "none");
 		buttonLayout.getStyle().set("margin-left", "auto");
 
@@ -222,6 +226,51 @@ public class FormBuilderLayout extends VerticalLayout {
             downloadLink.setHref(resource);  
             downloadLink.getElement().callJsFunction("click");
         });
+		
+		duplicateForm.addClickListener(e -> {
+			
+			CampaignFormMetaDto campMeta = new CampaignFormMetaDto();
+			campaignFormMetaDtoDupli = campMeta.build();
+			campaignFormMetaDtoDupli.setCampaignFormElements(campaignFormMetaDto.getCampaignFormElements());
+			campaignFormMetaDtoDupli.setArchived(false);
+			campaignFormMetaDtoDupli.setArea(campaignFormMetaDto.getArea());
+			campaignFormMetaDtoDupli.setCampaignFormTranslations(campaignFormMetaDto.getCampaignFormTranslations());
+//			campaignFormMetaDtoDupli.setCreationDate(null);
+			campaignFormMetaDtoDupli.setDaysExpired(10);
+			campaignFormMetaDtoDupli.setDistrictentry(campaignFormMetaDto.isDistrictentry());
+			campaignFormMetaDtoDupli.setFormCategory(campaignFormMetaDto.getFormCategory());
+			campaignFormMetaDtoDupli.setFormName("DUP-"+campaignFormMetaDto.getFormName());
+			campaignFormMetaDtoDupli.setFormname_fa_af("DUP-"+campaignFormMetaDto.getFormName());
+			campaignFormMetaDtoDupli.setFormname_ps_af("DUP-"+campaignFormMetaDto.getFormName());
+			campaignFormMetaDtoDupli.setFormType(campaignFormMetaDto.getFormType());
+			campaignFormMetaDtoDupli.setLanguageCode(campaignFormMetaDto.getLanguageCode());
+			campaignFormMetaDtoDupli.setModality(campaignFormMetaDto.getModality());
+			
+			try {
+				fireEvent(new SaveEvent(this, campaignFormMetaDtoDupli));
+
+			}catch(Exception ex ) {
+				System.out.println("Exception Occured while saving : " +  ex);
+				
+			}finally {
+		        UserProvider usr = new UserProvider();
+
+//				UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
+//				userActivitySummaryDto.setActionModule("Form Manager");
+//				userActivitySummaryDto.setAction("Form Saved: " + campaignFormMetaDtoDupli.getFormName());
+//				userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
+//				FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
+				
+				UI.getCurrent().getPage().reload();
+				
+				Notification notification = new Notification("Form Duplicated", 3000, Position.MIDDLE);
+				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+				notification.open();
+
+			}
+			
+			discardChanges();
+		});
 	}
 	
 	private StreamResource createJsonStreamResource() {

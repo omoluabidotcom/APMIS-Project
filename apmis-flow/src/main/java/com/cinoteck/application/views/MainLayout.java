@@ -1,6 +1,7 @@
 package com.cinoteck.application.views;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -110,15 +111,15 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 	Div aboutText = new Div();
 	Button notification = new Button("Notification");
 	IdleNotification idleNotification = new IdleNotification();
-	private MessageCriteria messageCriteria;
+	private MessageCriteria messageCriteria = new MessageCriteria();
 	Date usersPreviousLoginDate;
 	List<MessageDto> messageSize = new ArrayList<>();
 //	private InactivityHandler inactivityHandler;
 	private String currentRoute = UI.getCurrent().getInternals().getActiveViewLocation().getPath();
 	private AppNavItem campaignNavItem = new AppNavItem(I18nProperties.getCaption(Captions.campaignCampaignData),
 			CampaignDataView.class, VaadinIcon.CLIPBOARD, "navitem");
-	private AppNavItem about = new AppNavItem(I18nProperties.getCaption(Captions.about), AboutView.class, VaadinIcon.INFO_CIRCLE_O,
-			"navitem");
+	private AppNavItem about = new AppNavItem(I18nProperties.getCaption(Captions.about), AboutView.class,
+			VaadinIcon.INFO_CIRCLE_O, "navitem");
 
 	public MainLayout() {
 		if (I18nProperties.getUserLanguage() == null) {
@@ -263,20 +264,14 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 //				"link.addEventListener('contextmenu', (e) => {"
 //				+ "  link.href = 'https://dashboard.afghanistan-apmis.com/';" + "});",
 //				newDashboardNavItem.getElement());
-		
-		newDashboardNavItem.getElement().executeJs(
-			    "const link = $0;" +
-			    // Prevent right-click menu from showing
-			    "link.addEventListener('contextmenu', (e) => { e.preventDefault(); });" +
-			    // Handle middle-click (mouse button 1)
-			    "link.addEventListener('mousedown', (e) => {" +
-			    "  if (e.button === 1) {" +
-			    "    e.preventDefault();" +
-			    "    window.open('https://dashboard.afghanistan-apmis.com/', '_blank');" +
-			    "  }" +
-			    "});",
-			    newDashboardNavItem.getElement()
-			);
+
+		newDashboardNavItem.getElement().executeJs("const link = $0;" +
+		// Prevent right-click menu from showing
+				"link.addEventListener('contextmenu', (e) => { e.preventDefault(); });" +
+				// Handle middle-click (mouse button 1)
+				"link.addEventListener('mousedown', (e) => {" + "  if (e.button === 1) {" + "    e.preventDefault();"
+				+ "    window.open('https://dashboard.afghanistan-apmis.com/', '_blank');" + "  }" + "});",
+				newDashboardNavItem.getElement());
 
 		nav.addItem(newDashboardNavItem);
 //		}
@@ -341,18 +336,47 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 			nav.addItem(new AppNavItem("Notification", MessagingView.class, VaadinIcon.SERVER, "navitem"));
 		}
 
-//		if (!messageSize.isEmpty() || messageSize != null) {
-//			if (userProvider.hasUserRight(UserRight.NON_ADMIN_ACCESS)) {
-//				nav.addItem(new AppNavItem("Notification", VaadinIcon.SERVER, "notification", notification,
-//						UserMessageView.class));
-//				System.out.println("deyyyyyyyyyyyyyyyyyyyyyy");
-//			}
-//		} else {
-		if (userProvider.hasUserRight(UserRight.NON_ADMIN_ACCESS)) {
-			nav.addItem(
-					new AppNavItem("Notification", VaadinIcon.SERVER, "navitem", notification, UserMessageView.class));
+		if (userProvider.getUser().getUserRoles().contains(UserRole.REST_USER)) {
+			UserDto user = FacadeProvider.getUserFacade().getByUserName(userProvider.getUser().getUserName());
+			if (user.getArea() != null) {
+				messageCriteria.area(user.getArea());
+			}
+			if (user.getRegion() != null) {
+				messageCriteria.region(user.getRegion());
+			}
+			if (user.getDistrict() != null) {
+				messageCriteria.district(user.getDistrict());
+			}
 		}
-//		}
+
+		Date thirtyDaysAgo;
+		thirtyDaysAgo = subtractDaysFromDate(new Date(), 30);
+		List<MessageDto> listOfMessagesToRemoveExpiredMessages = FacadeProvider.getMessageFacade()
+				.getMessageByUserRoles(messageCriteria, userProvider.getUser().getUsertype(), 0, 10,
+						userProvider.getUser().getUserRoles(), userProvider.getUser().getFormAccess());
+
+		List<MessageDto> mainMessagesList = new ArrayList<>();
+
+		for (MessageDto messages : listOfMessagesToRemoveExpiredMessages) {
+			if (messages.getChangeDate().after(thirtyDaysAgo) || messages.getChangeDate().equals(thirtyDaysAgo)) {
+				if (userProvider.getUser().getNotificationlastopendate() != null)
+					if (messages.getChgDate().after(userProvider.getUser().getNotificationlastopendate())) {
+						mainMessagesList.add(messages);
+					}
+			}
+		}
+
+		if (mainMessagesList.size() > 0) {
+			if (userProvider.hasUserRight(UserRight.NON_ADMIN_ACCESS)) {
+				nav.addItem(new AppNavItem("Notification", VaadinIcon.SERVER, "notification", notification,
+						UserMessageView.class));
+			}
+		} else {
+			if (userProvider.hasUserRight(UserRight.NON_ADMIN_ACCESS)) {
+				nav.addItem(new AppNavItem("Notification", VaadinIcon.SERVER, "navitem", notification,
+						UserMessageView.class));
+			}
+		}
 
 		if (nav != null) {
 			nav.addClassName("active");
@@ -387,6 +411,13 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 			userProvider.getUser().setLanguage(Language.EN);
 			UI.getCurrent().setDirection(Direction.LEFT_TO_RIGHT);
 		}
+	}
+
+	public static Date subtractDaysFromDate(Date date, int days) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.add(Calendar.DAY_OF_YEAR, -days);
+		return calendar.getTime();
 	}
 
 	private Footer createFooter() {
@@ -482,8 +513,8 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 		currentRoute = UI.getCurrent().getInternals().getActiveViewLocation().getPath();
 
 		/*
-		 * The condition below handles setting backgroud color for default nav menu on users
-		 * first login
+		 * The condition below handles setting backgroud color for default nav menu on
+		 * users first login
 		 */
 		if (currentRoute.equalsIgnoreCase("campaigndata")) {
 			campaignNavItem.getElement().getStyle().set("background", "#F08F3E");

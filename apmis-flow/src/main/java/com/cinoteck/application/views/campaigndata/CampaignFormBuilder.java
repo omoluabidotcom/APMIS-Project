@@ -2207,11 +2207,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 					logger.debug(sdxc.getId() + "____values____ " + sdxc.getValue());
 					if (sdxc.getId().equalsIgnoreCase("LotNo")) {
 						lotNo = sdxc;
-						System.out.println(lotNo + " lotnumber");
 					}
 					if (sdxc.getId().equalsIgnoreCase("LotClusterNo")) {
 						lotClusterNo = sdxc;
-						System.out.println(lotClusterNo + "lotclusternumber");
 					}
 				}
 
@@ -2221,7 +2219,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 								cbCommunity.getValue().getCaption());
 
 				lotchecker.removeIf(e -> e.getUuid().equals(uuidForm));
-				System.out.println(lotchecker.size() + " vwvwvwvwvwvwvwvwvwvwvwv1234321");
 
 				List<String> listLotNo = new ArrayList();
 				List<String> listLotClusterNo = new ArrayList();
@@ -2231,14 +2228,10 @@ public class CampaignFormBuilder extends VerticalLayout {
 						List<CampaignFormDataEntry> lotOwnSec = campaignFormDataIndexDto.getFormValues();
 						if (lotOwnSec.contains(lotNo)) {
 							listLotNo.add(lotOwnSec.get(lotOwnSec.indexOf(lotNo)).getValue().toString());
-							System.out.println(lotOwnSec.get(lotOwnSec.indexOf(lotNo)).getValue().toString()
-									+ " checking and adding");
 						}
 
 						if (lotOwnSec.contains(lotClusterNo) && lotOwnSec.contains(lotNo)) {
 							listLotClusterNo.add(lotOwnSec.get(lotOwnSec.indexOf(lotClusterNo)).getValue().toString());
-							System.out.println(lotOwnSec.get(lotOwnSec.indexOf(lotClusterNo)).getValue().toString()
-									+ " checking and addinggggg");
 						}
 					}
 				}
@@ -2249,7 +2242,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 								&& (Long.parseLong(listLotNo.get(0))
 										- Long.parseLong(lotNo.getValue().toString()) == 0)) {
 							saveChecker = false;
-							System.out.println("falseeeee3333333333333333333333333");
 							break;
 						}
 					}
@@ -2301,11 +2293,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 //					logger.debug(sdxc.getId() + "____values____ " + sdxc.getValue());
 					if (sdxc.getId().equalsIgnoreCase("LotNo")) {
 						lotNo = sdxc;
-						System.out.println(lotNo);
 					}
 					if (sdxc.getId().equalsIgnoreCase("LotClusterNo")) {
 						lotClusterNo = sdxc;
-						System.out.println(lotClusterNo);
 					}
 				}
 
@@ -2322,14 +2312,10 @@ public class CampaignFormBuilder extends VerticalLayout {
 						List<CampaignFormDataEntry> lotOwnSec = campaignFormDataIndexDto.getFormValues();
 						if (lotOwnSec.contains(lotNo)) {
 							listLotNo.add(lotOwnSec.get(lotOwnSec.indexOf(lotNo)).getValue().toString());
-							System.out.println(
-									lotOwnSec.get(lotOwnSec.indexOf(lotNo)).getValue().toString() + " hereeeeeeeeeee");
 						}
 
 						if (lotOwnSec.contains(lotClusterNo) && lotOwnSec.contains(lotNo)) {
 							listLotClusterNo.add(lotOwnSec.get(lotOwnSec.indexOf(lotClusterNo)).getValue().toString());
-							System.out.println(lotOwnSec.get(lotOwnSec.indexOf(lotClusterNo)).getValue().toString()
-									+ " jereeeeeeeeeee");
 						}
 					}
 				}
@@ -2340,7 +2326,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 								&& (Long.parseLong(listLotNo.get(0))
 										- Long.parseLong(lotNo.getValue().toString()) == 0)) {
 							saveChecker = false;
-							System.out.println("falseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
 							break;
 						}
 					}
@@ -2361,7 +2346,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 					dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
 
 					Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
-					System.out.println("logginggggggggggg");
 					return true;
 
 				} else {
