@@ -42,7 +42,7 @@ public abstract class ReferenceDto implements Serializable, HasUuid, Comparable<
 	private String formname_ps_af;
 	private String formname_fa_af;
 	
-	private String formversionuuid;
+	private String formGroupUuid;
 	private Long formVersion;
 	
 //	private Long externalId;
@@ -164,14 +164,12 @@ public abstract class ReferenceDto implements Serializable, HasUuid, Comparable<
 		this.formname_fa_af = formname_fa_af;
 	}
 
-	
-	
-	public String getFormversionuuid() {
-		return formversionuuid;
+	public String getFormGroupUuid() {
+		return formGroupUuid;
 	}
 
-	public void setFormversionuuid(String formversionuuid) {
-		this.formversionuuid = formversionuuid;
+	public void setFormGroupUuid(String formGroupUuid) {
+		this.formGroupUuid = formGroupUuid;
 	}
 
 	public Long getFormVersion() {

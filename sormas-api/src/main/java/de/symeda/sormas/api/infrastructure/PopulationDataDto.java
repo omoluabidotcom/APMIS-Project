@@ -1,5 +1,7 @@
 package de.symeda.sormas.api.infrastructure;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 
 import de.symeda.sormas.api.AgeGroup;
@@ -45,24 +47,28 @@ public class PopulationDataDto extends EntityDto {
 
 	private String campaign_id;
 	private String district_id;
-	private String uuid;
-	private Date changeDate;
-	
+
 	public PopulationDataDto() {
 		// TODO Auto-generated constructor stub
 	}
 
-	public PopulationDataDto(String campaign_id, String district_id, String selected, String uuid, Date changeDate) {
-		this.uuid = uuid;
-		this.changeDate = changeDate;
-		this.campaign_id = campaign_id;
-		this.district_id = district_id;
-		this.selected = selected;
+    public PopulationDataDto(String campaign_id, String district_id, String selected, String uuid, Date changeDate) {
+        this.setUuid(uuid);
+        this.setChangeDate(changeDate);
+        this.campaign_id = campaign_id;
+        this.district_id = district_id;
+        this.selected = selected;
+    }
 
-
-		// TODO Auto-generated constructor stub
-	}
-
+//	public PopulationDataDto(String campaign_id, String district_id, String selected) {
+//
+//		this.setUuid(DataHelper.createUuid());
+//		this.setChangeDate(Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+//
+//		this.campaign_id = campaign_id;
+//		this.district_id = district_id;
+//		this.selected = selected;
+//	}
 
 	public static PopulationDataDto build(Date collectionDate) {
 
@@ -177,23 +183,20 @@ public class PopulationDataDto extends EntityDto {
 		this.district_id = district_id;
 	}
 
-	public String getUuid() {
-		return uuid;
-	}
-
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
-	}
-
-	public Date getChangeDate() {
-		return changeDate;
-	}
-
-	public void setChangeDate(Date changeDate) {
-		this.changeDate = changeDate;
-	}
-
-
-	
+//	public String getUuid() {
+//		return uuid;
+//	}
+//
+//	public void setUuid(String uuid) {
+//		this.uuid = uuid;
+//	}
+//
+//	public Date getChangeDate() {
+//		return changeDate;
+//	}
+//
+//	public void setChangeDate(Date changeDate) {
+//		this.changeDate = changeDate;
+//	}
 
 }

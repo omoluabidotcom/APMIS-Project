@@ -292,7 +292,7 @@ public class DistrictView extends VerticalLayout {
 		if (criteria == null) {
 			criteria = new DistrictCriteria();
 		}
-		if (currentUser.hasUserRight(UserRight.PERFORM_BULK_OPERATIONS)) {
+		if (currentUser.hasUserRight(UserRight.INFRASTRUCTURE_PERFORM_BULK_OPERATIONS)) {
 			enterBulkEdit = new Button(I18nProperties.getCaption(Captions.actionEnterBulkEditMode));
 			leaveBulkEdit = new Button();
 			dropdownBulkOperations = new MenuBar();
@@ -556,8 +556,13 @@ public class DistrictView extends VerticalLayout {
 
 		});
 		anchor.getStyle().set("display", "none");
+		
+		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_IMPORT)) {
+			layout.add(importDistrict);
+		}
+		
 		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_EXPORT)) {
-			layout.add(importDistrict, exportDistrict, anchor);
+			layout.add(exportDistrict, anchor);
 		}
 		layout.setWidth("88%");
 
@@ -574,7 +579,7 @@ public class DistrictView extends VerticalLayout {
 		enterBulkEdit.addClassName("bulkActionButton");
 		Icon bulkModeButtonnIcon = new Icon(VaadinIcon.CLIPBOARD_CHECK);
 		enterBulkEdit.setIcon(bulkModeButtonnIcon);
-		if (userProvider.hasUserRight(UserRight.PERFORM_BULK_OPERATIONS)) {
+		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_PERFORM_BULK_OPERATIONS)) {
 			layout.add(enterBulkEdit);
 		}
 
@@ -945,7 +950,12 @@ public class DistrictView extends VerticalLayout {
 			dialog.getFooter().add(discardButton, saveButton);
 		} else {
 			dialog.setHeaderTitle(I18nProperties.getCaption(Captions.edit) + districtIndexDto.getName());
-			dialog.getFooter().add(archiveButton, discardButton, saveButton);
+			if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_ARCHIVE)) {
+				dialog.getFooter().add(archiveButton, discardButton, saveButton);				
+			}else {
+				dialog.getFooter().add(discardButton, saveButton);
+			}
+//			dialog.getFooter().add(archiveButton, discardButton, saveButton);
 
 		}
 		fmr.add(nameField, dCodeField, provinceOfDistrict, risk);

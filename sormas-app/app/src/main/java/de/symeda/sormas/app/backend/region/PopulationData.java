@@ -18,6 +18,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -43,6 +44,11 @@ public class PopulationData extends AbstractDomainObject implements Serializable
 	public static final String COLUMN_CAMPAIGN_ID = "campaign_id";
 	public static final String COLUMN_DISTRICT_ID = "district_id";
 	public static final String COLUMN_SELECTED = "selected";
+//	public static final String COLUMN_CHANGEDATE = "changedate";
+
+
+
+
 	@Column(name = "campaign_id")
 	private String campaign_id;  // Change to Long to match server
 

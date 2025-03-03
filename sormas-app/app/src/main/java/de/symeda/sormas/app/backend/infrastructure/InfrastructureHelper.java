@@ -45,6 +45,8 @@ public class InfrastructureHelper {
 		changeDates.setCampaignFormMetaChangeDate(DatabaseHelper.getCampaignFormMetaDao().getLatestChangeDate());
 		changeDates.setCampaignFormMetaExpiryChangeDate(DatabaseHelper.getCampaignFormMetaWithExpDao().getLatestChangeDate());
 		changeDates.setPopulationDataChangeDate(DatabaseHelper.getPopulationDataDao().getLatestChangeDate());
+		changeDates.setCampaignFormMetaRegionChangeDate(DatabaseHelper.getCampaignFormMetaRegionDao().getLatestChangeDate());
+
 
 
 		return changeDates;
