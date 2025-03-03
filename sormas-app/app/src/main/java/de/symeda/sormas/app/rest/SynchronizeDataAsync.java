@@ -731,6 +731,8 @@ if (1 == 3) {
 	//	new DiseaseConfigurationDtoHelper().pullMissing(diseaseConfigurationUuids);
 	//	new CustomizableEnumValueDtoHelper().pullMissing(customizableEnumValueUuids);
 		new PopulationDataDtoHelper().pullMissing(populationDataUuids);
+		new CampaignFormMetaRegionDtoHelper().pullMissing(populationDataUuids);
+
 
 		new FeatureConfigurationDtoHelper().pullMissing(featureConfigurationUuids);
 

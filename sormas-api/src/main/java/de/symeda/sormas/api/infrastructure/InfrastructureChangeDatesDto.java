@@ -25,6 +25,8 @@ public class InfrastructureChangeDatesDto implements Serializable {
 	private Date campaignFormMetaChangeDate;
 	private Date campaignFormMetaExpiryChangeDate;
 	private Date populationDataChangeDate;
+	private Date campaignFormMetaRegionChangeDate;
+
 
 	public Date getContinentChangeDate() {
 		return continentChangeDate;
@@ -168,6 +170,14 @@ public class InfrastructureChangeDatesDto implements Serializable {
 
 	public void setPopulationDataChangeDate(Date populationDataChangeDate) {
 		this.populationDataChangeDate = populationDataChangeDate;
+	}
+
+	public Date getCampaignFormMetaRegionChangeDate() {
+		return campaignFormMetaRegionChangeDate;
+	}
+
+	public void setCampaignFormMetaRegionChangeDate(Date campaignFormMetaRegionChangeDate) {
+		this.campaignFormMetaRegionChangeDate = campaignFormMetaRegionChangeDate;
 	}
 	
 	
