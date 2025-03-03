@@ -49,6 +49,7 @@ import org.jsoup.safety.Whitelist;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.vladmihalcea.hibernate.query.SQLExtractor;
 
 import de.symeda.sormas.api.EntityDto;
 import de.symeda.sormas.api.Modality;
@@ -68,11 +69,13 @@ import de.symeda.sormas.api.campaign.form.CampaignFormMetaFacade;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaHistoryExtractDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaIndexDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
+import de.symeda.sormas.api.campaign.form.CampaignFormMetaRegionDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaWithExpReferenceDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Strings;
 import de.symeda.sormas.api.i18n.Validations;
+import de.symeda.sormas.api.infrastructure.PopulationDataDto;
 import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityHistoryExtractDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
@@ -114,8 +117,15 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 	private AreaService areaService;
 
 	public CampaignFormMeta fromDto(@NotNull CampaignFormMetaDto source, boolean checkChangeDate) {
+		
+		System.out.println("xxxdssssssssssssssefaasdgasdgasdgasdfasdfasdfasfeasfdasdfs " + source);
+
+//		getByUuidAndFormVersionUuid
 		CampaignFormMeta target = DtoHelper.fillOrBuildEntity(source, service.getByUuid(source.getUuid()),
 				CampaignFormMeta::new, checkChangeDate);
+		
+//		CampaignFormMeta target = DtoHelper.fillOrBuildEntity(source, service.getByUuidAndFormVersionUuid(source.getUuid(), source.getFormversionuuid()),
+//				CampaignFormMeta::new, checkChangeDate);
 
 		System.out.println(
 				"dssssssssssssssefaasdgasdgasdgasdfasdfasdfasfeasfdasdfs " + service.getByUuid(source.getUuid()));
@@ -133,9 +143,48 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		target.setCampaignFormTranslations(source.getCampaignFormTranslations());
 		target.setDaysExpired(source.getDaysExpired());
 		target.setDistrictentry(source.isDistrictentry());
+		target.setFormversion(source.getFormversion());
+		target.setFormGroupUuid(source.getFormGroupUuid());
+
 
 		return target;
 	}
+	
+	//
+//	public CampaignFormMeta fromDtoDup(@NotNull CampaignFormMetaDto source, boolean checkChangeDate) {
+//		
+//		System.out.println("xxxdssssssssssssssefaasdgasdgasdgasdfasdfasdfasfeasfdasdfs " + source);
+//
+//		
+//		CampaignFormMeta target = DtoHelper.fillOrBuildDuplicateEntity(source, service.getByUuid(source.getUuid()),
+//				CampaignFormMeta::new, checkChangeDate);
+//		
+////		CampaignFormMeta target = DtoHelper.fillOrBuildEntity(source, service.getByUuidAndFormVersionUuid(source.getUuid(), source.getFormGroupUuid()),
+////				CampaignFormMeta::new, checkChangeDate);
+//
+//		System.out.println(
+//				"dssssssssssssssefaasdgasdgasdgasdfasdfasdfasfeasfdasdfs " + service.getByUuid(source.getUuid()));
+//
+//		target.setFormId(source.getFormId());
+//		target.setFormType(source.getFormType().toString().toLowerCase());
+//		target.setFormName(source.getFormName());
+//		target.setModality(source.getModality().toString());
+//		target.setFormCategory(source.getFormCategory());
+//		if (source.getArea() != null) {
+//			target.setArea(areaService.getByReferenceDto(source.getArea()));
+//		}
+//		target.setLanguageCode(source.getLanguageCode());
+//		target.setCampaignFormElements(source.getCampaignFormElements());
+//		target.setCampaignFormTranslations(source.getCampaignFormTranslations());
+//		target.setDaysExpired(source.getDaysExpired());
+//		target.setDistrictentry(source.isDistrictentry());
+//		target.setFormversion(source.getFormversion());
+//		target.setFormGroupUuid(source.getFormGroupUuid());
+//
+//
+//		return target;
+//	}
+
 
 	public static CampaignFormMetaDto toDto(CampaignFormMeta source) {
 		if (source == null) {
@@ -167,16 +216,78 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		target.setCampaignFormTranslations(source.getCampaignFormTranslations());
 		target.setDaysExpired(source.getDaysExpired());
 		target.setDistrictentry(source.isDistrictentry());
+		target.setFormversion(source.getFormversion());
+		target.setFormGroupUuid(source.getFormGroupUuid());
+
+
 
 		return target;
 	}
+	
+
+//	public static CampaignFormMetaDto toDtoDup(CampaignFormMeta source) {
+//		if (source == null) {
+//			return null;
+//		}
+//
+//		CampaignFormMetaDto target = new CampaignFormMetaDto();
+//		DtoHelper.fillDto(target, source);
+//
+//		target.setFormId(source.getFormId());
+//		target.setFormType((source.getFormType().toLowerCase().equals(CampaignPhase.PRE.toString().toLowerCase()))
+//				? CampaignPhase.PRE
+//				: (source.getFormType().toLowerCase().equals(CampaignPhase.INTRA.toString().toLowerCase()))
+//						? CampaignPhase.INTRA
+//						: CampaignPhase.POST);
+//		target.setFormName(source.getFormName());
+//		target.setFormname_ps_af(source.getFormname_ps_af());
+//		target.setFormname_fa_af(source.getFormname_fa_af());
+//		if (source.getModality() != null)
+//			target.setModality(source.getModality().equals(Modality.S2S.toString()) ? Modality.S2S
+//					: source.getModality().equals(Modality.HF2HF.toString()) ? Modality.HF2HF
+//							: source.getModality().equals(Modality.M2M.toString()) ? Modality.M2M : Modality.H2H);
+//		target.setFormCategory(source.getFormCategory());
+//		if (source.getArea() != null) {
+//			target.setArea(AreaFacadeEjb.toReferenceDto(source.getArea()));
+//		}
+//		target.setLanguageCode(source.getLanguageCode());
+//		target.setCampaignFormElements(source.getCampaignFormElements());
+//		target.setCampaignFormTranslations(source.getCampaignFormTranslations());
+//		target.setDaysExpired(source.getDaysExpired());
+//		target.setDistrictentry(source.isDistrictentry());
+//		target.setFormversion(source.getFormversion());
+////		target.form(source.getFormversion());
+//
+//
+//		return target;
+//	}
 
 	@Override
 	public CampaignFormMetaDto saveCampaignFormMeta(@Valid CampaignFormMetaDto campaignFormMetaDto)
 			throws ValidationRuntimeException {
+		
+		System.out.println("campaignFormMetaDtocampaignFormMetaDto" +  campaignFormMetaDto);
+		
 		validateAndClean(campaignFormMetaDto);
 
 		CampaignFormMeta campaignFormMeta = fromDto(campaignFormMetaDto, true);
+		service.ensurePersisted(campaignFormMeta);
+		return toDto(campaignFormMeta);
+	}
+	
+	@Override
+	public CampaignFormMetaDto duplicateCampaignFormMeta(@Valid CampaignFormMetaDto campaignFormMetaDto)
+			throws ValidationRuntimeException {
+		
+		System.out.println("campaignFormMetaDtocampaignFormMetaDto" +  campaignFormMetaDto);
+		System.out.println("campaignFormMetaDtocampaignFormMetaDto" +  campaignFormMetaDto.getFormversion());
+		System.out.println("campaignFormMetaDtocampaignFormMetaDto" +  campaignFormMetaDto.getFormGroupUuid());
+
+
+		validateAndClean(campaignFormMetaDto);
+
+		CampaignFormMeta campaignFormMeta = fromDto(campaignFormMetaDto, false);
+		campaignFormMeta.setId(null);
 		service.ensurePersisted(campaignFormMeta);
 		return toDto(campaignFormMeta);
 	}
@@ -378,12 +489,25 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		}
 		return filterdList;
 	}
+	
+//	@Override
+//	public CampaignFormMetaDto getCampaignFormMetaByUuidAndFormVersionUuid(String campaignFormUuid, String formVersionUuid) {
+//		
+//		return toDto(service.getByUuidAndFormVersionUuid(campaignFormUuid, formVersionUuid));
+//	}
+//	
+//	@Override
+//	public CampaignFormMetaReferenceDto getCampaignFormMetaReferenceByUuidAndFormVersionUuid(String campaignFormUuid, String formVersionUuid) {
+//		return toReferenceDto(service.getByUuidAndFormVersionUuid(campaignFormUuid, formVersionUuid));
+//	}
+//	
 
 	@Override
 	public CampaignFormMetaDto getCampaignFormMetaByUuid(String campaignFormUuid) {
+		
 		return toDto(service.getByUuid(campaignFormUuid));
 	}
-
+//	
 	@Override
 	public CampaignFormMetaReferenceDto getCampaignFormMetaReferenceByUuid(String campaignFormUuid) {
 		return toReferenceDto(service.getByUuid(campaignFormUuid));
@@ -454,6 +578,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 				Expression<?> expression;
 				switch (sortProperty.propertyName) {
 				case CampaignFormMeta.UUID:
+				case CampaignFormMeta.FORMGROUPUUID:
 				case CampaignFormMeta.FORM_ID:
 				case CampaignFormMeta.FORM_NAME:
 				case CampaignFormMeta.FORM_CATEGORY:
@@ -772,7 +897,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		}
 
 		return new CampaignFormMetaReferenceDto(entity.getUuid(), entity.toString(), entity.getFormType(),
-				entity.getFormCategory(), entity.getDaysExpired());
+				entity.getFormCategory(), entity.getDaysExpired(), entity.getFormGroupUuid(), entity.getFormversion() );
 	}
 
 	public static CampaignFormMetaReferenceDto toReferenceDtoDari(CampaignFormMeta entity) {
@@ -803,16 +928,6 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		Query getFormsWithExpiryQuery = em.createNativeQuery(nQuery);
 //
 		List<CampaignFormMetaExpiryDto> resultData = new ArrayList<>();
-
-//		@SuppressWarnings("unchecked")
-//		List<Object[]> resultList = getFormsWithExpiryQuery.getResultList();
-//
-//		resultData.addAll(resultList.stream()
-//				.map((result) -> new CampaignFormMetaExpiryDto((String) result[0].toString(),
-//						(String) result[1].toString(), ((BigInteger) result[2]).longValue(), (Date) result[3], (Date) result[4]))
-//				.collect(Collectors.toList()));
-//
-//		return resultData;//getFormsWithExpiryQuery.getResultList();
 
 		@SuppressWarnings("unchecked")
 		List<Object[]> resultList = getFormsWithExpiryQuery.getResultList();
@@ -1066,34 +1181,33 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 //	    return target;
 //	}
 //
-//	@Override
-//	public long getFormCountByUuid(String uuid) {
-//		// TODO Auto-generated method stub
-//		CriteriaBuilder cb = em.getCriteriaBuilder();
-//		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
-//		Root<CampaignFormMeta> root = cq.from(CampaignFormMeta.class);
-//
-//		
-//	    cq.select(cb.count(root)).where(cb.equal(root.get("uuid"), uuid));
-//	    
-//		return em.createQuery(cq).getSingleResult();
-//
-//	
-//	}
-//	
-//	public long isFormIdExists(Long newid) {
-//		CriteriaBuilder cb = em.getCriteriaBuilder();
-//		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
-//		Root<CampaignFormMeta> root = cq.from(CampaignFormMeta.class);
-//
-//		
-//	    cq.select(cb.count(root)).where(cb.equal(root.get("id"), newid));
-//	    
-//		return em.createQuery(cq).getSingleResult();
-//
-//	}
-	
+	@Override
+	public long getFormCountByUuid(String uuid) {
+		// TODO Auto-generated method stub
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+		Root<CampaignFormMeta> root = cq.from(CampaignFormMeta.class);
 
+		
+	    cq.select(cb.count(root)).where(cb.equal(root.get("uuid"), uuid));
+	    
+		return em.createQuery(cq).getSingleResult();
+
+	
+	}
+	
+	@Override
+	public long getFormCountByGroupUuid(String groupUuid) {
+		// TODO Auto-generated method stub
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+		Root<CampaignFormMeta> root = cq.from(CampaignFormMeta.class);		
+	    cq.select(cb.count(root)).where(cb.equal(root.get(CampaignFormMeta.FORMGROUPUUID), groupUuid));
+	    
+		return em.createQuery(cq).getSingleResult();
+
+	
+	}
 
 
 

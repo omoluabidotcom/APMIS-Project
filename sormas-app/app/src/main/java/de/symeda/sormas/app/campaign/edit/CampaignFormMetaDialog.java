@@ -40,6 +40,7 @@ import de.symeda.sormas.api.utils.fieldaccess.UiFieldAccessCheckers;
 import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.campaign.Campaign;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
+import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaRegion;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
 import de.symeda.sormas.app.backend.region.District;
@@ -82,16 +83,32 @@ public class CampaignFormMetaDialog extends FormDialog {
     protected void initializeContentView(ViewDataBinding rootBinding, ViewDataBinding buttonPanelBinding) {
 
         List<CampaignFormMeta> allFormsForCampaign = campaign.getCampaignFormMetas();
+
         List<CampaignFormMeta> allUnexpiredFormsForCampaign = new ArrayList<>();
+
+
+
         for (CampaignFormMeta campaignFormMeta : allFormsForCampaign) {
             Date expiryDate = DatabaseHelper.getCampaignFormMetaWithExpDao().getCampaignFormExpiryDateByCampaignIdAndFormId(campaign.getUuid(), campaignFormMeta.getUuid());
-
-
             LocalDate currentDate = LocalDate.now();
+
             if (expiryDate != null) {
+
+//                System.out.println("uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuyyyyyytt");
             LocalDate expiryLocalDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                 if (currentDate.isBefore(expiryLocalDate) || expiryLocalDate.isEqual(currentDate)) {
-                 allUnexpiredFormsForCampaign.add(campaignFormMeta);
+                    User user = ConfigProvider.getUser();
+
+//                    System.out.println("xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuyyyyyytt");
+
+                    // After Checking if the form meets the expiry criteria the we want to check if the form is added fro this region before we add
+                    //the form to the list to be presented in the forms dialog ;
+                    List<CampaignFormMetaRegion> formsSelectedForCampaign = DatabaseHelper.getCampaignFormMetaRegionDao().getSelectedFormsByRegion(campaignFormMeta.getUuid(), user.getRegion().getArea().getUuid());
+                    System.out.println(formsSelectedForCampaign + "formsSelectedForCampaignformsSelectedForCampaignformsSelectedForCampaign" +campaignFormMeta.getUuid() + "campaignFormMeta.getUuid()," +  user.getRegion().getArea().getUuid());
+                    if(formsSelectedForCampaign.size() > 0){
+
+                        allUnexpiredFormsForCampaign.add(campaignFormMeta);
+                    }
 //                // expiryDate is before currentDate or equals tob the current date itshold be added to my new list
             }  else {
                 // expiryDate is after currentDate

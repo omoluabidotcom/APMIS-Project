@@ -3,8 +3,10 @@ package com.cinoteck.application.views.campaign;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -129,8 +131,30 @@ public class CampaignFormGridComponent extends VerticalLayout {
 
 		ComboBox<CampaignFormMetaReferenceDto> forms = new ComboBox<CampaignFormMetaReferenceDto>();
 		forms.setLabel(I18nProperties.getCaption(Captions.campaignCampaignForm));
+		
+		
+		
+		Map<String, List<CampaignFormMetaReferenceDto>> formsByIdentifier = new HashMap<>();
+		for (CampaignFormMetaReferenceDto form : allCampaignFormMetas) {
+		    String formId = form.getFormGroupUuid();		    
+		    if (!formsByIdentifier.containsKey(formId)) {
+		        formsByIdentifier.put(formId, new ArrayList<>());
+		    }
+		    formsByIdentifier.get(formId).add(form);
+		}
+
+		// Process forms that have multiple versions
+		for (List<CampaignFormMetaReferenceDto> formVersions : formsByIdentifier.values()) {
+		    if (formVersions.size() > 1) {
+		        for (CampaignFormMetaReferenceDto form : formVersions) {
+		            String currentCaption = form.getCaption();
+		            String formVersion = form.getFormVersion() + "";
+		            form.setCaption(currentCaption + " V" + formVersion);
+		        }
+		    }
+		}
+
 		forms.setItems(allCampaignFormMetas);
-		// if its a clicked action set the value from the item....TODO
 
 		IntegerField daysExpire = new IntegerField();
 		daysExpire.setLabel(I18nProperties.getCaption(Captions.daysTOExpiry));

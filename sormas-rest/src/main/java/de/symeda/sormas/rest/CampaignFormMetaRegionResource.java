@@ -43,7 +43,7 @@ public class CampaignFormMetaRegionResource extends EntityDtoResource {
 
 			result.add(rdto.getUuid());
 		}
-		return FacadeProvider.getCampaignFormMetaFacade().getCampaignFormsByUserRegion(result);
+		return FacadeProvider.getCampaignFormMetaRegionFacade().getCampaignFormsByUserRegion(result);
 
 	}
 
@@ -51,7 +51,7 @@ public class CampaignFormMetaRegionResource extends EntityDtoResource {
 	@Path("/query")
 	public List<CampaignFormMetaRegionDto> getByUuids(List<String> uuids) {
 
-		List<CampaignFormMetaRegionDto> result = FacadeProvider.getCampaignFormMetaFacade()
+		List<CampaignFormMetaRegionDto> result = FacadeProvider.getCampaignFormMetaRegionFacade()
 				.getCampaignFormsByUserRegion(uuids);
 		return result;
 	}

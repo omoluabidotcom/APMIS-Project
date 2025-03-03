@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,7 @@ import javax.persistence.Transient;
 
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
+import de.symeda.sormas.app.backend.common.AbstractDomainObject;
 import de.symeda.sormas.app.backend.common.PseudonymizableAdo;
 
 @Entity(name = CampaignFormMetaRegion.TABLE_NAME)
@@ -38,7 +40,7 @@ import de.symeda.sormas.app.backend.common.PseudonymizableAdo;
 public class CampaignFormMetaRegion extends PseudonymizableAdo {
 
 	public static final String TABLE_NAME = "campaignformmeta_area";
-	public static final String I18N_PREFIX = "CampaignFormMeta_area";
+	public static final String I18N_PREFIX = "CampaignFormMetaArea";
 
 	public static final String FORM_ID = "area_id";
 	public static final String FORM_NAME = "campaignformmeta_id";
@@ -65,4 +67,10 @@ public class CampaignFormMetaRegion extends PseudonymizableAdo {
 	public void setCampaignformmeta_id(String campaignformmeta_id) {
 		this.campaignformmeta_id = campaignformmeta_id;
 	}
+
+	// Internationalization prefix
+	public String getI18nPrefix() {
+		return I18N_PREFIX;
+	}
+
 }

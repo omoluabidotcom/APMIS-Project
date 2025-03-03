@@ -72,6 +72,16 @@ public class CampaignFormMetaReferenceDto extends ReferenceDto {
 		this.setFormCategory(access);
 	}
 	
+	public CampaignFormMetaReferenceDto(String uuid, String caption, String type, FormAccess access, int daysExpired, String formGroupUuid, long version) {
+		setUuid(uuid);
+		setCaption(caption);
+		setFormType(type);
+		setFormGroupUuid(formGroupUuid);
+		setFormVersion(version);
+		this.setDaysExpired(daysExpired);
+		this.setFormCategory(access);
+	}
+	
 	public CampaignFormMetaReferenceDto(String uuid, String caption, String caption_ps_af, String caption_fa_af, String type, FormAccess access, int daysExpired) {
 		setUuid(uuid);
 		setCaption(caption);
@@ -82,13 +92,13 @@ public class CampaignFormMetaReferenceDto extends ReferenceDto {
 		this.setFormCategory(access);
 	}
 	
-	public CampaignFormMetaReferenceDto(String uuid, String caption, String caption_ps_af, String caption_fa_af, String type, FormAccess access, int daysExpired, String formversionuuid, long version) {
+	public CampaignFormMetaReferenceDto(String uuid, String caption, String caption_ps_af, String caption_fa_af, String type, FormAccess access, int daysExpired, String formGroupUuid, long version) {
 		setUuid(uuid);
 		setCaption(caption);
 		setFormname_ps_af(caption_ps_af);
 		setFormname_fa_af(caption_fa_af);
 		setFormType(type);
-		setFormversionuuid(formversionuuid);
+		setFormGroupUuid(formGroupUuid);
 		setFormVersion(version);
 		this.setDaysExpired(daysExpired);
 		this.setFormCategory(access);

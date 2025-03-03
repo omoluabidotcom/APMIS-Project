@@ -3892,7 +3892,7 @@ if(criteria.getUserLanguage() != null) {
 		
 		final String joinBuilder = "select analyticz.area as area_, analyticz.region as region_, analyticz.district as district_, commut.name as communit_name, commut.clusternumber as clusternumber_, commut.externalid as ccode,\n"
 				+ "analyticz.day1, analyticz.day2, analyticz.day3, analyticz.day4, analyticz.day5, analyticz.day6, analyticz.day7, analyticz.campaigns_uuid, analyticz.formuuid\n"
-				+ "from camapaigndata_adminxx analyticz\n"
+				+ "from camapaigndata_admin analyticz\n"
 				+ "left outer join community commut on analyticz.community_uuid = commut.uuid\n"
 				+ ""+joiner+"\n"
 				+ orderby
@@ -3970,7 +3970,7 @@ if(criteria.getUserLanguage() != null) {
 		}
 		
 		final String joinBuilder = "select count(*)\n"
-				+ "from camapaigndata_adminxx\n"
+				+ "from camapaigndata_admin\n"
 				+ ""+joiner+";";
 		
 		
@@ -3978,7 +3978,7 @@ if(criteria.getUserLanguage() != null) {
 		
 		// Construct count query
 		final String countQuery = "select count(*) "
-		        + "from camapaigndata_adminxx analyticz "
+		        + "from camapaigndata_admin analyticz "
 		        + "left outer join community commut on analyticz.community_uuid = commut.uuid "
 		        + joiner;
 
