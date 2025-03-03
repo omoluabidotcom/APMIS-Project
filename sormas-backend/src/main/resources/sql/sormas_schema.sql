@@ -10836,5 +10836,145 @@ INSERT INTO schema_version (version_number, comment) VALUES (480, 'Geography: Tr
 
 
 
+DROP MATERIALIZED VIEW public.camapaigndata_admin;
+DROP MATERIALIZED VIEW public.camapaigndata_adminxx;
+
+DROP INDEX IF EXISTS public.camapaigndata_admin_fieldid_id;
+DROP INDEX IF EXISTS public.camapaigndata_admin_fieldid_idx;
+DROP INDEX IF EXISTS public.camapaigndata_admin_fieldid_idxxx;
+
+
+CREATE MATERIALIZED VIEW public.camapaigndata_admin
+TABLESPACE pg_default
+AS 
+SELECT 
+    areas.name AS area,
+    region.name AS region,
+    district.name AS district,
+    community.name AS community,
+    areas.uuid AS areas_uuid,
+    region.uuid AS region_uuid,
+    district.uuid AS district_uuid,
+    campaigns.uuid AS campaigns_uuid,
+    community.uuid AS community_uuid,
+    campaignformmeta.uuid AS formuuid,
+    campaignformmeta.formid,
+    -- Logic for each day
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day8-readonly'::text THEN
+                CASE
+                    WHEN (jsondata.value ->> 'value'::text) = '0' THEN 1
+                    WHEN (jsondata.value ->> 'value'::text) = '1' THEN 0
+                    ELSE 0
+                END
+            ELSE 0
+        END) AS day8,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day7-readonly'::text THEN
+                CASE
+                    WHEN (jsondata.value ->> 'value'::text) = '0' THEN 1
+                    WHEN (jsondata.value ->> 'value'::text) = '1' THEN 0
+                    ELSE 0
+                END
+            ELSE 0
+        END) AS day7,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day6-readonly'::text THEN
+                CASE
+                    WHEN (jsondata.value ->> 'value'::text) = '0' THEN 1
+                    WHEN (jsondata.value ->> 'value'::text) = '1' THEN 0
+                    ELSE 0
+                END
+            ELSE 0
+        END) AS day6,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day5-readonly'::text THEN
+                CASE
+                    WHEN (jsondata.value ->> 'value'::text) = '0' THEN 1
+                    WHEN (jsondata.value ->> 'value'::text) = '1' THEN 0
+                    ELSE 0
+                END
+            ELSE 0
+        END) AS day5,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day4-readonly'::text THEN
+                CASE
+                    WHEN (jsondata.value ->> 'value'::text) = '0' THEN 1
+                    WHEN (jsondata.value ->> 'value'::text) = '1' THEN 0
+                    ELSE 0
+                END
+            ELSE 0
+        END) AS day4,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day3-readonly'::text THEN
+                CASE
+                    WHEN (jsondata.value ->> 'value'::text) = '0' THEN 1
+                    WHEN (jsondata.value ->> 'value'::text) = '1' THEN 0
+                    ELSE 0
+                END
+            ELSE 0
+        END) AS day3,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day2-readonly'::text THEN
+                CASE
+                    WHEN (jsondata.value ->> 'value'::text) = '0' THEN 1
+                    WHEN (jsondata.value ->> 'value'::text) = '1' THEN 0
+                    ELSE 0
+                END
+            ELSE 0
+        END) AS day2,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day1-readonly'::text THEN
+                CASE
+                    WHEN (jsondata.value ->> 'value'::text) = '0' THEN 1
+                    WHEN (jsondata.value ->> 'value'::text) = '1' THEN 0
+                    ELSE 0
+                END
+            ELSE 0
+        END) AS day1,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day0-readonly'::text THEN
+                CASE
+                    WHEN (jsondata.value ->> 'value'::text) = '0' THEN 1
+                    WHEN (jsondata.value ->> 'value'::text) = '1' THEN 0
+                    ELSE 0
+                END
+            ELSE 0
+        END) AS day0
+FROM 
+    campaignformdata
+    LEFT JOIN campaignformmeta ON campaignformdata.campaignformmeta_id = campaignformmeta.id
+    LEFT JOIN region ON campaignformdata.region_id = region.id
+    LEFT JOIN areas ON campaignformdata.area_id = areas.id
+    LEFT JOIN district ON campaignformdata.district_id = district.id
+    LEFT JOIN community ON campaignformdata.community_id = community.id
+    LEFT JOIN campaigns ON campaignformdata.campaign_id = campaigns.id,
+    LATERAL json_array_elements(campaignformdata.formvalues) jsondata(value)
+WHERE 
+    campaignformmeta.formcategory::text = 'ADMIN'::text
+GROUP BY 
+    areas.name, region.name, district.name, areas.uuid, region.uuid, district.uuid, 
+    community.name, community.uuid, campaignformmeta.uuid, campaignformmeta.formid, campaigns.uuid
+WITH DATA;
+
+
+CREATE UNIQUE INDEX camapaigndata_admin_fieldid_id ON public.camapaigndata_admin USING btree (formuuid, campaigns_uuid, community_uuid);
+
+
+INSERT INTO schema_version (version_number, comment) VALUES (481, 'Admin Data Completeness report formatting - data source selection');
+
+
+
+
+
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***
 
