@@ -23,8 +23,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,7 +48,11 @@ public final class DownloadTransposedDaywiseDataUtility {
             String campaignName) {
 
     	
-        String exportFileName = "APMIS_" + formName + "_" + campaignName + ".csv";
+//        String exportFileName = "APMIS_" + formName + "_" + campaignName + ".csv";
+        
+		String exportFileName = campaignName + "_" + formName + "_LONG_" +  new SimpleDateFormat("yyyyddMM").format(Calendar.getInstance().getTime())+ ".csv";// createFileNameWithCurrentDateandEntityNameString(formName+
+
+//        + new SimpleDateFormat("yyyyddMM").format(Calendar.getInstance().getTime());
         List<CampaignFormDataIndexDto> formDatafromIndexList = FacadeProvider.getCampaignFormDataFacade()
                 .getIndexList(criteria, null, null, null);
 

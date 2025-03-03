@@ -58,6 +58,9 @@ public class PopulationDataDtoHelper extends AdoDtoHelper<PopulationData, Popula
     @Override
     protected Call<List<PopulationDataDto>> pullAllSince(long since) throws NoConnectionException {
         return RetroProvider.getPopulationDataFacade().fetchPopulationDataSelectionByUserDistricts();
+
+//        return RetroProvider.getPopulationDataFacade().pullAllSince(since);
+//        return null;
     }
     @Override
     protected Call<List<PopulationDataDto>> pullByUuids(List<String> uuids) throws NoConnectionException {
@@ -75,7 +78,6 @@ public class PopulationDataDtoHelper extends AdoDtoHelper<PopulationData, Popula
 
         // Set the UUID first
         target.setUuid(source.getUuid());
-
         target.setCampaign_id(source.getCampaign_id());
         target.setDistrict_id(source.getDistrict_id());
         target.setSelected(source.getSelected());

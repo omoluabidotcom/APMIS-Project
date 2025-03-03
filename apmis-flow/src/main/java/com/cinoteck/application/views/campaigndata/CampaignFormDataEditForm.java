@@ -189,22 +189,9 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 
 		saveButton.addClickListener(e -> {
 			if( openData && campaignFormBuilder.updateFormDataUnitAssignment.isVisible() && !campaignFormBuilder.cbCommunity.isReadOnly()) {
-//				 Notification notification = new Notification("Warning: You have unsaved changes in the cluster selection. Please click the Update Form "
-//				 		+ "Data Unit button to save your changes, or they will be lost.", 3000); // Duration is 3000 ms
-//				    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-//				    notification.setPosition(Notification.Position.MIDDLE); // Center the notification
-//				    notification.open();
-				    
-				    
 					ConfirmDialog unsavedClusterEditWarninig = new ConfirmDialog();
-//					archiveDearchiveConfirmation.setCancelable(true);
-//					archiveDearchiveConfirmation.addCancelListener(ee -> archiveDearchiveConfirmation.close());
 					unsavedClusterEditWarninig.setRejectable(false);
-//					unsavedClusterEditWarninig.setRejectText("I understand");
-//					unsavedClusterEditWarninig.addRejectListener(ee -> unsavedClusterEditWarninig.close());
-
 					unsavedClusterEditWarninig.setConfirmText("I understand");
-//					unsavedClusterEditWarninig.setHeader("Warn");
 					unsavedClusterEditWarninig.setText("Warning: You have unsaved changes in the cluster selection. To save these changes, please click 'Update Form Data Unit,' to update selection or select 'Cancel' to discard them, or you will be unable to save.");
 					unsavedClusterEditWarninig.open();
 					unsavedClusterEditWarninig.addConfirmListener(ee -> unsavedClusterEditWarninig.close());

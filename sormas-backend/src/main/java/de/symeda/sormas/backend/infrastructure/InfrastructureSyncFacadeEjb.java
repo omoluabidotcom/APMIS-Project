@@ -101,7 +101,8 @@ public class InfrastructureSyncFacadeEjb implements InfrastructureSyncFacade {
 		sync.setRegions(regionFacade.getAllAfter(changeDates.getRegionChangeDate()));
 		sync.setDistricts(districtFacade.getAllAfter(changeDates.getDistrictChangeDate()));
 //		sync.setDistricts(districtFacade.getAllAfter(changeDates.getDistrictChangeDate()));
-		sync.setPopulationData(populationFacade.getAllAfter(changeDates.getPopulationDataChangeDate()));
+//		System.out.println("changeDates.getPopulationDataChangeDate(" + changeDates.getPopulationDataChangeDate() ) ;
+		sync.setPopulationData(populationFacade.getAllAfter(changeDates.getDistrictChangeDate()));
 
 		
 		
@@ -127,7 +128,9 @@ public class InfrastructureSyncFacadeEjb implements InfrastructureSyncFacade {
 		if (featureConfigurationFacade.isFeatureEnabled(FeatureType.CAMPAIGNS)) {
 			sync.setCampaigns(campaignFacade.getAllAfter(changeDates.getCampaignChangeDate()));
 			sync.setCampaignFormMetas(campaignFormMetaFacade.getAllAfter(changeDates.getCampaignFormMetaChangeDate()));
+
 		}
+		
 
 		return sync;
 	}

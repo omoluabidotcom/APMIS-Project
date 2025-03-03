@@ -442,7 +442,7 @@ public class RegionView extends VerticalLayout implements RouterLayout {
 		enterBulkEdit.addClassName("bulkActionButton");
 		Icon bulkModeButtonnIcon = new Icon(VaadinIcon.CLIPBOARD_CHECK);
 		enterBulkEdit.setIcon(bulkModeButtonnIcon);
-		if (userProvider.hasUserRight(UserRight.PERFORM_BULK_OPERATIONS)) {
+		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_PERFORM_BULK_OPERATIONS)) {
 			layout.add(enterBulkEdit);
 		}
 		enterBulkEdit.addClickListener(e -> {
@@ -858,7 +858,12 @@ public class RegionView extends VerticalLayout implements RouterLayout {
 			dialog.getFooter().add(discardButton, saveButton);
 		} else {
 			dialog.setHeaderTitle(I18nProperties.getCaption(Captions.edit) + areaDto.getName());
-			dialog.getFooter().add(archiveButton, discardButton, saveButton);
+			if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_ARCHIVE)) {
+				dialog.getFooter().add(archiveButton, discardButton, saveButton);				
+			}else {
+				dialog.getFooter().add(discardButton, saveButton);
+			}
+
 
 		}
 		dialog.add(fmr);

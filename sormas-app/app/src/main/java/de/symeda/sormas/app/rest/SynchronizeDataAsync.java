@@ -36,6 +36,7 @@ import de.symeda.sormas.app.backend.campaign.CampaignDtoHelper;
 import de.symeda.sormas.app.backend.campaign.data.CampaignFormDataDtoHelper;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaDtoHelper;
 
+import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaRegionDtoHelper;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaWithExpDtoHelper;
 import de.symeda.sormas.app.backend.caze.CaseDtoHelper;
 import de.symeda.sormas.app.backend.classification.DiseaseClassificationDtoHelper;
@@ -347,6 +348,10 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			if (campaignFormMetaWithExpDtoHelper.pullAndPushEntities())
 				campaignFormMetaWithExpDtoHelper.pullEntities(true);
 
+			final CampaignFormMetaRegionDtoHelper campaignFormMetaRegionDtoHelper = new CampaignFormMetaRegionDtoHelper();
+			if (campaignFormMetaRegionDtoHelper.pullAndPushEntities())
+				campaignFormMetaRegionDtoHelper.pullEntities(true);
+
 			final PopulationDataDtoHelper populationDataDtoHelper = new PopulationDataDtoHelper();
 			if (populationDataDtoHelper.pullAndPushEntities())
 				populationDataDtoHelper.pullEntities(true);
@@ -450,6 +455,8 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			new CampaignFormMetaDtoHelper().pullEntities(false);
 			new CampaignFormMetaWithExpDtoHelper().pullEntities(false);
 			new CampaignDtoHelper().pullEntities(false);
+			new CampaignFormMetaRegionDtoHelper().pullEntities(false);
+
 
 		}
 
