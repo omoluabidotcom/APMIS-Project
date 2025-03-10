@@ -2,15 +2,8 @@ package com.cinoteck.application.messaging;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import com.cinoteck.application.UserProvider;
-import com.cinoteck.application.messaging.MessagingLayout.MessageEvent;
-import com.cinoteck.application.messaging.MessagingLayout.SaveEvent;
-import com.cinoteck.application.views.user.UserForm;
-import com.cinoteck.application.views.user.UserForm.DeleteEvent;
-import com.cinoteck.application.views.user.UserForm.UserFormEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -28,20 +21,14 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.shared.Registration;
 
-import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.messaging.MessageCategory;
-import de.symeda.sormas.api.messaging.MessageDto;
 import de.symeda.sormas.api.messaging.MessageTemplateDto;
-import de.symeda.sormas.api.user.UserDto;
-import de.symeda.sormas.api.user.UserReferenceDto;
-import de.symeda.sormas.api.user.UserType;
 
 public class MessageTemplateLayout extends VerticalLayout {
 
@@ -168,7 +155,7 @@ public class MessageTemplateLayout extends VerticalLayout {
 			messageTemplateDto = binder.getBean();		
 
 			messageTemplateDto.setChgDate(Timestamp.from(Instant.now()));
-			messageTemplateDto.setCreatingUser(userProvider.getUser().getLastName());
+			messageTemplateDto.setCreatingUser(userProvider.getUser().getUserName());
 			fireEvent(new SaveEvent(this, messageTemplateDto));
 
 			Notification notification = new Notification("New Message Template Created", 3000, Position.MIDDLE);

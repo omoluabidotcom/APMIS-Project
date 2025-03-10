@@ -157,30 +157,25 @@ public class MessageTemplateManager extends VerticalLayout implements RouterLayo
 		search.addValueChangeListener(e -> {
 
 			if (e.getValue().toString() != null) {
-				messageTemplateCriteria.freeText(e.getValue().toString());
-				filterDataProvider.setFilter(messageTemplateCriteria);
-
-				filterDataProvider.refreshAll();
+				messageTemplateCriteria.freeText(e.getValue().toString());			
 			} else {
 				messageTemplateCriteria.freeText(null);
 				filterDataProvider.setFilter(messageTemplateCriteria);
-
 				filterDataProvider.refreshAll();
 			}
+			filterDataProvider.setFilter(messageTemplateCriteria);
+			filterDataProvider.refreshAll();
 		});
 
 		messageCategory.addValueChangeListener(e -> {
 			if (e.getValue() != null) {
 				messageTemplateCriteria.setMessageCategory(e.getValue());
-				filterDataProvider.setFilter(messageTemplateCriteria);
-
-				filterDataProvider.refreshAll();
 			} else {
-				messageTemplateCriteria.setMessageCategory(null);
-				filterDataProvider.setFilter(messageTemplateCriteria);
-
-				filterDataProvider.refreshAll();
+				messageTemplateCriteria.setMessageCategory(null);				
 			}
+			
+			filterDataProvider.setFilter(messageTemplateCriteria);
+			filterDataProvider.refreshAll();
 		});
 
 		enterBulkEditMode.addClickListener(e -> {
@@ -222,17 +217,17 @@ public class MessageTemplateManager extends VerticalLayout implements RouterLayo
 		});
 
 		archiveFilter.addValueChangeListener(e -> {
-			if (e.getValue() != null) {
-				messageTemplateCriteria.setArchived(e.getValue());
-				filterDataProvider.setFilter(messageTemplateCriteria);
-
-				filterDataProvider.refreshAll();
+			System.out.println("e.getValue() != null " + e.getValue());
+			if (e.getValue().equals(true)) {
+				messageTemplateCriteria.setArchived(true);
+			} else if(e.getValue().equals(false)) {
+				messageTemplateCriteria.setArchived(false);
 			} else {
-				messageTemplateCriteria.setMessageCategory(null);
-				filterDataProvider.setFilter(messageTemplateCriteria);
-
-				filterDataProvider.refreshAll();
+				messageTemplateCriteria.setArchived(null);
 			}
+			
+			filterDataProvider.setFilter(messageTemplateCriteria);
+			filterDataProvider.refreshAll();
 		});
 		
 		newPreWrittenMessage.addClickListener(e -> {

@@ -1,6 +1,8 @@
 package de.symeda.sormas.backend.messaging;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Set;
 
 import javax.persistence.CollectionTable;
@@ -11,19 +13,13 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.UniqueConstraint;
 
-import de.symeda.auditlog.api.Audited;
-import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
-import de.symeda.sormas.api.messaging.Status;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserRole;
-import de.symeda.sormas.api.user.UserType;
 import de.symeda.sormas.backend.common.AbstractDomainObject;
-import de.symeda.sormas.backend.common.CoreAdo;
 import de.symeda.sormas.backend.infrastructure.area.Area;
 import de.symeda.sormas.backend.infrastructure.community.Community;
 import de.symeda.sormas.backend.infrastructure.district.District;
@@ -41,7 +37,6 @@ public class MessageCron extends AbstractDomainObject{
 	public static final String TABLE_NAME = "messagescron";
 	public static final String TABLE_NAME_USERROLES = "messagescron_userroles";
 	public static final String TABLE_NAME_USERTYPES = "messagescron_usertypes";
-	public static final String TABLE_NAME_STATUS = "messagescron_status";
 	
 	public static final String MESSAGE_CONTENT = "messageContent";
 	public static final String USER_ROLES = "userRoles";
@@ -51,7 +46,8 @@ public class MessageCron extends AbstractDomainObject{
 	public static final String DISTRICT = "district";
 	public static final String COMMUNITY = "community";
 	public static final String CHG_DATE = "chgDate";
-	public static final String STATUS = "status";
+	public static final String SCHEDULE_DATE = "scheduleDate";
+	public static final String SCHEDULE_TIME = "scheduleTime";
 	public static final String CREATED_BY = "creatingUser";
 	
 	private String messageContent;
@@ -62,8 +58,9 @@ public class MessageCron extends AbstractDomainObject{
 	private Set<District> district;
 	private Set<Community> community;
 	private User creatingUser;
-	private Status status;
 	private Timestamp chgDate;
+	private LocalDate scheduleDate;
+	private LocalTime scheduleTime;
 	
 	@Column(name = "messagecontent", nullable = false)
 	public String getMessageContent() {
@@ -75,9 +72,9 @@ public class MessageCron extends AbstractDomainObject{
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Enumerated(EnumType.STRING)
 	@CollectionTable(name = "messagescron_userroles",
-		joinColumns = @JoinColumn(name = "messagecron_id", referencedColumnName = MessageCron.ID, nullable = false),
+		joinColumns = @JoinColumn(name = "messagescron_id", referencedColumnName = MessageCron.ID, nullable = false),
 		uniqueConstraints = @UniqueConstraint(columnNames = {
-			"messagecron_id",
+			"messagescron_id",
 			"userrole" }))
 	@Column(name = "userrole", nullable = false)
 	public Set<UserRole> getUserRoles() {
@@ -88,10 +85,10 @@ public class MessageCron extends AbstractDomainObject{
 	}
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Enumerated(EnumType.STRING)
-	@CollectionTable(name = "messagecron_formaccess",
-		joinColumns = @JoinColumn(name = "messagecron_id", referencedColumnName = MessageCron.ID, nullable = false),
+	@CollectionTable(name = "messagescron_formaccess",
+		joinColumns = @JoinColumn(name = "messagescron_id", referencedColumnName = MessageCron.ID, nullable = false),
 		uniqueConstraints = @UniqueConstraint(columnNames = {
-			"messagecron_id",
+			"messagescron_id",
 			"formAccess" }))
 	@Column(name = "formAccess", nullable = false)
 	public Set<FormAccess> getFormAccess() {
@@ -101,10 +98,10 @@ public class MessageCron extends AbstractDomainObject{
 		this.formAccess = formAccess;
 	}
 	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(name = "messagecron_areas",
-		joinColumns = @JoinColumn(name = "messagecron_id", referencedColumnName = MessageCron.ID, nullable = false),
+	@CollectionTable(name = "messagescron_areas",
+		joinColumns = @JoinColumn(name = "messagescron_id", referencedColumnName = MessageCron.ID, nullable = false),
 		uniqueConstraints = @UniqueConstraint(columnNames = {
-			"messagecron_id",
+			"messagescron_id",
 			"area_id" }))
 	@ManyToMany(cascade = {})
 	public Set<Area> getArea() {
@@ -114,10 +111,10 @@ public class MessageCron extends AbstractDomainObject{
 		this.area = area;
 	}
 	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(name = "messagecron_region",
-		joinColumns = @JoinColumn(name = "messagecron_id", referencedColumnName = MessageCron.ID, nullable = false),
+	@CollectionTable(name = "messagescron_region",
+		joinColumns = @JoinColumn(name = "messagescron_id", referencedColumnName = MessageCron.ID, nullable = false),
 		uniqueConstraints = @UniqueConstraint(columnNames = {
-			"messagecron_id",
+			"messagescron_id",
 			"region_id" }))
 	@ManyToMany(cascade = {})
 	public Set<Region> getRegion() {
@@ -127,10 +124,10 @@ public class MessageCron extends AbstractDomainObject{
 		this.region = region;
 	}
 	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(name = "messagecron_district",
-		joinColumns = @JoinColumn(name = "messagecron_id", referencedColumnName = MessageCron.ID, nullable = false),
+	@CollectionTable(name = "messagescron_district",
+		joinColumns = @JoinColumn(name = "messagescron_id", referencedColumnName = MessageCron.ID, nullable = false),
 		uniqueConstraints = @UniqueConstraint(columnNames = {
-			"messagecron_id",
+			"messagescron_id",
 			"district_id" }))
 	@ManyToMany(cascade = {})
 	public Set<District> getDistrict() {
@@ -140,10 +137,10 @@ public class MessageCron extends AbstractDomainObject{
 		this.district = district;
 	}	
 	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(name = "messagecron_community",
-		joinColumns = @JoinColumn(name = "messagecron_id", referencedColumnName = MessageCron.ID, nullable = false),
+	@CollectionTable(name = "messagescron_community",
+		joinColumns = @JoinColumn(name = "messagescron_id", referencedColumnName = MessageCron.ID, nullable = false),
 		uniqueConstraints = @UniqueConstraint(columnNames = {
-			"messagecron_id",
+			"messagescron_id",
 			"community_id" }))
 	@ManyToMany(cascade = {})
 	public Set<Community> getCommunity() {
@@ -165,6 +162,22 @@ public class MessageCron extends AbstractDomainObject{
 	}
 	public void setChgDate(Timestamp chgDate) {
 		this.chgDate = chgDate;
+	}
+	
+	public LocalTime getScheduleTime() {
+		return scheduleTime;
+	}
+	
+	public void setScheduleTime (LocalTime scheLocalTime) {
+		this.scheduleTime = scheLocalTime;
+	}
+	
+	public LocalDate getScheduleDate() {
+		return scheduleDate;
+	}
+	
+	public void setScheduleDate (LocalDate scheduleDate) {
+		this.scheduleDate = scheduleDate;
 	}
 	
 }
