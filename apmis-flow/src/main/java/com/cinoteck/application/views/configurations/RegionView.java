@@ -257,7 +257,7 @@ public class RegionView extends VerticalLayout implements RouterLayout {
 		
 //		inactivityHandler = new InactivityHandler();
 		
-		if (userProvider.hasUserRight(UserRight.PERFORM_BULK_OPERATIONS)) {
+		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_PERFORM_BULK_OPERATIONS)) {
 			enterBulkEdit = new Button(I18nProperties.getCaption(Captions.actionEnterBulkEditMode));
 			leaveBulkEdit = new Button();
 			dropdownBulkOperations = new MenuBar();
@@ -361,7 +361,7 @@ public class RegionView extends VerticalLayout implements RouterLayout {
 
 		});
 
-		if (userProvider.hasUserRight(UserRight.PERFORM_BULK_OPERATIONS)) {
+		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_PERFORM_BULK_OPERATIONS)) {
 			enterBulkEdit = new Button(I18nProperties.getCaption(Captions.actionEnterBulkEditMode));
 			leaveBulkEdit = new Button();
 			dropdownBulkOperations = new MenuBar();

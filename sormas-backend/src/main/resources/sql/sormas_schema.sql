@@ -10960,9 +10960,63 @@ WITH DATA;
 CREATE UNIQUE INDEX camapaigndata_admin_fieldid_id ON public.camapaigndata_admin USING btree (formuuid, campaigns_uuid, community_uuid);
 
 
+
+
 INSERT INTO schema_version (version_number, comment) VALUES (481, 'Admin Data Completeness report formatting - data source selection');
 
 
-d
+ALTER TABLE public.users ADD notificationlastopendate timestamp NULL;
+ALTER TABLE public.messages ADD chgDate timestamp NULL;
+
+CREATE TABLE public.messagestemplate (
+	id int8 NOT NULL,
+	"uuid" varchar(36) NOT NULL,
+	changedate timestamp NOT NULL,
+	creationdate timestamp NOT NULL,
+	messagecontent varchar NOT NULL,
+	creatinguser_id int8 NULL,
+	chgdate timestamp NULL,
+	CONSTRAINT messagestemplate_pkey PRIMARY KEY (id),
+	CONSTRAINT messagestemplate_uuid_key UNIQUE (uuid)
+);
+
+ALTER TABLE public.messagestemplate ADD CONSTRAINT messagestemplate_creatinguser_id_fkey FOREIGN KEY (creatinguser_id) REFERENCES public.users(id);
+
+ALTER TABLE public.messagestemplate ADD messageCategory varchar NULL;
+
+GRANT REFERENCES, DELETE, INSERT, TRUNCATE, SELECT, UPDATE, TRIGGER ON TABLE public.messagestemplate TO sormas_user;
+
+ALTER TABLE public.messagestemplate ADD archived bool DEFAULT false NULL;
+
+ALTER TABLE public.messages ADD status varchar NULL;
+
+
+
+-- Add column without NOT NULL constraint
+ALTER TABLE campaignformmeta ADD COLUMN formgroupuuid varchar(36);
+ALTER TABLE campaignformmeta ADD COLUMN formversion int4 DEFAULT 1 NOT null;
+
+-- Update all existing rows with UUID values
+UPDATE campaignformmeta SET formgroupuuid = UPPER(gen_random_uuid()::text);
+
+-- Now add the NOT NULL constraint
+ALTER TABLE campaignformmeta ALTER COLUMN formgroupuuid SET NOT NULL;
+
+
+
+CREATE TABLE public.campaignformmeta_areas (
+	campaignformmeta_id int4 NOT NULL,
+	area_id int4 NOT NULL,
+	"uuid" varchar(36) DEFAULT upper(gen_random_uuid()::character varying::text) NULL,
+	CONSTRAINT campaignformmeta_areas_pkey PRIMARY KEY (campaignformmeta_id, area_id)
+);
+
+INSERT INTO schema_version (version_number, comment) VALUES (482, 'Notification, Campaign Form Region Assignment & Form Versioning');
+
+
+
+
+
+
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***
 

@@ -32,9 +32,10 @@ import de.symeda.sormas.app.backend.common.PseudonymizableAdo;
 
 @Entity(name = PopulationData.TABLE_NAME)
 @DatabaseTable(tableName = PopulationData.TABLE_NAME)
-public class PopulationData extends AbstractDomainObject implements Serializable {
+public class PopulationData //extends AbstractDomainObject implements Serializable {
+		extends PseudonymizableAdo {
 
-	private static final long serialVersionUID = -6057113970091470463L;
+//	private static final long serialVersionUID = -6057113970091470463L;
 
 	// Table name constant
 	public static final String TABLE_NAME = "populationdata";
@@ -44,7 +45,6 @@ public class PopulationData extends AbstractDomainObject implements Serializable
 	public static final String COLUMN_CAMPAIGN_ID = "campaign_id";
 	public static final String COLUMN_DISTRICT_ID = "district_id";
 	public static final String COLUMN_SELECTED = "selected";
-//	public static final String COLUMN_CHANGEDATE = "changedate";
 
 
 

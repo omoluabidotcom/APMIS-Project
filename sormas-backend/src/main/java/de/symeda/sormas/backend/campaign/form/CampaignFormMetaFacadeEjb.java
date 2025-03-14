@@ -1125,62 +1125,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 				)).collect(Collectors.toList()));
 		return resultData;
 					}
-
 	
-	@LocalBean
-	@Stateless
-	public static class CampaignFormMetaFacadeEjbLocal extends CampaignFormMetaFacadeEjb {
-
-	
-	}
-
-	
-//	@Override
-//	public CampaignFormMetaDto getByUuidAndFormVersionUuid(String uuid , String formVersionUuid ) {
-//		return toDtox(service.getByUuidANdFormVersionUuid(uuid, formVersionUuid));
-//	}
-
-	
-//	@Override
-//	public void cloneForm(String campaignUuid, String uuid, , long newVersion) {
-//
-//		CampaignFormMetaDto oldCampaignDto = getByUuidAndFormVersionUuid(campaignUuid, userCreating);
-//
-//		CampaignFormMeta newCampaign = cloneFormFromDto(oldCampaignDto);
-//		newCampaign.setFormversionuuid(DataHelper.createUuid());
-//
-//		service.ensurePersisted(newCampaign);
-//
-//		String newUuid = newCampaign.getUuid();
-//
-//	
-////		return newUuid;
-//	}
-//
-//	public CampaignFormMeta cloneFormFromDto(@NotNull CampaignFormMetaDto source) {
-//	    CampaignFormMeta target = new CampaignFormMeta();
-//	    
-//	    // Fill basic entity data
-//	    target.setUuid(DataHelper.createUuid());
-//	    target.setCreationDate(new Timestamp(System.currentTimeMillis()));
-//	    target.setChangeDate(new Timestamp(System.currentTimeMillis()));
-//	    
-//	    // Copy form-specific data
-//	    target.setFormId(source.getFormId() + source.getFormversion().toString());
-//	    target.setFormType(source.getFormType().toString().toLowerCase());
-//	    target.setFormName(source.getFormName());
-//	    target.setModality(source.getModality().toString());
-//	    target.setFormCategory(source.getFormCategory());
-//	    target.setLanguageCode(source.getLanguageCode());
-//	    target.setCampaignFormElements(source.getCampaignFormElements());
-//	    target.setCampaignFormTranslations(source.getCampaignFormTranslations());
-//	    target.setDaysExpired(source.getDaysExpired());
-//	    target.setDistrictentry(source.isDistrictentry());
-//	    target.setFormversion(source.getFormversion());
-//	    
-//	    return target;
-//	}
-//
 	@Override
 	public long getFormCountByUuid(String uuid) {
 		// TODO Auto-generated method stub
@@ -1208,7 +1153,14 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 
 	
 	}
+	
 
+	
+	@LocalBean
+	@Stateless
+	public static class CampaignFormMetaFacadeEjbLocal extends CampaignFormMetaFacadeEjb {
+	
+	}
 
-
+	
 }
