@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,7 +12,6 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import com.cinoteck.application.UserProvider;
-import com.cinoteck.application.views.useractivitysummary.UserActivitySummary;
 import com.cinoteck.application.views.utils.gridexporter.GridExporter;
 import com.google.api.client.util.Value;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -26,6 +24,7 @@ import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -37,9 +36,10 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification.Position;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.Query;
@@ -61,7 +61,6 @@ import de.symeda.sormas.api.messaging.MessageDto;
 import de.symeda.sormas.api.messaging.MessageScheduleDto;
 import de.symeda.sormas.api.messaging.MessageTemplateDto;
 import de.symeda.sormas.api.user.FormAccess;
-import de.symeda.sormas.api.user.UserActivitySummaryDto;
 import de.symeda.sormas.api.user.UserRight;
 import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.api.user.UserType;
@@ -112,6 +111,8 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 
 	private StringBuilder baseTopic = new StringBuilder();
 	private FCMDto fcmDto = new FCMDto();
+	private List<MessageScheduleDto> scheduledMessageList = FacadeProvider.getMessageFacade()
+			.getIndexListMessageSchedule(null, 0, 100, null);
 
 	@Value("${fcm.secret.key}")
 	private String fcmSecretKey;
@@ -123,7 +124,9 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 	private Icon icon = VaadinIcon.UPLOAD_ALT.create();
 	private Button exportButton;
 	private Button scheduleMessageButton;
-
+	private Button scheduledMessages;
+	private Button scheduleMessageClose;
+	
 	public SentMessageView() {
 
 		this.setSizeFull();
@@ -142,16 +145,21 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 		});
 		anchor.getStyle().set("display", "none");
 		
-		scheduleMessageButton = new Button("Schedule Message");
-
-		scheduleMessageButton.setIcon(new Icon(VaadinIcon.ORIENTATION));
-
+		scheduleMessageButton = new Button("Schedule a Message");
+		scheduleMessageButton.setIcon(new Icon(VaadinIcon.ARROW_FORWARD));
+		
+		scheduledMessages = new Button("Scheduled Messages");
+		scheduledMessages.setIcon(new Icon(VaadinIcon.ORIENTATION));
+		
+		scheduleMessageClose = new Button("Scheduled Messages");
+		scheduleMessageClose.setIcon(new Icon(VaadinIcon.CLOSE));
+		
 		configureView();
 		configureGrid();
 
 		buttonLayout.getStyle().set("margin-left", "10px");
 		buttonLayout.setAlignItems(Alignment.END);
-		buttonLayout.add(newMessage, exportButton, anchor);
+		buttonLayout.add(newMessage, exportButton, anchor, scheduleMessageButton, scheduledMessages);
 
 		filters.getStyle().set("margin-left", "10px");
 		filters.setAlignItems(Alignment.END);
@@ -390,6 +398,31 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 			messageScheduleDto = new MessageScheduleDto();
 			scheduleMessage(messageScheduleDto);
 		});
+		
+		scheduledMessages.addClickListener(e -> {
+
+			if(scheduledMessageList.size() > 0) {
+				scheduledMessage();
+			} else {
+				com.vaadin.flow.component.notification.Notification notification = new com.vaadin.flow.component.notification.Notification();
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+				notification.setPosition(Position.MIDDLE);
+				Button closeButton = new Button(new Icon("lumo", "cross"));
+				closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+				closeButton.getElement().setAttribute("aria-label", "Close");
+				closeButton.addClickListener(event -> {
+					notification.close();
+				});
+
+				Paragraph text = new Paragraph("There is no existing Scheduled Message(s)");
+
+				HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+				layout.setAlignItems(Alignment.CENTER);
+
+				notification.add(layout);
+				notification.open();				
+			}
+		});
 	}
 
 	private String formAccessConfig(MessageDto messageDto) {
@@ -525,14 +558,14 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 
 		ScheduleMessageLayout scheduleMessageLayout = new ScheduleMessageLayout(messageScheduleDto, true);
 		scheduleMessageLayout.setScheduleMessage(messageScheduleDto);
-
 		scheduleMessageLayout.addSaveListener(event -> {
 			try {
-//				saveMessage(event);
+				saveMessages(event);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		});
+		
 		Dialog dialog = new Dialog();
 		dialog.add(scheduleMessageLayout);
 		dialog.setHeaderTitle("Schedule a Message");
@@ -542,6 +575,23 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 		dialog.setCloseOnOutsideClick(false);
 		dialog.setModal(true);
 		dialog.setClassName("schedule-message");
+	}
+	
+	public void scheduledMessage() {
+		Dialog dialog = new Dialog();
+		ScheduledMessageLayout scheduleMessageLayout = new ScheduledMessageLayout();
+					
+		dialog.add(scheduleMessageLayout);
+		dialog.setHeaderTitle("Scheduled Messages");
+		dialog.setHeight("500px");
+		dialog.setWidth("1200px");
+		dialog.setCloseOnEsc(false);
+		dialog.setCloseOnOutsideClick(false);
+		dialog.setModal(true);
+		dialog.setClassName("schedule-message");
+		dialog.open();
+		scheduleMessageClose.addClickListener(e -> {dialog.close();});
+		dialog.getFooter().add(scheduleMessageClose);
 	}
 
 	public void sendFcmSdk(MessageDto messageDto) throws IOException {
@@ -580,15 +630,14 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 		}
 	}
 
-	public void saveMessage(ScheduleMessageLayout.SaveEvent event) throws Exception {
-//		FacadeProvider.getMessageFacade().saveMessage(event.getScheduleMessage());
+	public void saveMessages(ScheduleMessageLayout.SaveEvent event) throws Exception {
+		FacadeProvider.getMessageFacade().saveMessage(event.getScheduleMessage());
 	}
 	
 	private void updateRowCount() {
 
 		int numberOfRows = filterDataProvider.size(new Query<>());
 		String newText = I18nProperties.getCaption(Captions.rows) + numberOfRows;
-
 		countRowItems.setText(newText);
 		countRowItems.setId("rowCount");
 	}

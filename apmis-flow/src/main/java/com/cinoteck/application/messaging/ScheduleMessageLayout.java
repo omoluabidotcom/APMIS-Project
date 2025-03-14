@@ -4,12 +4,11 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.cinoteck.application.UserProvider;
-import com.cinoteck.application.messaging.MessagingLayout.MessageEvent;
-import com.cinoteck.application.messaging.MessagingLayout.SaveEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -17,6 +16,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
@@ -28,9 +28,9 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.shared.Registration;
@@ -40,7 +40,6 @@ import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
-import de.symeda.sormas.api.messaging.MessageDto;
 import de.symeda.sormas.api.messaging.MessageScheduleDto;
 import de.symeda.sormas.api.messaging.MessageTemplateDto;
 import de.symeda.sormas.api.user.FormAccess;
@@ -67,6 +66,9 @@ public class ScheduleMessageLayout extends VerticalLayout{
 	MultiSelectComboBox<RegionReferenceDto> regionSelector;
 	MultiSelectComboBox<DistrictReferenceDto> districtSelector;
 	MultiSelectComboBox<CommunityReferenceDto> communitySelector;
+	
+	DatePicker scheduleMessageDate = new DatePicker();
+	TimePicker scheduleMessageTime = new TimePicker();
 
 	List<AreaReferenceDto> regions = FacadeProvider.getAreaFacade().getAllActiveAsReference();
 	List<RegionReferenceDto> provinces = FacadeProvider.getRegionFacade().getAllActiveAsReference();
@@ -83,7 +85,7 @@ public class ScheduleMessageLayout extends VerticalLayout{
 	List<CommunityReferenceDto> communityiesHolder;
 
 	Icon savePreviewIcon = new Icon(VaadinIcon.PROGRESSBAR);
-	Button savePreviewButton = new Button("Send", savePreviewIcon);
+	Button savePreviewButton = new Button("Schedule", savePreviewIcon);
 
 	private boolean isNew = false;
 		
@@ -93,9 +95,9 @@ public class ScheduleMessageLayout extends VerticalLayout{
 
 		this.isNew = isNew;
 		if (isNew) {
-			MessageScheduleDto messeMessageScheduleDtoNew = new MessageScheduleDto();
+			MessageScheduleDto messageScheduleDtoNew = new MessageScheduleDto();
 
-			this.messageScheduleDto = messeMessageScheduleDtoNew.build();
+			this.messageScheduleDto = messageScheduleDtoNew.build();
 		} else {
 			this.messageScheduleDto = messageScheduleDto_;
 		}
@@ -129,6 +131,10 @@ public class ScheduleMessageLayout extends VerticalLayout{
 				"District");
 		MultiSelectComboBox<CommunityReferenceDto> communitySelector = new MultiSelectComboBox<CommunityReferenceDto>(
 				"Cluster");
+		
+		scheduleMessageDate = new DatePicker("Date");
+		scheduleMessageTime = new TimePicker("Time");
+		scheduleMessageTime.setLocale(Locale.GERMAN);
 
 		List<UserType> userTypeConfig = new ArrayList<>();
 
@@ -165,9 +171,12 @@ public class ScheduleMessageLayout extends VerticalLayout{
 		binder.forField(districtSelector).bind(MessageScheduleDto::getDistrict, MessageScheduleDto::setDistrict);
 
 		binder.forField(communitySelector).bind(MessageScheduleDto::getCommunity, MessageScheduleDto::setCommunity);
+		
+		binder.forField(scheduleMessageDate).bind(MessageScheduleDto::getScheduleDate, MessageScheduleDto::setScheduleDate);
+		binder.forField(scheduleMessageTime).bind(MessageScheduleDto::getScheduleTime, MessageScheduleDto::setScheduleTime);
 
 		formLayout.add(templateCombo, messageContent, userRoles, formAccessSelector, areaSelector, regionSelector, districtSelector,
-				communitySelector);
+				communitySelector, scheduleMessageDate, scheduleMessageTime);
 		formLayout.setColspan(pushNotificationHeader, 2);
 
 		final HorizontalLayout hr = new HorizontalLayout();
@@ -178,7 +187,7 @@ public class ScheduleMessageLayout extends VerticalLayout{
 		Button discardChanges = new Button("Discard Changes", discardIcon);
 
 		Icon saveIcon = new Icon(VaadinIcon.CHECK_CIRCLE_O);
-		Button saved = new Button("Send", saveIcon);
+		Button saved = new Button("Schedule", saveIcon);
 		hr.add(discardChanges, saved);
 		add(formLayout, hr);
 
@@ -274,6 +283,12 @@ public class ScheduleMessageLayout extends VerticalLayout{
 //				updateRowCount();
 
 			}
+		});
+		
+		scheduleMessageDate.addValueChangeListener(e -> {
+		});
+		
+		scheduleMessageTime.addValueChangeListener(e -> {		
 		});
 	}
 
@@ -399,6 +414,11 @@ public class ScheduleMessageLayout extends VerticalLayout{
 	}
 
 	public static class SaveEvent extends MessageEvent {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1355108957223638756L;
+
 		SaveEvent(ScheduleMessageLayout source, MessageScheduleDto messageScheduleDto) {
 			super(source, messageScheduleDto);
 		}

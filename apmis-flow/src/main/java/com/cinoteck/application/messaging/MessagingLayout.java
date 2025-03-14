@@ -196,7 +196,13 @@ public class MessagingLayout extends VerticalLayout {
 		});
 		saved.addClickListener(e -> {
 			if (messageContent.getValue() != null && !messageContent.isEmpty()) {
+				if(binder.getBean() != null) {
 				preView(binder.getBean());
+				} else {
+					MessageDto messageDtoValue = new MessageDto();
+					messageDtoValue.setMessageContent(messageContent.getValue());
+					preView(messageDtoValue);
+				}
 			} else {
 				Notification notification = new Notification();
 				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -323,38 +329,50 @@ public class MessagingLayout extends VerticalLayout {
 		message.setHeight("250px");
 
 		MultiSelectComboBox<UserRole> userRoles = new MultiSelectComboBox<>("Userroles");
-		userRoles.setItems(messageDto.getUserRoles());
-		userRoles.setValue(messageDto.getUserRoles());
+		if(messageDto.getUserRoles() != null) {
+			userRoles.setItems(messageDto.getUserRoles());
+			userRoles.setValue(messageDto.getUserRoles());
+		}		
 		userRoles.setReadOnly(true);
 		userRoles.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<FormAccess> formAccess = new MultiSelectComboBox<>("FormAccess");
-		formAccess.setItems(messageDto.getFormAccess());
-		formAccess.setValue(messageDto.getFormAccess());
+		if(messageDto.getFormAccess() != null) {
+			formAccess.setItems(messageDto.getFormAccess());
+			formAccess.setValue(messageDto.getFormAccess());
+		}			
 		formAccess.setReadOnly(true);
 		userRoles.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<AreaReferenceDto> areas = new MultiSelectComboBox<>("Regions");
-		areas.setItems(messageDto.getArea());
-		areas.setValue(messageDto.getArea());
+		if(messageDto.getArea() != null) {
+			areas.setItems(messageDto.getArea());
+			areas.setValue(messageDto.getArea());
+		}		
 		areas.setReadOnly(true);
 		areas.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<RegionReferenceDto> region = new MultiSelectComboBox<>("Provinces");
-		region.setItems(messageDto.getRegion());
-		region.setValue(messageDto.getRegion());
+		if(messageDto.getRegion() != null) {
+			region.setItems(messageDto.getRegion());
+			region.setValue(messageDto.getRegion());
+		}	
 		region.setReadOnly(true);
 		region.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<DistrictReferenceDto> district = new MultiSelectComboBox<>("Districts");
-		district.setItems(messageDto.getDistrict());
-		district.setValue(messageDto.getDistrict());
+		if(messageDto.getDistrict() != null) {
+			district.setItems(messageDto.getDistrict());
+			district.setValue(messageDto.getDistrict());
+		}		
 		district.setReadOnly(true);
 		district.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<CommunityReferenceDto> community = new MultiSelectComboBox<>("Clusters");
-		community.setItems(messageDto.getCommunity());
-		community.setValue(messageDto.getCommunity());
+		if(messageDto.getCommunity() != null) {
+			community.setItems(messageDto.getCommunity());
+			community.setValue(messageDto.getCommunity());
+		}
 		community.setReadOnly(true);
 		community.getStyle().set("margin", "10px");
 

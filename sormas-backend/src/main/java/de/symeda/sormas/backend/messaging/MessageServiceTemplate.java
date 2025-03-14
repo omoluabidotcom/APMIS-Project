@@ -55,8 +55,9 @@ public class MessageServiceTemplate extends AdoServiceWithUserFilter<MessagesTem
 	    	 filter = cb.lessThanOrEqualTo(from.get(MessagesTemplate.CHANGE_DATE), messageTemplateCriteria.getEndDate());
 	    }
 	    
-	    filter = CriteriaBuilderHelper.and(cb, filter, cb.equal(from.get(MessagesTemplate.ARCHIVED), 
-		        messageTemplateCriteria.isArchived()));
+	    if (messageTemplateCriteria.isArchived() != null) {
+	    	filter = CriteriaBuilderHelper.and(cb, filter, cb.equal(from.get(MessagesTemplate.ARCHIVED), true));
+		}	    
 		
 		if (messageTemplateCriteria.getFreeText() != null) {
 			String[] textFilters = (messageTemplateCriteria.getFreeText().split("\\s+"));
