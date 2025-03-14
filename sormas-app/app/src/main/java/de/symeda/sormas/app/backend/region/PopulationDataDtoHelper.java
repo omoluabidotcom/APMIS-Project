@@ -15,28 +15,14 @@
 
 package de.symeda.sormas.app.backend.region;
 
-import com.google.protobuf.StringValue;
-
-import java.util.ArrayList;
 import java.util.List;
 
-import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.PushResult;
-import de.symeda.sormas.api.campaign.CampaignDto;
-import de.symeda.sormas.api.campaign.CampaignReferenceDto;
-
 import de.symeda.sormas.api.infrastructure.PopulationDataDto;
 import de.symeda.sormas.api.infrastructure.PopulationDataReferenceDto;
-import de.symeda.sormas.api.infrastructure.district.DistrictDto;
-import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
-import de.symeda.sormas.app.backend.campaign.Campaign;
-import de.symeda.sormas.app.backend.campaign.CampaignDtoHelper;
-import de.symeda.sormas.app.backend.campaign.data.CampaignFormData;
-import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaWithExp;
 import de.symeda.sormas.app.backend.common.AdoDtoHelper;
 import de.symeda.sormas.app.rest.NoConnectionException;
 import de.symeda.sormas.app.rest.RetroProvider;
-import de.symedia.sormas.api.campaign.districts.CampaignDistrictDto;
 import retrofit2.Call;
 
 public class PopulationDataDtoHelper extends AdoDtoHelper<PopulationData, PopulationDataDto> {
