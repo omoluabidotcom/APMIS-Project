@@ -3236,6 +3236,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 									+ "		campaign_id VARCHAR NOT NULL,"
 									+ "		district_id VARCHAR NOT NULL," +
 									" uuid varchar not null, "
+									+ " changeDate BIGINT NOT NULL , `creationDate` BIGINT NOT NULL ,"
 									+ "		selected varchar not null);");
 
 
