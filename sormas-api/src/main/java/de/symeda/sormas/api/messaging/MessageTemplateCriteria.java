@@ -2,15 +2,7 @@ package de.symeda.sormas.api.messaging;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.Set;
 
-import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
-import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
-import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
-import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
-import de.symeda.sormas.api.user.FormAccess;
-import de.symeda.sormas.api.user.UserRole;
-import de.symeda.sormas.api.user.UserType;
 import de.symeda.sormas.api.utils.IgnoreForUrl;
 import de.symeda.sormas.api.utils.criteria.BaseCriteria;
 
@@ -26,14 +18,15 @@ public class MessageTemplateCriteria extends BaseCriteria implements Serializabl
 	private MessageCategory messageCategory;
 	private Timestamp startDate;
 	private Timestamp endDate;
-	private boolean archived;
+	private Boolean archived;
 
 	public MessageCategory getMessageCategory() {
 		return messageCategory;
 	}
 
-	public void setMessageCategory(MessageCategory messageCategory) {
+	public MessageTemplateCriteria setMessageCategory(MessageCategory messageCategory) {
 		this.messageCategory = messageCategory;
+		return this;
 	}
 
 	public MessageTemplateCriteria freeText(String freeText) {
@@ -64,11 +57,11 @@ public class MessageTemplateCriteria extends BaseCriteria implements Serializabl
 		return this;
 	}
 
-	public boolean isArchived() {
+	public Boolean isArchived() {
 		return archived;
 	}
 
-	public MessageTemplateCriteria setArchived(boolean archived) {
+	public MessageTemplateCriteria setArchived(Boolean archived) {
 		this.archived = archived;
 		return this;
 	}		

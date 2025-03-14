@@ -17,6 +17,7 @@ import de.symeda.sormas.api.infrastructure.district.DistrictIndexDto;
 import de.symeda.sormas.api.infrastructure.region.RegionIndexDto;
 import de.symeda.sormas.api.user.UserCriteria;
 import de.symeda.sormas.api.user.UserDto;
+import de.symeda.sormas.api.utils.SortProperty;
 
 public class UsersDataProvider extends AbstractBackEndDataProvider<UserDto, UserCriteria>{
 	
@@ -39,22 +40,39 @@ public class UsersDataProvider extends AbstractBackEndDataProvider<UserDto, User
 //		}
 
 
-		return FacadeProvider.getUserFacade() 
-                .getIndexList(
-                        query.getFilter().orElse(null),
-                        query.getOffset(),
-                        query.getLimit(),
-                        null).stream();
+//		return FacadeProvider.getUserFacade() 
+//                .getIndexList(
+//                        query.getFilter().orElse(null),
+//                        query.getOffset(),
+//                        query.getLimit(),
+//                        null).stream();
+		
+	    List<SortProperty> sortProperties = null;
+	    if (!query.getSortOrders().isEmpty()) {
+	        sortProperties = query.getSortOrders().stream()
+	                .map(order -> new SortProperty(
+	                        order.getSorted(),
+	                        order.getDirection() == SortDirection.ASCENDING
+	                ))
+	                .collect(Collectors.toList());
+	    }
+	    
+	    return FacadeProvider.getUserFacade()
+	            .getIndexList(
+	                    query.getFilter().orElse(null),  
+	                    query.getOffset(),               
+	                    query.getLimit(),                
+	                    sortProperties)                  
+	            .stream();
 
 	}
 
 	@Override
 	protected int sizeInBackEnd(Query<UserDto, UserCriteria> query) {
-		// TODO Auto-generated method stub
-		
-		//FacadeProvider.getUserFacade()
+
+		 return (int) FacadeProvider.getUserFacade().count(query.getFilter().orElse(null));
 //		return (int) FacadeProvider.getUserFacade().count(query.getFilter().orElse(null));
-		return (int) fetchFromBackEnd(query).count();
+//		return (int) fetchFromBackEnd(query).count();
 	}
 	
 	private static Comparator<UserDto> sortComparator(List<QuerySortOrder> sortOrders) {

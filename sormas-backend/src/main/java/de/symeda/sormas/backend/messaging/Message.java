@@ -11,19 +11,14 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
+
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.UniqueConstraint;
 
-import de.symeda.auditlog.api.Audited;
-import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
-import de.symeda.sormas.api.messaging.Status;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserRole;
-import de.symeda.sormas.api.user.UserType;
 import de.symeda.sormas.backend.common.AbstractDomainObject;
-import de.symeda.sormas.backend.common.CoreAdo;
 import de.symeda.sormas.backend.infrastructure.area.Area;
 import de.symeda.sormas.backend.infrastructure.community.Community;
 import de.symeda.sormas.backend.infrastructure.district.District;
@@ -41,7 +36,6 @@ public class Message extends AbstractDomainObject{
 	public static final String TABLE_NAME = "messages";
 	public static final String TABLE_NAME_USERROLES = "messages_userroles";
 	public static final String TABLE_NAME_USERTYPES = "messages_usertypes";
-	public static final String TABLE_NAME_STATUS = "messages_status";
 	
 	public static final String MESSAGE_CONTENT = "messageContent";
 	public static final String USER_ROLES = "userRoles";
@@ -51,7 +45,6 @@ public class Message extends AbstractDomainObject{
 	public static final String DISTRICT = "district";
 	public static final String COMMUNITY = "community";
 	public static final String CHG_DATE = "chgDate";
-	public static final String STATUS = "status";
 	public static final String CREATED_BY = "creatingUser";
 	
 	private String messageContent;
@@ -62,7 +55,6 @@ public class Message extends AbstractDomainObject{
 	private Set<District> district;
 	private Set<Community> community;
 	private User creatingUser;
-	private Status status;
 	private Timestamp chgDate;
 	
 	@Column(name = "messagecontent", nullable = false)
@@ -164,21 +156,6 @@ public class Message extends AbstractDomainObject{
 	public void setCommunity(Set<Community> community) {
 		this.community = community;
 	}	
-	
-	@Enumerated(EnumType.STRING)
-	@CollectionTable(name = TABLE_NAME_STATUS,
-	joinColumns = @JoinColumn(name = "messages_id", referencedColumnName = Message.ID, nullable = false),
-	uniqueConstraints = @UniqueConstraint(columnNames = {
-		"messages_id",
-		"status" }))
-	@Column(name = "status", nullable = true)
-	public Status getStatus() {
-		return status;
-	}
-
-	public void setStatus(Status status) {
-		this.status = status;
-	}
 
 	@ManyToOne
 	@JoinColumn(name ="creatinguser_id")

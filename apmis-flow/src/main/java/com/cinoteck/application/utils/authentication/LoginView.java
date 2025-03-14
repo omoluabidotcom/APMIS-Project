@@ -28,15 +28,24 @@ import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.server.Page;
 
 import de.symeda.sormas.api.FacadeProvider;
+import de.symeda.sormas.api.messaging.MessageScheduleCriteria;
+import de.symeda.sormas.api.messaging.MessageScheduleDto;
 import de.symeda.sormas.api.user.UserActivitySummaryDto;
 import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.api.user.UserType;
 
+import java.lang.System.Logger.Level;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -121,14 +130,18 @@ public class LoginView extends FlexLayout implements BeforeEnterObserver {
 
 		loginInformation.add(loginFormCarrier);
 
-		triggerUser();
-
+		triggerUser();	
+		
 		add(loginInformation);
 	}
 
 //	@Scheduled(cron = "*/15 * * * * *")
 	public void triggerUser() {
 		FacadeProvider.getUserFacade().deactivateInactiveUsers();
+	}
+	
+	public void runMessageBroadcastFrontend() {	
+		FacadeProvider.getMessageFacade().messageScheduleBroadcast();
 	}
 
 	private void login(LoginForm.LoginEvent event) {
@@ -168,6 +181,7 @@ public class LoginView extends FlexLayout implements BeforeEnterObserver {
 //							FacadeProvider.getUserFacade().checkUsersActiveStatusByUsernameandActiveStatus(event.getUsername()),
 //							event.getUsername());
 
+				runMessageBroadcastFrontend();
 				FacadeProvider.getUserFacade().updateLastLoginDate(todaysDate, event.getUsername());
 				FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
 			} else {
@@ -192,6 +206,7 @@ public class LoginView extends FlexLayout implements BeforeEnterObserver {
 //							FacadeProvider.getUserFacade().checkUsersActiveStatusByUsernameandActiveStatus(event.getUsername()),
 //							event.getUsername());
 
+				runMessageBroadcastFrontend();
 				FacadeProvider.getUserFacade().updateLastLoginDate(todaysDate, event.getUsername());
 				FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
 
@@ -199,6 +214,7 @@ public class LoginView extends FlexLayout implements BeforeEnterObserver {
 
 		} else {
 
+			runMessageBroadcastFrontend();
 			Date usersLastLoginDate = FacadeProvider.getUserFacade()
 					.checkUsersActiveStatusByUsernameandActiveStatus(event.getUsername());
 

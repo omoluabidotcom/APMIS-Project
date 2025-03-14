@@ -1,18 +1,19 @@
 package de.symeda.sormas.backend.messaging;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.Date;
 
 import javax.ejb.EJB;
+import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -21,35 +22,24 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.util.Value;
-import com.google.gson.Gson;
-import com.vladmihalcea.hibernate.type.util.SQLExtractor;
 
-import de.symeda.sormas.api.messaging.FCMDto;
-import de.symeda.sormas.api.messaging.FCMResponseDto;
+import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.messaging.MessageCriteria;
 import de.symeda.sormas.api.messaging.MessageDto;
 import de.symeda.sormas.api.messaging.MessageFacade;
+import de.symeda.sormas.api.messaging.MessageScheduleCriteria;
 import de.symeda.sormas.api.messaging.MessageScheduleDto;
 import de.symeda.sormas.api.messaging.MessageTemplateCriteria;
 import de.symeda.sormas.api.messaging.MessageTemplateDto;
 import de.symeda.sormas.api.user.FormAccess;
-import de.symeda.sormas.api.user.UserActivitySummaryDto;
 import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.api.user.UserType;
 import de.symeda.sormas.api.utils.SortProperty;
-import de.symeda.sormas.backend.campaign.data.CampaignFormData;
 import de.symeda.sormas.backend.infrastructure.area.Area;
 import de.symeda.sormas.backend.infrastructure.area.AreaFacadeEjb;
 import de.symeda.sormas.backend.infrastructure.area.AreaService;
@@ -63,9 +53,7 @@ import de.symeda.sormas.backend.infrastructure.region.Region;
 import de.symeda.sormas.backend.infrastructure.region.RegionFacadeEjb;
 import de.symeda.sormas.backend.infrastructure.region.RegionService;
 import de.symeda.sormas.backend.user.User;
-import de.symeda.sormas.backend.user.UserFacadeEjb;
 import de.symeda.sormas.backend.user.UserService;
-import de.symeda.sormas.backend.user.event.UserUpdateEvent;
 import de.symeda.sormas.backend.util.DtoHelper;
 import de.symeda.sormas.backend.util.ModelConstants;
 import de.symeda.sormas.backend.util.QueryHelper;
@@ -159,6 +147,8 @@ public class MessageFacadeEjb implements MessageFacade {
 		target.setRegion(RegionFacadeEjb.toReferenceDto(source.getRegion()));
 		target.setDistrict(DistrictFacadeEjb.toReferenceDto(source.getDistrict()));
 		target.setChgDate(source.getChgDate());	
+		target.setScheduleDate(source.getScheduleDate());
+		target.setScheduleTime(source.getScheduleTime());
 
 		if (source.getCommunity() != null) {
 			target.setCommunity(CommunityFacadeEjb.toReferenceDto(new HashSet<Community>(source.getCommunity())));
@@ -194,6 +184,7 @@ public class MessageFacadeEjb implements MessageFacade {
 		target.setCreatingUser(userService.getByUserName(source.getCreatingUser()));
 		target.setMessageCategory(source.getMessageCategory());
 		target.setArchived(source.isArchived());
+		target.setCreatingUser(userService.getByUserName(source.getCreatingUser()));
 		target.setChgDate(source.getChgDate());
 
 		return target;
@@ -212,6 +203,8 @@ public class MessageFacadeEjb implements MessageFacade {
 		target.setCommunity(communityService.getByReferenceDto(source.getCommunity()));
 		target.setCreatingUser(userService.getByUserName(source.getCreatingUser()));
 		target.setChgDate(source.getChgDate());
+		target.setScheduleDate(source.getScheduleDate());
+		target.setScheduleTime(source.getScheduleTime());
 
 		return target;
 	}
@@ -224,12 +217,18 @@ public class MessageFacadeEjb implements MessageFacade {
 		CriteriaQuery<Message> cq = cb.createQuery(Message.class);
 		Root<Message> messages = cq.from(Message.class);
 
-		Join<Message, Area> area = messages.join(Message.AREA, JoinType.LEFT);
-		Join<Message, Region> regionJoin = messages.join(Message.REGION, JoinType.LEFT);
-		Join<Message, District> districtJoin = messages.join(Message.DISTRICT, JoinType.LEFT);
-		Join<Message, Community> communityJoin = messages.join(Message.COMMUNITY, JoinType.LEFT);
+//		Join<Message, Area> area = messages.join(Message.AREA, JoinType.LEFT);
+//		Join<Message, Region> regionJoin = messages.join(Message.REGION, JoinType.LEFT);
+//		Join<Message, District> districtJoin = messages.join(Message.DISTRICT, JoinType.LEFT);
+//		Join<Message, Community> communityJoin = messages.join(Message.COMMUNITY, JoinType.LEFT);
 		Join<Message, User> userJoin = messages.join(Message.CREATED_BY, JoinType.LEFT);
 
+		cq.multiselect(messages.get(Message.UUID), messages.get(Message.MESSAGE_CONTENT), messages.get(Message.MESSAGE_FORM_ACCESS),
+				messages.get(Message.REGION), messages.get(Message.USER_ROLES), messages.get(Message.AREA), 
+				messages.get(Message.DISTRICT), messages.get(Message.COMMUNITY), messages.get(Message.CHANGE_DATE),
+				messages.get(Message.CREATION_DATE), messages.get(Message.CREATED_BY), messages.get(Message.CHG_DATE),
+				userJoin.get(User.USER_NAME));
+		
 		Predicate filter = null;
 
 		if (messageCriteria != null) {
@@ -333,15 +332,8 @@ public class MessageFacadeEjb implements MessageFacade {
 		MessageCron messageCron = fromDtoMessageSchedule(messageScheduleDto, false);
 		scheduleMessageService.ensurePersisted(messageCron);
 		return toDtoScheduleMessage(messageCron);
-	}
-
-	@Override
-	public boolean deleteMessage(MessageTemplateDto messageTemplateDto) {
-		MessagesTemplate messageTemplate = fromDtoTemplate(messageTemplateDto, true);
-		messageServiceTemplate.delete(messageTemplate);
-		return true;
-	}
-
+	}	
+	
 	@Override
 	public long count(MessageCriteria messageCriteria) {
 
@@ -361,7 +353,7 @@ public class MessageFacadeEjb implements MessageFacade {
 
 		cq.select(cb.count(from));
 		return em.createQuery(cq).getSingleResult();
-	}
+	}	
 
 	@Override
 	public long count(MessageTemplateCriteria messageTemplateCriteria) {
@@ -382,6 +374,48 @@ public class MessageFacadeEjb implements MessageFacade {
 
 		cq.select(cb.count(from));
 		return em.createQuery(cq).getSingleResult();
+	}
+	
+	@Override
+	public long count(MessageScheduleCriteria messageScheduleCriteria) {
+
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+		Root<MessageCron> from = cq.from(MessageCron.class);
+
+		Predicate filter = null;
+
+		if (messageScheduleCriteria != null) {
+			filter = scheduleMessageService.buildCriteriaFilter(messageScheduleCriteria, cb, from);
+		}
+
+		if (filter != null) {
+			cq.where(filter);
+		}
+
+		cq.select(cb.count(from));
+		return em.createQuery(cq).getSingleResult();
+	}
+	
+	@Override
+	public boolean deleteMessage(MessageDto messageDto) {
+		Message messages = fromDto(messageDto, true);
+		messageService.delete(messages);
+		return true;
+	}
+	
+	@Override
+	public boolean deleteMessage(MessageTemplateDto messageTemplateDto) {
+		MessagesTemplate messageTemplate = fromDtoTemplate(messageTemplateDto, true);
+		messageServiceTemplate.delete(messageTemplate);
+		return true;
+	}
+	
+	@Override
+	public boolean deleteMessage(MessageScheduleDto messageScheduleDto) {
+		MessageCron messagesCron = fromDtoMessageSchedule(messageScheduleDto, true);
+		scheduleMessageService.delete(messagesCron);
+		return true;
 	}
 
 	@Override
@@ -579,4 +613,86 @@ public class MessageFacadeEjb implements MessageFacade {
 		}
 	}
 
+	@Override
+	public List<MessageScheduleDto> getIndexListMessageSchedule(MessageScheduleCriteria messageScheduleCriteria,
+			Integer first, Integer max, List<SortProperty> sortProperties) {
+
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<MessageCron> cq = cb.createQuery(MessageCron.class);
+		Root<MessageCron> messageSchedule = cq.from(MessageCron.class);
+
+		Join<MessageCron, User> userJoin = messageSchedule.join(MessageCron.CREATED_BY, JoinType.LEFT);
+		
+		cq.multiselect(messageSchedule.get(MessageCron.UUID), messageSchedule.get(MessageCron.MESSAGE_CONTENT), messageSchedule.get(MessageCron.MESSAGE_FORM_ACCESS),
+				messageSchedule.get(MessageCron.REGION), messageSchedule.get(MessageCron.USER_ROLES), messageSchedule.get(MessageCron.AREA), 
+				messageSchedule.get(MessageCron.DISTRICT), messageSchedule.get(MessageCron.COMMUNITY), messageSchedule.get(MessageCron.CHANGE_DATE),
+				messageSchedule.get(MessageCron.CREATION_DATE), messageSchedule.get(MessageCron.CREATED_BY), messageSchedule.get(MessageCron.CHG_DATE),
+				userJoin.get(User.USER_NAME));
+
+			cq.orderBy(cb.desc(messageSchedule.get(MessageCron.CHANGE_DATE)));
+		cq.select(messageSchedule);
+
+		return QueryHelper.getResultList(em, cq, first, max, MessageFacadeEjb::toDtoScheduleMessage);
+	}
+
+	@Schedule(hour = "*", minute = "*/30", second = "0", persistent = false)
+	public void messageScheduleBroadcast() {
+		try {
+			runScheduledTask();
+		} catch (Exception e) {
+			System.err.println(
+					e.toString() + " An Error Occured While Trying to run Scheduled Message Broadcast Cron Job");
+		}
+
+	}
+
+	@Transactional
+	public void runScheduledTask() {
+
+		System.out.println("Scheduled Message Cron Job running: " + new java.util.Date());
+		List<MessageScheduleDto> scheduledMessageList =  getIndexListMessageSchedule(null, 0, 100, null);
+		
+		List<MessageScheduleDto> scheduledMessageHelperList = new ArrayList<MessageScheduleDto>();
+		
+		List<MessageDto> broadcastList = new ArrayList<MessageDto>();
+		Date now = new Date();
+		LocalDate currentDate = now.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		
+		LocalTime currentTime = LocalTime.now();
+		
+		for (MessageScheduleDto messageScheduleDto : scheduledMessageList) {
+			
+			if(messageScheduleDto.getScheduleDate().equals(currentDate) || messageScheduleDto.getScheduleDate().isAfter(currentDate)) {
+				
+				if(messageScheduleDto.getScheduleTime().equals(currentTime) || messageScheduleDto.getScheduleTime().isAfter(currentTime)) {
+					scheduledMessageHelperList.add(messageScheduleDto);
+				}
+			}
+			System.out.println(scheduledMessageHelperList.size() + " sizeeeeeeeeeeeeeeeeeeeeeee");
+		}
+		
+		if(scheduledMessageHelperList.size() > 0) {
+			for (MessageScheduleDto messageScheduleDto : scheduledMessageHelperList) {
+				
+				MessageDto messageDto = new MessageDto();
+				messageDto.setMessageContent(messageScheduleDto.getMessageContent());
+				messageDto.setFormAccess(messageScheduleDto.getFormAccess());
+				messageDto.setUserRoles(messageScheduleDto.getUserRoles());
+				messageDto.setArea(messageScheduleDto.getArea());
+				messageDto.setRegion(messageScheduleDto.getRegion());
+				messageDto.setDistrict(messageScheduleDto.getDistrict());
+				messageDto.setCommunity(messageScheduleDto.getCommunity());
+				messageDto.setCreatingUser(messageScheduleDto.getCreatingUser());
+				messageDto.setTitle(messageScheduleDto.getTitle());
+				
+				broadcastList.add(messageDto);
+			}
+		}
+		
+		for (MessageDto messageDto : broadcastList) {
+			saveMessage(messageDto);
+			deleteMessage(messageDto);
+		}
+
+	}
 }
