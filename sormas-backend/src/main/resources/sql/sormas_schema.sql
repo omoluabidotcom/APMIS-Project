@@ -11014,6 +11014,107 @@ CREATE TABLE public.campaignformmeta_areas (
 INSERT INTO schema_version (version_number, comment) VALUES (482, 'Notification, Campaign Form Region Assignment & Form Versioning');
 
 
+CREATE TABLE public.messagescron (
+	id int8 NOT NULL,
+	"uuid" varchar(36) NOT NULL,
+	changedate timestamp NOT NULL,
+	creationdate timestamp NOT NULL,
+	messagecontent varchar NOT NULL,
+	area_id int8 NULL,
+	region_id int8 NULL,
+	district_id int8 NULL,
+	creatinguser_id int8 NULL,
+	chgdate timestamp NULL,
+	CONSTRAINT messagescron_pkey PRIMARY KEY (id),
+	CONSTRAINT messagescron_uuid_key UNIQUE (uuid)
+);
+
+ALTER TABLE public.messagescron ADD CONSTRAINT messagescron_area_id_fkey FOREIGN KEY (area_id) REFERENCES public.areas(id);
+ALTER TABLE public.messagescron ADD CONSTRAINT messagescron_creatinguser_id_fkey FOREIGN KEY (creatinguser_id) REFERENCES public.users(id);
+ALTER TABLE public.messagescron ADD CONSTRAINT messagescron_district_id_fkey FOREIGN KEY (district_id) REFERENCES public.district(id);
+ALTER TABLE public.messagescron ADD CONSTRAINT messagescron_region_id_fkey FOREIGN KEY (region_id) REFERENCES public.region(id);
+
+
+CREATE TABLE public.messagescron_areas (
+	messagescron_id int4 NOT NULL,
+	area_id int4 NOT NULL,
+	CONSTRAINT messagescron_areas_pkey PRIMARY KEY (messagescron_id, area_id)
+);
+
+ALTER TABLE public.messagescron_areas ADD CONSTRAINT messagescron_areas_areas_id_fkey FOREIGN KEY (area_id) REFERENCES public.areas(id);
+ALTER TABLE public.messagescron_areas ADD CONSTRAINT messagescron_areas_messagescron_id_fkey FOREIGN KEY (messagescron_id) REFERENCES public.messagescron(id);
+
+
+CREATE TABLE public.messagescron_community (
+	messagescron_id int4 NOT NULL,
+	community_id int4 NOT NULL,
+	CONSTRAINT messagescron_community_pkey PRIMARY KEY (messagescron_id, community_id)
+);
+
+ALTER TABLE public.messagescron_community ADD CONSTRAINT messagescron_community_community_id_fkey FOREIGN KEY (community_id) REFERENCES public.community(id);
+ALTER TABLE public.messagescron_community ADD CONSTRAINT messagescron_community_messagescron_id_fkey FOREIGN KEY (messagescron_id) REFERENCES public.messagescron(id);
+
+
+CREATE TABLE public.messagescron_district (
+	messagescron_id int4 NOT NULL,
+	district_id int4 NOT NULL,
+	CONSTRAINT messagescron_district_pkey PRIMARY KEY (messagescron_id, district_id)
+);
+
+ALTER TABLE public.messagescron_district ADD CONSTRAINT messagescron_district_id_fkey FOREIGN KEY (district_id) REFERENCES public.district(id);
+ALTER TABLE public.messagescron_district ADD CONSTRAINT messagescron_district_messagescron_id_fkey FOREIGN KEY (messagescron_id) REFERENCES public.messagescron(id);
+
+
+CREATE TABLE public.messagescron_formaccess (
+	messagescron_id int4 NOT NULL,
+	formaccess varchar(50) NOT NULL,
+	CONSTRAINT messagescron_formaccess_pkey PRIMARY KEY (messagescron_id, formaccess)
+);
+
+ALTER TABLE public.messagescron_formaccess ADD CONSTRAINT messagescron_formaccess_messagescron_id_fkey FOREIGN KEY (messagescron_id) REFERENCES public.messagescron(id);
+
+
+CREATE TABLE public.messagescron_region (
+	messagescron_id int4 NOT NULL,
+	region_id int4 NOT NULL,
+	CONSTRAINT messagescron_region_pkey PRIMARY KEY (messagescron_id, region_id)
+);
+
+
+ALTER TABLE public.messagescron_region ADD CONSTRAINT messagescron_region_messagescron_id_fkey FOREIGN KEY (messagescron_id) REFERENCES public.messagescron(id);
+ALTER TABLE public.messagescron_region ADD CONSTRAINT messagescron_region_region_id_fkey FOREIGN KEY (region_id) REFERENCES public.region(id);
+
+
+CREATE TABLE public.messagescron_userroles (
+	messagescron_id int4 NOT NULL,
+	userrole varchar(50) NOT NULL,
+	CONSTRAINT messagescron_userroles_pkey PRIMARY KEY (messagescron_id, userrole)
+);
+
+ALTER TABLE public.messagescron_userroles ADD CONSTRAINT messagescron_userroles_messagescron_id_fkey FOREIGN KEY (messagescron_id) REFERENCES public.messagescron(id);
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron TO sormas_user;
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron_areas TO sormas_user;
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron_community TO sormas_user;
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron_district TO sormas_user;
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron_formaccess TO sormas_user;
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron_region TO sormas_user;
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron_userroles TO sormas_user;
+
+ALTER TABLE public.messages DROP COLUMN status;
+
+ALTER TABLE public.messagescron
+ADD COLUMN scheduleDate DATE,
+ADD COLUMN scheduleTime TIME;
+
+
+INSERT INTO schema_version (version_number, comment) VALUES (483, 'Notification Implementation ');
 
 
 
