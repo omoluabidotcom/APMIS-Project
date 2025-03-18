@@ -18,6 +18,9 @@ public enum CampaignFormElementType {
 	DATE,
 	DECIMAL,
 	RANGE,
+	EMAIL,
+	TIME,
+	PHONE,
 	ARRAY;
 	
 

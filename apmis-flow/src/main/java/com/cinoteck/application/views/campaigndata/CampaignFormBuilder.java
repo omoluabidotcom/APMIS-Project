@@ -7,7 +7,9 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,10 +77,12 @@ import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.component.shared.Tooltip;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.BigDecimalField;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.server.VaadinService;
@@ -1388,7 +1392,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					bigDecimalField.setClassName("customTextWrap");
 
 					bigDecimalField.setWidth("240px");
-					bigDecimalField.setValue(new BigDecimal("948205817.472950487"));
+//					bigDecimalField.setValue(new BigDecimal("948205817.472950487"));
 					bigDecimalField.setId(formElement.getId());
 					bigDecimalField.setSizeFull();
 					setFieldValue(bigDecimalField, type, value, optionsValues, formElement.getDefaultvalue(), false,
@@ -1638,9 +1642,83 @@ public class CampaignFormBuilder extends VerticalLayout {
 						datePicker.setRequiredIndicatorVisible(formElement.isImportant());
 					}
 
+				} else if (type == CampaignFormElementType.EMAIL) {
+					
+					EmailField validEmailField = new EmailField();
+					validEmailField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+					validEmailField.setWidth("240px");
+					validEmailField.setId(formElement.getId());
+					
+
+					
+					setFieldValue(validEmailField, type, value, optionsValues, formElement.getDefaultvalue(), false,
+							null);
+					vertical.add(validEmailField);
+					fields.put(formElement.getId(), validEmailField);	
+					
+					validEmailField.getElement().setAttribute("name", "email");
+//					validEmailField.setValue("julia.scheider@email.com");
+					validEmailField.setErrorMessage("Enter a valid email address");
+					validEmailField.setClearButtonVisible(true);
+
+				} else if (type == CampaignFormElementType.TIME) {
+
+				
+				TimePicker timePicker = new TimePicker();
+				timePicker.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+				timePicker.setStep(Duration.ofMinutes(30));
+//				timePickear.setValue(LocalTime.of(5, 30));
+				timePicker.setAutoOpen(false);
+//				add(timePicker);
+				
+				setFieldValue(timePicker, type, value, optionsValues, formElement.getDefaultvalue(), false,
+						null);
+				
+				vertical.add(timePicker);
+				fields.put(formElement.getId(), timePicker);
+				
+				}  else if (type == CampaignFormElementType.PHONE) {
+
+				
+//				TextField phoneField = new TextField("Phone Number");
+//				phoneField.setId("phone-input");
+//				phoneField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+//
+//
+//				UI.getCurrent().getPage().executeJs(
+//				    "window.initPhoneInput = function() {" +
+//				    "  var input = document.querySelector('#phone-input');" +
+//				    "  var iti = window.intlTelInput(input, {" +
+//				    "    initialCountry: 'af'," +  // Default to Afghanistan (+93)
+//				    "    preferredCountries: ['af', 'us', 'gb', 'de', 'in']," + // Preferred countries
+//				    "    separateDialCode: true," + // Show country code separately
+//				    "    formatOnDisplay: true," +  // Auto format in international format
+//				    "    nationalMode: false," +    // Always use full international format
+//				    "    utilsScript: 'https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js'" +
+//				    "  });" +
+//				    "};" +
+//				    "initPhoneInput();"
+//				);
+//				
+//				ComboBox<String> countryCode = new ComboBox<>("Country Code");
+//				countryCode.setItems("+93 (Afghanistan)", "+1 (USA)", "+44 (UK)", "+49 (Germany)", "+91 (India)");
+//				countryCode.setValue("+93 (Afghanistan)"); // Default
+//
+//				TextField phoneNumber = new TextField("Phone Number");
+//				phoneNumber.setPlaceholder("555-123-4567");
+//
+//				HorizontalLayout phoneLayout = new HorizontalLayout(countryCode, phoneNumber);
+//				
+//				
+//				setFieldValue(phoneNumber, type, value, optionsValues, formElement.getDefaultvalue(), false,
+//						null);
+//				
+//				vertical.add(phoneField);
+//				fields.put(formElement.getId(), phoneField);
+				
+				
 				}
 
-//needed
 
 			}
 
@@ -1941,6 +2019,39 @@ public class CampaignFormBuilder extends VerticalLayout {
 			;
 
 			break;
+			
+		case EMAIL:
+
+			if (value != null) {
+				((EmailField) field).setValue(value.toString());
+
+			} else if (defaultvalue != null) {
+				((EmailField) field).setValue(defaultvalue);
+			}
+			break;
+			
+        case TIME:
+            if (value != null) {
+                if (value instanceof LocalTime) {
+                    ((TimePicker) field).setValue((LocalTime) value);
+                } else if (value instanceof String) {
+                    ((TimePicker) field).setValue(LocalTime.parse((String) value));
+                }
+            } else if (defaultvalue != null) {
+                ((TimePicker) field).setValue(LocalTime.parse(defaultvalue));
+            }
+            break;
+			
+            
+        case PHONE:
+			if (value != null) {
+				((TextField) field).setValue(value.toString());
+
+			} else if (defaultvalue != null) {
+				((TextField) field).setValue(defaultvalue);
+			}
+            break;
+			
 		default:
 			throw new IllegalArgumentException(type.toString());
 		}
@@ -1958,7 +2069,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 				|| type == CampaignFormElementType.RADIOBASIC && !styles.contains(CampaignFormElementStyle.INLINE)
 				|| type == CampaignFormElementType.TEXTBOX && !styles.contains(CampaignFormElementStyle.INLINE)
 				|| (type == CampaignFormElementType.TEXT || type == CampaignFormElementType.DATE
-						|| type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL
+						|| type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.EMAIL 
+						|| type == CampaignFormElementType.TIME || type == CampaignFormElementType.PHONE || type == CampaignFormElementType.DECIMAL
 						|| type == CampaignFormElementType.RANGE)) {// && styles.contains(CampaignFormElementStyle.ROW))
 																	// {
 			return 12;
@@ -1990,7 +2102,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 				|| type == CampaignFormElementType.CHECKBOXBASIC && styles.contains(CampaignFormElementStyle.INLINE)
 				|| type == CampaignFormElementType.DROPDOWN && styles.contains(CampaignFormElementStyle.INLINE)
 				|| (type == CampaignFormElementType.TEXT || type == CampaignFormElementType.NUMBER
-						|| type == CampaignFormElementType.DECIMAL || type == CampaignFormElementType.RANGE
+						|| type == CampaignFormElementType.DECIMAL || type == CampaignFormElementType.EMAIL 
+						||  type == CampaignFormElementType.TIME || type == CampaignFormElementType.PHONE || type == CampaignFormElementType.RANGE
 						|| type == CampaignFormElementType.DATE || type == CampaignFormElementType.TEXTBOX)
 				// && !styles.contains(CampaignFormElementStyle.ROW)
 				|| type == CampaignFormElementType.LABEL || type == CampaignFormElementType.SECTION) {
