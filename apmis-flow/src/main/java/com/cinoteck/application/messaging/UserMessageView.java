@@ -72,7 +72,7 @@ public class UserMessageView extends VerticalLayout {
 		dialog.add(grid);
 		Button closeButton = new Button("Close", e -> {
 			dialog.close();
-			UI.getCurrent().getPage().setLocation("/apmis-flow/useraccount");
+			UI.getCurrent().getPage().setLocation("/main/useraccount");
 
 		});
 		dialog.getFooter().add(closeButton);
