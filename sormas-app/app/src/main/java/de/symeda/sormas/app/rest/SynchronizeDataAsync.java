@@ -428,7 +428,6 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 		//new FacilityDtoHelper().pullEntities(false);
 		//new PointOfEntryDtoHelper().pullEntities(false);
 		new UserDtoHelper().pullEntities(false);
-		new PopulationDataDtoHelper().pullEntities(false);
 
 		//new DiseaseClassificationDtoHelper().pullEntities(false);
 		//new DiseaseConfigurationDtoHelper().pullEntities(false);
@@ -456,9 +455,10 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			new CampaignFormMetaWithExpDtoHelper().pullEntities(false);
 			new CampaignDtoHelper().pullEntities(false);
 			new CampaignFormMetaRegionDtoHelper().pullEntities(false);
-
-
 		}
+
+		new PopulationDataDtoHelper().pullEntities(false);
+
 
 		ConfigProvider.setInitialSyncRequired(false);
 	}

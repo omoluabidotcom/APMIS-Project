@@ -347,16 +347,23 @@ public final class LocationService {
 	 * @param callingActivity
 	 */
 	private void buildAndShowRequestGpsAccessDialog(final Activity callingActivity) {
+		if (callingActivity.isFinishing()) {
+			return; // Prevent showing the dialog if the activity is finishing
+		}
+
 		if (requestGpsAccessDialog != null && LocationService.instance().hasGpsAccess()) {
 			return;
 		}
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(callingActivity);
-		builder.setCancelable(false);
-		builder.setMessage(R.string.message_gps_permission);
-		builder.setTitle(R.string.heading_gps_permission);
-		builder.setIcon(R.drawable.ic_perm_device_information_black_24dp);
+		builder.setCancelable(false)
+		.setMessage(R.string.message_gps_permission)
+		.setTitle(R.string.heading_gps_permission)
+		.setIcon(R.drawable.ic_perm_device_information_black_24dp);
+
+
 		requestGpsAccessDialog = builder.create();
+
 
 		requestGpsAccessDialog
 			.setButton(AlertDialog.BUTTON_POSITIVE, callingActivity.getString(R.string.action_close_app), new DialogInterface.OnClickListener() {
