@@ -87,12 +87,12 @@ public class SormasApplication extends Application implements Application.Activi
 
 	@Override
 	public void onActivityResumed(Activity activity) {
-		LocationService.instance().requestActiveLocationUpdates(activity);
+//		LocationService.instance().requestActiveLocationUpdates(activity);
 	}
 
 	@Override
 	public void onActivityPaused(Activity activity) {
-		LocationService.instance().removeActiveLocationUpdates();
+//		LocationService.instance().removeActiveLocationUpdates();
 	}
 
 	@Override
