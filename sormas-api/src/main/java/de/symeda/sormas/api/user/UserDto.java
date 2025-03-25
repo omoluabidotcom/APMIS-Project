@@ -17,6 +17,8 @@
  *******************************************************************************/
 package de.symeda.sormas.api.user;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -86,6 +88,7 @@ public class UserDto extends EntityDto {
 	public static final String RCODE = "rcode";
 	public static final String COMMUNITY_NOS = "communitynos";
 	public static final String TOKEN = "token";
+	public static final String NOTIFICATION_LAST_OPEN_DATE = "notificationlastopendate";
 	//public static final String COMMUNITY_NO = "clusterno";
 	
 	private boolean active = true;
@@ -141,8 +144,9 @@ public class UserDto extends EntityDto {
 	private String dcode;
 	private String rcode;
 	private Set<String> communitynos;
-	//private String clusterno;
 	private String token;
+	private Timestamp notificationlastopendate;
+	//private String clusterno;
 
 	public static UserDto build() {
 		UserDto user = new UserDto();
@@ -403,6 +407,14 @@ public class UserDto extends EntityDto {
 
 	public void setToken(String token) {
 		this.token = token;
+	}
+	
+	public Timestamp getNotificationlastopendate() {
+		return notificationlastopendate;
+	}
+
+	public void setNotificationlastopendate(Timestamp notificationlastopendate) {
+		this.notificationlastopendate = notificationlastopendate;
 	}
 	
 }

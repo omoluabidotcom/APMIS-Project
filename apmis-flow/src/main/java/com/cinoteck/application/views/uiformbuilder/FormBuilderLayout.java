@@ -2,7 +2,9 @@ package com.cinoteck.application.views.uiformbuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,6 +19,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Anchor;
@@ -46,12 +49,16 @@ import de.symeda.sormas.api.campaign.CampaignReferenceDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
+import de.symeda.sormas.api.messaging.MessageDto;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserActivitySummaryDto;
+import de.symeda.sormas.api.utils.DataHelper;
 
 public class FormBuilderLayout extends VerticalLayout {
 
 	CampaignFormMetaDto campaignFormMetaDto;
+	CampaignFormMetaDto campaignFormMetaDtoDupli;
 	List<CampaignFormElement> campaignFormElements;
 	List<CampaignFormElement> savedCampaignFormElements;
 
@@ -60,11 +67,13 @@ public class FormBuilderLayout extends VerticalLayout {
 	TextField formId;
 	ComboBox<CampaignPhase> formType;
 	ComboBox<FormAccess> formCategory;
+	MultiSelectComboBox<AreaReferenceDto> areaSelector;
 	ComboBox<Modality> modality;
 	IntegerField daysExpired;
 	ComboBox<Boolean> districtEntry;
 	ComboBox<String> languageCode;
-
+	List<AreaReferenceDto> regions = FacadeProvider.getAreaFacade().getAllActiveAsReference();
+	
 	FormGridComponent formGridComponent;
 	TranslationGridComponent translationGridComponent;
 
@@ -86,7 +95,7 @@ public class FormBuilderLayout extends VerticalLayout {
 		}
 		formGridComponent = new FormGridComponent(campaignFormMetaDto);
 		translationGridComponent = new TranslationGridComponent(campaignFormMetaDto);
-		configureFields();
+		configureFields(campaignFormMetaDto_);
 	}
 
 	private List<CampaignFormElement> getFormListDashboard() {
@@ -112,14 +121,17 @@ public class FormBuilderLayout extends VerticalLayout {
 		}
 	}
 
-	void configureFields() {
-
+	void configureFields(CampaignFormMetaDto campaignFormMetaDto_) {
+		
+		
 		formName = new TextField("Form Name");
 		formId = new TextField("Id");
 		formType = new ComboBox<CampaignPhase>("Form Type");
 		formType.setItems(CampaignPhase.values());
 		formCategory = new ComboBox<FormAccess>("Form Category");
 		formCategory.setItems(FormAccess.values());
+		areaSelector = new MultiSelectComboBox<AreaReferenceDto>("Region");
+		areaSelector.setItems(regions);
 		modality = new ComboBox<Modality>("Modality");
 		modality.setItems(Modality.values());
 		daysExpired = new IntegerField("Days Expired");
@@ -140,19 +152,21 @@ public class FormBuilderLayout extends VerticalLayout {
 		binder.forField(formCategory).asRequired("Form Category is Required").bind(CampaignFormMetaDto::getFormCategory,
 				CampaignFormMetaDto::setFormCategory);
 
+		binder.forField(areaSelector).bind(CampaignFormMetaDto::getArea, CampaignFormMetaDto::setArea);
+		
 		binder.forField(modality).asRequired("Modality is Required").bind(CampaignFormMetaDto::getModality,
 				CampaignFormMetaDto::setModality);
 
 		binder.forField(daysExpired).asRequired("Days Expired is Required").bind(CampaignFormMetaDto::getDaysExpired,
 				CampaignFormMetaDto::setDaysExpired);
 
-		binder.forField(districtEntry).asRequired("Dsitrict Entry is Required")
+		binder.forField(districtEntry).asRequired("District Entry is Required")
 				.bind(CampaignFormMetaDto::isDistrictentry, CampaignFormMetaDto::setDistrictentry);
 
 		binder.forField(languageCode).asRequired("Language Code is Required").bind(CampaignFormMetaDto::getLanguageCode,
 				CampaignFormMetaDto::setLanguageCode);
 
-		formLayout.add(formBasics, formName, formId, formType, formCategory, modality, daysExpired, languageCode,
+		formLayout.add(formBasics, formName, formId, formType, formCategory, areaSelector, modality, daysExpired, languageCode,
 				districtEntry);
 
 		formLayout.setColspan(formBasics, 2);
@@ -188,6 +202,9 @@ public class FormBuilderLayout extends VerticalLayout {
 		Icon saveIcon = new Icon(VaadinIcon.CHECK_CIRCLE_O);
 		saveIcon.getStyle().set("color", "green");
 		Button saved = new Button("Save", saveIcon);
+		
+		Button duplicateForm = new Button("Duplicate Form");
+		duplicateForm.setText("Duplicate Form");
 
 		Icon downloadIcon = new Icon(VaadinIcon.DOWNLOAD);
 		Button downloadButton = new Button("Export JSON", downloadIcon);
@@ -197,7 +214,7 @@ public class FormBuilderLayout extends VerticalLayout {
 	    downloadLink.getElement().setAttribute("download", true);
 	    downloadLink.add(downloadButton);	   
 	    
-		HorizontalLayout buttonLayout = new HorizontalLayout(downloadButton, downloadLink, discardChanges, saved);
+		HorizontalLayout buttonLayout = new HorizontalLayout(duplicateForm, downloadButton, downloadLink, discardChanges, saved);
 		downloadLink.getStyle().set("display", "none");
 		buttonLayout.getStyle().set("margin-left", "auto");
 
@@ -213,8 +230,45 @@ public class FormBuilderLayout extends VerticalLayout {
             downloadLink.setHref(resource);  
             downloadLink.getElement().callJsFunction("click");
         });
+		
+		duplicateForm.addClickListener(e -> {
+		    try {
+		        // Get the current version count
+		        long version = FacadeProvider.getCampaignFormMetaFacade().getFormCountByGroupUuid(campaignFormMetaDto_.getFormGroupUuid());
+		        
+		        long incrementedVersion  = version + 1L;
+		        String incrementedVersionString = incrementedVersion+"";
+		        // Create a completely new DTO instance
+		        CampaignFormMetaDto campaignFormMetaDtoDupli = new CampaignFormMetaDto();
+		        campaignFormMetaDtoDupli = campaignFormMetaDto_;
+		        // Copy all relevant fields from the original
+		        campaignFormMetaDtoDupli.setUuid(DataHelper.createUuid()); // Keep same uuid
+		        campaignFormMetaDtoDupli.setFormId(campaignFormMetaDto.getFormId() + incrementedVersionString);
+		        campaignFormMetaDtoDupli.setFormversion(incrementedVersion);
+		        campaignFormMetaDtoDupli.setCreationDate(new Timestamp(new Date().getTime()));
+		        campaignFormMetaDtoDupli.setArchived(false);
+
+		        // Save the new duplicate
+		        fireEvent(new DuplicateEvent(this, campaignFormMetaDtoDupli));
+
+		        // Refresh UI and show notification
+//		        UI.getCurrent().getPage().reload();
+		        Notification notification = new Notification("Form Duplicated", 3000, Position.MIDDLE);
+		        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+		        notification.open();
+
+		    } catch(Exception ex) {
+		        System.out.println("Exception Occurred while saving: " + ex);
+		        Notification.show("Error duplicating form: " + ex.getMessage(), 3000, Position.MIDDLE);
+		    }
+		    
+		    discardChanges();
+		});
+		
 	}
-	
+
+		
+		
 	private StreamResource createJsonStreamResource() {
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -351,4 +405,15 @@ public class FormBuilderLayout extends VerticalLayout {
 		return addListener(SaveEvent.class, listener);
 	}
 
+	
+	public static class DuplicateEvent extends FormBuilderEvent {
+		DuplicateEvent(FormBuilderLayout source, CampaignFormMetaDto form) {
+			
+			super(source, form);
+		}
+	}
+
+	public Registration addDuplicateListener(ComponentEventListener<DuplicateEvent> listener) {
+		return addListener(DuplicateEvent.class, listener);
+	}
 }

@@ -1,5 +1,6 @@
 package de.symeda.sormas.api.messaging;
 
+import java.sql.Timestamp;
 import java.util.Set;
 
 import de.symeda.sormas.api.EntityDto;
@@ -25,7 +26,6 @@ public class MessageDto extends EntityDto {
 	public static final String TABLE_NAME_COMMUNITY = "messages_community";
 	
 	public static final String MESSAGE_CONTENT = "messageContent";
-//	public static final String USER_TYPE = "userTypes";
 	public static final String USER_ROLES = "userRoles";
 	public static final String FORM_ACCESS = "formAccess";
 	public static final String AREA = "area";
@@ -33,19 +33,21 @@ public class MessageDto extends EntityDto {
 	public static final String DISTRICT = "district";
 	public static final String COMMUNITY = "community";
 	public static final String COMMUNITY_NOS = "communitynos";
+	public static final String CHG_DATE = "chgDate";
+	public static final String STATUS = "status";
 	public static final String CREATED_BY = "creatingUser";
 	
 	private String title;
 	private String messageContent;
-//	private UserType userTypes;
 	private Set<UserRole> userRoles;
 	private Set<FormAccess> formAccess;
 	private Set<AreaReferenceDto> area;
 	private Set<RegionReferenceDto> region;
 	private Set<DistrictReferenceDto> district;			
 	private Set<CommunityReferenceDto> community;
-	private Set<String> communitynos;
-	private UserReferenceDto creatingUser;
+	private Timestamp chgDate;
+	private Status status;
+	private String creatingUser;
 	
 	public static MessageDto build() {
 		MessageDto messageDto = new MessageDto();
@@ -67,12 +69,6 @@ public class MessageDto extends EntityDto {
 	public void setMessageContent(String messageContent) {
 		this.messageContent = messageContent;
 	}
-//	public UserType getUserTypes() {
-//		return userTypes;
-//	}
-//	public void setUserTypes(UserType userTypes) {
-//		this.userTypes = userTypes;
-//	}
 	public Set<UserRole> getUserRoles() {
 		return userRoles;
 	}
@@ -109,12 +105,24 @@ public class MessageDto extends EntityDto {
 	}
 	public void setCommunity(Set<CommunityReferenceDto> community) {
 		this.community = community;
-	}	
-	public UserReferenceDto getCreatingUser() {
+	}		
+	public Status getStatus() {
+		return status;
+	}
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+	public String getCreatingUser() {
 		return creatingUser;
 	}
-	public void setCreatingUser(UserReferenceDto creatingUser) {
+	public void setCreatingUser(String creatingUser) {
 		this.creatingUser = creatingUser;
+	}	
+	public Timestamp getChgDate() {
+		return chgDate;
+	}
+	public void setChgDate(Timestamp chgDate) {
+		this.chgDate = chgDate;
 	}
 	
 }

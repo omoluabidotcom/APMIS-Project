@@ -35,7 +35,21 @@ public final class UserRolesValidator implements Validator<Collection<UserRole>>
 			System.out.println(value + "Value collection ");
 			if (value.size() == 1 && value.contains(UserRole.PUBLISH_USER)) {
 				return ValidationResult.error("Publish User Cannot Be Selected as a standalone role");
-			} else {
+			} else if(value.size() == 1 && value.contains(UserRole.EDITOR_USER)){
+				return ValidationResult.error("Editor User Cannot Be Selected as a standalone role");
+			}else if(value.size() > 1 && (value.contains(UserRole.EDITOR_USER) 
+					&& value.contains(UserRole.COMMUNITY_OFFICER))) {
+				return ValidationResult.error("Editor User Cannot Be Paired with Cluster FLW");
+				
+			}else if(value.size() > 1 && (value.contains(UserRole.EDITOR_USER) 
+					&& value.contains(UserRole.REST_USER))) {
+				return ValidationResult.error("Editor User Cannot Be Paired with Mobile User");
+				
+			}else if(value.size() > 1 && (value.contains(UserRole.EDITOR_USER) 
+					&& value.contains(UserRole.PUBLISH_USER))) {
+				return ValidationResult.error("Editor User Cannot Be Paired with Publish User");
+				
+			}else {
 				UserRole.validate(value);
 				return ValidationResult.ok();
 			}
@@ -44,5 +58,6 @@ public final class UserRolesValidator implements Validator<Collection<UserRole>>
 //        	Notification.show(e.getMessage());
 			return ValidationResult.error(e.getMessage());
 		}
+		
 	}
 }

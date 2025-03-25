@@ -1,5 +1,6 @@
 package de.symeda.sormas.backend.messaging;
 
+import java.sql.Timestamp;
 import java.util.Set;
 
 import javax.persistence.CollectionTable;
@@ -10,18 +11,14 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
+
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.UniqueConstraint;
 
-import de.symeda.auditlog.api.Audited;
-import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserRole;
-import de.symeda.sormas.api.user.UserType;
 import de.symeda.sormas.backend.common.AbstractDomainObject;
-import de.symeda.sormas.backend.common.CoreAdo;
 import de.symeda.sormas.backend.infrastructure.area.Area;
 import de.symeda.sormas.backend.infrastructure.community.Community;
 import de.symeda.sormas.backend.infrastructure.district.District;
@@ -41,17 +38,16 @@ public class Message extends AbstractDomainObject{
 	public static final String TABLE_NAME_USERTYPES = "messages_usertypes";
 	
 	public static final String MESSAGE_CONTENT = "messageContent";
-//	public static final String USER_TYPE = "userTypes";
 	public static final String USER_ROLES = "userRoles";
 	public static final String MESSAGE_FORM_ACCESS = "formAccess";
 	public static final String AREA = "area";
 	public static final String REGION = "region";
 	public static final String DISTRICT = "district";
 	public static final String COMMUNITY = "community";
+	public static final String CHG_DATE = "chgDate";
 	public static final String CREATED_BY = "creatingUser";
 	
 	private String messageContent;
-//	private UserType userTypes;
 	private Set<UserRole> userRoles;
 	private Set<FormAccess> formAccess;
 	private Set<Area> area;
@@ -59,6 +55,7 @@ public class Message extends AbstractDomainObject{
 	private Set<District> district;
 	private Set<Community> community;
 	private User creatingUser;
+	private Timestamp chgDate;
 	
 	@Column(name = "messagecontent", nullable = false)
 	public String getMessageContent() {
@@ -68,22 +65,6 @@ public class Message extends AbstractDomainObject{
 	public void setMessageContent(String messageContent) {
 		this.messageContent = messageContent;
 	}	
-		
-//	@Enumerated(EnumType.STRING)
-//	@CollectionTable(name = "messages_usertypes",
-//	joinColumns = @JoinColumn(name = "messages_id", referencedColumnName = Message.ID, nullable = false),
-//	uniqueConstraints = @UniqueConstraint(columnNames = {
-//		"messages_id",
-//		"usertype" }))
-//	@Column(name = "usertype", nullable = false)
-//	public UserType getUsertype() {
-//		return userTypes;
-//	}
-//
-//	public void setUsertype(UserType usertype) {
-//		this.userTypes = usertype;
-//	}		
-
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Enumerated(EnumType.STRING)
 	@CollectionTable(name = "messages_userroles",
@@ -174,8 +155,8 @@ public class Message extends AbstractDomainObject{
 	
 	public void setCommunity(Set<Community> community) {
 		this.community = community;
-	}
-		
+	}	
+
 	@ManyToOne
 	@JoinColumn(name ="creatinguser_id")
 	public User getCreatingUser() {
@@ -185,4 +166,13 @@ public class Message extends AbstractDomainObject{
 	public void setCreatingUser(User creatingUser) {
 		this.creatingUser = creatingUser;
 	}
+
+	public Timestamp getChgDate() {
+		return chgDate;
+	}
+
+	public void setChgDate(Timestamp chgDate) {
+		this.chgDate = chgDate;
+	}
+	
 }

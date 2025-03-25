@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +30,7 @@ import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -41,6 +43,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
@@ -59,6 +62,7 @@ import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Strings;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserCriteria;
 import de.symeda.sormas.api.user.UserDto;
@@ -191,50 +195,8 @@ public class FormBuilderView extends VerticalLayout {
 		});
 
 		formType.addValueChangeListener(e -> {
-//			listofformsAccesses = new ArrayList<>();
-//			formAccess.clear();
 			if (e.getValue() != null) {				
-//				Collections.addAll(listofformsAccesses, FormAccess.values());
-//				if(e.getValue().toString().equalsIgnoreCase("post-campaign")) {
-//					listofformsAccesses.remove(FormAccess.ARCHIVE);
-//					listofformsAccesses.remove(FormAccess.EAG);
-//					listofformsAccesses.remove(FormAccess.FLW);
-//					listofformsAccesses.remove(FormAccess.MODALITY_PRE);
-//					listofformsAccesses.remove(FormAccess.TRAINING);
-//					listofformsAccesses.remove(FormAccess.ICM);
-//					listofformsAccesses.remove(FormAccess.ADMIN);
-//					listofformsAccesses.remove(FormAccess.EAG_ICM);
-//					listofformsAccesses.remove(FormAccess.EAG_ADMIN);
-//				} else if (e.getValue().toString().equalsIgnoreCase("intra-campaign")) {
-//					listofformsAccesses.remove(FormAccess.ARCHIVE);
-//					listofformsAccesses.remove(FormAccess.EAG);
-//					listofformsAccesses.remove(FormAccess.FLW);
-//					listofformsAccesses.remove(FormAccess.MODALITY_PRE);
-//					listofformsAccesses.remove(FormAccess.TRAINING);					
-//					listofformsAccesses.remove(FormAccess.PCA);
-//					listofformsAccesses.remove(FormAccess.FMS);
-//					listofformsAccesses.remove(FormAccess.LQAS);
-//					listofformsAccesses.remove(FormAccess.EAG_PCA);
-//					listofformsAccesses.remove(FormAccess.EAG_FMS);
-//					listofformsAccesses.remove(FormAccess.EAG_LQAS);
-//					listofformsAccesses.remove(FormAccess.MODALITY_POST);
-//					listofformsAccesses.remove(FormAccess.VALIDATION);
-//				} else if (e.getValue().toString().equalsIgnoreCase("pre-campaign")) {
-//					listofformsAccesses.remove(FormAccess.ARCHIVE);
-//					listofformsAccesses.remove(FormAccess.EAG);
-//					listofformsAccesses.remove(FormAccess.ICM);
-//					listofformsAccesses.remove(FormAccess.ADMIN);
-//					listofformsAccesses.remove(FormAccess.EAG_ICM);
-//					listofformsAccesses.remove(FormAccess.EAG_ADMIN);
-//					listofformsAccesses.remove(FormAccess.PCA);
-//					listofformsAccesses.remove(FormAccess.FMS);
-//					listofformsAccesses.remove(FormAccess.LQAS);
-//					listofformsAccesses.remove(FormAccess.EAG_PCA);
-//					listofformsAccesses.remove(FormAccess.EAG_FMS);
-//					listofformsAccesses.remove(FormAccess.EAG_LQAS);
-//					listofformsAccesses.remove(FormAccess.MODALITY_POST);
-//					listofformsAccesses.remove(FormAccess.VALIDATION);
-//				} 
+
 				criteria.setFormType(e.getValue().toString().toLowerCase());
 				filterDataProvider.setFilter(criteria);
 
@@ -356,6 +318,17 @@ public class FormBuilderView extends VerticalLayout {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 			return dateFormat.format(timestamp);
 		});
+		
+		TextRenderer<CampaignFormMetaDto> regionRenderer = new TextRenderer<>(dto -> {
+			List<AreaReferenceDto> areasReferenceDto = new ArrayList<>(dto.getArea());
+			String listOfRegion = "";
+			String value = String.valueOf(areasReferenceDto).replace("[", "").replace("]", "")
+					.replace("null,", "").replace("null", "");
+			Span label = new Span(value);
+			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
+			return value;
+		});
+		
 
 		grid.setSelectionMode(SelectionMode.SINGLE);
 		grid.setMultiSort(true, MultiSortPriority.APPEND);
@@ -374,7 +347,10 @@ public class FormBuilderView extends VerticalLayout {
 				.setResizable(true);
 		grid.addColumn(CampaignFormMetaDto.DISTRICTENTRY).setHeader("District Data Entry").setSortable(true)
 				.setResizable(true);
-		grid.addColumn(CampaignFormMetaDto.LANGUAGE_CODE).setHeader("Language Code").setSortable(true);
+		grid.addColumn(regionRenderer).setHeader("Region").setSortable(true);
+		grid.addColumn(CampaignFormMetaDto.LANGUAGE_CODE).setHeader("Language Code").setSortable(true);	
+		grid.addColumn(CampaignFormMetaDto.FORMVERSION).setHeader("Form Version").setSortable(true);		
+
 
 		grid.setVisible(true);
 		grid.setWidthFull();
@@ -399,6 +375,8 @@ public class FormBuilderView extends VerticalLayout {
 		formLayout.setForm(formData);
 		
 		formLayout.addSaveListener(this::saveForm);
+		formLayout.addDuplicateListener(this::duplicateForm);
+
 		Dialog dialog = new Dialog();
 		dialog.add(formLayout);
 		dialog.setHeaderTitle("Editing Form");
@@ -537,6 +515,17 @@ public class FormBuilderView extends VerticalLayout {
 	private void saveForm(FormBuilderLayout.SaveEvent event) {	
 		FacadeProvider.getCampaignFormMetaFacade().saveCampaignFormMeta(event.getForm());
 	}
+	
+	private void duplicateForm(FormBuilderLayout.DuplicateEvent event) {	
+		FacadeProvider.getCampaignFormMetaFacade().duplicateCampaignFormMeta(event.getForm());
+	}
+
+	
+//	private void duplicateForm(FormBuilderLayout.DuplicateEvent event) {
+//		FacadeProvider.getCampaignFormMetaFacade().saveCampaignFormMeta(event.getForm());
+//
+////		FacadeProvider.getCampaignFormMetaFacade().cloneForm(event.getForm().getUuid(), event.getForm().getFormversionuuid());
+//	}
 	
 	private void refreshGridData() {
 		ListDataProvider<CampaignFormMetaDto> dataProvider = DataProvider

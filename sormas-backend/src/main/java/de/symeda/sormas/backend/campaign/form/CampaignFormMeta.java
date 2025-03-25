@@ -4,15 +4,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Type;
@@ -29,6 +34,9 @@ import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.utils.ValidationRuntimeException;
 import de.symeda.sormas.backend.common.AbstractDomainObject;
+import de.symeda.sormas.backend.infrastructure.area.Area;
+import de.symeda.sormas.backend.infrastructure.region.Region;
+import de.symeda.sormas.backend.messaging.Message;
 import de.symeda.sormas.backend.util.ModelConstants;
 
 @Entity
@@ -52,6 +60,9 @@ public class CampaignFormMeta extends AbstractDomainObject {
 	public static final String FORM_NAME_PASHTO = "formname_ps_af"; 
 	public static final String FORM_NAME_DARI = "formname_fa_af"; 
 	public static final String ARCHIVED = "archived";
+	public static final String FORMGROUPUUID = "formGroupUuid";
+	public static final String FORMVERSION = "formversion";
+	public static final String AREA = "area";
 
 	private String formId;
 	private String formType;
@@ -76,6 +87,11 @@ public class CampaignFormMeta extends AbstractDomainObject {
 //	private String campaignFormTranslations;
 //	private List<CampaignFormTranslations> campaignFormTranslationsList;
 	private boolean archived = false;
+
+	private String formGroupUuid;
+	private Long formversion;
+	
+	private Set<Area> area;
 
 	@Column
 	public boolean getArchived() {
@@ -247,7 +263,41 @@ public class CampaignFormMeta extends AbstractDomainObject {
 	public void setModality(String modality) {
 		this.modality = modality;
 	}
+	
+	@Column(name="formgroupuuid")
+	public String getFormGroupUuid() {
+		return formGroupUuid;
+	}
 
+	public void setFormGroupUuid(String formGroupUuid) {
+		this.formGroupUuid = formGroupUuid;
+	}
+	
+	@Column
+	public Long getFormversion() {
+		return formversion;
+	}
+
+	public void setFormversion(Long formversion) {
+		this.formversion = formversion;
+	}
+
+	@ElementCollection(fetch = FetchType.EAGER)
+	@CollectionTable(name = "campaignformmeta_areas",
+		joinColumns = @JoinColumn(name = "campaignformmeta_id", referencedColumnName = CampaignFormMeta.ID, nullable = false),
+		uniqueConstraints = @UniqueConstraint(columnNames = {
+			"campaignformmeta_id",
+			"area_id" }))
+	@ManyToMany(cascade = {})
+	public Set<Area> getArea() {
+		return area;
+	}
+	
+	public void setArea(Set<Area> area) {
+		this.area = area;
+	}
+	
+	
 //	@Transient
 //	public List<CampaignFormTranslations> getCampaignFormTranslationsList() {
 //		if (campaignFormTranslationsList == null) {
@@ -283,7 +333,7 @@ public class CampaignFormMeta extends AbstractDomainObject {
 //	}
 
 	public CampaignFormMetaReferenceDto toReference() {
-		return new CampaignFormMetaReferenceDto(getUuid(), formName, formname_ps_af, formname_fa_af, formType, formCategory, daysExpired);
+		return new CampaignFormMetaReferenceDto(getUuid(), formName, formname_ps_af, formname_fa_af, formType, formCategory, daysExpired, formGroupUuid, formversion);
 	}
 
 	@Override

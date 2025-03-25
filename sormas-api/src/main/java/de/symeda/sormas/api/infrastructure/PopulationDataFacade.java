@@ -78,6 +78,8 @@ public interface PopulationDataFacade {
 //	void deletePopulationDataByDistrict(Long populationDataList,String ageGroup, String campaignUUID);
 	
 	void deletePopulationDataByUUId(String populationDataList,String ageGroup, String campaignUUID);
+
+	List<PopulationDataDto> fetchPopulationDataSelectionByUserDistricts(List<String> uuids);
 	
 	
 	

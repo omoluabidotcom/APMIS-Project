@@ -22,15 +22,42 @@ public interface MessageFacade {
 			List<SortProperty> sortProperties);
 
 	MessageDto saveMessage(@Valid MessageDto messageDto);
+	
+	boolean deleteMessage(MessageDto messageDto);
+
+	MessageScheduleDto saveMessage(@Valid MessageScheduleDto messageScheduleDto);
 
 	long count(MessageCriteria messageCriteria);
 
 	List<MessageDto> getMessageByUserRoles(MessageCriteria messageCriteria, UserType userType, Integer first,
 			Integer max, Set<UserRole> userRoles, Set<FormAccess> formAccess);
-	
-	List<MessageDto> getMessageByDate(MessageCriteria messageCriteria, UserType userType, Integer first,
-			Integer max, Set<UserRole> userRoles, Set<FormAccess> formAccess, Date date);
 
-	long getNewMessage(MessageCriteria messageCriteria, UserType userType, Integer first,
-			Integer max, Set<UserRole> userRoles, Set<FormAccess> formAccess);
+	List<MessageDto> getMessageByDate(MessageCriteria messageCriteria, UserType userType, Integer first, Integer max,
+			Set<UserRole> userRoles, Set<FormAccess> formAccess, Date date);
+
+	long getNewMessage(MessageCriteria messageCriteria, UserType userType, Integer first, Integer max,
+			Set<UserRole> userRoles, Set<FormAccess> formAccess);
+
+	List<MessageTemplateDto> getIndexListForMessageTemplate(MessageTemplateCriteria messageTemplateCriteria,
+			Integer first, Integer max, List<SortProperty> sortProperties);
+
+	long count(MessageTemplateCriteria messageTemplateCriteria);
+
+	MessageTemplateDto saveMessage(@Valid MessageTemplateDto messageTemplateDto);
+
+	boolean deleteMessage(MessageTemplateDto messageTemplateDto);	
+
+	void archivingMessageTemplate(List<String> uuids);
+
+	void dearchivingMessageTemplate(List<String> uuids);
+	
+	List<MessageScheduleDto> getIndexListMessageSchedule(MessageScheduleCriteria messageScheduleCriteria, Integer first,
+			Integer max, List<SortProperty> sortProperties);
+
+	long count(MessageScheduleCriteria messageScheduleCriteria);
+
+	boolean deleteMessage(MessageScheduleDto messageScheduleDto);
+	
+	public void messageScheduleBroadcast();
+	
 }

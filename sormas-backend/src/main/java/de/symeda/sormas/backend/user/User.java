@@ -19,6 +19,7 @@ package de.symeda.sormas.backend.user;
 
 import static de.symeda.sormas.api.utils.FieldConstraints.CHARACTER_LIMIT_DEFAULT;
 
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
@@ -95,7 +96,7 @@ public class User extends AbstractDomainObject {
 	public static final String HAS_CONSENTED_TO_GDPR = "hasConsentedToGdpr";
 	public static final String TOKEN = "token";
 	public static final String LAST_LOGIN_DATE = "lastlogindate";
-//	public static final String PREVIOUS_LOGIN_DATE = "previouslogindate";
+	public static final String NOTIFICATION_LAST_OPEN_DATE = "notificationlastopendate";
 
 	private String userName;
 	private String password;
@@ -143,7 +144,7 @@ public class User extends AbstractDomainObject {
 	
 	private Date lastLoginDate;
 	
-//	private Date previouslogindate;
+	private Timestamp notificationlastopendate;
 
 	@Column(nullable = false, length = CHARACTER_LIMIT_DEFAULT)
 	public String getUserName() {
@@ -226,14 +227,6 @@ public class User extends AbstractDomainObject {
 		this.userEmail = userEmail;
 	}	
 
-//	public Date getPreviouslogindate() {
-//		return previouslogindate;
-//	}
-//
-//	public void setPreviouslogindate(Date previouslogindate) {
-//		this.previouslogindate = previouslogindate;
-//	}
-
 	public Date getLastLoginDate() {
 		return lastLoginDate;
 	}
@@ -242,6 +235,14 @@ public class User extends AbstractDomainObject {
 		this.lastLoginDate = lastLoginDate;
 	}
 
+	public Timestamp getNotificationlastopendate() {
+		return notificationlastopendate;
+	}
+
+	public void setNotificationlastopendate(Timestamp notificationlastopendate) {
+		this.notificationlastopendate = notificationlastopendate;
+	}
+	
 	public String getPhone() {
 		return phone;
 	}
