@@ -17,6 +17,7 @@ import de.symeda.sormas.app.backend.region.CommunityDtoHelper;
 import de.symeda.sormas.app.backend.region.ContinentDtoHelper;
 import de.symeda.sormas.app.backend.region.CountryDtoHelper;
 import de.symeda.sormas.app.backend.region.DistrictDtoHelper;
+import de.symeda.sormas.app.backend.region.PopulationDataDtoHelper;
 import de.symeda.sormas.app.backend.region.RegionDtoHelper;
 import de.symeda.sormas.app.backend.region.SubcontinentDtoHelper;
 import de.symeda.sormas.app.backend.user.UserDtoHelper;
@@ -43,7 +44,10 @@ public class InfrastructureHelper {
 		changeDates.setCampaignChangeDate(DatabaseHelper.getCampaignDao().getLatestChangeDate());
 		changeDates.setCampaignFormMetaChangeDate(DatabaseHelper.getCampaignFormMetaDao().getLatestChangeDate());
 		changeDates.setCampaignFormMetaExpiryChangeDate(DatabaseHelper.getCampaignFormMetaWithExpDao().getLatestChangeDate());
-		changeDates.setAreaChangeDate(DatabaseHelper.getAreaDao().getLatestChangeDate());
+		changeDates.setPopulationDataChangeDate(DatabaseHelper.getPopulationDataDao().getLatestChangeDate());
+		changeDates.setCampaignFormMetaRegionChangeDate(DatabaseHelper.getCampaignFormMetaRegionDao().getLatestChangeDate());
+
+
 
 		return changeDates;
 	}
@@ -60,6 +64,7 @@ public class InfrastructureHelper {
 		new RegionDtoHelper().handlePulledList(DatabaseHelper.getRegionDao(), infrastructureData.getRegions());
 		new DistrictDtoHelper().handlePulledList(DatabaseHelper.getDistrictDao(), infrastructureData.getDistricts());
 		new CommunityDtoHelper().handlePulledList(DatabaseHelper.getCommunityDao(), infrastructureData.getCommunities());
+//		new PopulationDataDtoHelper().handlePulledList(DatabaseHelper.getPopulationDataDao(), infrastructureData.getPopulationData());
 		new FacilityDtoHelper().handlePulledList(DatabaseHelper.getFacilityDao(), infrastructureData.getFacilities());
 		new PointOfEntryDtoHelper().handlePulledList(DatabaseHelper.getPointOfEntryDao(), infrastructureData.getPointsOfEntry());
 		new UserDtoHelper().handlePulledList(DatabaseHelper.getUserDao(), infrastructureData.getUsers());

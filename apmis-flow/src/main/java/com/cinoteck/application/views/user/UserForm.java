@@ -308,9 +308,17 @@ public class UserForm extends FormLayout {
 				roles.add(UserRole.PUBLISH_USER);
 //				System.out.println("PUBLISH_USER add +++___________333333: " + roles);
 			}
+			if (!roles.contains(UserRole.EDITOR_USER)){
+				roles.add(UserRole.EDITOR_USER);
+
+			}
 		} else {
 			if (roles.contains(UserRole.PUBLISH_USER)) {
 				roles.remove(UserRole.PUBLISH_USER);
+//				System.out.println("PUBLISH_USER removed +++___________333333: " + roles);
+			}
+			if (roles.contains(UserRole.EDITOR_USER)) {
+				roles.remove(UserRole.EDITOR_USER);
 //				System.out.println("PUBLISH_USER removed +++___________333333: " + roles);
 			}
 		}
@@ -546,6 +554,8 @@ public class UserForm extends FormLayout {
 				sortedUserRoles.remove(UserRole.BAG_USER);
 				sortedUserRoles.remove(UserRole.REST_USER);
 				sortedUserRoles.remove(UserRole.PUBLISH_USER);
+				sortedUserRoles.remove(UserRole.EDITOR_USER);
+
 
 
 				userRoles.setItems(sortedUserRoles);

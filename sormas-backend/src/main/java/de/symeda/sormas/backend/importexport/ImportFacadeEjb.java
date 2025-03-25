@@ -59,9 +59,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
@@ -321,7 +323,15 @@ System.out.println("YESSSS");
 			.filter(
 				e -> !(CampaignFormElementType.SECTION.name().equalsIgnoreCase(e.getType())
 						|| CampaignFormElementType.DAYWISE.name().equalsIgnoreCase(e.getType()) || CampaignFormElementType.LABEL.name().equalsIgnoreCase(e.getType())))
-			.forEach(formElement -> importColumns.add(new ImportColumn(formElement.getId(), formElement.getCaption(), formElement.getType())));
+			.forEach(
+					formElement -> {
+						 String elementType =  formElement.getType();
+					        if (elementType != null && elementType.equalsIgnoreCase("Date")) {
+					        	elementType += " : dd/mm/yyyy";
+					        }
+					        
+						importColumns.add(new ImportColumn(formElement.getId(), formElement.getCaption(), elementType));
+						});
 		writeTemplate(Paths.get(getCampaignFormImportTemplateFilePath()), importColumns, false);
 
 	}
@@ -932,6 +942,21 @@ System.out.println("YESSSS");
 	 * @throws IOException
 	 */
 	private void writeTemplate(Path templatePath, List<ImportColumn> importColumns, boolean includeEntityNames) throws IOException {
+		
+		 Map<String, String> replacements = new LinkedHashMap<>();
+		    replacements.put("Area", "Region");
+		    replacements.put("Region", "Province");
+		    replacements.put("Community", "Cluster");
+		    
+		    Function<String, String> replaceText = text -> {
+		        String updated = text;
+		        for (Map.Entry<String, String> entry : replacements.entrySet()) {
+		            updated = updated.replace(entry.getKey(), entry.getValue());
+		        }
+		        return updated;
+		    };
+		    
+		    
 		try (CSVWriter writer = CSVUtils.createCSVWriter(
 			new OutputStreamWriter(new FileOutputStream(templatePath.toString()), StandardCharsets.UTF_8.newEncoder()),
 			configFacade.getCsvSeparator())) {
@@ -940,10 +965,24 @@ System.out.println("YESSSS");
 			}
 			writer.writeNext(importColumns.stream().map(ImportColumn::getColumnName).toArray(String[]::new));
 			writeCommentLine(writer, importColumns.stream().map(ImportColumn::getCaption).toArray(String[]::new));
-//			writeCommentLine(writer, importColumns.stream().map(ImportColumn::getDataDescription).toArray(String[]::new));
+			writeCommentLine(writer, importColumns.stream().map(ImportColumn::getDataDescription).map(desc -> applyConditionalReplacement(desc, replacements)).toArray(String[]::new));
 			writer.flush();
 		}
 	}
+	
+	private String applyConditionalReplacement(String description, Map<String, String> replacements) {
+	    for (Map.Entry<String, String> entry : replacements.entrySet()) {
+	        String key = entry.getKey();
+	        String value = entry.getValue();
+	        // Check if the description contains the key, then replace
+	        if (description.contains(key)) {
+	            return description.replace(key, value);
+	        }
+	    }
+	    return description; // Return original if no matches
+	}
+	
+	
 	
 	private void writePopulationTemplate(Path templatePath, List<ImportColumn> importColumns, boolean includeEntityNames) throws IOException {
 		try (CSVWriter writer = CSVUtils.createCSVWriter(
@@ -1064,6 +1103,5 @@ System.out.println("YESSSS");
 	@LocalBean
 	@Stateless
 	public static class ImportFacadeEjbLocal extends ImportFacadeEjb {
-
 	}
 }

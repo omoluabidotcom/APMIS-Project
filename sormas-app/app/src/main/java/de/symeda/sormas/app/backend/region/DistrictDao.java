@@ -19,9 +19,13 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.Where;
 
+import de.symeda.sormas.app.backend.common.AbstractDomainObject;
 import de.symeda.sormas.app.backend.common.AbstractInfrastructureAdoDao;
 import de.symeda.sormas.app.backend.common.DaoException;
+import de.symeda.sormas.app.backend.common.InfrastructureAdo;
 
 public class DistrictDao extends AbstractInfrastructureAdoDao<District> {
 
@@ -42,6 +46,8 @@ public class DistrictDao extends AbstractInfrastructureAdoDao<District> {
 	public List<District> getByRegion(Region region) {
 		return queryActiveForEq(District.REGION + "_id", region, District.NAME, true);
 	}
+
+
 
 	@Override
 	public District saveAndSnapshot(District source) throws DaoException {

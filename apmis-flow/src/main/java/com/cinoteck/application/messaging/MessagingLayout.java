@@ -1,8 +1,11 @@
 package com.cinoteck.application.messaging;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.cinoteck.application.UserProvider;
 import com.vaadin.flow.component.ComponentEvent;
@@ -42,6 +45,7 @@ import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
 import de.symeda.sormas.api.messaging.MessageDto;
+import de.symeda.sormas.api.messaging.MessageTemplateDto;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserReferenceDto;
 import de.symeda.sormas.api.user.UserRole;
@@ -85,6 +89,8 @@ public class MessagingLayout extends VerticalLayout {
 	Button savePreviewButton = new Button("Send", savePreviewIcon);
 
 	private boolean isNew = false;
+		
+	private ComboBox<String> templateCombo = new ComboBox<String>("Message Template");
 
 	public MessagingLayout(MessageDto messageDto_, boolean isNew) {
 
@@ -96,6 +102,11 @@ public class MessagingLayout extends VerticalLayout {
 		} else {
 			this.messageDto = messageDto_;
 		}
+		
+		List<MessageTemplateDto> listOfMessageTemplate = FacadeProvider.getMessageFacade().getIndexListForMessageTemplate(null, null, null, null);
+		List<String> listofMain = listOfMessageTemplate.stream().map(MessageTemplateDto::getMessageContent).collect(Collectors.toList());;		
+		templateCombo.setItems(listofMain);
+		
 		configureFields();
 	}
 
@@ -158,7 +169,7 @@ public class MessagingLayout extends VerticalLayout {
 
 		binder.forField(communitySelector).bind(MessageDto::getCommunity, MessageDto::setCommunity);
 
-		formLayout.add(messageContent, userRoles, formAccessSelector, areaSelector, regionSelector, districtSelector,
+		formLayout.add(templateCombo, messageContent, userRoles, formAccessSelector, areaSelector, regionSelector, districtSelector,
 				communitySelector);
 		formLayout.setColspan(pushNotificationHeader, 2);
 
@@ -176,9 +187,22 @@ public class MessagingLayout extends VerticalLayout {
 
 		discardChanges.addClickListener(e -> discardChanges());
 
+		templateCombo.addValueChangeListener(e -> {
+			messageContent.setValue(templateCombo.getValue());
+		});
+		
+		messageContent.addValueChangeListener(e -> {
+			templateCombo.setVisible(false);
+		});
 		saved.addClickListener(e -> {
 			if (messageContent.getValue() != null && !messageContent.isEmpty()) {
+				if(binder.getBean() != null) {
 				preView(binder.getBean());
+				} else {
+					MessageDto messageDtoValue = new MessageDto();
+					messageDtoValue.setMessageContent(messageContent.getValue());
+					preView(messageDtoValue);
+				}
 			} else {
 				Notification notification = new Notification();
 				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -267,12 +291,8 @@ public class MessagingLayout extends VerticalLayout {
 		if (binder.validate().isOk()) {
 
 			messageDto = binder.getBean();
-			UserReferenceDto userReferenceDto = new UserReferenceDto(userProvider.getUser().getUuid(),
-					userProvider.getUser().getFirstName(), userProvider.getUser().getLastName(),
-					userProvider.getUser().getUserRoles(), userProvider.getUser().getFormAccess(),
-					userProvider.getUser().getUsertype());
-
-			messageDto.setCreatingUser(userReferenceDto);
+			messageDto.setChgDate(Timestamp.from(Instant.now()));
+			messageDto.setCreatingUser(userProvider.getUser().getUserName());
 			fireEvent(new SaveEvent(this, messageDto));
 
 			Notification notification = new Notification("New Message Created", 3000, Position.MIDDLE);
@@ -309,38 +329,50 @@ public class MessagingLayout extends VerticalLayout {
 		message.setHeight("250px");
 
 		MultiSelectComboBox<UserRole> userRoles = new MultiSelectComboBox<>("Userroles");
-		userRoles.setItems(messageDto.getUserRoles());
-		userRoles.setValue(messageDto.getUserRoles());
+		if(messageDto.getUserRoles() != null) {
+			userRoles.setItems(messageDto.getUserRoles());
+			userRoles.setValue(messageDto.getUserRoles());
+		}		
 		userRoles.setReadOnly(true);
 		userRoles.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<FormAccess> formAccess = new MultiSelectComboBox<>("FormAccess");
-		formAccess.setItems(messageDto.getFormAccess());
-		formAccess.setValue(messageDto.getFormAccess());
+		if(messageDto.getFormAccess() != null) {
+			formAccess.setItems(messageDto.getFormAccess());
+			formAccess.setValue(messageDto.getFormAccess());
+		}			
 		formAccess.setReadOnly(true);
 		userRoles.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<AreaReferenceDto> areas = new MultiSelectComboBox<>("Regions");
-		areas.setItems(messageDto.getArea());
-		areas.setValue(messageDto.getArea());
+		if(messageDto.getArea() != null) {
+			areas.setItems(messageDto.getArea());
+			areas.setValue(messageDto.getArea());
+		}		
 		areas.setReadOnly(true);
 		areas.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<RegionReferenceDto> region = new MultiSelectComboBox<>("Provinces");
-		region.setItems(messageDto.getRegion());
-		region.setValue(messageDto.getRegion());
+		if(messageDto.getRegion() != null) {
+			region.setItems(messageDto.getRegion());
+			region.setValue(messageDto.getRegion());
+		}	
 		region.setReadOnly(true);
 		region.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<DistrictReferenceDto> district = new MultiSelectComboBox<>("Districts");
-		district.setItems(messageDto.getDistrict());
-		district.setValue(messageDto.getDistrict());
+		if(messageDto.getDistrict() != null) {
+			district.setItems(messageDto.getDistrict());
+			district.setValue(messageDto.getDistrict());
+		}		
 		district.setReadOnly(true);
 		district.getStyle().set("margin", "10px");
 
 		MultiSelectComboBox<CommunityReferenceDto> community = new MultiSelectComboBox<>("Clusters");
-		community.setItems(messageDto.getCommunity());
-		community.setValue(messageDto.getCommunity());
+		if(messageDto.getCommunity() != null) {
+			community.setItems(messageDto.getCommunity());
+			community.setValue(messageDto.getCommunity());
+		}
 		community.setReadOnly(true);
 		community.getStyle().set("margin", "10px");
 
@@ -365,7 +397,7 @@ public class MessagingLayout extends VerticalLayout {
 	}
 
 	public void setMessage(MessageDto messageDto) {
-		messageDto.setCreatingUser(userProvider.getUser().toReference());
+		messageDto.setCreatingUser(userProvider.getUser().getUserName());
 		binder.setBean(messageDto);
 	}
 
