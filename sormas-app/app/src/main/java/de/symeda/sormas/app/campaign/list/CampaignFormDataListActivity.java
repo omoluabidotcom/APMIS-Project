@@ -171,7 +171,8 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
     public void goToNewView() {
 
         final CampaignFormDataCriteria criteria = model.getCriteria();
-        List<PopulationData> list = DatabaseHelper.getPopulationDataDao().getSelectedDistrictByUsersDistrict(ConfigProvider.getUser().getDistrict().getUuid(), criteria.getCampaign().getUuid());
+        List<PopulationData> list = new ArrayList<>();
+        list = DatabaseHelper.getPopulationDataDao().getSelectedDistrictByUsersDistrict(ConfigProvider.getUser().getDistrict().getUuid(), criteria.getCampaign().getUuid());
 
         if(list.size() > 0 ){
             final CampaignFormMetaDialog campaignFormMetaDialog = new CampaignFormMetaDialog(BaseActivity.getActiveActivity(), criteria.getCampaign());
