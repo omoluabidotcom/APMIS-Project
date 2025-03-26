@@ -18,7 +18,8 @@ public enum CampaignFormElementType {
 	DATE,
 	DECIMAL,
 	RANGE,
-	ARRAY;
+	ARRAY,
+	PHONE;
 	
 
 	private final String[] allowedValues;

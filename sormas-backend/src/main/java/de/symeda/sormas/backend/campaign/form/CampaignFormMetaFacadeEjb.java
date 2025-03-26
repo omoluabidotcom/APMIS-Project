@@ -60,6 +60,7 @@ import de.symeda.sormas.api.campaign.form.CampaignFormMetaHistoryExtractDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaIndexDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
+import de.symeda.sormas.api.campaign.form.DialingCodeDto;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Validations;
 import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
@@ -325,7 +326,8 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 	@Override
 	public List<CampaignFormMetaReferenceDto> getCampaignFormMetasAsReferencesByCampaignandRoundAndPashtox(String round,
 			String campaignUUID, AreaReferenceDto areaReferenceDto) {
-		return service.getCampaignFormMetasAsReferencesByCampaignandRoundAndPashtox(round, campaignUUID, areaReferenceDto);
+		return service.getCampaignFormMetasAsReferencesByCampaignandRoundAndPashtox(round, campaignUUID,
+				areaReferenceDto);
 	}
 
 	@Override
@@ -333,11 +335,12 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 			String round, String campaignUUID) {
 		return service.getCampaignFormMetasAsReferencesByCampaignandRoundAndDari(round, campaignUUID);
 	}
-	
+
 	@Override
 	public List<CampaignFormMetaReferenceDto> getAllCampaignFormMetasAsReferencesByRoundandCampaignRoundAndDarix(
 			String round, String campaignUUID, AreaReferenceDto areaReferenceDto) {
-		return service.getCampaignFormMetasAsReferencesByCampaignandRoundAndDarix(round, campaignUUID, areaReferenceDto);
+		return service.getCampaignFormMetasAsReferencesByCampaignandRoundAndDarix(round, campaignUUID,
+				areaReferenceDto);
 	}
 
 	@Override
@@ -1039,8 +1042,46 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 				)).collect(Collectors.toList()));
 		return resultData;
 					}
-
 	
+	
+	@Override
+	public List<CampaignFormMetaReferenceDto> getAllCountries (){
+
+		
+		String queryStringBuilder = "select dialing_code, country, min_length, max_length from dialingcode;";
+		
+		Query getFormExpressionsQuery = em.createNativeQuery(queryStringBuilder);
+		//
+		List<CampaignFormMetaReferenceDto> resultData = new ArrayList<>();
+		
+		List<Object[]> resultList = getFormExpressionsQuery.getResultList();
+	
+		resultData.addAll(resultList.stream()
+			    .map(result -> new CampaignFormMetaReferenceDto(
+			        result[0] != null ? result[0].toString() : "",  // UUID (String)
+			        result[1] != null ? result[1].toString() : "",  // Caption (String)
+			        result[2] != null ? result[2].toString() : "",  // Type (String)
+			        result[3] != null ? Integer.parseInt(result[3].toString()) : 0 // DaysExpired (int)
+			    ))
+			    .collect(Collectors.toList()));
+
+		return resultData;
+	
+	}
+	
+//	@Override
+//	public String getCountryCodeByName(String countryName) {
+//	    String queryString = "SELECT dialing_code FROM dialingcode WHERE country = :countryName";
+//
+//	    Query query = em.createNativeQuery(queryString);
+//	    query.setParameter("countryName", countryName);
+//
+//	    return (String) query.getSingleResult();
+//
+//	}
+	
+	
+
 	@LocalBean
 	@Stateless
 	public static class CampaignFormMetaFacadeEjbLocal extends CampaignFormMetaFacadeEjb {
