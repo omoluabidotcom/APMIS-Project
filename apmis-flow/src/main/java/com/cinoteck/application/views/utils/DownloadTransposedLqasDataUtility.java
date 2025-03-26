@@ -88,9 +88,6 @@ public final class DownloadTransposedLqasDataUtility {
 					// Handle non-H-suffix fields
 					fieldIDWithoutDaySuffix.add(uniqueVariable);
 				}
-				
-//					String variableID = uniqueVariable.replaceAll("(H\\d+|H\\d+)$", "");
-//					fieldIDWithoutDaySuffix.add(variableID);
 				}
 
 			}
@@ -109,8 +106,6 @@ public final class DownloadTransposedLqasDataUtility {
 			fieldIdToCaptionMap = matchFieldsWithCaptions(fieldIDWithoutDaySuffix, campaignFormElements);
 		}
 
-//	    columnNames.add(I18nProperties.getPrefixCaption(CampaignFormDataIndexDto.I18N_PREFIX, CampaignFormDataIndexDto.COMMUNITY));
-		
 		fieldCaptions.add("Campaign");
 		fieldCaptions.add("Form");
 		fieldCaptions.add("Region");
@@ -118,15 +113,15 @@ public final class DownloadTransposedLqasDataUtility {
 		fieldCaptions.add("Province");
 		fieldCaptions.add("PCode");
 		fieldCaptions.add("District");
-		fieldCaptions.add("Dcode");
+		fieldCaptions.add("DCode");
 		fieldCaptions.add("Cluster");
 		fieldCaptions.add("Cluster Number");
 		fieldCaptions.add("CCode");
 		fieldCaptions.add("Form Phase");
 		fieldCaptions.add("Source");
-		fieldCaptions.add("Creating User");
-		fieldCaptions.add("Verified");
-		fieldCaptions.add("Published");
+		fieldCaptions.add("Creating user");
+//		fieldCaptions.add("Verified");
+//		fieldCaptions.add("Published");
 		fieldCaptions.add("Household Number");
 		fieldCaptions.add("HouseTotalChildrenSeen");
 		
@@ -134,19 +129,19 @@ public final class DownloadTransposedLqasDataUtility {
 		columnNames.add("campaign");
 		columnNames.add("form");
 		columnNames.add("region");
-		columnNames.add("rCode");
+		columnNames.add("rcode");
 		columnNames.add("province");
-		columnNames.add("pCode");
+		columnNames.add("pcode");
 		columnNames.add("district");
 		columnNames.add("dcode");
 		columnNames.add("cluster");
 		columnNames.add("clusterNumber");
-		columnNames.add("cCode");
+		columnNames.add("ccode");
 		columnNames.add("formType");
 		columnNames.add("source");
 		columnNames.add("creatingUser");
-		columnNames.add("isVerified");
-		columnNames.add("isPublished");
+//		columnNames.add("isVerified");
+//		columnNames.add("isPublished");
 		columnNames.add("housenumber");
 		columnNames.add("houseTotalChildrenSeen");
 
@@ -162,7 +157,7 @@ public final class DownloadTransposedLqasDataUtility {
 		// remeber to increment the values when new columns are added below the defined
 		// columns
 		Map<String, Integer> fieldIdPositions = new HashMap<>();
-		int ageGroupIndex = 17;
+		int ageGroupIndex = 15; //17 was 17 but weve moved ispublished and verified tp the last two columns 
 		for (String fieldGroup : fieldIDWithoutDaySuffix) {			
 			if(fieldGroup.equalsIgnoreCase("TotalChildrenSeen") || fieldGroup.equals("CName")) {				
 				System.out.println("Skipping : " + fieldGroup);
@@ -183,6 +178,11 @@ public final class DownloadTransposedLqasDataUtility {
 			ageGroupIndex += 1;
 			}
 		}
+		
+		fieldCaptions.add("Verified Status");
+		fieldCaptions.add("Published Status");
+		columnNames.add("isverified");
+		columnNames.add("ispublished");
 		
 		
 		Map<String, Map<String, String>> dayValueMap = new HashMap<>();
@@ -306,11 +306,11 @@ public final class DownloadTransposedLqasDataUtility {
 												? individualTransposedFormData.getCreatingUser().toString()
 												: "");
 								
-								row.set(14, individualTransposedFormData.isIsverified()+ "" != null
+								row.set(row.size() -2, individualTransposedFormData.isIsverified()+ "" != null
 										? individualTransposedFormData.isIsverified()+ ""
 										: "");
 								
-								row.set(15, individualTransposedFormData.isIspublished()+ "" != null
+								row.set(row.size() -1, individualTransposedFormData.isIspublished()+ "" != null
 										? individualTransposedFormData.isIspublished()+ ""
 										: "");
 								
