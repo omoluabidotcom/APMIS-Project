@@ -99,7 +99,8 @@
 		<class>de.symeda.sormas.backend.infrastructure.region.RegionDryRun</class>
 		<class>de.symeda.sormas.backend.infrastructure.district.DistrictDryRun</class>
 		<class>de.symeda.sormas.backend.infrastructure.PopulationDataDryRun</class>
-		<class>de.symeda.sormas.backend.messaging.MessageCron</class>	
+		<class>de.symeda.sormas.backend.campaign.form.DialingCode</class>	
+		<class>de.symeda.sormas.backend.messaging.MessageCron</class>			
 		<class>de.symeda.sormas.backend.messaging.MessagesTemplate</class>		
 				
 

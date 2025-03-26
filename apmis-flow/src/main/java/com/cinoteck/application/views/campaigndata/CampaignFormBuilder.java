@@ -99,6 +99,7 @@ import de.symeda.sormas.api.campaign.form.CampaignFormElementType;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
+import de.symeda.sormas.api.campaign.form.DialingCodeDto;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.Descriptions;
 import de.symeda.sormas.api.i18n.I18nProperties;
@@ -181,6 +182,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 	private String uuidForm;
 	private boolean checkDistrictEntry = false;
 	private String formName;
+	private DialingCodeDto dialingCodeDto = new DialingCodeDto();
+	private int min = 0;
+	private int max = 0;
 
 	public CampaignFormBuilder(List<CampaignFormElement> formElements, List<CampaignFormDataEntry> formValues,
 			CampaignReferenceDto campaignReferenceDto, List<CampaignFormTranslations> translations, String formName,
@@ -1118,6 +1122,82 @@ public class CampaignFormBuilder extends VerticalLayout {
 						numberField.setRequiredIndicatorVisible(formElement.isImportant());
 					}
 
+				} else if (type == CampaignFormElementType.PHONE) {
+					HorizontalLayout fieldLayout = new HorizontalLayout();
+					ComboBox<String> availableCountries = new ComboBox<String>();
+					availableCountries.setLabel("Country");
+
+					TextField numberField = new TextField();
+					numberField.setAllowedCharPattern("[\\d+]");
+					List<String> namesListx = new ArrayList<String>();
+
+					for (DialingCodeDto dialingCodeDto : FacadeProvider.getDialingCodeFacade().getAllCountriesDto()) {
+						namesListx.add(dialingCodeDto.getCountry());
+					}
+
+					availableCountries.setItems(namesListx);
+					availableCountries.setValue(namesListx.get(0));
+
+					dialingCodeDto = FacadeProvider.getDialingCodeFacade()
+							.getCountryByCode(availableCountries.getValue());
+					numberField.setValue(FacadeProvider.getDialingCodeFacade()
+							.getCountryByCode(availableCountries.getValue()).getCode());
+					min = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
+							.getMin_length();
+					max = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
+							.getMax_length();
+
+					numberField.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
+					numberField.removeClassName("valid-input");
+					numberField.setHelperText("Mobile number for " + dialingCodeDto.getCountry() + " must be between "
+							+ min + " and " + max + " digits");
+					availableCountries.addValueChangeListener(e -> {
+
+						if (numberField.getValue() != null) {
+							numberField.clear();
+						}
+						dialingCodeDto = FacadeProvider.getDialingCodeFacade()
+								.getCountryByCode(availableCountries.getValue());
+
+						min = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
+								.getMin_length();
+						max = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
+								.getMax_length();
+
+						numberField.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
+						numberField.setValue(FacadeProvider.getDialingCodeFacade()
+								.getCountryByCode(availableCountries.getValue()).getCode());
+						numberField.setHelperText("Mobile number for " + dialingCodeDto.getCountry()
+								+ " must be between " + min + " and " + max + " digits");
+						numberField.setInvalid(true);
+					});
+
+					numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+//					numberField.setClassName("customTextWrap");
+
+					numberField.setId(formElement.getId());
+					numberField.setSizeFull();
+					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
+					fieldLayout.add(availableCountries, numberField);
+					vertical.add(fieldLayout);
+					fields.put(formElement.getId(), numberField);
+
+					numberField.addValueChangeListener(e -> {
+						String inputValue = e.getValue().replace(dialingCodeDto.getCode(), "");
+
+						if (inputValue.length() > max) {
+							numberField.setInvalid(true);
+							numberField.removeClassName("valid-input");
+						} else if (inputValue.length() < min) {
+							numberField.setInvalid(true);
+							numberField.removeClassName("valid-input");
+						} else {
+							numberField.setErrorMessage(null);
+							numberField.setInvalid(false);
+							numberField.addClassName("valid-input");
+						}
+					});
+
 				} else if (type == CampaignFormElementType.RANGE) {
 					IntegerField integerField = new IntegerField();
 					integerField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
@@ -1751,6 +1831,16 @@ public class CampaignFormBuilder extends VerticalLayout {
 			}
 			;
 
+			break;
+
+		case PHONE:
+
+			if (value != null) {
+				((TextField) field).setValue(value.toString());
+
+			} else if (defaultvalue != null) {
+				((TextField) field).setValue(defaultvalue);
+			}
 			break;
 		default:
 			throw new IllegalArgumentException(type.toString());

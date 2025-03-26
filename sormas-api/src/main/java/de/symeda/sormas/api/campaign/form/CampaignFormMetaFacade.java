@@ -89,4 +89,8 @@ public interface CampaignFormMetaFacade {
 	
 	List<CampaignFormMetaHistoryExtractDto> getFormsMetaHistory(String formUuid);
 	
+	List<CampaignFormMetaReferenceDto> getAllCountries();
+	
+//	String getCountryCodeByName(String countryName);
+		
 }
