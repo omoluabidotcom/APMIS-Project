@@ -22,11 +22,17 @@ import static androidx.databinding.DataBindingUtil.setContentView;
 
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.TextView;
 
@@ -37,6 +43,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +78,8 @@ import de.symeda.sormas.app.databinding.FragmentCampaignDataNewLayoutBinding;
 
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handleDependingOn;
 
+import androidx.core.content.ContextCompat;
+
 public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampaignDataNewLayoutBinding, CampaignFormData, CampaignFormData> {
 
     private final ExpressionParser expressionParser = new SpelExpressionParser();
@@ -83,11 +92,75 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
     private Map<String, String> optionsValues;
     private List<String> constraints;
 
+    private String currentCountryCode;
+
     private boolean onError;
     private String errorMessage = "";
 
     // private List<CampaignFormTranslations> translationsOpt;
     private Map<String, String> userOptTranslations = null;
+    private TextView countryLabel;
+    private TextView helperText;
+
+    private int min = 9;
+    private int max = 9;
+    private String country = "Afghanistan";
+    private Map<String, CountryDetails> mapvalue = new HashMap<>();
+
+    public void addMapValue() {
+
+        mapvalue.put("Afghanistan", new CountryDetails("+93", 9, 9));
+        mapvalue.put("Albania", new CountryDetails("+355", 8, 9));
+        mapvalue.put("Algeria", new CountryDetails("+213", 9, 9));
+        mapvalue.put("Andorra", new CountryDetails("+376", 6, 6));
+        mapvalue.put("Angola", new CountryDetails("+244", 9, 9));
+        mapvalue.put("Argentina", new CountryDetails("+54", 10, 10));
+        mapvalue.put("Armenia", new CountryDetails("+374", 8, 8));
+        mapvalue.put("Australia", new CountryDetails("+61", 9, 9));
+        mapvalue.put("Austria", new CountryDetails("+43", 10, 13));
+        mapvalue.put("Azerbaijan", new CountryDetails("+994", 9, 9));
+        mapvalue.put("Bahrain", new CountryDetails("+973", 8, 8));
+        mapvalue.put("Bangladesh", new CountryDetails("+880", 10, 10));
+        mapvalue.put("Belarus", new CountryDetails("+375", 9, 9));
+        mapvalue.put("Belgium", new CountryDetails("+32", 8, 9));
+        mapvalue.put("Bolivia", new CountryDetails("+591", 8, 8));
+        mapvalue.put("Brazil", new CountryDetails("+55", 10, 11));
+        mapvalue.put("Canada", new CountryDetails("+1", 10, 10));
+        mapvalue.put("China", new CountryDetails("+86", 11, 11));
+        mapvalue.put("Colombia", new CountryDetails("+57", 10, 10));
+        mapvalue.put("Denmark", new CountryDetails("+45", 8, 8));
+        mapvalue.put("Egypt", new CountryDetails("+20", 10, 10));
+        mapvalue.put("France", new CountryDetails("+33", 9, 9));
+        mapvalue.put("Germany", new CountryDetails("+49", 10, 11));
+        mapvalue.put("India", new CountryDetails("+91", 10, 10));
+        mapvalue.put("Indonesia", new CountryDetails("+62", 9, 11));
+        mapvalue.put("Iran", new CountryDetails("+98", 10, 10));
+        mapvalue.put("Iraq", new CountryDetails("+964", 10, 10));
+        mapvalue.put("Italy", new CountryDetails("+39", 9, 10));
+        mapvalue.put("Japan", new CountryDetails("+81", 10, 10));
+        mapvalue.put("Kenya", new CountryDetails("+254", 9, 9));
+        mapvalue.put("Mexico", new CountryDetails("+52", 10, 10));
+        mapvalue.put("Netherlands", new CountryDetails("+31", 9, 9));
+        mapvalue.put("Nigeria", new CountryDetails("+234", 7, 10));
+        mapvalue.put("Pakistan", new CountryDetails("+92", 10, 10));
+        mapvalue.put("Philippines", new CountryDetails("+63", 10, 10));
+        mapvalue.put("Poland", new CountryDetails("+48", 9, 9));
+        mapvalue.put("Portugal", new CountryDetails("+351", 9, 9));
+        mapvalue.put("Russia", new CountryDetails("+7", 10, 10));
+        mapvalue.put("Saudi Arabia", new CountryDetails("+966", 9, 9));
+        mapvalue.put("South Africa", new CountryDetails("+27", 9, 9));
+        mapvalue.put("South Korea", new CountryDetails("+82", 9, 10));
+        mapvalue.put("Spain", new CountryDetails("+34", 9, 9));
+        mapvalue.put("Sweden", new CountryDetails("+46", 7, 9));
+        mapvalue.put("Switzerland", new CountryDetails("+41", 9, 9));
+        mapvalue.put("Thailand", new CountryDetails("+66", 9, 9));
+        mapvalue.put("Turkey", new CountryDetails("+90", 10, 10));
+        mapvalue.put("Ukraine", new CountryDetails("+380", 9, 9));
+        mapvalue.put("United Arab Emirates", new CountryDetails("+971", 9, 9));
+        mapvalue.put("United Kingdom", new CountryDetails("+44", 9, 10));
+        mapvalue.put("United States", new CountryDetails("+1", 10, 10));
+        mapvalue.put("Vietnam", new CountryDetails("+84", 9, 10));
+    }
 
     public static BaseEditFragment newInstance(CampaignFormData activityRootData) {
         return newInstance(CampaignFormDataNewFragment.class, null, activityRootData);
@@ -973,6 +1046,63 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                     } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
 
+                    } else if (type == CampaignFormElementType.PHONE) {
+                        addMapValue();
+//                        // Create a label (caption)
+                        countryLabel = new TextView(requireContext());
+                        countryLabel.setText("Select Country");
+                        countryLabel.setTextSize(16);
+                        countryLabel.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.black));
+                        countryLabel.setPadding(24, 16, 24, 16);  // Add some padding for spacing
+
+                        // Add the label to the dynamic layout
+                        dynamicLayout.addView(countryLabel, new LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+                        Spinner countrySpinner = new Spinner(requireContext());
+
+                        // Get country names from system locale
+                        List<String> countryNames = new ArrayList<>();
+
+                        for (Map.Entry<String, CountryDetails> countries : mapvalue.entrySet()) {
+                            countryNames.add(countries.getKey().toString());
+                        }
+                        Collections.sort(countryNames);
+                        currentCountryCode = countryNames.get(0);
+                        // Create an ArrayAdapter
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, countryNames);
+                        countrySpinner.setAdapter(adapter);
+
+
+                        // Add spinner to dynamic layout
+                        dynamicLayout.addView(countrySpinner, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+                        dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+
+                        helperText = new TextView(requireContext());
+                        helperText.setText("Mobile number for " + country
+                                + " must be between " + min + " and " + max + " digits");
+                        helperText.setTextSize(10);
+                        helperText.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.black));
+                        dynamicLayout.addView(helperText, new LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                        // Add listener to update countryLabel when a country is selected
+                        countrySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                String selectedCountry = countryNames.get(position);
+                                String countryCode = mapvalue.get(selectedCountry).getCode();  // Get country code from the map
+                                dynamicField.setValue("");
+                                dynamicField.setValue(countryCode);  // Update the EditText with the country code
+                                currentCountryCode = countryCode;
+                                helperText.setText("Mobile number for " + selectedCountry
+                                        + " must be between " + mapvalue.get(selectedCountry).getMinLength() + " and " +
+                                        mapvalue.get(selectedCountry).getMaxLength() + " digits");
+                            }
+
+                            @Override
+                            public void onNothingSelected(AdapterView<?> parent) {}
+                        });
                     } else if (type == CampaignFormElementType.RANGE) {
                         final boolean exprx = expressionx;
 
@@ -1084,6 +1214,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         });
                     }
 
+<<<<<<< HEAD
 
                     if (type == CampaignFormElementType.TEXT && campaignFormElement.getId().equalsIgnoreCase("TazkiraNo")) {
                         dynamicField.addValueChangedListener(e->{
@@ -1095,6 +1226,15 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                         }
                                     }
 
+=======
+                    if (type == CampaignFormElementType.PHONE && campaignFormElement.getId().equalsIgnoreCase("mobileNumber")) {
+                        dynamicField.addValueChangedListener(e->{
+                            String value = dynamicField.getValue().toString().replace(currentCountryCode, "");
+                            if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != ""){
+                                if (value != null && !value.matches("^[+]?[0-9]*$")) {
+                                    dynamicField.setValue(value.replaceAll("[^0-9+]", ""));// Remove invalid characters
+                                }
+>>>>>>> branch 'development' of https://github.com/omoluabidotcom/APMIS-Project.git
                             }
                         });
                     }
