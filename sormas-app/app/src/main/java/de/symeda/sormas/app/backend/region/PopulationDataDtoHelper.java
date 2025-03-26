@@ -43,7 +43,9 @@ public class PopulationDataDtoHelper extends AdoDtoHelper<PopulationData, Popula
     }
     @Override
     protected Call<List<PopulationDataDto>> pullAllSince(long since) throws NoConnectionException {
-        return RetroProvider.getPopulationDataFacade().fetchPopulationDataSelectionByUserDistricts();
+        return RetroProvider.getPopulationDataFacade().pullAllSince(since);
+
+//        return RetroProvider.getPopulationDataFacade().fetchPopulationDataSelectionByUserDistricts();
     }
     @Override
     protected Call<List<PopulationDataDto>> pullByUuids(List<String> uuids) throws NoConnectionException {

@@ -705,7 +705,7 @@ if (1 == 3) {
 
 		//population data
 		List<String> populationDataUuids =  executeUuidCall(RetroProvider.getPopulationDataFacade().pullUuids());
-//		DatabaseHelper.getPopulationDataDao().deleteInvalid(populationDataUuids);
+		DatabaseHelper.getPopulationDataDao().deleteInvalid(populationDataUuids);
 		// countries
 	//	List<String> countryUuids = executeUuidCall(RetroProvider.getCountryFacade().pullUuids());
 	//	DatabaseHelper.getCountryDao().deleteInvalid(countryUuids);
