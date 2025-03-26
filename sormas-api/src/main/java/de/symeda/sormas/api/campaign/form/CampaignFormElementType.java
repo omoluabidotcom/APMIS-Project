@@ -22,6 +22,7 @@ public enum CampaignFormElementType {
 	TIME,
 	PHONE,
 	ARRAY;
+
 	
 
 	private final String[] allowedValues;

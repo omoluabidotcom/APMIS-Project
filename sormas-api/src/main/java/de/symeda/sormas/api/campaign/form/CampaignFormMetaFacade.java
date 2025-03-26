@@ -108,6 +108,8 @@ public interface CampaignFormMetaFacade {
 //	List<CampaignFormMetaDto> getByUuidANdFormVersionUuids(List<String> uuids, List<String> formVersionsUuids);
 
 //	CampaignFormMetaDto getByUuidAndFormVersionUuid(String uuid, String formVersionUuid);
-
 	
-}
+	List<CampaignFormMetaReferenceDto> getAllCountries();
+	
+//	String getCountryCodeByName(String countryName);
+	}
