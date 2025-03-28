@@ -43,27 +43,6 @@ public class DialingCodeFacadeEjb implements DialingCodeFacade {
 		return resultData;	
 	}
 
-//	@Override
-//	public DialingCodeDto getCountryByCode(String countryCode) {
-//	    String queryString = "SELECT dialing_code, country, min_length, max_length FROM dialingcode WHERE country = :countryCode";
-//
-//	    Query query = em.createNativeQuery(queryString);
-//	    query.setParameter("countryCode", countryCode);
-//
-//	    return (DialingCodeDto) query.getSingleResult();
-//	}
-	
-//	@Override
-//	public DialingCodeDto getCountryByCode(String countryCode) {
-////	    String queryString = "SELECT new de.symeda.sormas.api.campaign.form.DialingCodeDto(d.dialing_code, d.country, d.min_length, d.max_length) FROM DialingCode d WHERE d.country = :countryCode";
-//		String queryString = "SELECT dialing_code, country, min_length, max_length FROM dialingcode WHERE country = :countryCode";
-//
-//	    TypedQuery<DialingCodeDto> query = em.createQuery(queryString, DialingCodeDto.class);
-//	    query.setParameter("countryCode", countryCode);
-//
-//	    return query.getSingleResult();
-//	}
-
 	@Override
 	public DialingCodeDto getCountryByCode(String countryCode) {
 	    System.out.println("countryCodecountryCodecountryCode " + countryCode);
@@ -73,12 +52,5 @@ public class DialingCodeFacadeEjb implements DialingCodeFacade {
 	        .setParameter("countryCode", countryCode)
 	        .getSingleResult();
 	}
-//	public DialingCodeDto getCountryByCode(String countryCode) {
-//		System.out.println("countryCodecountryCodecountryCode "+ countryCode);
-//	    return em.createQuery(
-//	        "select country, code, min_length, max_length from dialingcode WHERE country = :countryCode", DialingCodeDto.class)
-//	        .setParameter("countryCode", countryCode)
-//	        .getSingleResult();
-//	}
-
+	
 }
