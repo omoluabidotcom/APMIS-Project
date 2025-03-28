@@ -92,13 +92,13 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
     private Map<String, String> optionsValues;
     private List<String> constraints;
 
-    private String currentCountryCode;
-
     private boolean onError;
     private String errorMessage = "";
 
     // private List<CampaignFormTranslations> translationsOpt;
     private Map<String, String> userOptTranslations = null;
+
+    private String currentCountryCode;
     private TextView countryLabel;
     private TextView helperText;
 
