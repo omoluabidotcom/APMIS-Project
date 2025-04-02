@@ -276,7 +276,9 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 
 		updatePageMenu();
 
-		if (ConfigProvider.getUser() == null || !LocationService.instance().validateGpsAccessAndEnabled(this)) {
+//		if (ConfigProvider.getUser() == null || !LocationService.instance().validateGpsAccessAndEnabled(this)) {
+		if (ConfigProvider.getUser() == null) {
+
 			return;
 		}
 	}

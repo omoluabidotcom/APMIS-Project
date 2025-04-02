@@ -135,10 +135,64 @@
 			style="color: white; background-color: #0D6938; border: 2px solid #0D6938; border-radius: 5px; height: 40px; font-size: 14px">Submit
 			Feedback</button>
 	</form>
+	
+	<!-- Notification container -->
+
+  
+  <!-- script>
+    const form = document.getElementById('my-form');
+    const submitButton = document.getElementById('submit-button');
+    const notification = document.getElementById('notification');
+
+    function showNotification() {
+      notification.classList.remove('hidden');
+      setTimeout(() => {
+        notification.classList.add('hidden');
+      }, 5000); // Hide after 3 seconds
+    }
+
+    function closeNotification() {
+      notification.classList.add('hidden');
+    }
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      
+      // Disable the submit button
+      submitButton.disabled = true;
+      submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+      fetch(form.action, {
+        method: "POST",
+        body: new FormData(document.getElementById("my-form")),
+      })
+      .then((response) => {
+        showNotification();
+        setTimeout(() => {
+          parent.location.reload();
+        }, 3000);
+      })
+      .catch((error) => {
+        // Re-enable the button if there's an error
+        submitButton.disabled = false;
+        submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+      });
+    });
+  </script-->
+  
+  
+  
+  
 	<script>
-var form = document.getElementById('my-form');
+/* var form = document.getElementById('my-form');
 form.addEventListener("submit", e => {
+	
 	  e.preventDefault();
+	  
+	  // Hide the submit button
+	  var submitButton = document.querySelector("button[type='submit']");
+	  submitButton.style.display = "none";
+	  
 	  fetch(form.action, {
 	  method: "POST",
 	  body: new FormData(document.getElementById("my-form")),
@@ -147,6 +201,46 @@ form.addEventListener("submit", e => {
 	  parent.location.reload();
 	  });
 	  });
+	  
+*/
+
+var form = document.getElementById('my-form');
+
+form.addEventListener("submit", e => {
+  // Prevent form submission
+  e.preventDefault();
+
+  // Validate form fields
+  var isValid = true;
+  var requiredFields = form.querySelectorAll("[required]"); // Select all required fields
+
+  requiredFields.forEach(field => {
+    if (!field.value.trim()) {
+      isValid = false;
+      field.style.border = "2px solid red"; // Highlight invalid fields
+    } else {
+      field.style.border = "1px solid #0D6938"; // Reset valid fields
+    }
+  });
+
+  if (!isValid) {
+    alert("Please fill in all required fields.");
+    return; // Stop form submission
+  }
+
+  // Disable the submit button to prevent multiple submissions
+  var submitButton = form.querySelector("button[type='submit']");
+  submitButton.disabled = true;
+
+  // Proceed with the form submission via fetch
+  fetch(form.action, {
+    method: "POST",
+    body: new FormData(form),
+  }).then(response => {
+    alert("You have submitted this form.");
+    parent.location.reload();
+  });
+});
 
 </script>
 </body>

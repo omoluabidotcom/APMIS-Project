@@ -27,6 +27,8 @@ import de.symeda.sormas.api.campaign.diagram.CampaignDiagramDefinitionFacade;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaExpiryFacade;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaFacade;
 import de.symeda.sormas.api.campaign.form.DialingCodeFacade;
+import de.symeda.sormas.api.campaign.form.CampaignFormMetaRegionDto;
+import de.symeda.sormas.api.campaign.form.CampaignFormMetaRegionFacade;
 import de.symeda.sormas.api.campaign.statistics.CampaignStatisticsFacade;
 import de.symeda.sormas.api.caze.CaseFacade;
 import de.symeda.sormas.api.caze.CaseStatisticsFacade;
@@ -520,6 +522,10 @@ public class FacadeProvider {
 	
 	public static CampaignFormDataDryRunFacade getCampaignFormDataDryRunFacade() {
 		return get().lookupEjbRemote(CampaignFormDataDryRunFacade.class);
+	}
+	
+	public static CampaignFormMetaRegionFacade getCampaignFormMetaRegionFacade() {
+		return get().lookupEjbRemote(CampaignFormMetaRegionFacade.class);
 	}
 
 	@SuppressWarnings("unchecked")

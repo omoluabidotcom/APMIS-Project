@@ -60,6 +60,8 @@ public class CampaignFormMeta extends AbstractDomainObject {
 	public static final String FORM_NAME_PASHTO = "formname_ps_af"; 
 	public static final String FORM_NAME_DARI = "formname_fa_af"; 
 	public static final String ARCHIVED = "archived";
+	public static final String FORMGROUPUUID = "formGroupUuid";
+	public static final String FORMVERSION = "formversion";
 	public static final String AREA = "area";
 
 	private String formId;
@@ -85,6 +87,10 @@ public class CampaignFormMeta extends AbstractDomainObject {
 //	private String campaignFormTranslations;
 //	private List<CampaignFormTranslations> campaignFormTranslationsList;
 	private boolean archived = false;
+
+	private String formGroupUuid;
+	private Long formversion;
+	
 	private Set<Area> area;
 
 	@Column
@@ -258,6 +264,24 @@ public class CampaignFormMeta extends AbstractDomainObject {
 		this.modality = modality;
 	}
 	
+	@Column(name="formgroupuuid")
+	public String getFormGroupUuid() {
+		return formGroupUuid;
+	}
+
+	public void setFormGroupUuid(String formGroupUuid) {
+		this.formGroupUuid = formGroupUuid;
+	}
+	
+	@Column
+	public Long getFormversion() {
+		return formversion;
+	}
+
+	public void setFormversion(Long formversion) {
+		this.formversion = formversion;
+	}
+
 	@ElementCollection(fetch = FetchType.EAGER)
 	@CollectionTable(name = "campaignformmeta_areas",
 		joinColumns = @JoinColumn(name = "campaignformmeta_id", referencedColumnName = CampaignFormMeta.ID, nullable = false),
@@ -309,7 +333,7 @@ public class CampaignFormMeta extends AbstractDomainObject {
 //	}
 
 	public CampaignFormMetaReferenceDto toReference() {
-		return new CampaignFormMetaReferenceDto(getUuid(), formName, formname_ps_af, formname_fa_af, formType, formCategory, daysExpired);
+		return new CampaignFormMetaReferenceDto(getUuid(), formName, formname_ps_af, formname_fa_af, formType, formCategory, daysExpired, formGroupUuid, formversion);
 	}
 
 	@Override

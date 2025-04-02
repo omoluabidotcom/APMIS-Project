@@ -36,6 +36,7 @@ import de.symeda.sormas.app.backend.campaign.CampaignDtoHelper;
 import de.symeda.sormas.app.backend.campaign.data.CampaignFormDataDtoHelper;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaDtoHelper;
 
+import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaRegionDtoHelper;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaWithExpDtoHelper;
 import de.symeda.sormas.app.backend.caze.CaseDtoHelper;
 import de.symeda.sormas.app.backend.classification.DiseaseClassificationDtoHelper;
@@ -49,6 +50,7 @@ import de.symeda.sormas.app.backend.infrastructure.InfrastructureHelper;
 import de.symeda.sormas.app.backend.region.AreaDtoHelper;
 import de.symeda.sormas.app.backend.region.CommunityDtoHelper;
 import de.symeda.sormas.app.backend.region.DistrictDtoHelper;
+import de.symeda.sormas.app.backend.region.PopulationDataDtoHelper;
 import de.symeda.sormas.app.backend.region.RegionDtoHelper;
 import de.symeda.sormas.app.backend.user.UserDtoHelper;
 import de.symeda.sormas.app.backend.user.UserRoleConfigDtoHelper;
@@ -346,6 +348,14 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			if (campaignFormMetaWithExpDtoHelper.pullAndPushEntities())
 				campaignFormMetaWithExpDtoHelper.pullEntities(true);
 
+			final CampaignFormMetaRegionDtoHelper campaignFormMetaRegionDtoHelper = new CampaignFormMetaRegionDtoHelper();
+			if (campaignFormMetaRegionDtoHelper.pullAndPushEntities())
+				campaignFormMetaRegionDtoHelper.pullEntities(true);
+
+			final PopulationDataDtoHelper populationDataDtoHelper = new PopulationDataDtoHelper();
+			if (populationDataDtoHelper.pullAndPushEntities())
+				populationDataDtoHelper.pullEntities(true);
+
 
 			repullData();
 		}
@@ -418,6 +428,7 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 		//new FacilityDtoHelper().pullEntities(false);
 		//new PointOfEntryDtoHelper().pullEntities(false);
 		new UserDtoHelper().pullEntities(false);
+		new PopulationDataDtoHelper().pullEntities(false);
 
 		//new DiseaseClassificationDtoHelper().pullEntities(false);
 		//new DiseaseConfigurationDtoHelper().pullEntities(false);
@@ -444,6 +455,9 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			new CampaignFormMetaDtoHelper().pullEntities(false);
 			new CampaignFormMetaWithExpDtoHelper().pullEntities(false);
 			new CampaignDtoHelper().pullEntities(false);
+			new CampaignFormMetaRegionDtoHelper().pullEntities(false);
+
+
 		}
 
 		ConfigProvider.setInitialSyncRequired(false);
@@ -688,6 +702,10 @@ if (1 == 3) {
 		// areas
 		List<String> areaUuids = executeUuidCall(RetroProvider.getAreaFacade().pullUuids());
 		DatabaseHelper.getAreaDao().deleteInvalid(areaUuids);
+
+		//population data
+		List<String> populationDataUuids =  executeUuidCall(RetroProvider.getPopulationDataFacade().pullUuids());
+//		DatabaseHelper.getPopulationDataDao().deleteInvalid(populationDataUuids);
 		// countries
 	//	List<String> countryUuids = executeUuidCall(RetroProvider.getCountryFacade().pullUuids());
 	//	DatabaseHelper.getCountryDao().deleteInvalid(countryUuids);
@@ -711,12 +729,18 @@ if (1 == 3) {
 		new RegionDtoHelper().pullMissing(regionUuids);
 		new DistrictDtoHelper().pullMissing(districtUuids);
 		new CommunityDtoHelper().pullMissing(communityUuids);
+//		new PopulationDataDtoHelper().pullMissing(populationDataUuids);
+
 	//	new FacilityDtoHelper().pullMissing(facilityUuids);
 		//new PointOfEntryDtoHelper().pullMissing(pointOfEntryUuids);
 		new UserRoleConfigDtoHelper().pullMissing(userRoleConfigUuids);
 		new UserDtoHelper().pullMissing(userUuids);
 	//	new DiseaseConfigurationDtoHelper().pullMissing(diseaseConfigurationUuids);
 	//	new CustomizableEnumValueDtoHelper().pullMissing(customizableEnumValueUuids);
+		new PopulationDataDtoHelper().pullMissing(populationDataUuids);
+		new CampaignFormMetaRegionDtoHelper().pullMissing(populationDataUuids);
+
+
 		new FeatureConfigurationDtoHelper().pullMissing(featureConfigurationUuids);
 
 		if (!DatabaseHelper.getFeatureConfigurationDao().isFeatureDisabled(FeatureType.CAMPAIGNS)) {
