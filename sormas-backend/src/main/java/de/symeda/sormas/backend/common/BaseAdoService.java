@@ -54,6 +54,7 @@ import de.symeda.sormas.api.ReferenceDto;
 import de.symeda.sormas.api.campaign.CampaignIndexDto;
 import de.symeda.sormas.api.utils.DateHelper;
 import de.symeda.sormas.backend.campaign.Campaign;
+import de.symeda.sormas.backend.campaign.form.CampaignFormMeta;
 //import de.symeda.sormas.backend.campaign.form.CampaignFormMeta;
 //import de.symeda.sormas.backend.campaign.form.CampaignFormMetaExpDay;
 import de.symeda.sormas.backend.user.CurrentUser;
@@ -440,5 +441,11 @@ public class BaseAdoService<ADO extends AbstractDomainObject> implements AdoServ
 		}
 
 		return query;
+	}
+
+	@Override
+	public List<CampaignFormMeta> getByUuidANdFormVersionUuid(String uuid, String formVersionUuid) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

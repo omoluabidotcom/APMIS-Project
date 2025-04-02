@@ -21,8 +21,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,8 +46,14 @@ public final class DownloadTransposedLqasDataUtility {
 		CampaignFormDataCriteria criteriax = new CampaignFormDataCriteria();
 
 		criteriax = criteria;
+		
+		
+		
+		String exportFileName = campaignName + "_" + formName + "_LONG_" +  new SimpleDateFormat("yyyyddMM").format(Calendar.getInstance().getTime())+ ".csv";// createFileNameWithCurrentDateandEntityNameString(formName+
+//      + new SimpleDateFormat("yyyyddMM").format(Calendar.getInstance().getTime());
 
-		String exportFileName = "APMIS_" + formName + "_" + campaignName + ".csv";// createFileNameWithCurrentDateandEntityNameString(formName+
+
+//		String exportFileName = "APMIS_" + formName + "_" + campaignName + ".csv";// createFileNameWithCurrentDateandEntityNameString(formName+
 																					// "_" + campaignName, ".csv");
 
 		// Using the index list method to get the day-wise form data since it already
@@ -100,25 +110,7 @@ public final class DownloadTransposedLqasDataUtility {
 		}
 
 //	    columnNames.add(I18nProperties.getPrefixCaption(CampaignFormDataIndexDto.I18N_PREFIX, CampaignFormDataIndexDto.COMMUNITY));
-		columnNames.add("Campaign");
-		columnNames.add("Form");
-		columnNames.add("Region");
-		columnNames.add("RCode");
-		columnNames.add("Province");
-		columnNames.add("PCode");
-		columnNames.add("District");
-		columnNames.add("Dcode");
-		columnNames.add("Cluster");
-		columnNames.add("Cluster Number");
-		columnNames.add("CCode");
-		columnNames.add("Form Phase");
-		columnNames.add("Source");
-		columnNames.add("Creating User");
-		columnNames.add("isVerified");
-		columnNames.add("isPublished");
-		columnNames.add("House Number");
-		columnNames.add("HouseN");
-
+		
 		fieldCaptions.add("Campaign");
 		fieldCaptions.add("Form");
 		fieldCaptions.add("Region");
@@ -128,15 +120,37 @@ public final class DownloadTransposedLqasDataUtility {
 		fieldCaptions.add("District");
 		fieldCaptions.add("Dcode");
 		fieldCaptions.add("Cluster");
-		fieldCaptions.add("clusternumber");
+		fieldCaptions.add("Cluster Number");
 		fieldCaptions.add("CCode");
-		fieldCaptions.add("formType");
+		fieldCaptions.add("Form Phase");
 		fieldCaptions.add("Source");
-		fieldCaptions.add("creatingUser");
-		fieldCaptions.add("isVerified");
-		fieldCaptions.add("isPublished");
-		fieldCaptions.add("House Number");
-		fieldCaptions.add("House");
+		fieldCaptions.add("Creating User");
+		fieldCaptions.add("Verified");
+		fieldCaptions.add("Published");
+		fieldCaptions.add("Household Number");
+		fieldCaptions.add("HouseTotalChildrenSeen");
+		
+		
+		columnNames.add("campaign");
+		columnNames.add("form");
+		columnNames.add("region");
+		columnNames.add("rCode");
+		columnNames.add("province");
+		columnNames.add("pCode");
+		columnNames.add("district");
+		columnNames.add("dcode");
+		columnNames.add("cluster");
+		columnNames.add("clusterNumber");
+		columnNames.add("cCode");
+		columnNames.add("formType");
+		columnNames.add("source");
+		columnNames.add("creatingUser");
+		columnNames.add("isVerified");
+		columnNames.add("isPublished");
+		columnNames.add("housenumber");
+		columnNames.add("houseTotalChildrenSeen");
+
+
 		
 		 Set<String> fieldsNeedingHnSuffix = new HashSet<>(Arrays.asList(
 		            "FM", "Reasons", "Gender", "childrenAge", "House", "Total"
@@ -149,17 +163,25 @@ public final class DownloadTransposedLqasDataUtility {
 		// columns
 		Map<String, Integer> fieldIdPositions = new HashMap<>();
 		int ageGroupIndex = 17;
-		for (String fieldGroup : fieldIDWithoutDaySuffix) {
+		for (String fieldGroup : fieldIDWithoutDaySuffix) {			
+			if(fieldGroup.equalsIgnoreCase("TotalChildrenSeen") || fieldGroup.equals("CName")) {				
+				System.out.println("Skipping : " + fieldGroup);
+			}else {			
 			columnNames.add(fieldGroup);
 			fieldIdPositions.put(fieldGroup, ageGroupIndex);
 			ageGroupIndex += 1;
+			}
 		}
 
-		for (String fieldId : fieldIDWithoutDaySuffix) {
-			String caption = fieldIdToCaptionMap.getOrDefault(fieldId, fieldId);
+		for (String fieldId : fieldIDWithoutDaySuffix) {			
+			if(fieldId.equalsIgnoreCase("TotalChildrenSeen") || fieldId.equals("CName")) {				
+				System.out.println("Skipping : " + fieldId);
+			}else {			
+			String caption = fieldIdToCaptionMap.getOrDefault(fieldId, fieldId);			
 			fieldCaptions.add(caption);
 			fieldIdPositions.put(caption, ageGroupIndex);
 			ageGroupIndex += 1;
+			}
 		}
 		
 		
@@ -203,10 +225,6 @@ public final class DownloadTransposedLqasDataUtility {
 						}
 					}
 				}
-
-//				System.out.println("fieldIDsforColumnHeaders" + fieldIDsforColumnHeaders);
-//				System.out.println("uniqueVariablePartsWithoutDaySuffixForColumnHeader"
-//						+ uniqueVariablePartsWithoutDaySuffixForColumnHeader);
 
 			}
 		}
@@ -303,15 +321,15 @@ public final class DownloadTransposedLqasDataUtility {
 								// Add House value matching the current day's number
 								String houseKey = "House" + houseNumber;
 								
-								  int houseColumnIndex = columnNames.indexOf("HouseN");
+								 int houseColumnIndex = columnNames.indexOf("houseTotalChildrenSeen");
 						
 								if (formDataMaxp.containsKey(houseKey)) {
 									
 									
 									// Add a new column for House if not already added
-									if (!columnNames.contains("House")) {
-										columnNames.add("House");
-										 houseColumnIndex = columnNames.size();
+									if (!columnNames.contains("houseTotalChildrenSeen")) {
+										columnNames.add("houseTotalChildrenSeen");
+										 houseColumnIndex = columnNames.indexOf("houseTotalChildrenSeen");
 										row.add(formDataMaxp.get(houseKey));
 									} else {
 									       if (houseColumnIndex >= 0 && formDataMaxp.containsKey(houseKey)) {
@@ -326,6 +344,12 @@ public final class DownloadTransposedLqasDataUtility {
 								}
 								
 								for (String variable : uniqueVariablePartsWithoutDaySuffixForColumnHeader) {
+									
+									if(variable.equalsIgnoreCase("TotalChildrenSeen") || variable.equals("CName")) {
+										
+										System.out.println("Skipping : " + variable);
+									}else {									
+									
 								    // Case 1: Handle House values
 								    if (variable.startsWith("House")) {
 								        String houseKeyz = variable + day;
@@ -357,6 +381,7 @@ public final class DownloadTransposedLqasDataUtility {
 								            }
 								        }
 								    }
+									}
 								}
 
 
@@ -404,50 +429,7 @@ public final class DownloadTransposedLqasDataUtility {
 	    
 	    return new ArrayList<>(variablePartsSet);
 	}
-	
-//public static StreamResource createTransposedDataFormExpressions(CampaignFormDataCriteria criteria) {
-//		
-//		
-//		return new StreamResource(criteria.getCampaignFormMeta().getCaption() +  ".csv", () -> {
-//			try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream()) {
-//				// Write UTF-8 BOM
-//				byteStream.write(0xEF);
-//				byteStream.write(0xBB);
-//				byteStream.write(0xBF);
-//                try (BufferedWriter writer = new BufferedWriter(
-//                        new OutputStreamWriter(byteStream, StandardCharsets.UTF_8))) {
-//                    
-//                    // Fetch the data based on the criteria
-//                    List<CampaignFormMetaDto> data = exportToCsv(
-//    						FacadeProvider.getCampaignFormMetaFacade().getFormExpressions
-//    						(criteria.getCampaignFormMeta().getUuid()),
-//    						byteStream);
-//
-//                    // Write the header row
-//                    writer.write("Variable Name,Format,Variable Caption,Description");
-//                    writer.newLine();
-//
-//                    // Write data rows
-//                    for (CampaignFormMetaDto dto : data) {
-//                        writer.write(String.format("\"%s\",\"%s\",\"%s\",\"%s\"",
-//                                escapeCsv(dto.getFieldId()),
-//                                escapeCsv(dto.getFielType()),
-//                                escapeCsv(dto.getFieldCaption()),
-//                                escapeCsv(dto.getFieldExpression())));
-//                        writer.newLine();
-//                    }
-//
-//                    writer.flush();
-//                }
-//                
-//
-//				return new ByteArrayInputStream(byteStream.toByteArray());
-//			} catch (IOException e) {
-//				// Handle exceptions and show a notification if needed
-//				return null;
-//			}
-//		});
-//	}
+
 
 	public static StreamResource createTransposedDataFormExpressions(CampaignFormDataCriteria criteria) {
 	    return new StreamResource(criteria.getCampaignFormMeta().getCaption() + ".csv", () -> {
@@ -489,63 +471,6 @@ public final class DownloadTransposedLqasDataUtility {
 	        }
 	    });
 	}
-
-//public static StreamResource createTransposedDataFormExpressions(CampaignFormDataCriteria criteria) {
-//    return new StreamResource(criteria.getCampaignFormMeta().getCaption() + ".csv", () -> {
-//        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-//             OutputStreamWriter writer = new OutputStreamWriter(byteStream, StandardCharsets.UTF_8)) {
-//
-//            // Write BOM for UTF-8
-//            writer.write("\uFEFF");
-//
-//            // Fetch data
-//            List<CampaignFormMetaIndexDto> data = FacadeProvider.getCampaignFormMetaFacade()
-//                    .getFormExpressions(criteria.getCampaignFormMeta().getUuid());
-//
-//            // Write headers
-//            writer.write("Variable Name,Format,Variable Caption,Description\n");
-//
-//            // Write rows
-//            for (CampaignFormMetaIndexDto dto : data) {
-//                writer.write(String.format("\"%s\",\"%s\",\"%s\",\"%s\"\n",
-//                        escapeCsv(dto.getFieldid()),
-//                        escapeCsv(dto.getFieldtype()),
-//                        escapeCsv( dto.getFieldcaption()),
-//                        escapeCsv(dto.getFieldexpression())));
-//            }
-//            writer.flush();
-//            return new ByteArrayInputStream(byteStream.toByteArray());
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//    });
-//}
-//
-//private static String escapeCsv(String value) {
-//    if (value == null) {
-//        return "";
-//    }
-//    // Always escape double quotes by doubling them
-//    String escaped = value.replace("\"", "\"\"");
-//    
-//    // Always wrap the value in quotes, regardless of content
-//    return "\"" + escaped + "\"";
-//}
-
-	
-//	
-//    private static String escapeCsv(String value) {
-//        if (value == null) {
-//            return "";
-//        }
-//        String escaped = value.replace("\"", "\"\"");
-//        if (escaped.contains(",") || escaped.contains("\"") || escaped.contains("\n")) {
-//            return "\"" + escaped + "\"";
-//        }
-//        return escaped;
-//    }
-
 
 	
 	private static List<String> extractUniqueDayValues(List<String> formEntriesID) {

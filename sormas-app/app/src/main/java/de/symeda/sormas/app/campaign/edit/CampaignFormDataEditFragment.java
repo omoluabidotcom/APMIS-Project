@@ -1465,6 +1465,20 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                         });
                     }
 
+                    if (type == CampaignFormElementType.TEXT && campaignFormElement.getId().equalsIgnoreCase("TazkiraNo")) {
+                        dynamicField.addValueChangedListener(e->{
+                            if (dynamicField.getValue().toString() != null){
+                                if ( dynamicField.getValue().toString().length() == 13) {
+                                    String inputValue = e.getValue().toString().replace("-", "").replace(".", "");
+//                                    if (inputValue.length() == 13) {
+                                        handleTazkiraNoFormatting(inputValue, dynamicField);
+//                                    }
+                                }
+                            }
+                        });
+                    }
+
+
                     final String dependingOn = campaignFormElement.getDependingOn();
                     if (dependingOn != null) {
 
@@ -1617,6 +1631,18 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
         }
         return view;
+    }
+
+
+    private void handleTazkiraNoFormatting(String inputValue, ControlPropertyField dynamicField) {
+        String value = inputValue;
+
+        String formattedTazkira = value.substring(0, 4) + "-"
+                + value.substring(4, 8) + "-"
+                + value.substring(8);
+
+        dynamicField.setValue(formattedTazkira);
+
     }
 
 

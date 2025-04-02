@@ -10833,5 +10833,291 @@ ALTER TABLE community_history ADD COLUMN sys_period tstzrange NOT NULL;
 INSERT INTO schema_version (version_number, comment) VALUES (480, 'Geography: Tracking Active Status over Time #750');
 
 
+DROP MATERIALIZED VIEW public.camapaigndata_admin;
+DROP MATERIALIZED VIEW public.camapaigndata_adminxx;
+
+DROP INDEX IF EXISTS public.camapaigndata_admin_fieldid_id;
+DROP INDEX IF EXISTS public.camapaigndata_admin_fieldid_idx;
+DROP INDEX IF EXISTS public.camapaigndata_admin_fieldid_idxxx;
+
+
+CREATE MATERIALIZED VIEW public.camapaigndata_admin
+TABLESPACE pg_default
+AS SELECT areas.name AS area,
+    region.name AS region,
+    district.name AS district,
+    community.name AS community,
+    areas.uuid AS areas_uuid,
+    region.uuid AS region_uuid,
+    district.uuid AS district_uuid,
+    campaigns.uuid AS campaigns_uuid,
+    community.uuid AS community_uuid,
+    campaignformmeta.uuid AS formuuid,
+    campaignformmeta.formid,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day8-readonly'::text THEN
+            CASE
+                WHEN (jsondata.value ->> 'value'::text) = '0'::text THEN 1
+                WHEN (jsondata.value ->> 'value'::text) = '1'::text THEN 0
+                ELSE 0
+            END
+            ELSE 0
+        END) AS day8,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day7-readonly'::text THEN
+            CASE
+                WHEN (jsondata.value ->> 'value'::text) = '0'::text THEN 1
+                WHEN (jsondata.value ->> 'value'::text) = '1'::text THEN 0
+                ELSE 0
+            END
+            ELSE 0
+        END) AS day7,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day6-readonly'::text THEN
+            CASE
+                WHEN (jsondata.value ->> 'value'::text) = '0'::text THEN 1
+                WHEN (jsondata.value ->> 'value'::text) = '1'::text THEN 0
+                ELSE 0
+            END
+            ELSE 0
+        END) AS day6,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day5-readonly'::text THEN
+            CASE
+                WHEN (jsondata.value ->> 'value'::text) = '0'::text THEN 1
+                WHEN (jsondata.value ->> 'value'::text) = '1'::text THEN 0
+                ELSE 0
+            END
+            ELSE 0
+        END) AS day5,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day4-readonly'::text THEN
+            CASE
+                WHEN (jsondata.value ->> 'value'::text) = '0'::text THEN 1
+                WHEN (jsondata.value ->> 'value'::text) = '1'::text THEN 0
+                ELSE 0
+            END
+            ELSE 0
+        END) AS day4,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day3-readonly'::text THEN
+            CASE
+                WHEN (jsondata.value ->> 'value'::text) = '0'::text THEN 1
+                WHEN (jsondata.value ->> 'value'::text) = '1'::text THEN 0
+                ELSE 0
+            END
+            ELSE 0
+        END) AS day3,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day2-readonly'::text THEN
+            CASE
+                WHEN (jsondata.value ->> 'value'::text) = '0'::text THEN 1
+                WHEN (jsondata.value ->> 'value'::text) = '1'::text THEN 0
+                ELSE 0
+            END
+            ELSE 0
+        END) AS day2,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day1-readonly'::text THEN
+            CASE
+                WHEN (jsondata.value ->> 'value'::text) = '0'::text THEN 1
+                WHEN (jsondata.value ->> 'value'::text) = '1'::text THEN 0
+                ELSE 0
+            END
+            ELSE 0
+        END) AS day1,
+    max(
+        CASE
+            WHEN (jsondata.value ->> 'id'::text) = 'Admin_day0-readonly'::text THEN
+            CASE
+                WHEN (jsondata.value ->> 'value'::text) = '0'::text THEN 1
+                WHEN (jsondata.value ->> 'value'::text) = '1'::text THEN 0
+                ELSE 0
+            END
+            ELSE 0
+        END) AS day0
+   FROM campaignformdata
+     LEFT JOIN campaignformmeta ON campaignformdata.campaignformmeta_id = campaignformmeta.id
+     LEFT JOIN region ON campaignformdata.region_id = region.id
+     LEFT JOIN areas ON campaignformdata.area_id = areas.id
+     LEFT JOIN district ON campaignformdata.district_id = district.id
+     LEFT JOIN community ON campaignformdata.community_id = community.id
+     LEFT JOIN campaigns ON campaignformdata.campaign_id = campaigns.id,
+    LATERAL json_array_elements(campaignformdata.formvalues) jsondata(value)
+  WHERE campaignformmeta.formcategory::text = 'ADMIN'::text
+  GROUP BY areas.name, region.name, district.name, areas.uuid, region.uuid, district.uuid, community.name, community.uuid, campaignformmeta.uuid, campaignformmeta.formid, campaigns.uuid
+WITH DATA;
+
+
+CREATE UNIQUE INDEX camapaigndata_admin_fieldid_id ON public.camapaigndata_admin USING btree (formuuid, campaigns_uuid, community_uuid);
+
+
+
+
+INSERT INTO schema_version (version_number, comment) VALUES (481, 'Admin Data Completeness report formatting - data source selection');
+
+
+ALTER TABLE public.users ADD notificationlastopendate timestamp NULL;
+ALTER TABLE public.messages ADD chgDate timestamp NULL;
+
+CREATE TABLE public.messagestemplate (
+	id int8 NOT NULL,
+	"uuid" varchar(36) NOT NULL,
+	changedate timestamp NOT NULL,
+	creationdate timestamp NOT NULL,
+	messagecontent varchar NOT NULL,
+	creatinguser_id int8 NULL,
+	chgdate timestamp NULL,
+	CONSTRAINT messagestemplate_pkey PRIMARY KEY (id),
+	CONSTRAINT messagestemplate_uuid_key UNIQUE (uuid)
+);
+
+ALTER TABLE public.messagestemplate ADD CONSTRAINT messagestemplate_creatinguser_id_fkey FOREIGN KEY (creatinguser_id) REFERENCES public.users(id);
+
+ALTER TABLE public.messagestemplate ADD messageCategory varchar NULL;
+
+GRANT REFERENCES, DELETE, INSERT, TRUNCATE, SELECT, UPDATE, TRIGGER ON TABLE public.messagestemplate TO sormas_user;
+
+ALTER TABLE public.messagestemplate ADD archived bool DEFAULT false NULL;
+
+ALTER TABLE public.messages ADD status varchar NULL;
+
+
+
+-- Add column without NOT NULL constraint
+ALTER TABLE campaignformmeta ADD COLUMN formgroupuuid varchar(36);
+ALTER TABLE campaignformmeta ADD COLUMN formversion int4 DEFAULT 1 NOT null;
+
+-- Update all existing rows with UUID values
+UPDATE campaignformmeta SET formgroupuuid = UPPER(gen_random_uuid()::text);
+
+-- Now add the NOT NULL constraint
+ALTER TABLE campaignformmeta ALTER COLUMN formgroupuuid SET NOT NULL;
+
+
+
+CREATE TABLE public.campaignformmeta_areas (
+	campaignformmeta_id int4 NOT NULL,
+	area_id int4 NOT NULL,
+	"uuid" varchar(36) DEFAULT upper(gen_random_uuid()::character varying::text) NULL,
+	CONSTRAINT campaignformmeta_areas_pkey PRIMARY KEY (campaignformmeta_id, area_id)
+);
+
+INSERT INTO schema_version (version_number, comment) VALUES (482, 'Notification, Campaign Form Region Assignment & Form Versioning');
+
+
+CREATE TABLE public.messagescron (
+	id int8 NOT NULL,
+	"uuid" varchar(36) NOT NULL,
+	changedate timestamp NOT NULL,
+	creationdate timestamp NOT NULL,
+	messagecontent varchar NOT NULL,
+	area_id int8 NULL,
+	region_id int8 NULL,
+	district_id int8 NULL,
+	creatinguser_id int8 NULL,
+	chgdate timestamp NULL,
+	CONSTRAINT messagescron_pkey PRIMARY KEY (id),
+	CONSTRAINT messagescron_uuid_key UNIQUE (uuid)
+);
+
+ALTER TABLE public.messagescron ADD CONSTRAINT messagescron_area_id_fkey FOREIGN KEY (area_id) REFERENCES public.areas(id);
+ALTER TABLE public.messagescron ADD CONSTRAINT messagescron_creatinguser_id_fkey FOREIGN KEY (creatinguser_id) REFERENCES public.users(id);
+ALTER TABLE public.messagescron ADD CONSTRAINT messagescron_district_id_fkey FOREIGN KEY (district_id) REFERENCES public.district(id);
+ALTER TABLE public.messagescron ADD CONSTRAINT messagescron_region_id_fkey FOREIGN KEY (region_id) REFERENCES public.region(id);
+
+
+CREATE TABLE public.messagescron_areas (
+	messagescron_id int4 NOT NULL,
+	area_id int4 NOT NULL,
+	CONSTRAINT messagescron_areas_pkey PRIMARY KEY (messagescron_id, area_id)
+);
+
+ALTER TABLE public.messagescron_areas ADD CONSTRAINT messagescron_areas_areas_id_fkey FOREIGN KEY (area_id) REFERENCES public.areas(id);
+ALTER TABLE public.messagescron_areas ADD CONSTRAINT messagescron_areas_messagescron_id_fkey FOREIGN KEY (messagescron_id) REFERENCES public.messagescron(id);
+
+
+CREATE TABLE public.messagescron_community (
+	messagescron_id int4 NOT NULL,
+	community_id int4 NOT NULL,
+	CONSTRAINT messagescron_community_pkey PRIMARY KEY (messagescron_id, community_id)
+);
+
+ALTER TABLE public.messagescron_community ADD CONSTRAINT messagescron_community_community_id_fkey FOREIGN KEY (community_id) REFERENCES public.community(id);
+ALTER TABLE public.messagescron_community ADD CONSTRAINT messagescron_community_messagescron_id_fkey FOREIGN KEY (messagescron_id) REFERENCES public.messagescron(id);
+
+
+CREATE TABLE public.messagescron_district (
+	messagescron_id int4 NOT NULL,
+	district_id int4 NOT NULL,
+	CONSTRAINT messagescron_district_pkey PRIMARY KEY (messagescron_id, district_id)
+);
+
+ALTER TABLE public.messagescron_district ADD CONSTRAINT messagescron_district_id_fkey FOREIGN KEY (district_id) REFERENCES public.district(id);
+ALTER TABLE public.messagescron_district ADD CONSTRAINT messagescron_district_messagescron_id_fkey FOREIGN KEY (messagescron_id) REFERENCES public.messagescron(id);
+
+
+CREATE TABLE public.messagescron_formaccess (
+	messagescron_id int4 NOT NULL,
+	formaccess varchar(50) NOT NULL,
+	CONSTRAINT messagescron_formaccess_pkey PRIMARY KEY (messagescron_id, formaccess)
+);
+
+ALTER TABLE public.messagescron_formaccess ADD CONSTRAINT messagescron_formaccess_messagescron_id_fkey FOREIGN KEY (messagescron_id) REFERENCES public.messagescron(id);
+
+
+CREATE TABLE public.messagescron_region (
+	messagescron_id int4 NOT NULL,
+	region_id int4 NOT NULL,
+	CONSTRAINT messagescron_region_pkey PRIMARY KEY (messagescron_id, region_id)
+);
+
+
+ALTER TABLE public.messagescron_region ADD CONSTRAINT messagescron_region_messagescron_id_fkey FOREIGN KEY (messagescron_id) REFERENCES public.messagescron(id);
+ALTER TABLE public.messagescron_region ADD CONSTRAINT messagescron_region_region_id_fkey FOREIGN KEY (region_id) REFERENCES public.region(id);
+
+
+CREATE TABLE public.messagescron_userroles (
+	messagescron_id int4 NOT NULL,
+	userrole varchar(50) NOT NULL,
+	CONSTRAINT messagescron_userroles_pkey PRIMARY KEY (messagescron_id, userrole)
+);
+
+ALTER TABLE public.messagescron_userroles ADD CONSTRAINT messagescron_userroles_messagescron_id_fkey FOREIGN KEY (messagescron_id) REFERENCES public.messagescron(id);
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron TO sormas_user;
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron_areas TO sormas_user;
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron_community TO sormas_user;
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron_district TO sormas_user;
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron_formaccess TO sormas_user;
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron_region TO sormas_user;
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.messagescron_userroles TO sormas_user;
+
+ALTER TABLE public.messages DROP COLUMN status;
+
+ALTER TABLE public.messagescron
+ADD COLUMN scheduleDate DATE,
+ADD COLUMN scheduleTime TIME;
+
+
+INSERT INTO schema_version (version_number, comment) VALUES (483, 'Notification Implementation ');
+
+
+
+
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***
 

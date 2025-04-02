@@ -98,8 +98,6 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         return campaignFormDataNewFragment;
     }
 
-
-
     @Override
     public void saveData() {
         if (saveTask != null) {

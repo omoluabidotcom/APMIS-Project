@@ -267,7 +267,7 @@ public class ProvinceView extends VerticalLayout implements RouterLayout {
 			criteria = new RegionCriteria();
 		}
 
-		if (userProvider.hasUserRight(UserRight.PERFORM_BULK_OPERATIONS)) {
+		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_PERFORM_BULK_OPERATIONS)) {
 			enterBulkEdit = new Button(I18nProperties.getCaption(Captions.actionEnterBulkEditMode));
 			leaveBulkEdit = new Button();
 			dropdownBulkOperations = new MenuBar();
@@ -453,8 +453,11 @@ public class ProvinceView extends VerticalLayout implements RouterLayout {
 
 		});
 		anchor.getStyle().set("display", "none");
+		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_IMPORT)) {
+			layout.add(importProvince);
+		}
 		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_EXPORT)) {
-			layout.add(importProvince, exportProvince, anchor);
+			layout.add(exportProvince, anchor);
 		}
 		layout.setWidth("80%");
 		layout.addClassName("pl-3");
@@ -471,7 +474,7 @@ public class ProvinceView extends VerticalLayout implements RouterLayout {
 		enterBulkEdit.addClassName("bulkActionButton");
 		Icon bulkModeButtonnIcon = new Icon(VaadinIcon.CLIPBOARD_CHECK);
 		enterBulkEdit.setIcon(bulkModeButtonnIcon);
-		if (userProvider.hasUserRight(UserRight.PERFORM_BULK_OPERATIONS)) {
+		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_PERFORM_BULK_OPERATIONS)) {
 			layout.add(enterBulkEdit);
 		}
 
@@ -863,7 +866,12 @@ public class ProvinceView extends VerticalLayout implements RouterLayout {
 			dialog.getFooter().add(discardButton, saveButton);
 		} else {
 			dialog.setHeaderTitle(I18nProperties.getCaption(Captions.edit) + regionDto.getName());
-			dialog.getFooter().add(archiveButton, discardButton, saveButton);
+			
+			if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_ARCHIVE)) {
+				dialog.getFooter().add(archiveButton, discardButton, saveButton);				
+			}else {
+				dialog.getFooter().add(discardButton, saveButton);
+			}
 		}
 		dialog.add(fmr);
 

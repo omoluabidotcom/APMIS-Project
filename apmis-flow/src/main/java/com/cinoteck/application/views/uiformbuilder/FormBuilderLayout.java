@@ -2,7 +2,9 @@ package com.cinoteck.application.views.uiformbuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -51,6 +53,7 @@ import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.messaging.MessageDto;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserActivitySummaryDto;
+import de.symeda.sormas.api.utils.DataHelper;
 
 public class FormBuilderLayout extends VerticalLayout {
 
@@ -92,7 +95,7 @@ public class FormBuilderLayout extends VerticalLayout {
 		}
 		formGridComponent = new FormGridComponent(campaignFormMetaDto);
 		translationGridComponent = new TranslationGridComponent(campaignFormMetaDto);
-		configureFields();
+		configureFields(campaignFormMetaDto_);
 	}
 
 	private List<CampaignFormElement> getFormListDashboard() {
@@ -118,8 +121,9 @@ public class FormBuilderLayout extends VerticalLayout {
 		}
 	}
 
-	void configureFields() {
-
+	void configureFields(CampaignFormMetaDto campaignFormMetaDto_) {
+		
+		
 		formName = new TextField("Form Name");
 		formId = new TextField("Id");
 		formType = new ComboBox<CampaignPhase>("Form Type");
@@ -228,51 +232,43 @@ public class FormBuilderLayout extends VerticalLayout {
         });
 		
 		duplicateForm.addClickListener(e -> {
-			
-			CampaignFormMetaDto campMeta = new CampaignFormMetaDto();
-			campaignFormMetaDtoDupli = campMeta.build();
-			campaignFormMetaDtoDupli.setCampaignFormElements(campaignFormMetaDto.getCampaignFormElements());
-			campaignFormMetaDtoDupli.setArchived(false);
-			campaignFormMetaDtoDupli.setArea(campaignFormMetaDto.getArea());
-			campaignFormMetaDtoDupli.setCampaignFormTranslations(campaignFormMetaDto.getCampaignFormTranslations());
-//			campaignFormMetaDtoDupli.setCreationDate(null);
-			campaignFormMetaDtoDupli.setDaysExpired(10);
-			campaignFormMetaDtoDupli.setDistrictentry(campaignFormMetaDto.isDistrictentry());
-			campaignFormMetaDtoDupli.setFormCategory(campaignFormMetaDto.getFormCategory());
-			campaignFormMetaDtoDupli.setFormName("DUP-"+campaignFormMetaDto.getFormName());
-			campaignFormMetaDtoDupli.setFormname_fa_af("DUP-"+campaignFormMetaDto.getFormName());
-			campaignFormMetaDtoDupli.setFormname_ps_af("DUP-"+campaignFormMetaDto.getFormName());
-			campaignFormMetaDtoDupli.setFormType(campaignFormMetaDto.getFormType());
-			campaignFormMetaDtoDupli.setLanguageCode(campaignFormMetaDto.getLanguageCode());
-			campaignFormMetaDtoDupli.setModality(campaignFormMetaDto.getModality());
-			
-			try {
-				fireEvent(new SaveEvent(this, campaignFormMetaDtoDupli));
+		    try {
+		        // Get the current version count
+		        long version = FacadeProvider.getCampaignFormMetaFacade().getFormCountByGroupUuid(campaignFormMetaDto_.getFormGroupUuid());
+		        
+		        long incrementedVersion  = version + 1L;
+		        String incrementedVersionString = incrementedVersion+"";
+		        // Create a completely new DTO instance
+		        CampaignFormMetaDto campaignFormMetaDtoDupli = new CampaignFormMetaDto();
+		        campaignFormMetaDtoDupli = campaignFormMetaDto_;
+		        // Copy all relevant fields from the original
+		        campaignFormMetaDtoDupli.setUuid(DataHelper.createUuid()); // Keep same uuid
+		        campaignFormMetaDtoDupli.setFormId(campaignFormMetaDto.getFormId() + incrementedVersionString);
+		        campaignFormMetaDtoDupli.setFormversion(incrementedVersion);
+		        campaignFormMetaDtoDupli.setCreationDate(new Timestamp(new Date().getTime()));
+		        campaignFormMetaDtoDupli.setArchived(false);
 
-			}catch(Exception ex ) {
-				System.out.println("Exception Occured while saving : " +  ex);
-				
-			}finally {
-		        UserProvider usr = new UserProvider();
+		        // Save the new duplicate
+		        fireEvent(new DuplicateEvent(this, campaignFormMetaDtoDupli));
 
-//				UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
-//				userActivitySummaryDto.setActionModule("Form Manager");
-//				userActivitySummaryDto.setAction("Form Saved: " + campaignFormMetaDtoDupli.getFormName());
-//				userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
-//				FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
-				
-				UI.getCurrent().getPage().reload();
-				
-				Notification notification = new Notification("Form Duplicated", 3000, Position.MIDDLE);
-				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-				notification.open();
+		        // Refresh UI and show notification
+//		        UI.getCurrent().getPage().reload();
+		        Notification notification = new Notification("Form Duplicated", 3000, Position.MIDDLE);
+		        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+		        notification.open();
 
-			}
-			
-			discardChanges();
+		    } catch(Exception ex) {
+		        System.out.println("Exception Occurred while saving: " + ex);
+		        Notification.show("Error duplicating form: " + ex.getMessage(), 3000, Position.MIDDLE);
+		    }
+		    
+		    discardChanges();
 		});
+		
 	}
-	
+
+		
+		
 	private StreamResource createJsonStreamResource() {
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -409,4 +405,15 @@ public class FormBuilderLayout extends VerticalLayout {
 		return addListener(SaveEvent.class, listener);
 	}
 
+	
+	public static class DuplicateEvent extends FormBuilderEvent {
+		DuplicateEvent(FormBuilderLayout source, CampaignFormMetaDto form) {
+			
+			super(source, form);
+		}
+	}
+
+	public Registration addDuplicateListener(ComponentEventListener<DuplicateEvent> listener) {
+		return addListener(DuplicateEvent.class, listener);
+	}
 }

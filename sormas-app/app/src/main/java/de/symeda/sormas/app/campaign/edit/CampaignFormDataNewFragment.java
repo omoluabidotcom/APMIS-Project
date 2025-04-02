@@ -257,7 +257,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
 
                 expressionx = true;
             }
-            System.out.println(campaignFormElement.getErrormessage() + ")))))))))))))))))))))(((((((((((((((===");
+//            System.out.println(campaignFormElement.getErrormessage() + ")))))))))))))))))))))(((((((((((((((===");
 
             errorMessage = campaignFormElement.getErrormessage() != null ? campaignFormElement.getErrormessage() : "";
 
@@ -1223,6 +1223,19 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                 }
                             }
                         });
+                        }
+                    if (type == CampaignFormElementType.TEXT && campaignFormElement.getId().equalsIgnoreCase("TazkiraNo")) {
+                        dynamicField.addValueChangedListener(e->{
+                            if (dynamicField.getValue().toString() != null){
+                                        if ( dynamicField.getValue().toString().length() == 13) {
+                                        String inputValue = e.getValue().toString().replace("-", "").replace(".", "");
+                                        if (inputValue.length() == 13) {
+                                            handleTazkiraNoFormatting(inputValue, dynamicField);
+                                        }
+                                    }
+
+                            }
+                        });
                     }
 
                     Object defaultValue = campaignFormElement.getDefaultvalue();
@@ -1264,6 +1277,8 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
         if (daywise) {
             System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++: " + countr);
             if (countr > 0) {
+                System.out.println("COunt is more than 1  " +  countr);
+
                 spec = mTabHost.newTabSpec("tab1").setIndicator("D1",//caption_1,
                                 res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet1);
@@ -1271,6 +1286,8 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                 mTabHost.getTabWidget().getChildAt(0).getLayoutParams().width = 140;
             }
             if (countr > 1) {
+                System.out.println("COunt is  2  daywise" +  countr);
+
                 spec = mTabHost.newTabSpec("tab2").setIndicator("D2",//caption_1,
                                 res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet2);
@@ -1278,73 +1295,119 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                 mTabHost.getTabWidget().getChildAt(1).getLayoutParams().width = 140;
             }
             if (countr > 2) {
+                System.out.println("COunt is  3 daywise  " +  countr);
+
                 spec = mTabHost.newTabSpec("tab3").setIndicator("D3",//caption_1,
                                 res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet3);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(2).getLayoutParams().width = 140;
             }
+
             if (countr > 3) {
-                System.out.println("333333333333333333334444444444444444444");
+                System.out.println("COunt is  4 daywise " +  countr);
 
                 spec = mTabHost.newTabSpec("tab4").setIndicator("D4",//caption_1,
                                 res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet4);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(3).getLayoutParams().width = 140;
+
+//                if(countr == 5){
+//                    System.out.println("COunt is 4 now equals 5 daywise " +  countr);
+//                    mTabHost.getTabWidget().getChildAt(3).setVisibility(View.GONE);
+//                }
             }
 
-            if (countr > 3 && countr == 5) { // 3 DAY DaywiseForm
+//            if (countr == 6) { //>5 (four day form with summary
+//
+//                System.out.println("COunt has toatal of 6 Daywise " +  countr);
+//
+//                spec = mTabHost.newTabSpec("tab5").setIndicator(" ",//caption_1,
+//                                res.getDrawable(R.drawable.ic_clear_black_24dp))
+//                        .setContent(R.id.tabSheet5);
+//                mTabHost.addTab(spec);
+//                mTabHost.getTabWidget().getChildAt(4).getLayoutParams().width = 140;
+//                mTabHost.getTabWidget().getChildAt(4).setVisibility(View.GONE);
+//            }
 
-                System.out.println("33333333333333333333555555555555555555555");
-                spec = mTabHost.newTabSpec("tab5").setIndicator(" ",//caption_1,
-                                res.getDrawable(R.drawable.ic_clear_black_24dp))
-                        .setContent(R.id.tabSheet5);
-                mTabHost.addTab(spec);
-                mTabHost.getTabWidget().getChildAt(4).getLayoutParams().width = 140;
-            }
+            if (countr > 4) {
+                System.out.println("COunt has toatal of 5 Daywise or more but is not 6 " +  countr);
 
-            if (countr == 6) { //>5 (four day form with summary
-                spec = mTabHost.newTabSpec("tab5").setIndicator(" ",//caption_1,
-                                res.getDrawable(R.drawable.ic_clear_black_24dp))
-                        .setContent(R.id.tabSheet5);
-                mTabHost.addTab(spec);
-                mTabHost.getTabWidget().getChildAt(4).getLayoutParams().width = 140;
-                mTabHost.getTabWidget().getChildAt(4).setVisibility(View.GONE);
-            }
-
-            if (countr > 4 && countr != 6) {
                 spec = mTabHost.newTabSpec("tab5").setIndicator("D5",//caption_1,
                                 res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet5);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(4).getLayoutParams().width = 140;
+                if(countr == 5){
+                    mTabHost.getTabWidget().getChildAt(4).setVisibility(View.GONE);
+                }
+
             }
 
-            if (countr > 5 && countr != 6) {
+            if (countr > 5) {
+
+                System.out.println("COunt has toatal of 6 Daywise or more but is not 6 " +  countr);
+
                 spec = mTabHost.newTabSpec("tab6").setIndicator("D6",//caption_1,
                                 res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet6);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(5).getLayoutParams().width = 140;
+                if(countr == 6){
+                    mTabHost.getTabWidget().getChildAt(5).setVisibility(View.GONE);
+                }
+
             }
 
             if (countr > 6) {
+                System.out.println("COunt has toatal of 7 Daywise or more but is not 6 " +  countr);
+
                 spec = mTabHost.newTabSpec("tab7").setIndicator("D7",//caption_1,
                                 res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet7);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(6).getLayoutParams().width = 140;
+                if(countr == 7){
+                    mTabHost.getTabWidget().getChildAt(6).setVisibility(View.GONE);
+
+                }
+
             }
 
             if (countr > 7) {
+                System.out.println("COunt has toatal of 8 Daywise or more but is not 6 " +  countr);
+
                 spec = mTabHost.newTabSpec("tab8").setIndicator("D8",//caption_1,
                                 res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet8);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(7).getLayoutParams().width = 140;
-                mTabHost.getTabWidget().getChildAt(7).setVisibility(View.GONE);
+                if(countr == 8) {
+
+                    mTabHost.getTabWidget().getChildAt(7).setVisibility(View.GONE);
+                }
+//                else
+//                    if(countr == 9) {
+//
+//                    mTabHost.getTabWidget().getChildAt(7).setVisibility(View.GONE);
+//                }
             }
+            if (countr > 8) {
+                System.out.println("COunt has toatal of 8 Daywise or more but is not 6 " +  countr);
+
+                spec = mTabHost.newTabSpec("tab9").setIndicator("D9",//caption_1,
+                                res.getDrawable(R.drawable.ic_clear_black_24dp))
+                        .setContent(R.id.tabSheet8);
+                mTabHost.addTab(spec);
+                mTabHost.getTabWidget().getChildAt(8).getLayoutParams().width = 140;
+                if(countr == 9) {
+
+                    mTabHost.getTabWidget().getChildAt(8).setVisibility(View.GONE);
+                }
+
+            }
+
            /*  if (dayy > 5) {
                 spec = mTabHost.newTabSpec("tab6").setIndicator("D6",//caption_1,
                         res.getDrawable(R.drawable.ic_clear_black_24dp))
@@ -1371,6 +1434,17 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
 
         }
         return view;
+    }
+
+    private void handleTazkiraNoFormatting(String inputValue, ControlPropertyField dynamicField) {
+        String value = inputValue;
+
+            String formattedTazkira = value.substring(0, 4) + "-"
+                    + value.substring(4, 8) + "-"
+                    + value.substring(8);
+
+            dynamicField.setValue(formattedTazkira);
+
     }
 
     private void handleVillageCodeValueGeneration(String inputValue, ControlPropertyField dynamicField) {

@@ -7,10 +7,12 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Join;
+import javax.persistence.criteria.ParameterExpression;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
@@ -50,6 +52,8 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 	public Predicate createUserFilter(CriteriaBuilder cb, CriteriaQuery cq, From<?, CampaignFormMeta> from) {
 		return null;
 	}
+	
+	
 
 	public Predicate buildCriteriaFilter(CampaignFormCriteria campaignFormCriteria, CriteriaBuilder cb,
 			Root<CampaignFormMeta> from) {
@@ -120,6 +124,9 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 		List<CampaignFormMeta> resultList = em.createQuery(cq).getResultList();
 		return resultList;
 	}
+	
+
+	
 
 	public List<CampaignFormMeta> getAllFormElements(User user) {
 
@@ -157,7 +164,7 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 		// "intra-campaign"); //
 
 		cq = cq.where(filter);
-		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID),
+		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignFormMetaJoin.get(CampaignFormMeta.FORMGROUPUUID), campaignFormMetaJoin.get(CampaignFormMeta.FORMVERSION),
 				campaignFormMetaJoin.get(CampaignFormMeta.FORM_NAME));
 
 		return em.createQuery(cq).getResultList();
@@ -434,4 +441,37 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 
 		return em.createQuery(cq).getResultList();
 	}
+	
+//	@Override
+//	public CampaignFormMeta getByUuidAndFormVersionUuid(String uuid, String formVersionUuid) {
+//
+//	    if (uuid == null || formVersionUuid == null) {
+//	        return null;
+//	    }
+//
+//	    CriteriaBuilder cb = em.getCriteriaBuilder();
+//	    CriteriaQuery<CampaignFormMeta> cq = cb.createQuery(CampaignFormMeta.class);
+//	    Root<CampaignFormMeta> from = cq.from(CampaignFormMeta.class);
+//
+//	    // Define parameters
+//	    ParameterExpression<String> uuidParam = cb.parameter(String.class, AbstractDomainObject.UUID);
+//	    ParameterExpression<String> formVersionUuidParam = cb.parameter(String.class, "formversionuuid");
+//
+//	    // Build the query
+//	    cq.where(
+//	        cb.equal(from.get(AbstractDomainObject.UUID), uuidParam),
+//	        cb.equal(from.get(CampaignFormMeta.FORMGROUPUUID), formVersionUuidParam)
+//	    );
+//
+//	    // Create and execute the query
+//	    TypedQuery<CampaignFormMeta> q = em.createQuery(cq)
+//	        .setParameter(uuidParam, uuid)
+//	        .setParameter(formVersionUuidParam, formVersionUuid);
+//	    
+//		System.out.println("eewwwwwwwwwwwwwwwwwwwwwww" + SQLExtractor.from(em.createQuery(cq)));
+//
+//
+//	    return q.getResultList().stream().findFirst().orElse(null);
+//	}
+
 }

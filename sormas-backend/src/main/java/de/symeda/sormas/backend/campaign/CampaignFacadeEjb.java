@@ -704,6 +704,7 @@ public class CampaignFacadeEjb implements CampaignFacade {
 		target.setCommunity(CommunityFacadeEjb.toReferenceDto(new HashSet<Community>(source.getCommunity())));
 		target.setCampaignDashboardElements(source.getDashboardElements());
 		target.setPublished(source.isPublished());
+		target.setCampaignStatus(source.isOpenandclose() == true ? "True" : "False" );
 
 		return target;
 	}

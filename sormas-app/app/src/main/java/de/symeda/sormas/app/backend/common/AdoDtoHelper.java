@@ -77,20 +77,30 @@ public abstract class AdoDtoHelper<ADO extends AbstractDomainObject, DTO extends
 	public void pullEntities(final boolean markAsRead)
 		throws DaoException, ServerCommunicationException, ServerConnectionException, NoConnectionException {
 		try {
+			System.out.println("Tryinh yto pulll entititessss");
 			final AbstractAdoDao<ADO> dao = DatabaseHelper.getAdoDao(getAdoClass());
 
 			Date maxModifiedDate = dao.getLatestChangeDate();
 			Call<List<DTO>> dtoCall = pullAllSince(maxModifiedDate != null ? maxModifiedDate.getTime() : 0);
 			if (dtoCall == null) {
+				System.out.println("TDTO CALL IS NULL ryinh yto pulll entititessss");
+
 				return;
 			}
 
 			Response<List<DTO>> response;
+
+			System.out.println("we have response TDTO CALL IS NULL ryinh yto pulll entititessss" +  markAsRead + " 000" +  dao +  "1111 ");
+
 			try {
 				response = dtoCall.execute();
+
+				System.out.println("response executed TDTO CALL IS NULL ryinh yto pulll entititessss" +  markAsRead + " 000" +  dao +  "1111 ");
+
 			} catch (IOException e) {
 				throw new ServerCommunicationException(e);
 			}
+			System.out.println("about to handle pulled TDTO CALL IS NULL ryinh yto pulll entititessss" +  markAsRead + " 000" +  dao +  "1111 " );
 
 			handlePullResponse(markAsRead, dao, response);
 

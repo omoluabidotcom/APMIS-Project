@@ -373,7 +373,7 @@ public class ClusterView extends VerticalLayout {
 //		if (criteria == null) {
 //			criteria = new CommunityCriteriaNew();
 //		}
-		if (userProvider.hasUserRight(UserRight.PERFORM_BULK_OPERATIONS)) {
+		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_PERFORM_BULK_OPERATIONS)) {
 			enterBulkEdit = new Button(I18nProperties.getCaption(Captions.actionEnterBulkEditMode));
 			leaveBulkEdit = new Button();
 			dropdownBulkOperations = new MenuBar();
@@ -713,8 +713,12 @@ public class ClusterView extends VerticalLayout {
 
 		});
 		anchor.getStyle().set("display", "none");
+		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_IMPORT)) {
+			layout.add(importCluster);
+		}
+		
 		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_EXPORT)) {
-			layout.add(importCluster, exportCluster, anchor);
+			layout.add(exportCluster, anchor);
 		}
 //		layout.addComponentAsFirst(anchor);
 		layout.setWidth("75%");
@@ -733,7 +737,7 @@ public class ClusterView extends VerticalLayout {
 		enterBulkEdit.addClassName("bulkActionButton");
 		Icon bulkModeButtonnIcon = new Icon(VaadinIcon.CLIPBOARD_CHECK);
 		enterBulkEdit.setIcon(bulkModeButtonnIcon);
-		if (userProvider.hasUserRight(UserRight.PERFORM_BULK_OPERATIONS)) {
+		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_PERFORM_BULK_OPERATIONS)) {
 			layout.add(enterBulkEdit);
 		}
 
@@ -1251,7 +1255,14 @@ public class ClusterView extends VerticalLayout {
 			dialog.getFooter().add(discardButton, saveButton);
 		} else {
 			dialog.setHeaderTitle(I18nProperties.getCaption(Captions.edit) + communityDto.getName());
-			dialog.getFooter().add(archiveButton, discardButton, saveButton);
+			
+			if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_ARCHIVE)) {
+				dialog.getFooter().add(archiveButton, discardButton, saveButton);				
+			}else {
+				dialog.getFooter().add(discardButton, saveButton);
+			}
+			
+//			dialog.getFooter().add(archiveButton, discardButton, saveButton);
 
 		}
 		fmr.add(nameField, cCodeField, clusterNumber, provinceOfDistrict, districtOfCluster, floatStatus);

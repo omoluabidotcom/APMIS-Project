@@ -195,50 +195,8 @@ public class FormBuilderView extends VerticalLayout {
 		});
 
 		formType.addValueChangeListener(e -> {
-//			listofformsAccesses = new ArrayList<>();
-//			formAccess.clear();
 			if (e.getValue() != null) {				
-//				Collections.addAll(listofformsAccesses, FormAccess.values());
-//				if(e.getValue().toString().equalsIgnoreCase("post-campaign")) {
-//					listofformsAccesses.remove(FormAccess.ARCHIVE);
-//					listofformsAccesses.remove(FormAccess.EAG);
-//					listofformsAccesses.remove(FormAccess.FLW);
-//					listofformsAccesses.remove(FormAccess.MODALITY_PRE);
-//					listofformsAccesses.remove(FormAccess.TRAINING);
-//					listofformsAccesses.remove(FormAccess.ICM);
-//					listofformsAccesses.remove(FormAccess.ADMIN);
-//					listofformsAccesses.remove(FormAccess.EAG_ICM);
-//					listofformsAccesses.remove(FormAccess.EAG_ADMIN);
-//				} else if (e.getValue().toString().equalsIgnoreCase("intra-campaign")) {
-//					listofformsAccesses.remove(FormAccess.ARCHIVE);
-//					listofformsAccesses.remove(FormAccess.EAG);
-//					listofformsAccesses.remove(FormAccess.FLW);
-//					listofformsAccesses.remove(FormAccess.MODALITY_PRE);
-//					listofformsAccesses.remove(FormAccess.TRAINING);					
-//					listofformsAccesses.remove(FormAccess.PCA);
-//					listofformsAccesses.remove(FormAccess.FMS);
-//					listofformsAccesses.remove(FormAccess.LQAS);
-//					listofformsAccesses.remove(FormAccess.EAG_PCA);
-//					listofformsAccesses.remove(FormAccess.EAG_FMS);
-//					listofformsAccesses.remove(FormAccess.EAG_LQAS);
-//					listofformsAccesses.remove(FormAccess.MODALITY_POST);
-//					listofformsAccesses.remove(FormAccess.VALIDATION);
-//				} else if (e.getValue().toString().equalsIgnoreCase("pre-campaign")) {
-//					listofformsAccesses.remove(FormAccess.ARCHIVE);
-//					listofformsAccesses.remove(FormAccess.EAG);
-//					listofformsAccesses.remove(FormAccess.ICM);
-//					listofformsAccesses.remove(FormAccess.ADMIN);
-//					listofformsAccesses.remove(FormAccess.EAG_ICM);
-//					listofformsAccesses.remove(FormAccess.EAG_ADMIN);
-//					listofformsAccesses.remove(FormAccess.PCA);
-//					listofformsAccesses.remove(FormAccess.FMS);
-//					listofformsAccesses.remove(FormAccess.LQAS);
-//					listofformsAccesses.remove(FormAccess.EAG_PCA);
-//					listofformsAccesses.remove(FormAccess.EAG_FMS);
-//					listofformsAccesses.remove(FormAccess.EAG_LQAS);
-//					listofformsAccesses.remove(FormAccess.MODALITY_POST);
-//					listofformsAccesses.remove(FormAccess.VALIDATION);
-//				} 
+
 				criteria.setFormType(e.getValue().toString().toLowerCase());
 				filterDataProvider.setFilter(criteria);
 
@@ -390,7 +348,9 @@ public class FormBuilderView extends VerticalLayout {
 		grid.addColumn(CampaignFormMetaDto.DISTRICTENTRY).setHeader("District Data Entry").setSortable(true)
 				.setResizable(true);
 		grid.addColumn(regionRenderer).setHeader("Region").setSortable(true);
-		grid.addColumn(CampaignFormMetaDto.LANGUAGE_CODE).setHeader("Language Code").setSortable(true);		
+		grid.addColumn(CampaignFormMetaDto.LANGUAGE_CODE).setHeader("Language Code").setSortable(true);	
+		grid.addColumn(CampaignFormMetaDto.FORMVERSION).setHeader("Form Version").setSortable(true);		
+
 
 		grid.setVisible(true);
 		grid.setWidthFull();
@@ -415,6 +375,8 @@ public class FormBuilderView extends VerticalLayout {
 		formLayout.setForm(formData);
 		
 		formLayout.addSaveListener(this::saveForm);
+		formLayout.addDuplicateListener(this::duplicateForm);
+
 		Dialog dialog = new Dialog();
 		dialog.add(formLayout);
 		dialog.setHeaderTitle("Editing Form");
@@ -553,6 +515,17 @@ public class FormBuilderView extends VerticalLayout {
 	private void saveForm(FormBuilderLayout.SaveEvent event) {	
 		FacadeProvider.getCampaignFormMetaFacade().saveCampaignFormMeta(event.getForm());
 	}
+	
+	private void duplicateForm(FormBuilderLayout.DuplicateEvent event) {	
+		FacadeProvider.getCampaignFormMetaFacade().duplicateCampaignFormMeta(event.getForm());
+	}
+
+	
+//	private void duplicateForm(FormBuilderLayout.DuplicateEvent event) {
+//		FacadeProvider.getCampaignFormMetaFacade().saveCampaignFormMeta(event.getForm());
+//
+////		FacadeProvider.getCampaignFormMetaFacade().cloneForm(event.getForm().getUuid(), event.getForm().getFormversionuuid());
+//	}
 	
 	private void refreshGridData() {
 		ListDataProvider<CampaignFormMetaDto> dataProvider = DataProvider
