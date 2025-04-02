@@ -1139,7 +1139,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 					numberField.setId(formElement.getId());
 					numberField.setSizeFull();
 
-					System.out.println("valuevaluevaluessssssss " + value);
 					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 					vertical.add(availableCountries, numberField);
 					fields.put(formElement.getId(), numberField);
@@ -1185,7 +1184,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 							.setHelperText("Mobile number for "
 									+ FacadeProvider.getDialingCodeFacade()
 											.getCountryByCode(availableCountries.getValue()).getCountry()
-									+ " must be between " + min + " and " + max + " digits");
+									+ " must be between " + min + " and " + max + " digits without the country code");
 
 					availableCountries.addValueChangeListener(e -> {
 
@@ -1202,7 +1201,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 						numberField.setValue(
 								FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getCode());
 						numberField.setHelperText("Mobile number for " + dialingCodeDto.getCountry()								
-								+ " must be between " + min + " and " + max + " digits");
+								+ " must be between " + min + " and " + max + " digits without the country code");
 						numberField.setInvalid(true);
 					});
 
