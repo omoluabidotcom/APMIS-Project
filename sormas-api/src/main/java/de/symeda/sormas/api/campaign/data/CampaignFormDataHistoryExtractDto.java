@@ -21,13 +21,22 @@
 package de.symeda.sormas.api.campaign.data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 //import org.joda.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+
+import javax.validation.Valid;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import de.symeda.sormas.api.EntityDto;
 import de.symeda.sormas.api.ImportIgnore;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
+import de.symeda.sormas.api.campaign.form.CampaignFormElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
@@ -75,6 +84,10 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 	private boolean ispublished;
 	private boolean isverified;
 	private LocalDateTime changedate;
+	
+	@Valid
+	private List<CampaignFormElement> formValuesN;
+
 
 
 	public CampaignFormDataHistoryExtractDto(String uuid, List<CampaignFormDataEntry>  formValuesString,
@@ -102,6 +115,55 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 		this.isverified = isverified;
 		this.recordgroupuuid = recordgroupuuid;
 		this.changedate = changedate;
+		
+				
+	}
+	
+
+	public CampaignFormDataHistoryExtractDto(String uuid, String  formValuesString,
+			Long campaign, Long campaignFormMeta,
+//			AreaReferenceDto area,
+			Long region, Long district, Long community, boolean archived,
+			Date formDate, Long creatingUser, String formType, Integer recordversion,  String source, boolean ispublished, boolean isverified, String recordgroupuuid, LocalDateTime changedate) {
+		super();
+		this.uuid = uuid;
+//		this.formValuesString = formValuesString;
+		this.campaignLong = campaign;
+		this.campaignFormMetaLong = campaignFormMeta;
+//		this.area = area;
+		this.regionLong = region;
+		this.districtLong = district;
+		this.communityLong = community;
+		this.archived = archived;
+		this.formDate = formDate;
+		this.creatingUserLong = creatingUser;
+		this.formType = formType;
+		this.recordversion = recordversion;
+//		this.formCategory = formCategory;
+		this.source = source;
+		this.ispublished = ispublished;
+		this.isverified = isverified;
+		this.recordgroupuuid = recordgroupuuid;
+		this.changedate = changedate;
+		
+		// JSON conversion for campaignFormElements
+				ObjectMapper objectMapper = new ObjectMapper();
+				objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				try {
+					if (formValuesString != null && !formValuesString.trim().isEmpty()) {
+						this.formValues = objectMapper.readValue(formValuesString,
+								new TypeReference<List<CampaignFormDataEntry>>() {
+								});
+					} else {
+						this.formValues = new ArrayList<>(); // Default to an empty list
+					}
+				} catch (Exception e) {
+		// Log and handle the exception if needed
+					System.err.println("Error parsing JSON for campaignFormElements: " + e.getMessage());
+					this.formValues = new ArrayList<>(); // Default to an empty list in case of error
+				}
+				
 	}
 		
 

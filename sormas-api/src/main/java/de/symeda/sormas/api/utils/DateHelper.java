@@ -1091,6 +1091,9 @@ public final class DateHelper {
 	}
 
 	public static Timestamp toTimestampUpper(Date date) {
+		if(date == null) {
+	        date = new Date(0); // Set to Unix epoch instead of an invalid value
+		}
 		Timestamp timestamp = new Timestamp(date.getTime());
 		timestamp.setNanos(timestamp.getNanos() + 999999);
 		return timestamp;
