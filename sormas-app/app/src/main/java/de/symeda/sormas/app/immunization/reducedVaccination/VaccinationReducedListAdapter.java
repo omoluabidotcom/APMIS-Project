@@ -3,6 +3,7 @@ package de.symeda.sormas.app.immunization.reducedVaccination;
 import java.util.Date;
 
 import androidx.annotation.NonNull;
+import androidx.databinding.library.baseAdapters.BR;
 import androidx.recyclerview.widget.RecyclerView;
 
 import de.symeda.sormas.app.R;

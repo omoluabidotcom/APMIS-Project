@@ -84,6 +84,8 @@ public class PopulationDataResource  extends EntityDtoResource {
 		
 		List<String> resultx = new ArrayList<>();
 		System.out.println("  ==========================111111111cccc"+ rdto.size());
+		System.out.println("  ==========================111111111cccc"+ rdtox.getCaption());
+
 
 		if(retListx != null && retListx.size() > 1) {
 			for(String district : retListx) {
@@ -97,8 +99,12 @@ public class PopulationDataResource  extends EntityDtoResource {
 			
 
 		} else if(retListx != null && retListx.size() == 1) {
+			
+			System.out.println("  ==========================22221111ccccvv" + resultx);
+			resultx.add(rdtox.getUuid());
 
 			List<PopulationDataDto> result = FacadeProvider.getPopulationDataFacade()
+
 					.fetchPopulationDataSelectionByUserDistricts(resultx);
 			System.out.println("  ==========================22221111ccccvv" + result);
 

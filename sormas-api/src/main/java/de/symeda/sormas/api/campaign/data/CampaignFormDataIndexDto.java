@@ -107,6 +107,10 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 	private String creatingUserType;
 
 	private String personTitle;
+	
+	private String recordgroupuuid;
+	private Long recordversion;
+
 
 	public CampaignFormDataIndexDto(String uuid, String campaign, String form, Object formValues, String area,
 			Long rcode, String region, Long pcode, String district, Long dcode, String community, Integer clusternumber,
@@ -132,7 +136,59 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 		this.isverified = isverified;
 		this.ispublished = ispublished;
 	}
+	
 
+	public CampaignFormDataIndexDto(String uuid, String campaign, String form, Object formValues, String area,
+			Long rcode, String region, Long pcode, String district, Long dcode, String community, Integer clusternumber,
+			Long ccode, Date formDate, String formType, String source, String creatingUser, boolean isverified,
+			boolean ispublished, String recordgroupuuid, Long recordversion) {
+		this.uuid = uuid;
+		this.campaign = campaign;
+		this.form = form;
+		this.formValues = (List<CampaignFormDataEntry>) formValues;
+		this.area = area;
+		this.rcode = rcode;
+		this.region = region;
+		this.pcode = pcode;
+		this.district = district;
+		this.dcode = dcode;
+		this.community = community;
+		this.clusternumber = clusternumber;
+		this.ccode = ccode;
+		this.formDate = formDate;
+		this.formType = formType;
+		this.source = source;
+		this.creatingUser = creatingUser;
+		this.isverified = isverified;
+		this.ispublished = ispublished;
+		this.recordgroupuuid = recordgroupuuid;
+		this.recordversion = recordversion;
+	}
+
+	public CampaignFormDataIndexDto(String uuid, String campaign, String form, Object formValues, String area,
+			Long rcode, String region, Long pcode, String district, Long dcode, String community, Integer clusternumber,
+			Long ccode, Date formDate, String formType, String source, String creatingUser, String recordgroupuuid, Long recordversion) {
+		this.uuid = uuid;
+		this.campaign = campaign;
+		this.form = form;
+		this.formValues = (List<CampaignFormDataEntry>) formValues;
+		this.area = area;
+		this.rcode = rcode;
+		this.region = region;
+		this.pcode = pcode;
+		this.district = district;
+		this.dcode = dcode;
+		this.community = community;
+		this.clusternumber = clusternumber;
+		this.ccode = ccode;
+		this.formDate = formDate;
+		this.formType = formType;
+		this.source = source;
+		this.creatingUser = creatingUser;
+		this.recordgroupuuid = recordgroupuuid;
+		this.recordversion = recordversion;
+	}
+	
 	public CampaignFormDataIndexDto(String uuid, String campaign, String form, Object formValues, String area,
 			Long rcode, String region, Long pcode, String district, Long dcode, String community, Integer clusternumber,
 			Long ccode, Date formDate, String formType, String source, String creatingUser) {
@@ -155,7 +211,8 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 		this.creatingUser = creatingUser;
 
 	}
-
+	
+//*
 	public CampaignFormDataIndexDto(String form, String uuid, Long rcode, String campaign, String creatingUser,
 			String area, String region, String district, Long analysis_a, Long analysis_b) {
 		this.form = form;
@@ -177,6 +234,7 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 	}
 
 	// FLW Contructor
+	//*
 	public CampaignFormDataIndexDto(String area, String region, String district, Integer clusternumber, Long ccode,
 			String source, String creatingUser, String personTitle, String error_status) {
 		this.area = area;
@@ -190,6 +248,8 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 		this.error_status = "Error: Duplicate Tazkira number";
 	}
 
+	
+	//*
 	public CampaignFormDataIndexDto(String area, String region, String district, String community, Integer clusternumer,
 			// Long clusternumber_,
 			Long ccode, Long analysis_a, Long analysis_b, Long analysis_c, Long analysis_d
@@ -209,6 +269,8 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 
 	}
 
+	
+	//*
 	public CampaignFormDataIndexDto(String area, String region, String district, String community, Integer clusternumer,
 			// Long clusternumber_,
 			Long ccode, Long analysis_a, Long analysis_b, Long analysis_c, Long analysis_d,
@@ -262,6 +324,8 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 		this.form = form;
 	}
 	
+	
+	//*
 	public CampaignFormDataIndexDto(
 			String area, String region, String district, String community, 
 			Integer clusternumer,
@@ -579,6 +643,28 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 	public boolean isIspublished() {
 		return ispublished;
 	}
+	
+	
+
+	public String getRecordgroupuuid() {
+		return recordgroupuuid;
+	}
+
+
+	public void setRecordgroupuuid(String recordgroupuuid) {
+		this.recordgroupuuid = recordgroupuuid;
+	}
+
+
+	public Long getRecordversion() {
+		return recordversion;
+	}
+
+
+	public void setRecordversion(Long recordversion) {
+		this.recordversion = recordversion;
+	}
+
 
 	public String getPublishedStringValue() {
 		if (isIspublished()) {
@@ -609,7 +695,7 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 		return Objects.hash(analysis_a, analysis_a_, analysis_b, analysis_b_, analysis_c, analysis_c_, analysis_d,
 				analysis_d_, area, campaign, campaign_id, ccode, clusternumber, clusternumber_, community, creatingUser,
 				creatingUserType, dcode, district, error_status, form, formDate, formType, formValues, ispublished,
-				isverified, pcode, personTitle, rcode, region, source, uuid);
+				isverified, pcode, personTitle, rcode, region, source, uuid, recordgroupuuid, recordversion);
 	}
 
 	@Override
@@ -637,7 +723,10 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 				&& ispublished == other.ispublished && isverified == other.isverified
 				&& Objects.equals(pcode, other.pcode) && Objects.equals(personTitle, other.personTitle)
 				&& Objects.equals(rcode, other.rcode) && Objects.equals(region, other.region)
-				&& Objects.equals(source, other.source) && Objects.equals(uuid, other.uuid);
+				&& Objects.equals(source, other.source) && Objects.equals(uuid, other.uuid)
+				&& Objects.equals(recordgroupuuid, other.recordgroupuuid)
+				&& Objects.equals(recordversion, other.recordversion)
+;
 	}
 
 }

@@ -22,9 +22,6 @@ import de.symeda.sormas.api.utils.SortProperty;
 public class UsersDataProvider extends AbstractBackEndDataProvider<UserDto, UserCriteria>{
 	
 	private static final long serialVersionUID = 7345965237429493032L;
-//	UserCriteria crteria;
-//	final List<UserDto> DATABASE = new ArrayList<>(FacadeProvider.getUserFacade()
-//			.getIndexList(crteria, null, null, null));
 
 	@Override
 	protected Stream<UserDto> fetchFromBackEnd(Query<UserDto, UserCriteria> query) {
@@ -38,14 +35,6 @@ public class UsersDataProvider extends AbstractBackEndDataProvider<UserDto, User
 //		if (query.getSortOrders().size() > 0) {
 //			stream = stream.sorted(sortComparator(query.getSortOrders()));
 //		}
-
-
-//		return FacadeProvider.getUserFacade() 
-//                .getIndexList(
-//                        query.getFilter().orElse(null),
-//                        query.getOffset(),
-//                        query.getLimit(),
-//                        null).stream();
 		
 	    List<SortProperty> sortProperties = null;
 	    if (!query.getSortOrders().isEmpty()) {
@@ -71,7 +60,6 @@ public class UsersDataProvider extends AbstractBackEndDataProvider<UserDto, User
 	protected int sizeInBackEnd(Query<UserDto, UserCriteria> query) {
 
 		 return (int) FacadeProvider.getUserFacade().count(query.getFilter().orElse(null));
-//		return (int) FacadeProvider.getUserFacade().count(query.getFilter().orElse(null));
 //		return (int) fetchFromBackEnd(query).count();
 	}
 	

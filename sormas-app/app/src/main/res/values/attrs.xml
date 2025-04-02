@@ -201,6 +201,10 @@
         <attr name="allowedDaysInFuture" />
     </declare-styleable>
 
+    <declare-styleable name="ControlTimeField">
+        <attr name="is24HourFormat" />
+    </declare-styleable>
+
     <declare-styleable name="ControlDateTimeField">
         <attr name="dateHint" />
         <attr name="timeHint" />

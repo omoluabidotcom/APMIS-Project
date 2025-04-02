@@ -102,7 +102,7 @@ public class InfrastructureSyncFacadeEjb implements InfrastructureSyncFacade {
 		sync.setDistricts(districtFacade.getAllAfter(changeDates.getDistrictChangeDate()));
 //		sync.setDistricts(districtFacade.getAllAfter(changeDates.getDistrictChangeDate()));
 //		System.out.println("changeDates.getPopulationDataChangeDate(" + changeDates.getPopulationDataChangeDate() ) ;
-		sync.setPopulationData(populationFacade.getAllAfter(changeDates.getDistrictChangeDate()));
+//		sync.setPopulationData(populationFacade.getAllAfter(new Date(0)));
 
 		
 		

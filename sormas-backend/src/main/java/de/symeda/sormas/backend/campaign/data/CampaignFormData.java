@@ -68,6 +68,7 @@ public class CampaignFormData extends AbstractDomainObject{
 	public static final String CREATED_BY = "creatingUser";
 	public static final String ISVERIFIED = "isverified";
 	public static final String ISPUBLISHED = "ispublished";
+	public static final String RECORDVERSION = "recordversion";
 	
 
 	private static final long serialVersionUID = -8021065433714419288L;
@@ -88,6 +89,8 @@ public class CampaignFormData extends AbstractDomainObject{
 	private boolean isverified;
 	private boolean ispublished;
 	private User  creatinguser_id;
+	
+	private Long recordversion;
 	//private CampaignFormMeta formType;
 
 	@AuditedIgnore
@@ -208,6 +211,15 @@ public class CampaignFormData extends AbstractDomainObject{
 
 	public void setSource(String source) {
 		this.source = source;
+	}
+	
+	@Column
+	public Long getRecordversion() {
+		return recordversion;
+	}
+
+	public void setRecordversion(Long recordversion) {
+		this.recordversion = recordversion;
 	}
 
 	public CampaignFormDataReferenceDto toReference() {

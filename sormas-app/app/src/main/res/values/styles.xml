@@ -282,6 +282,12 @@
         <item name="android:textIsSelectable">false</item>
     </style>
 
+    <style name="ControlTimePickerInputStyle" parent="@style/ControlTextFieldStyle">
+        <item name="android:cursorVisible">false</item>
+        <item name="android:textIsSelectable">false</item>
+    </style>
+
+
     <style name="ControlDateOrTimePickerSlimInputStyle" parent="@style/ControlTextFieldSlimStyle">
         <item name="android:cursorVisible">false</item>
         <item name="android:textIsSelectable">false</item>

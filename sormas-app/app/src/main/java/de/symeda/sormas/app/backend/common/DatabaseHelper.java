@@ -3248,6 +3248,15 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 									+ "		area_id VARCHAR NOT NULL);");
 
 
+				case 347:
+					currentVersion = 347;
+					getDao(CampaignFormData.class).executeRaw(
+							"ALTER TABLE campaignformdata ADD COLUMN recordversion BIGINT DEFAULT 1;"
+					);
+
+
+
+
 
 					break;
 

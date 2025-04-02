@@ -33,57 +33,9 @@ public class CampaignFormMetaHistoryExtractDto implements Serializable, Comparab
 	private LocalDateTime end_date;
 	private Long version;
 
-//	public CampaignFormMetaHistoryExtractDto(String uuid, String formName, Map<String, Object> campaignFormElements,
-//			String formId, LocalDateTime startDate, Object endDate) {
-//		this.uuid = uuid;
-//		this.formname = formName;
-//		 this.campaignFormElements = campaignFormElements != null 
-//		            ? campaignFormElements 
-//		            : new HashMap<>();																											// it's
-//																											// never
-//																											// null
-//		this.formid = formId;
-//		this.start_date = startDate;
-//		this.end_date = (endDate instanceof LocalDateTime) ? (LocalDateTime) endDate : null;
-//	}
-
-//	public CampaignFormMetaHistoryExtractDto(String uuid, String formName, List<CampaignFormElement> campaignFormElements, String formId,
-//			LocalDateTime startDate, Object endDate) {
-//		this.uuid = uuid;
-//		this.formname = formName;
-//		this.campaignFormElements = campaignFormElements; // Ensure it's never null
-//		this.formid = formId;
-//		this.start_date = startDate;
-//		this.end_date = (endDate instanceof LocalDateTime) ? (LocalDateTime) endDate : null;
-//	}
-
-//	 public CampaignFormMetaHistoryExtractDto(String uuid, String formName, 
-//	            List<CampaignFormElement> campaignFormElements, // Change type
-//	            String formId, LocalDateTime startDate, Object endDate) {
-//	        this.uuid = uuid;
-//	        this.formname = formName;
-//	        this.campaignFormElements = campaignFormElements != null 
-//	            ? campaignFormElements 
-//	            : new ArrayList<>(); // Ensure never null
-//	        this.formid = formId;
-//	        this.start_date = startDate;
-//	        this.end_date = (endDate instanceof LocalDateTime) 
-//	            ? (LocalDateTime) endDate 
-//	            : null;
-//	    }
-
 	@Valid
 	private List<CampaignFormElement> campaignFormElementsN;
 
-//	public CampaignFormMetaHistoryExtractDto(String uuid, String formName, String campaignFormElements, // Change type
-//			String formId, LocalDateTime startDate, Object endDate) {
-//		this.uuid = uuid;
-//		this.formname = formName;
-//		this.campaignFormElements = campaignFormElements; // Ensure never null
-//		this.formid = formId;
-//		this.start_date = startDate;
-//		this.end_date = (endDate instanceof LocalDateTime) ? (LocalDateTime) endDate : null;
-//	}
 
 	public CampaignFormMetaHistoryExtractDto(String uuid, String formName, String campaignFormElements, String formId,
 			LocalDateTime startDate, Object endDate, Long version) {
@@ -113,35 +65,6 @@ public class CampaignFormMetaHistoryExtractDto implements Serializable, Comparab
 		}
 	}
 
-//	 public CampaignFormMetaHistoryExtractDto(String uuid, String formName, 
-//	            String campaignFormElements, // Change type
-//	            String formId, LocalDateTime startDate, Object endDate, Long version) {
-//	        this.uuid = uuid;
-//	        this.formname = formName;
-//	        
-//	        
-//			ObjectMapper objectMapper = new ObjectMapper();
-//
-////	        this.campaignFormElements = campaignFormElements;  // Ensure never null
-//	        if (campaignFormElements != null && !campaignFormElements.trim().isEmpty()) {
-//	            try {
-//	                campaignFormElementsN = objectMapper.readValue(
-//	                		campaignFormElements, 
-//	                    new TypeReference<List<CampaignFormElement>>() {}
-//	                );
-//	            } catch (Exception e) {
-//	                // Handle the exception
-//	            }
-//	        
-//	        
-//	        
-//	        this.formid = formId;
-//	        this.start_date = startDate;
-//	        this.end_date = (endDate instanceof LocalDateTime) 
-//	            ? (LocalDateTime) endDate 
-//	            : null;
-//	        this.version = version;
-//	    }
 
 	public CampaignFormMetaHistoryExtractDto(String uuid, String formName,
 			List<CampaignFormElement> campaignFormElements, // Change type

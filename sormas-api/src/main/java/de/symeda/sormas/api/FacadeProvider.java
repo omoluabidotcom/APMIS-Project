@@ -28,6 +28,7 @@ import de.symeda.sormas.api.campaign.form.CampaignFormMetaExpiryFacade;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaFacade;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaRegionDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaRegionFacade;
+import de.symeda.sormas.api.campaign.form.DialingCodeFacade;
 import de.symeda.sormas.api.campaign.statistics.CampaignStatisticsFacade;
 import de.symeda.sormas.api.caze.CaseFacade;
 import de.symeda.sormas.api.caze.CaseStatisticsFacade;
@@ -390,6 +391,10 @@ public class FacadeProvider {
 
 	public static CampaignFormMetaFacade getCampaignFormMetaFacade() {
 		return get().lookupEjbRemote(CampaignFormMetaFacade.class);
+	}
+	
+	public static DialingCodeFacade getDialingCodeFacade() {
+		return get().lookupEjbRemote(DialingCodeFacade.class);
 	}
 	
 	public static CampaignFormMetaExpiryFacade getCampaignFormMetaWithExpFacade() {
