@@ -1658,7 +1658,14 @@ public class CampaignFormBuilder extends VerticalLayout {
 				timePicker.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
 				timePicker.setStep(Duration.ofMinutes(30));
 //				timePickear.setValue(LocalTime.of(5, 30));
-				timePicker.setAutoOpen(false);
+				timePicker.setAutoOpen(true);
+				
+				timePicker.addValueChangeListener(e->{
+					 System.out.println("Value Changed-------" + e.getValue()
+);
+					
+					timePicker.setValue(e.getValue());	
+				});
 //				add(timePicker);
 				
 				setFieldValue(timePicker, type, value, optionsValues, formElement.getDefaultvalue(), false,
@@ -1982,20 +1989,16 @@ public class CampaignFormBuilder extends VerticalLayout {
 			
         case TIME:
             if (value != null) {
-//            	String stringValue = value.toString(); 
+            	System.out.println(" time value is not null ");
                 if (value instanceof LocalTime) {
-                    ((TimePicker) field).setValue(LocalTime.parse((String) value));
-
                     ((TimePicker) field).setValue((LocalTime) value);
                 } else if (value instanceof String) {
-                    ((TimePicker) field).setValue(LocalTime.parse((String) value));
+                       ((TimePicker) field).setValue(LocalTime.parse((String) value));
                 }
             } else if (defaultvalue != null) {
                 ((TimePicker) field).setValue(LocalTime.parse((String) defaultvalue));
-
-//                ((TimePicker) field).setValue(LocalTime.parse(defaultvalue));
             }
-            break;
+        	break;
 			
             
         case PHONE:
@@ -2217,9 +2220,13 @@ public class CampaignFormBuilder extends VerticalLayout {
 			boolean hide = dependingOnValuesList.stream()
 					.anyMatch(v -> fieldValueMatchesDependingOnValues(dependingOnField, dependingOnValuesList, typex));
 			component.setVisible(hide);
+			
+			System.out.println("hidehidehide---" + hide);
 
 			if (hide) {
 				// getElement().setProperty("required", requiredIndicatorVisible);
+				component.setVisible(hide);
+
 				component.getElement().setProperty("required", isRequiredField);
 			} else {
 				component.getElement().setProperty("required", false);
@@ -2229,26 +2236,28 @@ public class CampaignFormBuilder extends VerticalLayout {
 			((AbstractField) dependingOnField).addValueChangeListener(e -> {
 				boolean visible = fieldValueMatchesDependingOnValues(dependingOnField, dependingOnValuesList, typex);
 
-				if (typex != CampaignFormElementType.LABEL) {
+				if (typex != CampaignFormElementType.LABEL && typex != CampaignFormElementType.SECTION) {
 					if (!visible) {
 
 						((AbstractField) component).setRequiredIndicatorVisible(false);
-
 						if (typex == CampaignFormElementType.TEXT) {
 							((TextField) component).setValue(" ");
 							((TextField) component).setValue("");
 						} else {
-
 							((AbstractField) component).setValue(null);
 						}
-
 						component.setVisible(visible);
-
 					} else {
 						component.setVisible(visible);
 						((AbstractField) component).setRequiredIndicatorVisible(isRequiredField);
 						component.getElement().setProperty("required", isRequiredField);
 					}
+				}else if(typex == CampaignFormElementType.LABEL) {					
+					((Label) component).setVisible(visible);					
+					System.out.println( visible + "Its a Label that needs to be show " + hide);					
+				}else if(typex == CampaignFormElementType.SECTION) {					
+					component.setVisible(visible);					
+					System.out.println( visible + "Its a Section that needs to be show " + hide);					
 				}
 			});
 		}
@@ -2267,7 +2276,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 			String stringValue = Boolean.TRUE.equals(((ToggleButton) dependingOnField).getValue()) ? "Yes" : "No";
 
 			return dependingOnValuesList.stream().anyMatch(v ->
-			// v.toString().equalsIgnoreCase(booleanValue) ||
 			v.toString().equalsIgnoreCase(stringValue));
 
 		} else {
@@ -2315,6 +2323,13 @@ public class CampaignFormBuilder extends VerticalLayout {
 //				logger.debug(((DatePicker) field).getValue() + "______________________))");
 
 				String valc = ((DatePicker) field).getValue() != null ? ((DatePicker) field).getValue().toString()
+						: null;
+
+				return new CampaignFormDataEntry(id, valc);
+			}else if (field instanceof TimePicker) {
+//				logger.debug(((DatePicker) field).getValue() + "______________________))");
+
+				String valc = ((TimePicker) field).getValue() != null ? ((TimePicker) field).getValue().toString()
 						: null;
 
 				return new CampaignFormDataEntry(id, valc);
@@ -2407,7 +2422,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 			Component formField = fields.get(key);
 			if (formField.getElement().getProperty("invalid", false)) {
 				hasErrorFormValues(7);
-//				Notification.show("Error on field: " + formField.getElement().getProperty("label"));
+				Notification.show("Error on field: " + formField.getElement().getProperty("label"));
 				return;
 			}
 
@@ -2416,7 +2431,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 	}
 
 	public void hasErrorFormValues(int numer) {
-//		Notification.show("Error found in: " + numer);
+		Notification.show("Error found in: " + numer);
 		invalidForm = true;
 
 	}
@@ -2426,6 +2441,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 	}
 	
 	public boolean saveFormValues() {
+		
+		System.out.println("Entered save form New Data waiting response -------------");
+
 		validateAndSave();
 		if (!invalidForm) {
 			if (openData) {
@@ -2480,6 +2498,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 					}
 				}
 
+				
+				System.out.println("New Data waiting rffffffesponse -------------");
+
 				if (saveChecker) {
 					CampaignFormDataDto dataDto = FacadeProvider.getCampaignFormDataFacade()
 							.getCampaignFormDataByUuid(uuidForm);
@@ -2519,6 +2540,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 					notification.open();
 				}
 			} else {
+				
+				System.out.println("New Data waiting response -------------");
 				boolean saveChecker = true;
 				boolean ccodeChecker = true;
 				UserProvider userProvider = new UserProvider();
@@ -2568,12 +2591,17 @@ public class CampaignFormBuilder extends VerticalLayout {
 						}
 					}
 				}
-
+				
+				
 				if (saveChecker) {
 					CampaignFormDataDto dataDto = CampaignFormDataDto.build(campaignReferenceDto, campaignFormMeta,
 							cbArea.getValue(), cbRegion.getValue(), cbDistrict.getValue(), cbCommunity.getValue());
 
 					Date dateData = Date.from(formDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+
+					System.out.println("New Data waiting response -------------" + dataDto.getFormValues());
+
 
 					dataDto.setFormDate(dateData);
 					dataDto.setCreatingUser(userProvider.getUserReference());
