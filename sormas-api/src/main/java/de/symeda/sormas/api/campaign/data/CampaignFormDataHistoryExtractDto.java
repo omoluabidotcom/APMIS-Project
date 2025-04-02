@@ -56,24 +56,24 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 	private List<CampaignFormDataEntry> formValues;
 	private String formValuesString;
 
-	private CampaignReferenceDto campaign;
-	private CampaignFormMetaReferenceDto campaignFormMeta;
-	private AreaReferenceDto area;
-	private RegionReferenceDto region;
-	private DistrictReferenceDto district;
-	private CommunityReferenceDto community;
+//	private CampaignReferenceDto campaign;
+//	private CampaignFormMetaReferenceDto campaignFormMeta;
+//	private AreaReferenceDto area;
+//	private RegionReferenceDto region;
+//	private DistrictReferenceDto district;
+//	private CommunityReferenceDto community;
 	
-	private Long campaignLong;
-	private Long campaignFormMetaLong;
-	private Long areaLong;
-	private Long regionLong;
-	private Long districtLong;
-	private Long communityLong;
+	private Long campaign;
+	private Long campaignFormMeta;
+	private Long area;
+	private Long region;
+	private Long district;
+	private Long cluster;
 	
 	private boolean archived;
 	private Date formDate;
-	private UserReferenceDto creatingUser;
-	private Long creatingUserLong;
+//	private UserReferenceDto creatingUser;
+	private Long creatingUser;
 
 	private String formType;
 	private Integer recordversion;
@@ -97,15 +97,15 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 		super();
 		this.uuid = uuid;
 		this.formValues = formValuesString;
-		this.campaignLong = campaign;
-		this.campaignFormMetaLong = campaignFormMeta;
+		this.campaign = campaign;
+		this.campaignFormMeta = campaignFormMeta;
 //		this.area = area;
-		this.regionLong = region;
-		this.districtLong = district;
-		this.communityLong = community;
+		this.region = region;
+		this.district = district;
+		this.cluster = community;
 		this.archived = archived;
 		this.formDate = formDate;
-		this.creatingUserLong = creatingUser;
+		this.creatingUser = creatingUser;
 		this.formType = formType;
 		this.recordversion = recordversion;
 //		this.formCategory = formCategory;
@@ -126,15 +126,15 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 		super();
 		this.uuid = uuid;
 //		this.formValuesString = formValuesString;
-		this.campaignLong = campaign;
-		this.campaignFormMetaLong = campaignFormMeta;
+		this.campaign = campaign;
+		this.campaignFormMeta  = campaignFormMeta;
 //		this.area = area;
-		this.regionLong = region;
-		this.districtLong = district;
-		this.communityLong = community;
+		this.region  = region;
+		this.district  = district;
+		this.cluster  = community;
 		this.archived = archived;
 		this.formDate = formDate;
-		this.creatingUserLong = creatingUser;
+		this.creatingUser = creatingUser;
 		this.formType = formType;
 		this.recordversion = recordversion;
 //		this.formCategory = formCategory;
@@ -180,23 +180,23 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 		this.formValues = formValues;
 	}
 
-	@ImportIgnore
-	public CampaignFormMetaReferenceDto getCampaignFormMeta() {
-		return campaignFormMeta;
-	}
-
-	public void setCampaignFormMeta(CampaignFormMetaReferenceDto campaignFormMeta) {
-		this.campaignFormMeta = campaignFormMeta;
-	}
-
-	@ImportIgnore
-	public CampaignReferenceDto getCampaign() {
-		return campaign;
-	}
-
-	public void setCampaign(CampaignReferenceDto campaign) {
-		this.campaign = campaign;
-	}
+//	@ImportIgnore
+//	public CampaignFormMetaReferenceDto getCampaignFormMeta() {
+//		return campaignFormMeta;
+//	}
+//
+//	public void setCampaignFormMeta(CampaignFormMetaReferenceDto campaignFormMeta) {
+//		this.campaignFormMeta = campaignFormMeta;
+//	}
+//
+//	@ImportIgnore
+//	public CampaignReferenceDto getCampaign() {
+//		return campaign;
+//	}
+//
+//	public void setCampaign(CampaignReferenceDto campaign) {
+//		this.campaign = campaign;
+//	}
 
 	public Date getFormDate() {
 		return formDate;
@@ -217,45 +217,45 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 	}
 	
 
-	public AreaReferenceDto getArea() {
-		return area;
-	}
-
-	public void setArea(AreaReferenceDto area) {
-		this.area = area;
-	}
-
-	public RegionReferenceDto getRegion() {
-		return region;
-	}
-
-	public void setRegion(RegionReferenceDto region) {
-		this.region = region;
-	}
-
-	public DistrictReferenceDto getDistrict() {
-		return district;
-	}
-
-	public void setDistrict(DistrictReferenceDto district) {
-		this.district = district;
-	}
-
-	public CommunityReferenceDto getCommunity() {
-		return community;
-	}
-
-	public void setCommunity(CommunityReferenceDto community) {
-		this.community = community;
-	}
-
-	public UserReferenceDto getCreatingUser() {
-		return creatingUser;
-	}
-
-	public void setCreatingUser(UserReferenceDto creatingUser) {
-		this.creatingUser = creatingUser;
-	}
+//	public AreaReferenceDto getArea() {
+//		return area;
+//	}
+//
+//	public void setArea(AreaReferenceDto area) {
+//		this.area = area;
+//	}
+//
+//	public RegionReferenceDto getRegion() {
+//		return region;
+//	}
+//
+//	public void setRegion(RegionReferenceDto region) {
+//		this.region = region;
+//	}
+//
+//	public DistrictReferenceDto getDistrict() {
+//		return district;
+//	}
+//
+//	public void setDistrict(DistrictReferenceDto district) {
+//		this.district = district;
+//	}
+//
+//	public CommunityReferenceDto getCommunity() {
+//		return community;
+//	}
+//
+//	public void setCommunity(CommunityReferenceDto community) {
+//		this.community = community;
+//	}
+//
+//	public UserReferenceDto getCreatingUser() {
+//		return creatingUser;
+//	}
+//
+//	public void setCreatingUser(UserReferenceDto creatingUser) {
+//		this.creatingUser = creatingUser;
+//	}
 
 	public boolean isArchived() {
 		return archived;
@@ -286,72 +286,72 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 
 
 	public Long getCampaignLong() {
-		return campaignLong;
+		return campaign;
 	}
 
 
 	public void setCampaignLong(Long campaignLong) {
-		this.campaignLong = campaignLong;
+		this.campaign = campaignLong;
 	}
 
 
 	public Long getCampaignFormMetaLong() {
-		return campaignFormMetaLong;
+		return campaignFormMeta;
 	}
 
 
 	public void setCampaignFormMetaLong(Long campaignFormMetaLong) {
-		this.campaignFormMetaLong = campaignFormMetaLong;
+		this.campaignFormMeta = campaignFormMetaLong;
 	}
 
 
 	public Long getAreaLong() {
-		return areaLong;
+		return area;
 	}
 
 
 	public void setAreaLong(Long areaLong) {
-		this.areaLong = areaLong;
+		this.area = areaLong;
 	}
 
 
 	public Long getRegionLong() {
-		return regionLong;
+		return region;
 	}
 
 
 	public void setRegionLong(Long regionLong) {
-		this.regionLong = regionLong;
+		this.region = regionLong;
 	}
 
 
 	public Long getDistrictLong() {
-		return districtLong;
+		return district;
 	}
 
 
 	public void setDistrictLong(Long districtLong) {
-		this.districtLong = districtLong;
+		this.district = districtLong;
 	}
 
 
 	public Long getCommunityLong() {
-		return communityLong;
+		return cluster;
 	}
 
 
-	public void setCommunityLong(Long communityLong) {
-		this.communityLong = communityLong;
+	public void setCommunityLong(Long cluster) {
+		this.cluster = cluster;
 	}
 
 
 	public Long getCreatingUserLong() {
-		return creatingUserLong;
+		return creatingUser;
 	}
 
 
-	public void setCreatingUserLong(Long creatingUserLong) {
-		this.creatingUserLong = creatingUserLong;
+	public void setCreatingUserLong(Long creatingUser) {
+		this.creatingUser = creatingUser;
 	}
 
 
@@ -400,10 +400,10 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + Objects.hash(archived, area, areaLong, campaign, campaignFormMeta,
-				campaignFormMetaLong, campaignLong, changedate, community, communityLong, creatingUser,
-				creatingUserLong, district, districtLong, formDate, formType, formValues, formValuesString, ispublished,
-				isverified,  recordversion, region, regionLong, source, uuid);
+		result = prime * result + Objects.hash(archived, area, campaignFormMeta,
+				campaignFormMeta, campaign , changedate, cluster, creatingUser,
+				 district,  formDate, formType, formValues, formValuesString, ispublished,
+				isverified,  recordversion, region,  source, uuid);
 		return result;
 	}
 
@@ -418,19 +418,25 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 			return false;
 		CampaignFormDataHistoryExtractDto other = (CampaignFormDataHistoryExtractDto) obj;
 		return archived == other.archived && Objects.equals(area, other.area)
-				&& Objects.equals(areaLong, other.areaLong) && Objects.equals(campaign, other.campaign)
+//				&& Objects.equals(areaLong, other.areaLong) 
+				&& Objects.equals(campaign, other.campaign)
 				&& Objects.equals(campaignFormMeta, other.campaignFormMeta)
-				&& Objects.equals(campaignFormMetaLong, other.campaignFormMetaLong)
-				&& Objects.equals(campaignLong, other.campaignLong) && Objects.equals(changedate, other.changedate)
-				&& Objects.equals(community, other.community) && Objects.equals(communityLong, other.communityLong)
+//				&& Objects.equals(campaignFormMetaLong, other.campaignFormMetaLong)
+//				&& Objects.equals(campaignLong, other.campaignLong) 
+				&& Objects.equals(changedate, other.changedate)
+				&& Objects.equals(cluster, other.cluster) 
+//				&& Objects.equals(communityLong, other.communityLong)
 				&& Objects.equals(creatingUser, other.creatingUser)
-				&& Objects.equals(creatingUserLong, other.creatingUserLong) && Objects.equals(district, other.district)
-				&& Objects.equals(districtLong, other.districtLong) && Objects.equals(formDate, other.formDate)
+//				&& Objects.equals(creatingUserLong, other.creatingUserLong)
+				&& Objects.equals(district, other.district)
+//				&& Objects.equals(districtLong, other.districtLong)
+				&& Objects.equals(formDate, other.formDate)
 				&& Objects.equals(formType, other.formType) && Objects.equals(formValues, other.formValues)
 				&& Objects.equals(formValuesString, other.formValuesString) && ispublished == other.ispublished
 				&& isverified == other.isverified
 				&& Objects.equals(recordversion, other.recordversion) && Objects.equals(region, other.region)
-				&& Objects.equals(regionLong, other.regionLong) && Objects.equals(source, other.source)
+//				&& Objects.equals(regionLong, other.regionLong)
+				&& Objects.equals(source, other.source)
 				&& Objects.equals(uuid, other.uuid);
 	}
 
