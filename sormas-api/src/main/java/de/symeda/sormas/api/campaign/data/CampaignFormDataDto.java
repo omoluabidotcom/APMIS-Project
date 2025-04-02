@@ -56,6 +56,8 @@ public class CampaignFormDataDto extends EntityDto {
 	public static final String LONGITUDE = "longitude";
 	public static final String FORMCATEGORY = "formcategory";
 	public static final String SOURCE = "source";
+	public static final String RECORDGROUPUID = "recordgroupuuid";
+	public static final String RECORDVERSION = "recordversion";
 	
 	@Valid
 	private List<CampaignFormDataEntry> formValues;
@@ -74,6 +76,8 @@ public class CampaignFormDataDto extends EntityDto {
 	private boolean archived;
 	private boolean ispublished;
 	private boolean isverified;
+	private String recordgroupuuid;
+	private Long recordversion;
 	//private Double latitude;
 	//private Double longitude;
 
@@ -230,6 +234,24 @@ public class CampaignFormDataDto extends EntityDto {
 		this.isverified = isverified;
 	}
 
+	public String getRecordgroupuuid() {
+		return recordgroupuuid;
+	}
+
+	public void setRecordgroupuuid(String recordgroupuuid) {
+		this.recordgroupuuid = recordgroupuuid;
+	}
+
+	public Long getRecordversion() {
+		return recordversion;
+	}
+
+	public void setRecordversion(Long recordversion) {
+		this.recordversion = recordversion;
+	}
+
+	
+	
 
 
 

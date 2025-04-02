@@ -183,4 +183,13 @@ public interface CampaignFormDataFacade {
 	
 	void updateFormDataUnitAssignment(String formDataUuid, String clusterUuid);
 	
+	long getRecordCountByGroupUuid(String groupUuid);
+	
+//	List<CampaignFormDataHistoryExtractDto> getAllActiveAfter(Date date, String uuid);
+
+	List<CampaignFormDataHistoryExtractDto> getAllActiveAfter(Date date, List<String> uuid);
+
+
+	
+	
 }

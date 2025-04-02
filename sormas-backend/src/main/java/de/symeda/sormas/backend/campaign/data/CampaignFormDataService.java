@@ -48,6 +48,7 @@ import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
+import de.symeda.sormas.api.campaign.data.CampaignFormDataHistoryExtractDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataReferenceDto;
 import de.symeda.sormas.api.campaign.data.MapCampaignDataDto;
@@ -357,6 +358,93 @@ public class CampaignFormDataService extends AdoServiceWithUserFilter<CampaignFo
 
 		return em.createQuery(cq).getResultList();
 	}
+	
+	public List<CampaignFormDataHistoryExtractDto> getAllActiveAfter(Date date, List<Long> idList, List<Long> commIdList, List<Long> distrIdList, String uuid) {
+	    CriteriaBuilder cb = em.getCriteriaBuilder();
+	    CriteriaQuery<CampaignFormDataHistoryExtractDto> cq = cb.createQuery(CampaignFormDataHistoryExtractDto.class);
+	    
+	    Root<CampaignFormData> campaignData = cq.from(CampaignFormData.class);
+	    Join<CampaignFormData, CampaignFormDataHistory> historyJoin = campaignData.join("campaignformdata_history", JoinType.LEFT);
+
+	    List<Predicate> predicates = new ArrayList<>();
+
+	    predicates.add(cb.isFalse(campaignData.get(CampaignFormData.ARCHIVED))); // Active records only
+
+	    if (getCurrentUser() != null) {
+	        predicates.add(createUserFilter(cb, cq, campaignData));
+	    }
+
+	    if (date != null) {
+	        predicates.add(cb.greaterThanOrEqualTo(historyJoin.get("changeDate"), DateHelper.toTimestampUpper(date)));
+	    }
+
+	    if (idList != null && !idList.isEmpty()) {
+	        predicates.add(campaignData.get(CampaignFormData.CAMPAIGN_FORM_META).in(idList));
+	    }
+
+	    if (commIdList != null && !commIdList.isEmpty()) {
+	        predicates.add(campaignData.get(CampaignFormData.COMMUNITY).in(commIdList));
+	    }
+
+	    if (distrIdList != null && !distrIdList.isEmpty()) {
+	        predicates.add(campaignData.get(CampaignFormData.DISTRICT).in(distrIdList));
+	    }
+
+	    if (uuid != null) {
+	        predicates.add(cb.equal(campaignData.get("uuid"), uuid));
+	    }
+
+	    cq.where(cb.and(predicates.toArray(new Predicate[0])));
+	    cq.orderBy(cb.desc(historyJoin.get("changeDate")));
+
+	    return em.createQuery(cq).getResultList();
+	}
+
+//	
+//	public List<CampaignFormDataHistoryExtractDto> getAllActiveAfter(Date date, List<Long> idList, List<Long> commIdList, List<Long> distrIdList, String uuid) {
+//	    CriteriaBuilder cb = em.getCriteriaBuilder();
+//	    CriteriaQuery<CampaignFormDataHistoryExtractDto> cq = cb.createQuery(CampaignFormDataHistoryExtractDto.class);
+//	    
+//	    Root<CampaignFormData> campaignData = cq.from(CampaignFormData.class);
+//	    Join<CampaignFormData, CampaignFormDataHistory> historyJoin = campaignData.join("campainformdata_history", JoinType.LEFT); // Assuming mapped field name is "history"
+//
+//	    Predicate filter = cb.and();
+//
+//	    if (getCurrentUser() != null) {
+//	        Predicate userFilter = createUserFilter(cb, cq, campaignData);
+//	        filter = CriteriaBuilderHelper.and(cb, cb.isFalse(campaignData.get(CampaignFormData.ARCHIVED)), userFilter);
+//	    }
+//
+//	    if (date != null) {
+//	        Predicate dateFilter = createChangeDateFilter(cb, campaignData, DateHelper.toTimestampUpper(date));
+//	        if (dateFilter != null) {
+//	            filter = cb.and(filter, dateFilter);
+//	        }
+//	    }
+//
+//	    if (idList != null && !idList.isEmpty()) {
+//	        filter = cb.and(filter, campaignData.get(CampaignFormData.CAMPAIGN_FORM_META).in(idList));
+//	    }
+//
+//	    if (commIdList != null && !commIdList.isEmpty()) {
+//	        filter = cb.and(filter, campaignData.get(CampaignFormData.COMMUNITY).in(commIdList));
+//	    }
+//
+//	    if (distrIdList != null && !distrIdList.isEmpty()) {
+//	        filter = cb.and(filter, campaignData.get(CampaignFormData.DISTRICT).in(distrIdList));
+//	    }
+//
+//	    if (uuid != null) {
+//	        filter = cb.and(filter, cb.equal(campaignData.get("uuid"), uuid));
+//	    }
+//
+//	    cq.where(filter);
+//	    cq.orderBy(cb.desc(campaignData.get(AbstractDomainObject.CHANGE_DATE)));
+//
+//	    TypedQuery<CampaignFormDataHistoryExtractDto> query = em.createQuery(cq);
+//	    return query.getResultList();
+//	}
+
 
 	public List<CampaignFormData> getAllActiveAfter(Date date, List<Long> idList, List<Long> commIdList, List<Long> distrIdList) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();

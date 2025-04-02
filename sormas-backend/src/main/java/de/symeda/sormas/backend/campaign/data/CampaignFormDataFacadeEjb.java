@@ -22,10 +22,12 @@ package de.symeda.sormas.backend.campaign.data;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,6 +51,12 @@ import javax.persistence.criteria.Root;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.joda.time.LocalDateTime;
+import org.postgresql.util.PGobject;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vladmihalcea.hibernate.type.util.SQLExtractor;
 
 import de.symeda.sormas.api.campaign.CampaignDto;
@@ -59,6 +67,7 @@ import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataFacade;
+import de.symeda.sormas.api.campaign.data.CampaignFormDataHistoryExtractDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataReferenceDto;
 import de.symeda.sormas.api.campaign.data.MapCampaignDataDto;
@@ -74,8 +83,10 @@ import de.symeda.sormas.api.i18n.Strings;
 import de.symeda.sormas.api.i18n.Validations;
 import de.symeda.sormas.api.infrastructure.PopulationDataCriteria;
 import de.symeda.sormas.api.infrastructure.PopulationDataDto;
+import de.symeda.sormas.api.infrastructure.area.AreaHistoryExtractDto;
 import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
+import de.symeda.sormas.api.infrastructure.district.DistrictHistoryExtractDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
 import de.symeda.sormas.api.report.CampaignDataExtractDto;
@@ -188,6 +199,9 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 		target.setCommunity(communityService.getByReferenceDto(source.getCommunity()));
 		target.setCreatingUser(userService.getByReferenceDto(source.getCreatingUser()));
 		target.setSource(source.getSource());
+//		target.setRecordgroupuuid(source.getRecordgroupuuid());
+		target.setRecordversion(source.getRecordversion());
+
 		return target;
 	}
 
@@ -209,6 +223,9 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 		target.setCommunity(CommunityFacadeEjb.toReferenceDto(source.getCommunity()));
 		target.setCreatingUser(UserFacadeEjb.toReferenceDto(source.getCreatingUser()));
 		target.setSource(source.getSource());
+//		target.setRecordgroupuuid(source.getRecordgroupuuid());
+		target.setRecordversion(source.getRecordversion());
+
 		return target;
 	}
 
@@ -233,6 +250,9 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 		target.setArchived(source.isArchived());
 		target.setIspublished(source.isIspublished());
 		target.setIsverified(source.isIsverified());
+//		target.setRecordgroupuuid(source.getRecordgroupuuid());
+		target.setRecordversion(source.getRecordversion());
+
 
 		return target;
 	}
@@ -340,7 +360,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 				districtJoin.get(District.EXTERNAL_ID), communityJoin.get(Community.NAME),
 				communityJoin.get(Community.CLUSTER_NUMBER), communityJoin.get(Community.EXTERNAL_ID),
 				root.get(CampaignFormData.FORM_DATE), campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
-				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME));
+				root.get(CampaignFormData.SOURCE), root.get(CampaignFormData.RECORDVERSION), userJoin.get(User.USER_NAME));
 
 		cq.where(cb.and(cb.equal(userJoin.get(User.USER_NAME), creatingUser)));
 		return em.createQuery(cq).getResultList();
@@ -398,7 +418,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 				districtJoin.get(District.EXTERNAL_ID), communityJoin.get(Community.NAME),
 				communityJoin.get(Community.CLUSTER_NUMBER), communityJoin.get(Community.EXTERNAL_ID),
 				root.get(CampaignFormData.FORM_DATE), campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
-				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME));
+				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME), root.get(CampaignFormData.RECORDVERSION));
 
 		cq.where(cb.and(cb.equal(campaignJoin.get(Campaign.UUID), campaignid),
 				cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignformmetaid),
@@ -478,7 +498,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 				communityJoin.get(Community.CLUSTER_NUMBER), communityJoin.get(Community.EXTERNAL_ID),
 				root.get(CampaignFormData.FORM_DATE), campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
 				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME), root.get(CampaignFormData.ISVERIFIED),
-				root.get(CampaignFormData.ISPUBLISHED));
+				root.get(CampaignFormData.ISPUBLISHED),  root.get(CampaignFormData.RECORDVERSION));
 
 		Predicate filter = CriteriaBuilderHelper.and(cb,
 				campaignFormDataService.createCriteriaFilter(criteria, cb, root),
@@ -545,6 +565,10 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 					expression = campaignFormMetaJoin.get(CampaignFormData.ISPUBLISHED);
 					break;
 					
+				case CampaignFormDataIndexDto.CREATED_BY:
+					expression = userJoin.get(User.USER_NAME);
+					break;
+					
 				
 				
 
@@ -600,7 +624,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 				districtJoin.get(District.EXTERNAL_ID), communityJoin.get(Community.NAME),
 				communityJoin.get(Community.CLUSTER_NUMBER), communityJoin.get(Community.EXTERNAL_ID),
 				root.get(CampaignFormData.FORM_DATE), campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
-				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME));
+				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME),  root.get(CampaignFormData.RECORDVERSION));
 
 		Predicate filter = CriteriaBuilderHelper.and(cb,
 				campaignFormDataService.createCriteriaFilter(criteria, cb, root),
@@ -697,7 +721,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 				districtJoin.get(District.EXTERNAL_ID), communityJoin.get(Community.NAME),
 				communityJoin.get(Community.CLUSTER_NUMBER), communityJoin.get(Community.EXTERNAL_ID),
 				root.get(CampaignFormData.FORM_DATE), campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
-				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME));
+				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME), root.get(CampaignFormData.RECORDVERSION));
 
 		Predicate filter = CriteriaBuilderHelper.and(cb,
 				campaignFormDataService.createCriteriaFilter(criteria, cb, root),
@@ -4035,6 +4059,314 @@ resultData.addAll(resultList.stream()
 		
 	}
 	
+//	@Override
+//	public long getRecordCountByGroupUuid(String groupUuid) {
+//		// TODO Auto-generated method stub
+//		CriteriaBuilder cb = em.getCriteriaBuilder();
+//		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+//		Root<CampaignFormData> root = cq.from(CampaignFormData.class);		
+//	    cq.select(cb.count(root)).where(cb.equal(root.get(CampaignFormData.RECORDGROUPUUID), groupUuid));
+//	    
+//		return em.createQuery(cq).getSingleResult();
+//
+//	
+//	}
+	
+	
+//	@Override
+//	public List<CampaignFormDataHistoryExtractDto> getAllActiveAfter(Date date, List<String> uuid){
+//		
+//		List<CampaignFormDataHistoryExtractDto> resultData = new ArrayList<>();
+//	
+////		String queryString = "SELECT cfmd.uuid, CAST(cfmd.formvalues AS TEXT), cfmd.campaign_id, cfmd.campaignformmeta_id, cfmd.region_id, "
+////			    + "cfmd.district_id, cfmd.community_id, cfmd.archived, cfmd.formdate, cfmd.creatinguser_id, cfmd.formtype, cfmd.recordversion,"
+////			    + "cfmd.source, cfmd.ispublished, cfmd.isverified, cfmd.recordgroupuuid, cfmd.changedate " // SPACE ADDED HERE 
+////			    + "FROM campaignformdata cfmd " 
+////			    
+////			    + "LEFT OUTER JOIN campaigns camp1 ON cfmd.campaign_id = camp1.id " 
+////			    + "LEFT OUTER JOIN campaignformmeta formmeta ON cfmd.campaignformmeta_id = formmeta.id " 
+////
+////			    + "LEFT OUTER JOIN community commut1 ON cfmd.community_id = commut1.id " 
+////			    + "LEFT OUTER JOIN District district1 ON cfmd.district_id = district1.id " 
+////			    + "LEFT OUTER JOIN Region region1 ON cfmd.region_id = region1.id " 
+////			    + "WHERE cfmd.archived = FALSE " 
+////			    + (uuid.size() > 0 ? "AND cfmd.uuid IN ? " : "") 
+////
+////			    + "UNION ALL " 
+////			    + "SELECT cfmdh.uuid, CAST(cfmdh.formvalues AS TEXT), cfmdh.campaign_id,  cfmdh.campaignformmeta_id, cfmdh.region_id, "
+////			    + "cfmdh.district_id, cfmdh.community_id, cfmdh.archived, cfmdh.formdate, cfmdh.creatinguser_id, cfmdh.formtype, cfmdh.recordversion,"
+////			    + "cfmdh.source, cfmdh.ispublished, cfmdh.isverified, cfmdh.recordgroupuuid, cfmdh.changedate " //
+////			    + "FROM campaignformdata_history cfmdh " 
+////			    + "LEFT OUTER JOIN campaigns camp2 ON cfmdh.campaign_id = camp2.id " 
+////			    + "LEFT OUTER JOIN campaignformmeta formmeta2 ON cfmdh.campaignformmeta_id = formmeta2.id " 
+////
+////
+////			    + "LEFT OUTER JOIN community commut2 ON cfmdh.community_id = commut2.id " 
+////			    + "LEFT OUTER JOIN District district2 ON cfmdh.district_id = district2.id " 
+////			    + "LEFT OUTER JOIN Region region2 ON cfmdh.region_id = region2.id " 
+////			    + "WHERE cfmdh.changedate >= ? " 
+////			    + (uuid.size() > 0 ? "AND cfmdh.uuid IN ? " : "")
+////			    + "ORDER BY changedate DESC;";
+//		
+//		
+//		String queryString = "SELECT cfmd.uuid, cfmd.formvalues::jsonb, cfmd.campaign_id, cfmd.campaignformmeta_id, cfmd.region_id, "
+//			    + "cfmd.district_id, cfmd.community_id, cfmd.archived, cfmd.formdate, cfmd.creatinguser_id, cfmd.formtype, cfmd.recordversion,"
+//			    + "cfmd.source, cfmd.ispublished, cfmd.isverified, cfmd.recordgroupuuid, cfmd.changedate "
+//			    + "FROM campaignformdata cfmd "
+//			    + "LEFT OUTER JOIN campaigns camp1 ON cfmd.campaign_id = camp1.id " 
+//			    + "LEFT OUTER JOIN campaignformmeta formmeta ON cfmd.campaignformmeta_id = formmeta.id " 
+//			    + "LEFT OUTER JOIN community commut1 ON cfmd.community_id = commut1.id " 
+//			    + "LEFT OUTER JOIN District district1 ON cfmd.district_id = district1.id " 
+//			    + "LEFT OUTER JOIN Region region1 ON cfmd.region_id = region1.id " 
+//			    + "WHERE cfmd.archived = FALSE ";
+//
+//			if (!uuid.isEmpty()) {
+//			    queryString += "AND cfmd.uuid IN (:uuidList) ";
+//			}
+//
+//			queryString += "UNION ALL "
+//			    + "SELECT cfmdh.uuid, cfmdh.formvalues::jsonb, cfmdh.campaign_id, cfmdh.campaignformmeta_id, cfmdh.region_id, "
+//			    + "cfmdh.district_id, cfmdh.community_id, cfmdh.archived, cfmdh.formdate, cfmdh.creatinguser_id, cfmdh.formtype, cfmdh.recordversion,"
+//			    + "cfmdh.source, cfmdh.ispublished, cfmdh.isverified, cfmdh.recordgroupuuid, cfmdh.changedate "
+//			    + "FROM campaignformdata_history cfmdh "
+//			    + "LEFT OUTER JOIN campaigns camp2 ON cfmdh.campaign_id = camp2.id " 
+//			    + "LEFT OUTER JOIN campaignformmeta formmeta2 ON cfmdh.campaignformmeta_id = formmeta2.id " 
+//			    + "LEFT OUTER JOIN community commut2 ON cfmdh.community_id = commut2.id " 
+//			    + "LEFT OUTER JOIN District district2 ON cfmdh.district_id = district2.id " 
+//			    + "LEFT OUTER JOIN Region region2 ON cfmdh.region_id = region2.id " 
+//			    + "WHERE cfmdh.changedate >= :changeDate ";
+//
+//			if (!uuid.isEmpty()) {
+//			    queryString += "AND cfmdh.uuid IN (:uuidList) ";
+//			}
+//
+//			queryString += "ORDER BY changedate DESC;";
+//
+//
+//	System.out.println("queryString----------" + queryString);
+//		
+//		 Query nativeQuery = em.createNativeQuery(queryString);
+//		 nativeQuery.setParameter("changeDate", new Timestamp(date.getTime()));
+//
+//		 if (!uuid.isEmpty()) {
+//		     nativeQuery.setParameter("uuidList", uuid);
+//		 }
+//
+//		 List<Object[]> results = nativeQuery.getResultList();
+//
+//
+//		resultData.addAll(results.stream()
+//				    .map(result -> new CampaignFormDataHistoryExtractDto(
+//				    (String) result[0] != null ? (String) result[0] : "",
+////				    result[1] != null ? result[1].toString() : "[]",
+////				    result[1] != null ? [result[1]] : [],
+//				    result[1] != null ? parseFormValues(result[1]) : new ArrayList<>(),
+//
+//				    result[2] != null ? ((BigInteger) result[2]).longValue() : 0L,
+//				    result[3] != null ? ((BigInteger) result[3]).longValue() : 0L,
+//				    result[4] != null ? ((BigInteger) result[4]).longValue() : 0L,
+//				    result[5] != null ? ((BigInteger) result[5]).longValue() : 0L,
+//				    result[6] != null ? ((BigInteger) result[6]).longValue() : 0L,
+//				    result[7] != null ? (boolean) result[7] : true,  // archived
+//			    	(Date) result[8],
+//			    	result[9] != null ? ((BigInteger) result[9]).longValue() : 0L,
+//			    	result[10] != null ? (String) result[10] : "",  // formType
+//			    	(Integer) result[11],  // recordversion
+//			    	result[12] != null ?  (String) result[12] : "",  // source
+//			        (boolean) result[13],  // ispublished
+//			        (boolean) result[14],  // isverified
+//			        result[15] != null ? (String) result[15] : "",  // recordgroupuuid
+//		            (((Timestamp) result[16]).toLocalDateTime()) 
+//
+//				    )).collect(Collectors.toList()));
+//
+//	        
+//	        
+//			return resultData;
+//
+//	}
+	
+	@Override
+	public List<CampaignFormDataHistoryExtractDto> getAllActiveAfter(Date date, List<String> uuid) {
+	    List<CampaignFormDataHistoryExtractDto> resultData = new ArrayList<>();
+	    
+	    String queryString = "SELECT cfmd.uuid, "
+//	            +"CASE WHEN cfmd.formvalues IS NOT NULL THEN cfmd.formvalues ELSE '[]' END AS formvalues, " 
++ "COALESCE(CAST(cfmd.formvalues AS TEXT), '[]') AS formvalues, "  // ✅ Ensure formvalues is always a STRING
+
+//	    		+ "cfmd.formvalues, "
+	    		+ "cfmd.campaign_id, cfmd.campaignformmeta_id, cfmd.region_id, "
+	        + "cfmd.district_id, cfmd.community_id, cfmd.archived, cfmd.formdate, cfmd.creatinguser_id, cfmd.formtype, cfmd.recordversion,"
+	        + "cfmd.source, cfmd.ispublished, cfmd.isverified, cfmd.changedate "
+	        + "FROM campaignformdata cfmd "
+	        + "LEFT OUTER JOIN campaigns camp1 ON cfmd.campaign_id = camp1.id " 
+	        + "LEFT OUTER JOIN campaignformmeta formmeta ON cfmd.campaignformmeta_id = formmeta.id " 
+	        + "LEFT OUTER JOIN community commut1 ON cfmd.community_id = commut1.id " 
+	        + "LEFT OUTER JOIN District district1 ON cfmd.district_id = district1.id " 
+	        + "LEFT OUTER JOIN Region region1 ON cfmd.region_id = region1.id " 
+	        + "WHERE cfmd.archived = FALSE ";
+	    
+	    if (!uuid.isEmpty()) {
+	        queryString += "AND cfmd.uuid IN (?1) ";
+	    }
+	    
+	    queryString += "UNION ALL "
+	        + "SELECT cfmdh.uuid, "
+//	        + "CASE WHEN cfmdh.formvalues IS NOT NULL THEN cfmdh.formvalues ELSE '[]' END AS formvalues, " 
++ "COALESCE(CAST(cfmdh.formvalues AS TEXT), '[]') AS formvalues, "  // ✅ Ensure formvalues is always a STRING
+
+//	        + "cfmdh.formvalues, "
+	        + " cfmdh.campaign_id, cfmdh.campaignformmeta_id, cfmdh.region_id, "
+	        + "cfmdh.district_id, cfmdh.community_id, cfmdh.archived, cfmdh.formdate, cfmdh.creatinguser_id, cfmdh.formtype, cfmdh.recordversion,"
+	        + "cfmdh.source, cfmdh.ispublished, cfmdh.isverified, cfmdh.changedate "
+	        + "FROM campaignformdata_history cfmdh "
+	        + "LEFT OUTER JOIN campaigns camp2 ON cfmdh.campaign_id = camp2.id " 
+	        + "LEFT OUTER JOIN campaignformmeta formmeta2 ON cfmdh.campaignformmeta_id = formmeta2.id " 
+	        + "LEFT OUTER JOIN community commut2 ON cfmdh.community_id = commut2.id " 
+	        + "LEFT OUTER JOIN District district2 ON cfmdh.district_id = district2.id " 
+	        + "LEFT OUTER JOIN Region region2 ON cfmdh.region_id = region2.id " 
+	        + "WHERE cfmdh.changedate >= ?2 ";
+	    
+	    if (!uuid.isEmpty()) {
+	        queryString += "AND cfmdh.uuid IN (?1) ";
+	    }
+	    
+	    queryString += "ORDER BY changedate DESC";
+	    
+	    System.out.println("queryString----------" + queryString);
+	    
+	    Query nativeQuery = em.createNativeQuery(queryString);
+	    
+	    // Set the changeDate parameter
+	    nativeQuery.setParameter(2, new Timestamp(date.getTime()));
+	    
+	    // Set the uuidList parameter if not empty
+	    if (!uuid.isEmpty()) {
+	        nativeQuery.setParameter(1, uuid);
+	    }
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+	    List<Object[]> results = nativeQuery.getResultList();
+	    
+//		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+	    
+	    resultData.addAll(results.stream()
+	        .map(result -> {
+	        	
+	        	String formValuesJson = (String) result[1];
+	            List<CampaignFormDataEntry> formValues = new ArrayList<>();
+
+	            if (formValuesJson != null && !formValuesJson.trim().isEmpty()) {
+	                try {
+	                    formValues = objectMapper.readValue(
+	                        formValuesJson, 
+	                        new TypeReference<List<CampaignFormDataEntry>>() {}
+	                    );
+	                } catch (Exception e) {
+	                    System.err.println("Error parsing JSON for formValues: " + e.getMessage());
+	                }
+	            }
+//	            
+//	            
+//                String campaignFormValuesJson = (String) result[1];
+//                List<CampaignFormElement> campaignFormValues = new ArrayList<>();
+//                
+//                if (campaignFormValuesJson != null && !campaignFormValuesJson.trim().isEmpty()) {
+//                    try {
+//                    	campaignFormValues = objectMapper.readValue(
+//                    			campaignFormValuesJson, 
+//                            new TypeReference<List<CampaignFormElement>>() {}
+//                        );
+//                    } catch (Exception e) {
+////                        logger.error("Error parsing JSON for campaign form elements", e);
+//                    }
+//                }
+                
+	        	return new CampaignFormDataHistoryExtractDto(
+	            (String) result[0] != null ? (String) result[0] : "",
+//	            result[1] != null ? parseFormValues(result[1]) : new ArrayList<>(),
+	    	    (String) result[1] != null ? (String) result[1] : "",
+//	            		formValues,
+//	                    (String) result[1],
+
+	            result[2] != null ? ((BigInteger) result[2]).longValue() : 0L,
+	            result[3] != null ? ((BigInteger) result[3]).longValue() : 0L,
+	            result[4] != null ? ((BigInteger) result[4]).longValue() : 0L,
+	            result[5] != null ? ((BigInteger) result[5]).longValue() : 0L,
+	            result[6] != null ? ((BigInteger) result[6]).longValue() : 0L,
+	            result[7] != null ? (boolean) result[7] : true,  // archived
+	            (Date) result[8],
+	            result[9] != null ? ((BigInteger) result[9]).longValue() : 0L,
+	            result[10] != null ? (String) result[10] : "",  // formType
+	            (Integer) result[11],  // recordversion
+	            result[12] != null ?  (String) result[12] : "",  // source
+	            (boolean) result[13],  // ispublished
+	            (boolean) result[14],  // isverified
+	            (((Timestamp) result[15]).toLocalDateTime()) 
+	        );
+	        	}).collect(Collectors.toList()));
+	    
+	    return resultData;
+	}
+
+
+//	private List<CampaignFormDataEntry> parseFormValues(Object jsonData) {
+//	    try {
+//	        if (jsonData == null) {
+//	            return new ArrayList<>();
+//	        }
+//	        
+//	        String jsonString;
+//	        if (jsonData instanceof PGobject) {
+//	            jsonString = ((PGobject) jsonData).getValue();
+//	        } else {
+//	            jsonString = jsonData.toString();
+//	        }
+//	        
+//	        ObjectMapper mapper = new ObjectMapper();
+//	        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+//	        return mapper.readValue(jsonString, 
+//	                new TypeReference<List<CampaignFormDataEntry>>() {});
+//	    } catch (Exception e) {
+//	        e.printStackTrace();
+//	        return new ArrayList<>();
+//	    }
+//	}
+	
+	private List<CampaignFormDataEntry> parseFormValues(Object jsonData) {
+	    try {
+	        if (jsonData == null) {
+	            return new ArrayList<>();
+	        }
+	        
+	        String jsonString;// = jsonData.toString().trim();
+//	        String jsonString;
+	        if (jsonData instanceof PGobject) {
+	            jsonString = ((PGobject) jsonData).getValue();
+	        } else {
+	            jsonString = jsonData.toString();
+	        }
+	        
+	        // Handle empty or null strings
+	        if (jsonString.isEmpty() || "null".equals(jsonString)) {
+	            return new ArrayList<>();
+	        }
+	        
+	        ObjectMapper mapper = new ObjectMapper();
+	        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	        
+	        return mapper.readValue(jsonString, 
+	            new TypeReference<List<CampaignFormDataEntry>>() {});
+	    } catch (Exception e) {
+	        System.err.println("Error parsing form values: " + e.getMessage());
+	        e.printStackTrace();
+	        return new ArrayList<>();
+	    }
+	}
+	
+	
 	
 
 	@LocalBean
@@ -4047,6 +4379,15 @@ resultData.addAll(resultList.stream()
 		
 		
 	
+	}
+
+
+
+
+	@Override
+	public long getRecordCountByGroupUuid(String groupUuid) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 

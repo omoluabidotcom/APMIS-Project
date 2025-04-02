@@ -238,7 +238,6 @@ public class LoginActivity extends BaseLocalizedActivity implements ActivityComp
 						}
 					});
 				} else {
-					System.out.println(">>>>>>>>>trackkk no neeed to syn++++++++c>>>>>>2>>>>>>>>>>>>>>>"+ConfigProvider.getUser().getLanguage());
 
 					RetroProvider.disconnect();
 
@@ -253,6 +252,9 @@ public class LoginActivity extends BaseLocalizedActivity implements ActivityComp
 					}else{
 						setNewLocale(this, Language.EN);
 					}
+
+					System.out.println(">>>>>>>>>trackkk no neeed to syn++++++++c>>>>>>2>>>>>>>>>>>>>>>xxxxxx");
+
 					openLandingActivity();
 				}
 			} else {

@@ -95,11 +95,10 @@ public interface CampaignFormMetaFacade {
 	List<CampaignFormMetaReferenceDto> getCampaignFormByCampaignAndFormType(String campaignUuid, String formType);
 	
 	List<CampaignFormMetaHistoryExtractDto> getFormsMetaHistory(String formUuid);
-	
+
 	List<CampaignFormMetaReferenceDto> getAllCountries();
 	
 //	String getCountryCodeByName(String countryName);
-		
 //	void cloneForm(String uuid, String formVersionUuid , long newVersion);
 	
 	long getFormCountByUuid(String uuid);
@@ -112,6 +111,7 @@ public interface CampaignFormMetaFacade {
 //	List<CampaignFormMetaDto> getByUuidANdFormVersionUuids(List<String> uuids, List<String> formVersionsUuids);
 
 //	CampaignFormMetaDto getByUuidAndFormVersionUuid(String uuid, String formVersionUuid);
-
 	
-}
+	
+//	String getCountryCodeByName(String countryName);
+	}

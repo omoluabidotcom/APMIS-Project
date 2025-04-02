@@ -402,6 +402,8 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 						ConfigProvider.setInitialSyncRequired(true);
 						pullInfrastructure();
 					} else {
+						System.out.println("+++++++++++++222222 Handling pulled infra");
+
 						InfrastructureHelper.handlePulledInfrastructureData(infrastructureData);
 					}
 				}
@@ -428,7 +430,6 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 		//new FacilityDtoHelper().pullEntities(false);
 		//new PointOfEntryDtoHelper().pullEntities(false);
 		new UserDtoHelper().pullEntities(false);
-		new PopulationDataDtoHelper().pullEntities(false);
 
 		//new DiseaseClassificationDtoHelper().pullEntities(false);
 		//new DiseaseConfigurationDtoHelper().pullEntities(false);
@@ -456,9 +457,10 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			new CampaignFormMetaWithExpDtoHelper().pullEntities(false);
 			new CampaignDtoHelper().pullEntities(false);
 			new CampaignFormMetaRegionDtoHelper().pullEntities(false);
-
-
 		}
+
+		new PopulationDataDtoHelper().pullEntities(false);
+
 
 		ConfigProvider.setInitialSyncRequired(false);
 	}
@@ -705,7 +707,7 @@ if (1 == 3) {
 
 		//population data
 		List<String> populationDataUuids =  executeUuidCall(RetroProvider.getPopulationDataFacade().pullUuids());
-//		DatabaseHelper.getPopulationDataDao().deleteInvalid(populationDataUuids);
+		DatabaseHelper.getPopulationDataDao().deleteInvalid(populationDataUuids);
 		// countries
 	//	List<String> countryUuids = executeUuidCall(RetroProvider.getCountryFacade().pullUuids());
 	//	DatabaseHelper.getCountryDao().deleteInvalid(countryUuids);
@@ -737,8 +739,6 @@ if (1 == 3) {
 		new UserDtoHelper().pullMissing(userUuids);
 	//	new DiseaseConfigurationDtoHelper().pullMissing(diseaseConfigurationUuids);
 	//	new CustomizableEnumValueDtoHelper().pullMissing(customizableEnumValueUuids);
-		new PopulationDataDtoHelper().pullMissing(populationDataUuids);
-		new CampaignFormMetaRegionDtoHelper().pullMissing(populationDataUuids);
 
 
 		new FeatureConfigurationDtoHelper().pullMissing(featureConfigurationUuids);
@@ -759,6 +759,10 @@ if (1 == 3) {
 //			new CampaignFormMetaWithExpDtoHelper().pullMissing(campaignFormMetaUuids);
 
 			new CampaignDtoHelper().pullMissing(campaignUuids);
+
+			new PopulationDataDtoHelper().pullMissing(populationDataUuids);
+			new CampaignFormMetaRegionDtoHelper().pullMissing(populationDataUuids);
+
 		}
 	}
 

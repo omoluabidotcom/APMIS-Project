@@ -108,6 +108,9 @@ public class CampaignFormData extends PseudonymizableAdo {
     @Column(name = "lotno")
     private String lotNo;
 
+    @Column(name = "recordversion")
+    private Long recordversion;
+
     /**
      * JsonRawValue annotation is used to handle this differently when merging data
      */
@@ -252,6 +255,14 @@ public class CampaignFormData extends PseudonymizableAdo {
         this.lotNo = lotNo;
     }
 
+    public Long getRecordversion() {
+        return recordversion;
+    }
+
+    public void setRecordversion(Long recordversion) {
+        this.recordversion = recordversion;
+    }
+
     //    public String getFormCategory() {
 //        return campaignFormMeta.getFormCategory();
 //    }
@@ -262,6 +273,7 @@ public class CampaignFormData extends PseudonymizableAdo {
         }
         this.formCategory = formCategory;
     }
+
 
     @Override
     public String getI18nPrefix() {

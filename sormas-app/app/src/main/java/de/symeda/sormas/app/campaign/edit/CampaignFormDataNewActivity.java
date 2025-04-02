@@ -112,6 +112,7 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         criteria.setCommunity(campaignFormDataToSave.getCommunity());
         List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteria(criteria, 0, 100);
 
+        campaignFormDataToSave.setRecordversion(1L);
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
 
         if(ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)){ // District Officer
