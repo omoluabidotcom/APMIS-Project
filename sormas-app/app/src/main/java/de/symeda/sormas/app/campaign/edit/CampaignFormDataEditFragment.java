@@ -21,6 +21,7 @@ package de.symeda.sormas.app.campaign.edit;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -1116,7 +1117,12 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     } else if (type == CampaignFormElementType.DATE) {
                         dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                         ControlDateField.setValue((ControlDateField) dynamicField, getDateValue(value));
-                    } else {
+                    }
+//                    else if (type == CampaignFormElementType.EMAIL) {
+//                        dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
+//                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
+//                    }
+                    else {
                         dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
                         ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                     }
@@ -1149,6 +1155,21 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
 
+                            }
+                        });
+                    }
+
+                    if (type == CampaignFormElementType.EMAIL && campaignFormElement.getId().equalsIgnoreCase("email")) {
+//                        initialLotNo = formValuesMap.get(campaignFormElement.getId());
+//                        lotChangedValue = formValuesMap.get(campaignFormElement.getId());
+                        dynamicField.addValueChangedListener(field -> {
+                            String email = field.getValue() != null ? field.getValue().toString().trim() : "";
+
+                            if (!email.isEmpty() && !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                                field.setTooltipText("Error : Enter a valid email address.");
+                                // Display validation error if email is invalid
+//                                Notification.show("Invalid email address. Please enter a valid email.", 3000, Notification.Position.MIDDLE);
+//                                field.clear(); // Optionally clear the invalid input
                             }
                         });
                     }

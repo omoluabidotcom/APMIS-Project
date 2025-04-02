@@ -171,7 +171,10 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
     public void goToNewView() {
 
         final CampaignFormDataCriteria criteria = model.getCriteria();
-        List<PopulationData> list = DatabaseHelper.getPopulationDataDao().getSelectedDistrictByUsersDistrict(ConfigProvider.getUser().getDistrict().getUuid(), criteria.getCampaign().getUuid());
+        List<PopulationData> list = new ArrayList<>();
+
+        System.out.println("listlist before ---- " + list);
+        list = DatabaseHelper.getPopulationDataDao().getSelectedDistrictByUsersDistrict(ConfigProvider.getUser().getDistrict().getUuid(), criteria.getCampaign().getUuid());
 
         if(list.size() > 0 ){
             final CampaignFormMetaDialog campaignFormMetaDialog = new CampaignFormMetaDialog(BaseActivity.getActiveActivity(), criteria.getCampaign());
@@ -232,12 +235,16 @@ showCustomDialog(
         List<Item> campaigns = campaignsToItems(DatabaseHelper.getCampaignDao().getAllActive());
         filterBinding.campaignFilter.initializeSpinner(campaigns);
         filterBinding.campaignFilter.addValueChangedListener(e -> {
-            Campaign campaign = (Campaign) e.getValue();
+            Campaign campaign = new Campaign();
+            campaign =  (Campaign) e.getValue();
             if (campaign != null) {
                 if(campaign.getCampaignFormMetas() != null){
-                    List<Item> forms = campaignFormMetasToItems(campaign.getCampaignFormMetas());
+                    List<Item> forms = new ArrayList<Item>();
 
-                     System.out.println("-----------------------"+forms);
+
+                    campaignFormMetasToItems(campaign.getCampaignFormMetas());
+
+                     System.out.println("--------cccccbb---------------"+forms);
 
                     forms.stream().filter(ee -> ee.getValue() != null)
                             .sorted(Comparator.comparing(item -> ((CampaignFormMeta)item.getValue()).getFormName()))

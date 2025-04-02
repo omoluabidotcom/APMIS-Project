@@ -81,7 +81,6 @@ public class CampaignFormMetaResource extends EntityDtoResource {
 			return finalList;
 		}
 		
-//		return FacadeProvider.getCampaignFormMetaFacade().getAllUuids();
 	}
 	
 	@GET
@@ -93,7 +92,7 @@ public class CampaignFormMetaResource extends EntityDtoResource {
 	
 	@GET
 	@Path("/getFormMetaHistory")
-	public List<CampaignFormMetaHistoryExtractDto> getFormsMetaHistory(@QueryParam("getFormMetaHistory") String formUuid) {
+	public List<CampaignFormMetaHistoryExtractDto> getFormsMetaHistory(@QueryParam("getFormMetaHistoryByUuid") String formUuid) {
 		return FacadeProvider.getCampaignFormMetaFacade().getFormsMetaHistory(formUuid);
 	}
 }

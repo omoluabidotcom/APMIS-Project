@@ -214,20 +214,60 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 					unsavedClusterEditWarninig.open();
 					unsavedClusterEditWarninig.addConfirmListener(ee -> unsavedClusterEditWarninig.close());
 			}else {
-				if (campaignFormBuilder.saveFormValues()) {
+				if (openData) {
+					
+					System.out.println("OPEN DATA EXISTING ");
+					
+					if (campaignFormBuilder.saveFormValues()) {
 
-					if (openData) {
-						UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
-						userActivitySummaryDto.setActionModule("Campaign Data");
-						userActivitySummaryDto.setAction("Edited Data: " + campaignFormMetaDto.getFormName() + " in "
-								+ campaignReferenceDto.getCaption());
-						userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
-						FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
+						if (openData) {
+							UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
+							userActivitySummaryDto.setActionModule("Campaign Data");
+							userActivitySummaryDto.setAction("Edited Data: " + campaignFormMetaDto.getFormName() + " in "
+									+ campaignReferenceDto.getCaption());
+							userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
+							FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
+						}
+
+						dialog.close();
+						grid.getDataProvider().refreshAll();
+					}
+					
+				}else {
+					
+					System.out.println("Newwwwww DATA -------------------- ");
+					
+					if (campaignFormBuilder.saveFormValues()) {
+
+//						if (openData) {
+							UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
+							userActivitySummaryDto.setActionModule("Campaign Data");
+							userActivitySummaryDto.setAction("Submited Data: " + campaignFormMetaDto.getFormName() + " in "
+									+ campaignReferenceDto.getCaption());
+							userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
+							FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
+//						}
+
+						dialog.close();
+						grid.getDataProvider().refreshAll();
 					}
 
-					dialog.close();
-					grid.getDataProvider().refreshAll();
+					
 				}
+//				if (campaignFormBuilder.saveFormValues()) {
+//
+//					if (openData) {
+//						UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
+//						userActivitySummaryDto.setActionModule("Campaign Data");
+//						userActivitySummaryDto.setAction("Edited Data: " + campaignFormMetaDto.getFormName() + " in "
+//								+ campaignReferenceDto.getCaption());
+//						userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
+//						FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
+//					}
+//
+//					dialog.close();
+//					grid.getDataProvider().refreshAll();
+//				}
 			}
 
 			// showConfirmationDialog();

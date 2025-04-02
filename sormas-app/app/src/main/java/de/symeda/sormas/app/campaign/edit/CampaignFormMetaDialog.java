@@ -82,7 +82,10 @@ public class CampaignFormMetaDialog extends FormDialog {
     @Override
     protected void initializeContentView(ViewDataBinding rootBinding, ViewDataBinding buttonPanelBinding) {
 
-        List<CampaignFormMeta> allFormsForCampaign = campaign.getCampaignFormMetas();
+        List<CampaignFormMeta> allFormsForCampaign =new ArrayList<CampaignFormMeta>();
+        allFormsForCampaign =  campaign.getCampaignFormMetas();
+
+        System.out.println("allFormsForCampaign----" + allFormsForCampaign);
 
         List<CampaignFormMeta> allUnexpiredFormsForCampaign = new ArrayList<>();
 
@@ -93,29 +96,28 @@ public class CampaignFormMetaDialog extends FormDialog {
             LocalDate currentDate = LocalDate.now();
 
             if (expiryDate != null) {
-
 //                System.out.println("uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuyyyyyytt");
             LocalDate expiryLocalDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                 if (currentDate.isBefore(expiryLocalDate) || expiryLocalDate.isEqual(currentDate)) {
                     User user = ConfigProvider.getUser();
 
-//                    System.out.println("xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuyyyyyytt");
-
-                    // After Checking if the form meets the expiry criteria the we want to check if the form is added fro this region before we add
-                    //the form to the list to be presented in the forms dialog ;
+//System.out.println("xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuyyyyyytt");
+// After Checking if the form meets the expiry criteria the we want to check if the form is added fro this region before we add
+//the form to the list to be presented in the forms dialog ;
                     List<CampaignFormMetaRegion> formsSelectedForCampaign = DatabaseHelper.getCampaignFormMetaRegionDao().getSelectedFormsByRegion(campaignFormMeta.getUuid(), user.getRegion().getArea().getUuid());
                     System.out.println(formsSelectedForCampaign + "formsSelectedForCampaignformsSelectedForCampaignformsSelectedForCampaign" +campaignFormMeta.getUuid() + "campaignFormMeta.getUuid()," +  user.getRegion().getArea().getUuid());
                     if(formsSelectedForCampaign.size() > 0){
 
                         allUnexpiredFormsForCampaign.add(campaignFormMeta);
                     }
-//                // expiryDate is before currentDate or equals tob the current date itshold be added to my new list
+// expiryDate is before currentDate or equals tob the current date itshold be added to my new list
             }  else {
-                // expiryDate is after currentDate
-//                    System.out.println("This form has Expired Dte is " + expiryLocalDate + " current date is " + currentDate);
-//                    System.out.println("This form has Expired For Data Entry " + campaignFormMeta.getFormName());
+//expiryDate is after currentDate
+//System.out.println("This form has Expired Dte is " + expiryLocalDate + " current date is " + currentDate);
+//System.out.println("This form has Expired For Data Entry " + campaignFormMeta.getFormName());
             }
             } else {
+
                 System.out.println("This form does not have an expiry date set  " + campaignFormMeta.getFormName());
 
             }
