@@ -176,20 +176,13 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
         System.out.println("listlist before ---- " + list);
         list = DatabaseHelper.getPopulationDataDao().getSelectedDistrictByUsersDistrict(ConfigProvider.getUser().getDistrict().getUuid(), criteria.getCampaign().getUuid());
 
-
-        System.out.println("listlist after ---- " + list);
-
         if(list.size() > 0 ){
-            System.out.println("listlist size greter than 0  ---- " + list);
-
             final CampaignFormMetaDialog campaignFormMetaDialog = new CampaignFormMetaDialog(BaseActivity.getActiveActivity(), criteria.getCampaign());
             campaignFormMetaDialog.setPositiveCallback(() ->{
                 CampaignFormDataNewActivity.startActivity(getContext(), criteria.getCampaign().getUuid(), campaignFormMetaDialog.getCampaignFormMeta().getUuid());});
             campaignFormMetaDialog.show();
             campaignFormMetaDialog.setLiveValidationDisabled(true);
         }else{
-            System.out.println("listlist is not size greter than 0  ---- " + list);
-
             showCustomDialog(this,
                     "Data Entry Error",
                     "Users distcrict is not selected for data entry in this campaign.");
@@ -248,7 +241,6 @@ showCustomDialog(
                 if(campaign.getCampaignFormMetas() != null){
                     List<Item> forms = new ArrayList<Item>();
 
-                    System.out.println("--------cccccbb---------------"+forms);
 
                     campaignFormMetasToItems(campaign.getCampaignFormMetas());
 
