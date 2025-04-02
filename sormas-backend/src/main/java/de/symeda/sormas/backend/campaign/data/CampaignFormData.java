@@ -68,7 +68,6 @@ public class CampaignFormData extends AbstractDomainObject{
 	public static final String CREATED_BY = "creatingUser";
 	public static final String ISVERIFIED = "isverified";
 	public static final String ISPUBLISHED = "ispublished";
-	public static final String RECORDGROUPUUID = "recordgroupuuid";
 	public static final String RECORDVERSION = "recordversion";
 	
 
@@ -91,7 +90,6 @@ public class CampaignFormData extends AbstractDomainObject{
 	private boolean ispublished;
 	private User  creatinguser_id;
 	
-	private String recordgroupuuid;
 	private Long recordversion;
 	//private CampaignFormMeta formType;
 
@@ -213,16 +211,6 @@ public class CampaignFormData extends AbstractDomainObject{
 
 	public void setSource(String source) {
 		this.source = source;
-	}
-	
-	
-	@Column
-	public String getRecordgroupuuid() {
-		return recordgroupuuid;
-	}
-
-	public void setRecordgroupuuid(String recordgroupuuid) {
-		this.recordgroupuuid = recordgroupuuid;
 	}
 	
 	@Column

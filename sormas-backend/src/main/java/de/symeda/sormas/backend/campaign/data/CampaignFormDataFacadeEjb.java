@@ -199,7 +199,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 		target.setCommunity(communityService.getByReferenceDto(source.getCommunity()));
 		target.setCreatingUser(userService.getByReferenceDto(source.getCreatingUser()));
 		target.setSource(source.getSource());
-		target.setRecordgroupuuid(source.getRecordgroupuuid());
+//		target.setRecordgroupuuid(source.getRecordgroupuuid());
 		target.setRecordversion(source.getRecordversion());
 
 		return target;
@@ -223,7 +223,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 		target.setCommunity(CommunityFacadeEjb.toReferenceDto(source.getCommunity()));
 		target.setCreatingUser(UserFacadeEjb.toReferenceDto(source.getCreatingUser()));
 		target.setSource(source.getSource());
-		target.setRecordgroupuuid(source.getRecordgroupuuid());
+//		target.setRecordgroupuuid(source.getRecordgroupuuid());
 		target.setRecordversion(source.getRecordversion());
 
 		return target;
@@ -250,7 +250,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 		target.setArchived(source.isArchived());
 		target.setIspublished(source.isIspublished());
 		target.setIsverified(source.isIsverified());
-		target.setRecordgroupuuid(source.getRecordgroupuuid());
+//		target.setRecordgroupuuid(source.getRecordgroupuuid());
 		target.setRecordversion(source.getRecordversion());
 
 
@@ -360,7 +360,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 				districtJoin.get(District.EXTERNAL_ID), communityJoin.get(Community.NAME),
 				communityJoin.get(Community.CLUSTER_NUMBER), communityJoin.get(Community.EXTERNAL_ID),
 				root.get(CampaignFormData.FORM_DATE), campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
-				root.get(CampaignFormData.SOURCE), root.get(CampaignFormData.RECORDGROUPUUID), root.get(CampaignFormData.RECORDVERSION), userJoin.get(User.USER_NAME));
+				root.get(CampaignFormData.SOURCE), root.get(CampaignFormData.RECORDVERSION), userJoin.get(User.USER_NAME));
 
 		cq.where(cb.and(cb.equal(userJoin.get(User.USER_NAME), creatingUser)));
 		return em.createQuery(cq).getResultList();
@@ -418,7 +418,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 				districtJoin.get(District.EXTERNAL_ID), communityJoin.get(Community.NAME),
 				communityJoin.get(Community.CLUSTER_NUMBER), communityJoin.get(Community.EXTERNAL_ID),
 				root.get(CampaignFormData.FORM_DATE), campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
-				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME), root.get(CampaignFormData.RECORDGROUPUUID), root.get(CampaignFormData.RECORDVERSION));
+				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME), root.get(CampaignFormData.RECORDVERSION));
 
 		cq.where(cb.and(cb.equal(campaignJoin.get(Campaign.UUID), campaignid),
 				cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignformmetaid),
@@ -498,7 +498,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 				communityJoin.get(Community.CLUSTER_NUMBER), communityJoin.get(Community.EXTERNAL_ID),
 				root.get(CampaignFormData.FORM_DATE), campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
 				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME), root.get(CampaignFormData.ISVERIFIED),
-				root.get(CampaignFormData.ISPUBLISHED), root.get(CampaignFormData.RECORDGROUPUUID), root.get(CampaignFormData.RECORDVERSION));
+				root.get(CampaignFormData.ISPUBLISHED),  root.get(CampaignFormData.RECORDVERSION));
 
 		Predicate filter = CriteriaBuilderHelper.and(cb,
 				campaignFormDataService.createCriteriaFilter(criteria, cb, root),
@@ -624,7 +624,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 				districtJoin.get(District.EXTERNAL_ID), communityJoin.get(Community.NAME),
 				communityJoin.get(Community.CLUSTER_NUMBER), communityJoin.get(Community.EXTERNAL_ID),
 				root.get(CampaignFormData.FORM_DATE), campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
-				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME), root.get(CampaignFormData.RECORDGROUPUUID), root.get(CampaignFormData.RECORDVERSION));
+				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME),  root.get(CampaignFormData.RECORDVERSION));
 
 		Predicate filter = CriteriaBuilderHelper.and(cb,
 				campaignFormDataService.createCriteriaFilter(criteria, cb, root),
@@ -721,7 +721,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 				districtJoin.get(District.EXTERNAL_ID), communityJoin.get(Community.NAME),
 				communityJoin.get(Community.CLUSTER_NUMBER), communityJoin.get(Community.EXTERNAL_ID),
 				root.get(CampaignFormData.FORM_DATE), campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
-				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME) , root.get(CampaignFormData.RECORDGROUPUUID), root.get(CampaignFormData.RECORDVERSION));
+				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME), root.get(CampaignFormData.RECORDVERSION));
 
 		Predicate filter = CriteriaBuilderHelper.and(cb,
 				campaignFormDataService.createCriteriaFilter(criteria, cb, root),
@@ -4059,18 +4059,18 @@ resultData.addAll(resultList.stream()
 		
 	}
 	
-	@Override
-	public long getRecordCountByGroupUuid(String groupUuid) {
-		// TODO Auto-generated method stub
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
-		Root<CampaignFormData> root = cq.from(CampaignFormData.class);		
-	    cq.select(cb.count(root)).where(cb.equal(root.get(CampaignFormData.RECORDGROUPUUID), groupUuid));
-	    
-		return em.createQuery(cq).getSingleResult();
-
-	
-	}
+//	@Override
+//	public long getRecordCountByGroupUuid(String groupUuid) {
+//		// TODO Auto-generated method stub
+//		CriteriaBuilder cb = em.getCriteriaBuilder();
+//		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+//		Root<CampaignFormData> root = cq.from(CampaignFormData.class);		
+//	    cq.select(cb.count(root)).where(cb.equal(root.get(CampaignFormData.RECORDGROUPUUID), groupUuid));
+//	    
+//		return em.createQuery(cq).getSingleResult();
+//
+//	
+//	}
 	
 	
 //	@Override
@@ -4197,7 +4197,7 @@ resultData.addAll(resultList.stream()
 //	    		+ "cfmd.formvalues, "
 	    		+ "cfmd.campaign_id, cfmd.campaignformmeta_id, cfmd.region_id, "
 	        + "cfmd.district_id, cfmd.community_id, cfmd.archived, cfmd.formdate, cfmd.creatinguser_id, cfmd.formtype, cfmd.recordversion,"
-	        + "cfmd.source, cfmd.ispublished, cfmd.isverified, cfmd.recordgroupuuid, cfmd.changedate "
+	        + "cfmd.source, cfmd.ispublished, cfmd.isverified, cfmd.changedate "
 	        + "FROM campaignformdata cfmd "
 	        + "LEFT OUTER JOIN campaigns camp1 ON cfmd.campaign_id = camp1.id " 
 	        + "LEFT OUTER JOIN campaignformmeta formmeta ON cfmd.campaignformmeta_id = formmeta.id " 
@@ -4218,7 +4218,7 @@ resultData.addAll(resultList.stream()
 //	        + "cfmdh.formvalues, "
 	        + " cfmdh.campaign_id, cfmdh.campaignformmeta_id, cfmdh.region_id, "
 	        + "cfmdh.district_id, cfmdh.community_id, cfmdh.archived, cfmdh.formdate, cfmdh.creatinguser_id, cfmdh.formtype, cfmdh.recordversion,"
-	        + "cfmdh.source, cfmdh.ispublished, cfmdh.isverified, cfmdh.recordgroupuuid, cfmdh.changedate "
+	        + "cfmdh.source, cfmdh.ispublished, cfmdh.isverified, cfmdh.changedate "
 	        + "FROM campaignformdata_history cfmdh "
 	        + "LEFT OUTER JOIN campaigns camp2 ON cfmdh.campaign_id = camp2.id " 
 	        + "LEFT OUTER JOIN campaignformmeta formmeta2 ON cfmdh.campaignformmeta_id = formmeta2.id " 
@@ -4304,8 +4304,7 @@ resultData.addAll(resultList.stream()
 	            result[12] != null ?  (String) result[12] : "",  // source
 	            (boolean) result[13],  // ispublished
 	            (boolean) result[14],  // isverified
-	            result[15] != null ? (String) result[15] : "",  // recordgroupuuid
-	            (((Timestamp) result[16]).toLocalDateTime()) 
+	            (((Timestamp) result[15]).toLocalDateTime()) 
 	        );
 	        	}).collect(Collectors.toList()));
 	    
@@ -4380,6 +4379,15 @@ resultData.addAll(resultList.stream()
 		
 		
 	
+	}
+
+
+
+
+	@Override
+	public long getRecordCountByGroupUuid(String groupUuid) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 

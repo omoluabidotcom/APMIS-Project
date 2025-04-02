@@ -77,7 +77,6 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 
 	private String formType;
 	private Integer recordversion;
-	private String recordgroupuuid;
 
 //	private String formCategory;
 	private String source;
@@ -94,7 +93,7 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 			Long campaign, Long campaignFormMeta,
 //			AreaReferenceDto area,
 			Long region, Long district, Long community, boolean archived,
-			Date formDate, Long creatingUser, String formType, Integer recordversion,  String source, boolean ispublished, boolean isverified, String recordgroupuuid, LocalDateTime changedate) {
+			Date formDate, Long creatingUser, String formType, Integer recordversion,  String source, boolean ispublished, boolean isverified, LocalDateTime changedate) {
 		super();
 		this.uuid = uuid;
 		this.formValues = formValuesString;
@@ -113,7 +112,6 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 		this.source = source;
 		this.ispublished = ispublished;
 		this.isverified = isverified;
-		this.recordgroupuuid = recordgroupuuid;
 		this.changedate = changedate;
 		
 				
@@ -124,7 +122,7 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 			Long campaign, Long campaignFormMeta,
 //			AreaReferenceDto area,
 			Long region, Long district, Long community, boolean archived,
-			Date formDate, Long creatingUser, String formType, Integer recordversion,  String source, boolean ispublished, boolean isverified, String recordgroupuuid, LocalDateTime changedate) {
+			Date formDate, Long creatingUser, String formType, Integer recordversion,  String source, boolean ispublished, boolean isverified, LocalDateTime changedate) {
 		super();
 		this.uuid = uuid;
 //		this.formValuesString = formValuesString;
@@ -143,7 +141,6 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 		this.source = source;
 		this.ispublished = ispublished;
 		this.isverified = isverified;
-		this.recordgroupuuid = recordgroupuuid;
 		this.changedate = changedate;
 		
 		// JSON conversion for campaignFormElements
@@ -358,15 +355,6 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 	}
 
 
-	public String getRecordgroupuuid() {
-		return recordgroupuuid;
-	}
-
-
-	public void setRecordgroupuuid(String recordgroupuuid) {
-		this.recordgroupuuid = recordgroupuuid;
-	}
-
 
 	public String getSource() {
 		return source;
@@ -415,7 +403,7 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 		result = prime * result + Objects.hash(archived, area, areaLong, campaign, campaignFormMeta,
 				campaignFormMetaLong, campaignLong, changedate, community, communityLong, creatingUser,
 				creatingUserLong, district, districtLong, formDate, formType, formValues, formValuesString, ispublished,
-				isverified, recordgroupuuid, recordversion, region, regionLong, source, uuid);
+				isverified,  recordversion, region, regionLong, source, uuid);
 		return result;
 	}
 
@@ -440,7 +428,7 @@ public class CampaignFormDataHistoryExtractDto extends EntityDto {
 				&& Objects.equals(districtLong, other.districtLong) && Objects.equals(formDate, other.formDate)
 				&& Objects.equals(formType, other.formType) && Objects.equals(formValues, other.formValues)
 				&& Objects.equals(formValuesString, other.formValuesString) && ispublished == other.ispublished
-				&& isverified == other.isverified && Objects.equals(recordgroupuuid, other.recordgroupuuid)
+				&& isverified == other.isverified
 				&& Objects.equals(recordversion, other.recordversion) && Objects.equals(region, other.region)
 				&& Objects.equals(regionLong, other.regionLong) && Objects.equals(source, other.source)
 				&& Objects.equals(uuid, other.uuid);
