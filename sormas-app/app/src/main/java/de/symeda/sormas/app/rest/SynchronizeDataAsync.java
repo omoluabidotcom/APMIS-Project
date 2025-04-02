@@ -402,6 +402,8 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 						ConfigProvider.setInitialSyncRequired(true);
 						pullInfrastructure();
 					} else {
+						System.out.println("+++++++++++++222222 Handling pulled infra");
+
 						InfrastructureHelper.handlePulledInfrastructureData(infrastructureData);
 					}
 				}
@@ -737,8 +739,6 @@ if (1 == 3) {
 		new UserDtoHelper().pullMissing(userUuids);
 	//	new DiseaseConfigurationDtoHelper().pullMissing(diseaseConfigurationUuids);
 	//	new CustomizableEnumValueDtoHelper().pullMissing(customizableEnumValueUuids);
-		new PopulationDataDtoHelper().pullMissing(populationDataUuids);
-		new CampaignFormMetaRegionDtoHelper().pullMissing(populationDataUuids);
 
 
 		new FeatureConfigurationDtoHelper().pullMissing(featureConfigurationUuids);
@@ -759,6 +759,10 @@ if (1 == 3) {
 //			new CampaignFormMetaWithExpDtoHelper().pullMissing(campaignFormMetaUuids);
 
 			new CampaignDtoHelper().pullMissing(campaignUuids);
+
+			new PopulationDataDtoHelper().pullMissing(populationDataUuids);
+			new CampaignFormMetaRegionDtoHelper().pullMissing(populationDataUuids);
+
 		}
 	}
 
