@@ -1,5 +1,6 @@
 package de.symeda.sormas.rest;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -10,11 +11,14 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.PushResult;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
+import de.symeda.sormas.api.campaign.data.CampaignFormDataHistoryExtractDto;
+import de.symeda.sormas.api.infrastructure.area.AreaHistoryExtractDto;
 
 @Path("/campaignFormData")
 @Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
@@ -46,5 +50,14 @@ public class CampaignFormDataResource extends EntityDtoResource {
 	@Path("/uuids")
 	public List<String> getAllUuids() {
 		return FacadeProvider.getCampaignFormDataFacade().getAllActiveUuids();
+	}
+	
+	@GET
+	@Path("/formDataHistory/{since}")
+	public List<CampaignFormDataHistoryExtractDto> getRecordsHistory(@PathParam("since") long since, @QueryParam("getRecordHistory") List<String> uuid) {
+		System.out.println(uuid + "UUUID from area resource");
+		List<CampaignFormDataHistoryExtractDto> ref = new ArrayList<CampaignFormDataHistoryExtractDto>();
+//		return ref;
+		return FacadeProvider.getCampaignFormDataFacade().getAllActiveAfter(new Date(since), uuid);
 	}
 }

@@ -37,14 +37,20 @@ import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.SpelMessage;
 
 import android.content.Context;
+import android.text.InputType;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentFactory;
 import androidx.fragment.app.FragmentManager;
+
+import com.google.api.Distribution;
 
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
@@ -52,6 +58,7 @@ import de.symeda.sormas.api.campaign.form.CampaignFormElementType;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.utils.YesNoUnknown;
+import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.component.controls.ControlCheckBoxField;
 import de.symeda.sormas.app.component.controls.ControlDateField;
@@ -60,6 +67,8 @@ import de.symeda.sormas.app.component.controls.ControlSpinnerField;
 import de.symeda.sormas.app.component.controls.ControlSwitchField;
 import de.symeda.sormas.app.component.controls.ControlTextEditField;
 import de.symeda.sormas.app.component.controls.ControlTextReadField;
+import de.symeda.sormas.app.component.controls.ControlTimeField;
+import de.symeda.sormas.app.component.controls.ValueChangeListener;
 import de.symeda.sormas.app.util.YesNo;
 
 public class CampaignFormDataFragmentUtils {
@@ -192,12 +201,9 @@ public class CampaignFormDataFragmentUtils {
                         if (type == CampaignFormElementType.YES_NO) {
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, expressionValue, true, YesNo.class, null);
                         } else if (type == CampaignFormElementType.RANGE) {
-                            System.out.println("+++++++++++111111+++++++++++++++++ " + valuex);
                             String valudex = valuex.equals("0") ? null : valuex.endsWith(".0") ? valuex.replace(".0", "") : valuex;
-                            System.out.println("++++++++++++22222222++++++++++++++++ " + valudex);
                             if (valudex != null) {
                                 if (!valudex.isEmpty()) {
-                                    System.out.println("++++++++++++333333333++++++++++++++++ " + valudex);
                                     ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex.replace(".0",""));
                                 }
                             }
@@ -209,28 +215,7 @@ public class CampaignFormDataFragmentUtils {
                         } else {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue == null ? null : expressionValue.toString());
                         }
-
-                        //  if (type == CampaignFormElementType.RANGE) {
-
-                        //  } else {
-                        //     dynamicField.setEnabled(isDisIgnore);
-                        // }
                     }
-                    // Segun alleged Fix
-//                    else{
-//                        System.out.println(dynamicField.getCaption() + "EXPRESSION VALUE IS NOT NULLLLLLLLLLLLLLL+++++++++++111111+++++++++++++++++ " + valuex);
-//                        if (type == CampaignFormElementType.RANGE) {
-//                            System.out.println("+++++++++++111111+++++++++++++++++ " + valuex);
-//                            String valudex = valuex.equals("0") ? null : valuex.endsWith(".0") ? valuex.replace(".0", "") : valuex;
-//                            System.out.println("++++++++++++22222222++++++++++++++++ " + valudex);
-//                            if (valudex != null) {
-//                                if (!valudex.isEmpty()) {
-//                                    System.out.println("++++++++++++333333333++++++++++++++++ " + valudex);
-//                                    ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex);
-//                                }
-//                            }
-//                        }
-//                    }
 
 
                 }
@@ -278,6 +263,43 @@ public class CampaignFormDataFragmentUtils {
     }
 
 
+    public static void handleDependingOnSectionAndLabel(
+            Map<String, ControlPropertyField> fieldMap,
+            CampaignFormElement campaignFormElement,
+            LinearLayout dynamicField) {
+        final String dependingOn = campaignFormElement.getDependingOn();
+        final String[] dependingOnValues = campaignFormElement.getDependingOnValues();
+
+        List<String> constraints;
+        String depenValuexd = null;
+        if (dependingOnValues != null) {
+            constraints = (List) Arrays.stream(dependingOnValues).collect(Collectors.toList());
+            ListIterator<String> lstItemsx = constraints.listIterator();
+            if (lstItemsx.hasNext()) {
+                System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@1111>>>>>>>> "+lstItemsx);
+
+                depenValuexd = lstItemsx.next().toString();
+            }
+        }
+
+        System.out.println(dependingOn + "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22222>>>>>>>> "+depenValuexd);
+
+        final String depenValuex = depenValuexd;
+
+        if (dependingOn != null && depenValuex != null) {
+
+            System.out.println(dependingOn + "111111Not nulll @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22222>>>>>>>> "+depenValuexd);
+
+            ControlPropertyField controlPropertyField = fieldMap.get(dependingOn);
+
+            System.out.println(controlPropertyField + "111111------- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22222>>>>>>>> "+controlPropertyField.getValue());
+
+            setVisibilityDependencyForSectionAndLabel(dynamicField, depenValuex, controlPropertyField.getValue());
+        };
+    }
+
+
+
     public static void handleDependingOn(
             Map<String, ControlPropertyField> fieldMap,
             CampaignFormElement campaignFormElement,
@@ -312,6 +334,34 @@ public class CampaignFormDataFragmentUtils {
             };
         }
 
+
+    public static void setVisibilityDependencyForSectionAndLabel(LinearLayout field, String dependingOnValues, Object dependingOnFieldValue) {
+        System.out.println(dependingOnValues+ " = static   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> dynamic = "+dependingOnFieldValue);
+
+        String parsedDependingOnFieldValue = dependingOnFieldValue == null
+                ? ""
+                : dependingOnFieldValue instanceof Boolean
+                ? YesNoUnknown.valueOf(((Boolean) dependingOnFieldValue).booleanValue()).name()
+                : dependingOnFieldValue.toString().equalsIgnoreCase("Yes") ? "true" : dependingOnFieldValue.toString().equalsIgnoreCase("No") ? "false" : dependingOnFieldValue.toString();
+
+        System.out.println(" = dddddddddddddddddddddddddddddddd   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> dynamic = " + parsedDependingOnFieldValue);
+        if (dependingOnValues.contains("!")) {
+            dependingOnValues = dependingOnValues.replace("!", "");
+            if (dependingOnValues.contains(parsedDependingOnFieldValue)) {
+                field.setVisibility(View.GONE);
+              } else {
+                field.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (dependingOnValues.equalsIgnoreCase(parsedDependingOnFieldValue)) {
+                System.out.println(parsedDependingOnFieldValue+ " VISIBLE   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> "+dependingOnFieldValue);
+                field.setVisibility(View.VISIBLE);
+            } else {
+                System.out.println(parsedDependingOnFieldValue+ " GONE   "+"   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> "+dependingOnFieldValue);
+                field.setVisibility(View.GONE);
+            }
+        }
+    }
 
     public static void setVisibilityDependency(ControlPropertyField field, String dependingOnValues, Object dependingOnFieldValue) {
         System.out.println(dependingOnValues+ " = static   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> dynamic = "+dependingOnFieldValue);
@@ -452,6 +502,63 @@ public class CampaignFormDataFragmentUtils {
             }
         };
     }
+
+
+    public static ControlTextEditField createControlTextEditFieldWithErrorMessage(
+            CampaignFormElement campaignFormElement,
+            Context context,
+            Map<String, String> userTranslations,
+            Boolean isIntegerField,
+            Boolean isRequired,
+            String errorMsg) {
+        return new ControlTextEditField(context) {
+
+            @Override
+            protected String getPrefixDescription() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getPrefixCaption() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            public int getTextAlignment() {
+                return View.TEXT_ALIGNMENT_VIEW_START;
+            }
+
+            @Override
+            public int getGravity() {
+                return Gravity.CENTER_VERTICAL;
+            }
+
+            @Override
+            public int getMaxLines() {
+                return 1;
+            }
+
+            @Override
+            public int getMaxLength() {
+                return CHARACTER_LIMIT_DEFAULT;
+            }
+
+            //	@Override
+            //	public int getMinLength() {
+            //		return DEFAULT_MIN_LENGTH;
+            //	}
+
+            @Override
+            protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
+                super.inflateView(context, attrs, defStyle);
+                initLabel();
+                initLabelAndValidationListenersErrorMsg(errorMsg);
+                setLiveValidationDisabled(true);
+                initInput(isIntegerField, isRequired, false, null, null, false, false);
+            }
+        };
+    }
+
 
     public static ControlTextEditField createControlTextEditFieldRangex(
             CampaignFormElement campaignFormElement,
@@ -780,5 +887,107 @@ public class CampaignFormDataFragmentUtils {
             }
         };
     }
+
+    public class ControlEmailEditField extends ControlTextEditField {
+        private String errorMessage;
+        private boolean isRequired;
+
+        public ControlEmailEditField(Context context, String errorMessage, boolean isRequired) {
+            super(context);
+            this.errorMessage = errorMessage;
+            this.isRequired = isRequired;
+            initEmailField();
+        }
+
+        private void initEmailField() {
+            // Access the EditText through the appropriate method from parent class
+            // Assuming your parent class has a method to get the input view
+            TextView editText = getInputView(); // Or whatever method provides the input field
+
+            if (editText != null) {
+                editText.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+
+                addValueChangedListener(new ValueChangeListener() {
+                    @Override
+                    public void onChange(ControlPropertyField field) {
+                        validateEmail(field);
+                    }
+                });
+            }
+        }
+
+        private void validateEmail(ControlPropertyField field) {
+            String input = field.getValue() != null ? field.getValue().toString() : "";
+
+            if (input.isEmpty() && !isRequired) {
+                disableErrorState();
+                return;
+            }
+
+            boolean isValid = android.util.Patterns.EMAIL_ADDRESS.matcher(input).matches();
+
+            if (!isValid) {
+                enableErrorState(errorMessage);
+            } else {
+                disableErrorState();
+            }
+        }
+
+        // Helper method to get the input view
+        // This should match whatever method your parent class uses
+        private EditText getInputView() {
+            // Check if your parent class has a method like getEditText()
+            // If not, you may need to find the view by ID
+            try {
+                return findViewById(R.id.date_input); // Use your actual EditText ID
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
+
+
+
+    public static ControlTimeField createControlTimeEditField(
+            CampaignFormElement campaignFormElement,
+            Context context,
+            Map<String, String> userTranslations,
+            Boolean isIntegerField,
+            FragmentManager fm, boolean isRequired) {
+        return new ControlTimeField(context) {
+
+            @Override
+            protected String getPrefixDescription() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getPrefixCaption() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            public int getTextAlignment() {
+                return View.TEXT_ALIGNMENT_VIEW_START;
+            }
+
+            @Override
+            public int getGravity() {
+                return Gravity.CENTER_VERTICAL;
+            }
+
+
+            @Override
+            protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
+                super.inflateView(context, attrs, defStyle);
+                initLabel();
+                initLabelAndValidationListeners();
+                setLiveValidationDisabled(true);
+                initializeTimeField(fm);
+                initInput(false, isRequired);
+            }
+        };
+    }
+
 
 }

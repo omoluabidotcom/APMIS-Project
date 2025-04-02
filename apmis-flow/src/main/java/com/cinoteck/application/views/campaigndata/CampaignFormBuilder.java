@@ -7,7 +7,9 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,10 +77,12 @@ import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.component.shared.Tooltip;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.BigDecimalField;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.server.VaadinService;
@@ -968,7 +972,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					fields.put(formElement.getId(), textField);
 					
 					
-					if (fieldId.equalsIgnoreCase("TazkiraNo")) {
+					if (fieldId.equalsIgnoreCase("eTazkiraNo")) {
 						
 				        System.out.println("Tazkira Number Found -------------------" );
 				        
@@ -986,12 +990,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 				                			existingValue.substring(0, 4) + "-" + 
 				                			existingValue.substring(4, 8) + "-" + 
 				                			existingValue.substring(8);
-				                	
-//				                	textField.setHelperText("Valid E-Tazkira format example: " + 
-//				                        existingValue.substring(0, 4) + "-" + 
-//				                        existingValue.substring(4, 8) + "-" + 
-//				                        existingValue.substring(8));
-				                	
+
 						setFieldValue(textField, type, formattedDisplay, optionsValues, formElement.getDefaultvalue(), false, null);
 
 				                }
@@ -1000,32 +999,36 @@ public class CampaignFormBuilder extends VerticalLayout {
 				            }
 				        }
 				        
-				        textField.addInputListener(ec -> {
-				        	if (textField.getValue().length() == 13) {				             
-				        		String inputValue = textField.getValue();
-				        	
-				                // Remove any existing formatting
-				                String cleanInput = inputValue.replace("-", "").replace(".", "");
-				                System.out.println("Input changed ===");
-
-//				                if (textField.getValue().length() == 13) {
-				                    // Format properly and store only the numeric value to avoid double formatting
-				                    String formattedExample = cleanInput.substring(0, 4) + "-" + 
-				                        cleanInput.substring(4, 8) + "-" + 
-				                        cleanInput.substring(8);
-//				                    textField.setHelperText("Valid E-Tazkira format: " + formattedExample);
-				                    
-				                    setFieldValue(textField, type, formattedExample, optionsValues, formElement.getDefaultvalue(), false, null);
-//				                } else if (!inputValue.isEmpty()) {
-//				                    // Show warning if not empty and not 13 digits
-//				                    textField.setHelperText("E-Tazkira should be 13 digits");
-//				                }
-				        	}
-				        });
+//				        textField.addInputListener(ec -> {
+//				        	if (textField.getValue().length() == 13) {				             
+//				        		String inputValue = textField.getValue();
+//				        	
+//				                // Remove any existing formatting
+//				                String cleanInput = inputValue.replace("-", "").replace(".", "");
+//				                System.out.println("Input changed ===");
+//
+////				                if (textField.getValue().length() == 13) {
+//				                    // Format properly and store only the numeric value to avoid double formatting
+//				                    String formattedExample = cleanInput.substring(0, 4) + "-" + 
+//				                        cleanInput.substring(4, 8) + "-" + 
+//				                        cleanInput.substring(8);
+////				                    textField.setHelperText("Valid E-Tazkira format: " + formattedExample);
+//				                    
+//				                    setFieldValue(textField, type, formattedExample, optionsValues, formElement.getDefaultvalue(), false, null);
+////				                } else if (!inputValue.isEmpty()) {
+////				                    // Show warning if not empty and not 13 digits
+////				                    textField.setHelperText("E-Tazkira should be 13 digits");
+////				                }
+//				        	}
+//				        });
 
 				        
 				        // Add listener for new input
 				        textField.addValueChangeListener(e -> {
+				        	textField.addInputListener(ex->{
+				        		System.out.println("textField.getValue().toString().length();------" + textField.getValue().toString().length());
+//				        		textField.getValue().toString().length();
+				        	});
 				            try {
 				                if (e.getValue() != null) {
 				                    String inputValue = e.getValue().toString();
@@ -1076,95 +1079,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 //					fields.put(formElement.getId(), numberField);
 
 					// Binder<String> binder = new Binder<>(String.class);
-					if (fieldId.equalsIgnoreCase("TazkiraNo")) {
-						
-				        System.out.println("Tazkira Number Found -------------------" + value.toString().length());
-				        
-				        // Add validation for Tazkira Number
-				        numberField.setAllowedCharPattern("[0-9-]"); // Allow only digits and hyphens
-				        
-				        // Check for existing value - use the value passed to the method
-				        if (value != null && !value.toString().isEmpty()) {
-				        	
-				            try {
-				                String existingValue = value.toString().replace("-", "");
-				                if (existingValue.length() == 13) {
-				                	String formattedDisplay = 
-				                			existingValue.substring(0, 4) + "-" + 
-				                			existingValue.substring(4, 8) + "-" + 
-				                			existingValue.substring(8);
-				                	
-				                    numberField.setHelperText("Valid E-Tazkira format example: " + 
-				                        existingValue.substring(0, 4) + "-" + 
-				                        existingValue.substring(4, 8) + "-" + 
-				                        existingValue.substring(8));
-				                }
-				            } catch (Exception ex) {
-				                logger.error("Error formatting existing Tazkira: " + ex.getMessage());
-				            }
-				        }
-				        
-				        // Add listener for new input
-				        numberField.addValueChangeListener(e -> {
-				            try {
-				                if (e.getValue() != null) {
-				                    String inputValue = e.getValue().toString();
-				                    // Remove any existing formatting
-				                    String cleanInput = inputValue.replace("-", "").replace(".", "");
-				                    
-				                    if (cleanInput.length() == 13) {
-				                        // Format properly and store only the numeric value to avoid double formatting
-				                        String formattedExample = cleanInput.substring(0, 4) + "-" + 
-				                            cleanInput.substring(4, 8) + "-" + 
-				                            cleanInput.substring(8);
-				                        numberField.setHelperText("Valid E-Tazkira format: " + formattedExample);
-				                    } else if (!inputValue.isEmpty()) {
-				                        // Show warning if not empty and not 13 digits
-				                        numberField.setHelperText("E-Tazkira should be 13 digits in format: 0000-0000-00000");
-				                    }
-				                }
-				            } catch (Exception ex) {
-				                logger.error("Error in Tazkira value change: " + ex.getMessage());
-				            }
-				        });
-				    }
-//					if (fieldId.equalsIgnoreCase("TazkiraNo")) {
-//						System.out.println("Tazkira Number Found -------------------");
-//					    // Add validation for Tazkira Number
-//					    numberField.setAllowedCharPattern("[0-9-]"); // Allow only digits and hyphens
-//				    
-//					    if (numberField.getValue() != null && !numberField.getValue().toString().isEmpty()) {
-//					        String existingValue = value.toString().replace("-", "");
-////					        String digitsOnly = existingValue.replace("-", "");
-//					        if (existingValue.length() == 13) {
-//					            numberField.setHelperText("Valid E-Tazkira format example: " + 
-//					            		existingValue.substring(0, 4) + "-" + 
-//					            		existingValue.substring(4, 8) + "-" + 
-//					            		existingValue.substring(8));
-//					        }
-//					    }
-//					    
-//					    numberField.addValueChangeListener(e -> {
-//					        String inputValue = e.getValue() != null ? e.getValue().toString() : "";
-////					        String digitsOnly = inputValue.replace("-", "");
-//					        
-//							if (e.getValue() != null && e.getValue().toString().length() == 13) {
-//								
-//					            String formattedExample = inputValue.substring(0, 4) + "-" + 
-//					            		inputValue.substring(4, 8) + "-" + 
-//					            		inputValue.substring(8);
-//					            numberField.setHelperText("Valid E-Tazkira format: " + formattedExample);
-//					        } else if (!inputValue.isEmpty()) {
-//					            // Show warning if not empty and not 13 digits
-//					            numberField.setHelperText("E-Tazkira should be 13 digits in format: 0000-0000-00000");
-//					        }
-//							
-//							numberField.setValue(Double.parseDouble(inputValue));
-//
-//					    });
-//					    
-//
-//					}
 
 					if (fieldId.equalsIgnoreCase("Villagecode")) {
 						numberField.setAllowedCharPattern("(?!.*000$).*");
@@ -1494,7 +1408,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					bigDecimalField.setClassName("customTextWrap");
 
 					bigDecimalField.setWidth("240px");
-					bigDecimalField.setValue(new BigDecimal("948205817.472950487"));
+//					bigDecimalField.setValue(new BigDecimal("948205817.472950487"));
 					bigDecimalField.setId(formElement.getId());
 					bigDecimalField.setSizeFull();
 					setFieldValue(bigDecimalField, type, value, optionsValues, formElement.getDefaultvalue(), false,
@@ -1744,9 +1658,50 @@ public class CampaignFormBuilder extends VerticalLayout {
 						datePicker.setRequiredIndicatorVisible(formElement.isImportant());
 					}
 
-				}
+				} else if (type == CampaignFormElementType.EMAIL) {
+					
+					EmailField validEmailField = new EmailField();
+					validEmailField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+					validEmailField.setWidth("240px");
+					validEmailField.setId(formElement.getId());
+					
 
-//needed
+					
+					setFieldValue(validEmailField, type, value, optionsValues, formElement.getDefaultvalue(), false,
+							null);
+					vertical.add(validEmailField);
+					fields.put(formElement.getId(), validEmailField);	
+					
+					validEmailField.getElement().setAttribute("name", "email");
+//					validEmailField.setValue("julia.scheider@email.com");
+					validEmailField.setErrorMessage("Enter a valid email address");
+					validEmailField.setClearButtonVisible(true);
+
+				} else if (type == CampaignFormElementType.TIME) {
+
+				
+				TimePicker timePicker = new TimePicker();
+				timePicker.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+				timePicker.setStep(Duration.ofMinutes(30));
+//				timePickear.setValue(LocalTime.of(5, 30));
+				timePicker.setAutoOpen(true);
+				
+				timePicker.addValueChangeListener(e->{
+					 System.out.println("Value Changed-------" + e.getValue()
+);
+					
+					timePicker.setValue(e.getValue());	
+				});
+//				add(timePicker);
+				
+				setFieldValue(timePicker, type, value, optionsValues, formElement.getDefaultvalue(), false,
+						null);
+				
+				vertical.add(timePicker);
+				fields.put(formElement.getId(), timePicker);
+				
+				}  
+
 
 			}
 
@@ -2047,16 +2002,40 @@ public class CampaignFormBuilder extends VerticalLayout {
 			;
 
 			break;
+			
+		case EMAIL:
 
-		case PHONE:
+			if (value != null) {
+				((EmailField) field).setValue(value.toString());
 
+			} else if (defaultvalue != null) {
+				((EmailField) field).setValue(defaultvalue);
+			}
+			break;
+			
+        case TIME:
+            if (value != null) {
+            	System.out.println(" time value is not null ");
+                if (value instanceof LocalTime) {
+                    ((TimePicker) field).setValue((LocalTime) value);
+                } else if (value instanceof String) {
+                       ((TimePicker) field).setValue(LocalTime.parse((String) value));
+                }
+            } else if (defaultvalue != null) {
+                ((TimePicker) field).setValue(LocalTime.parse((String) defaultvalue));
+            }
+        	break;
+			
+            
+        case PHONE:
 			if (value != null) {
 				((TextField) field).setValue(value.toString());
 
 			} else if (defaultvalue != null) {
 				((TextField) field).setValue(defaultvalue);
 			}
-			break;
+            break;
+			
 		default:
 			throw new IllegalArgumentException(type.toString());
 		}
@@ -2074,7 +2053,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 				|| type == CampaignFormElementType.RADIOBASIC && !styles.contains(CampaignFormElementStyle.INLINE)
 				|| type == CampaignFormElementType.TEXTBOX && !styles.contains(CampaignFormElementStyle.INLINE)
 				|| (type == CampaignFormElementType.TEXT || type == CampaignFormElementType.DATE
-						|| type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL
+						|| type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.EMAIL 
+						|| type == CampaignFormElementType.TIME || type == CampaignFormElementType.PHONE || type == CampaignFormElementType.DECIMAL
 						|| type == CampaignFormElementType.RANGE)) {// && styles.contains(CampaignFormElementStyle.ROW))
 																	// {
 			return 12;
@@ -2106,7 +2086,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 				|| type == CampaignFormElementType.CHECKBOXBASIC && styles.contains(CampaignFormElementStyle.INLINE)
 				|| type == CampaignFormElementType.DROPDOWN && styles.contains(CampaignFormElementStyle.INLINE)
 				|| (type == CampaignFormElementType.TEXT || type == CampaignFormElementType.NUMBER
-						|| type == CampaignFormElementType.DECIMAL || type == CampaignFormElementType.RANGE
+						|| type == CampaignFormElementType.DECIMAL || type == CampaignFormElementType.EMAIL 
+						||  type == CampaignFormElementType.TIME || type == CampaignFormElementType.PHONE || type == CampaignFormElementType.RANGE
 						|| type == CampaignFormElementType.DATE || type == CampaignFormElementType.TEXTBOX)
 				// && !styles.contains(CampaignFormElementStyle.ROW)
 				|| type == CampaignFormElementType.LABEL || type == CampaignFormElementType.SECTION) {
@@ -2232,7 +2213,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 						typex);
 
 				component.setVisible(visible);
-				if (typex != CampaignFormElementType.LABEL) {
+				if (!typex.toString().equalsIgnoreCase(CampaignFormElementType.LABEL.toString()) ) {
+					if(!typex.toString().equalsIgnoreCase(CampaignFormElementType.SECTION.toString())) {
 					if (!visible) {
 
 						if (typex == CampaignFormElementType.TEXT) {
@@ -2252,16 +2234,25 @@ public class CampaignFormBuilder extends VerticalLayout {
 						component.getElement().setProperty("required", isRequiredField);
 					}
 				}
+				}
 			});
 		} else {
-
+			
+			
+			System.out.println("COntainss Not-------" );
+			
+			
 			// hide on default
 			boolean hide = dependingOnValuesList.stream()
 					.anyMatch(v -> fieldValueMatchesDependingOnValues(dependingOnField, dependingOnValuesList, typex));
 			component.setVisible(hide);
+			
+			System.out.println("hidehidehide---" + hide);
 
 			if (hide) {
 				// getElement().setProperty("required", requiredIndicatorVisible);
+				component.setVisible(hide);
+
 				component.getElement().setProperty("required", isRequiredField);
 			} else {
 				component.getElement().setProperty("required", false);
@@ -2271,26 +2262,28 @@ public class CampaignFormBuilder extends VerticalLayout {
 			((AbstractField) dependingOnField).addValueChangeListener(e -> {
 				boolean visible = fieldValueMatchesDependingOnValues(dependingOnField, dependingOnValuesList, typex);
 
-				if (typex != CampaignFormElementType.LABEL) {
+				if (typex != CampaignFormElementType.LABEL && typex != CampaignFormElementType.SECTION) {
 					if (!visible) {
 
 						((AbstractField) component).setRequiredIndicatorVisible(false);
-
 						if (typex == CampaignFormElementType.TEXT) {
 							((TextField) component).setValue(" ");
 							((TextField) component).setValue("");
 						} else {
-
 							((AbstractField) component).setValue(null);
 						}
-
 						component.setVisible(visible);
-
 					} else {
 						component.setVisible(visible);
 						((AbstractField) component).setRequiredIndicatorVisible(isRequiredField);
 						component.getElement().setProperty("required", isRequiredField);
 					}
+				}else if(typex == CampaignFormElementType.LABEL) {					
+					((Label) component).setVisible(visible);					
+					System.out.println( visible + "Its a Label that needs to be show " + hide);					
+				}else if(typex == CampaignFormElementType.SECTION) {					
+					component.setVisible(visible);					
+					System.out.println( visible + "Its a Section that needs to be show " + hide);					
 				}
 			});
 		}
@@ -2309,7 +2302,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 			String stringValue = Boolean.TRUE.equals(((ToggleButton) dependingOnField).getValue()) ? "Yes" : "No";
 
 			return dependingOnValuesList.stream().anyMatch(v ->
-			// v.toString().equalsIgnoreCase(booleanValue) ||
 			v.toString().equalsIgnoreCase(stringValue));
 
 		} else {
@@ -2357,6 +2349,13 @@ public class CampaignFormBuilder extends VerticalLayout {
 //				logger.debug(((DatePicker) field).getValue() + "______________________))");
 
 				String valc = ((DatePicker) field).getValue() != null ? ((DatePicker) field).getValue().toString()
+						: null;
+
+				return new CampaignFormDataEntry(id, valc);
+			}else if (field instanceof TimePicker) {
+//				logger.debug(((DatePicker) field).getValue() + "______________________))");
+
+				String valc = ((TimePicker) field).getValue() != null ? ((TimePicker) field).getValue().toString()
 						: null;
 
 				return new CampaignFormDataEntry(id, valc);
@@ -2449,7 +2448,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 			Component formField = fields.get(key);
 			if (formField.getElement().getProperty("invalid", false)) {
 				hasErrorFormValues(7);
-//				Notification.show("Error on field: " + formField.getElement().getProperty("label"));
+				Notification.show("Error on field: " + formField.getElement().getProperty("label"));
 				return;
 			}
 
@@ -2457,38 +2456,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 		return invalidForm;
 	}
 
-//let change this method to litrate through all the field, check the validity, and return ;ist of those that are not valid in a catch block
-//	public void validateFields() {
-//		//field.getElement().setProperty("errorMessage", defaultErrorMsgr != null ? defaultErrorMsgr.toString() : "Data entered not in range or calculated range!");
-//		
-//		try {
-//			fields.forEach((key, value) -> {
-//
-//				AbstractField formField = fields.get(key);
-//				formField
-//				if (!fields.get(key).val .isValid()) {
-//					fields.get(key).setRequiredError("Error found");
-//				}
-//			});
-//		} finally {
-//
-//			fields.forEach((key, value) -> {
-//
-//				AbstractField formField = fields.get(key);
-//				try {
-//
-//					formField.validate();
-//
-//				} catch (Validator.InvalidValueException e) {
-//
-//					throw (InvalidValueException) e;
-//				}
-//			});
-//		}
-//
-//	}
 	public void hasErrorFormValues(int numer) {
-//		Notification.show("Error found in: " + numer);
+		Notification.show("Error found in: " + numer);
 		invalidForm = true;
 
 	}
@@ -2496,8 +2465,11 @@ public class CampaignFormBuilder extends VerticalLayout {
 	public void hasErrorFormValuesReset() {
 		invalidForm = false;
 	}
-
+	
 	public boolean saveFormValues() {
+		
+		System.out.println("Entered save form New Data waiting response -------------");
+
 		validateAndSave();
 		if (!invalidForm) {
 			if (openData) {
@@ -2552,14 +2524,22 @@ public class CampaignFormBuilder extends VerticalLayout {
 					}
 				}
 
+				
+				System.out.println("New Data waiting rffffffesponse -------------");
+
 				if (saveChecker) {
 					CampaignFormDataDto dataDto = FacadeProvider.getCampaignFormDataFacade()
 							.getCampaignFormDataByUuid(uuidForm);
+					
+//			        long versionCount = FacadeProvider.getCampaignFormDataFacade().getRecordCountByGroupUuid(dataDto.getRecordgroupuuid());
+			        long incrementedVersion  = dataDto.getRecordversion() + 1L;
 
 					// maybe we want to check the name of the updating user here
 					dataDto.setCreatingUser(userProvider.getUserReference());
 
 					// dataDto.setSource(PlatformEnum.WEB);
+					dataDto.setRecordgroupuuid(dataDto.getRecordgroupuuid());
+					dataDto.setRecordversion(incrementedVersion);
 					dataDto.setFormValues(entries);
 
 					dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
@@ -2586,6 +2566,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 					notification.open();
 				}
 			} else {
+				
+				System.out.println("New Data waiting response -------------");
 				boolean saveChecker = true;
 				boolean ccodeChecker = true;
 				UserProvider userProvider = new UserProvider();
@@ -2635,17 +2617,25 @@ public class CampaignFormBuilder extends VerticalLayout {
 						}
 					}
 				}
-
+				
+				
 				if (saveChecker) {
 					CampaignFormDataDto dataDto = CampaignFormDataDto.build(campaignReferenceDto, campaignFormMeta,
 							cbArea.getValue(), cbRegion.getValue(), cbDistrict.getValue(), cbCommunity.getValue());
 
 					Date dateData = Date.from(formDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant());
 
+
+					System.out.println("New Data waiting response -------------" + dataDto.getFormValues());
+
+
 					dataDto.setFormDate(dateData);
 					dataDto.setCreatingUser(userProvider.getUserReference());
 					dataDto.setFormValues(entries);
 					dataDto.setSource("WEB");
+					dataDto.setRecordgroupuuid(dataDto.getUuid());
+					dataDto.setRecordversion(1L);
+
 //					if (dataDto.getFormType())
 
 					dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);

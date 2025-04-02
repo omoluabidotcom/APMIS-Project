@@ -11117,6 +11117,122 @@ ADD COLUMN scheduleTime TIME;
 INSERT INTO schema_version (version_number, comment) VALUES (483, 'Notification Implementation ');
 
 
+CREATE TABLE dialingcode (
+    id SERIAL PRIMARY KEY,
+    country TEXT NOT NULL,
+    code TEXT NOT NULL,
+    min_length INT NOT NULL,
+    max_length INT NOT NULL
+);
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.dialingcode TO sormas_user;
+
+
+INSERT INTO dialingcode (country, code, min_length, max_length) VALUES
+    ('Afghanistan', '+93', 9, 9),
+    ('Albania', '+355', 8, 9),
+    ('Algeria', '+213', 9, 9),
+    ('Andorra', '+376', 6, 6),
+    ('Angola', '+244', 9, 9),
+    ('Argentina', '+54', 10, 10),
+    ('Armenia', '+374', 8, 8),
+    ('Australia', '+61', 9, 9),
+    ('Austria', '+43', 10, 13),
+    ('Azerbaijan', '+994', 9, 9),
+    ('Bahrain', '+973', 8, 8),
+    ('Bangladesh', '+880', 10, 10),
+    ('Belarus', '+375', 9, 9),
+    ('Belgium', '+32', 8, 9),
+    ('Bolivia', '+591', 8, 8),
+    ('Brazil', '+55', 10, 11),
+    ('Canada', '+1', 10, 10),
+    ('China', '+86', 11, 11),
+    ('Colombia', '+57', 10, 10),
+    ('Denmark', '+45', 8, 8),
+    ('Egypt', '+20', 10, 10),
+    ('France', '+33', 9, 9),
+    ('Germany', '+49', 10, 11),
+    ('India', '+91', 10, 10),
+    ('Indonesia', '+62', 9, 11),
+    ('Iran', '+98', 10, 10),
+    ('Iraq', '+964', 10, 10),
+    ('Italy', '+39', 9, 10),
+    ('Japan', '+81', 10, 10),
+    ('Kenya', '+254', 9, 9),
+    ('Mexico', '+52', 10, 10),
+    ('Netherlands', '+31', 9, 9),
+    ('Nigeria', '+234', 7, 10),
+    ('Pakistan', '+92', 10, 10),
+    ('Philippines', '+63', 10, 10),
+    ('Poland', '+48', 9, 9),
+    ('Portugal', '+351', 9, 9),
+    ('Russia', '+7', 10, 10),
+    ('Saudi Arabia', '+966', 9, 9),
+    ('South Africa', '+27', 9, 9),
+    ('South Korea', '+82', 9, 10),
+    ('Spain', '+34', 9, 9),
+    ('Sweden', '+46', 7, 9),
+    ('Switzerland', '+41', 9, 9),
+    ('Thailand', '+66', 9, 9),
+    ('Turkey', '+90', 10, 10),
+    ('Ukraine', '+380', 9, 9),
+    ('United Arab Emirates', '+971', 9, 9),
+    ('United Kingdom', '+44', 9, 10),
+    ('United States', '+1', 10, 10),
+    ('Vietnam', '+84', 9, 10);
+
+
+
+INSERT INTO schema_version (version_number, comment) VALUES (484, 'Implementing Number Type for Data Entry');
+
+
+
+alter table campaignformdata  drop column sys_period;
+   
+ALTER TABLE public.campaignformdata ADD COLUMN sys_period tstzrange NOT null DEFAULT tstzrange(now(), NULL);
+
+ALTER TABLE public.campaignformdata ADD COLUMN recordversion int4 DEFAULT 1 NOT null;
+
+create trigger versioning_trigger after insert or delete or update on public.campaignformdata for each row execute function versioning('sys_period','campaignformdata_history','true');   
+
+DROP TABLE public.campaignformdata_history;
+
+CREATE TABLE public.campaignformdata_history (
+	id int8 NOT NULL,
+	"uuid" varchar(36) NOT NULL,
+	changedate timestamp NOT NULL,
+	creationdate timestamp NOT NULL,
+	formvalues json NULL,
+	campaign_id int8 NOT NULL,
+	campaignformmeta_id int8 NOT NULL,
+	region_id int8 NOT NULL,
+	district_id int8 NOT NULL,
+	community_id int8 NOT NULL,
+	archived bool DEFAULT false NULL,
+	formdate timestamp NULL,
+	creatinguser_id int8 NULL,
+	area_id int8 NULL,
+	formtype varchar(255) DEFAULT 'pre-campaign'::character varying NULL,
+	lat float8 NULL,
+	lon float8 NULL,
+	"source" varchar(11) NULL,
+	lastupdated timestamp NULL,
+	isverified bool DEFAULT false NULL,
+	ispublished bool DEFAULT false NULL,
+	recordversion int4 NOT NULL,
+	sys_period tstzrange DEFAULT tstzrange(now(), NULL::timestamp with time zone) NULL,
+	CONSTRAINT fk_campaignformdata_history_area_id FOREIGN KEY (area_id) REFERENCES public.areas(id),
+	CONSTRAINT fk_campaignformdata_history_campaign_id FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
+	CONSTRAINT fk_campaignformdata_history_campaignformmeta_id FOREIGN KEY (campaignformmeta_id) REFERENCES public.campaignformmeta(id),
+	CONSTRAINT fk_campaignformdata_history_community_id FOREIGN KEY (community_id) REFERENCES public.community(id),
+	CONSTRAINT fk_campaignformdata_history_creatinguser_id FOREIGN KEY (creatinguser_id) REFERENCES public.users(id),
+	CONSTRAINT fk_campaignformdata_history_district_id FOREIGN KEY (district_id) REFERENCES public.district(id),
+	CONSTRAINT fk_campaignformdata_history_region_id FOREIGN KEY (region_id) REFERENCES public.region(id)
+);
+
+INSERT INTO schema_version (version_number, comment) VALUES (485, 'Implementing Record Versioning');
+
+
 
 
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***

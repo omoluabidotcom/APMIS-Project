@@ -1157,8 +1157,6 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 	
 	}
 	
-
-	
 	@Override
 	public List<CampaignFormMetaReferenceDto> getAllCountries (){
 

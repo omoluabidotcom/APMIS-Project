@@ -44,7 +44,8 @@ public class InfrastructureHelper {
 		changeDates.setCampaignChangeDate(DatabaseHelper.getCampaignDao().getLatestChangeDate());
 		changeDates.setCampaignFormMetaChangeDate(DatabaseHelper.getCampaignFormMetaDao().getLatestChangeDate());
 		changeDates.setCampaignFormMetaExpiryChangeDate(DatabaseHelper.getCampaignFormMetaWithExpDao().getLatestChangeDate());
-		changeDates.setPopulationDataChangeDate(DatabaseHelper.getPopulationDataDao().getLatestChangeDate());
+		System.out.println(DatabaseHelper.getCampaignFormMetaDao().getLatestChangeDate() +"DatabaseHelper.getPopulationDataDao().getLatestChangeDate()" + DatabaseHelper.getPopulationDataDao().getLatestChangeDate());
+//		changeDates.setPopulationDataChangeDate(DatabaseHelper.getPopulationDataDao().getLatestChangeDate());
 		changeDates.setCampaignFormMetaRegionChangeDate(DatabaseHelper.getCampaignFormMetaRegionDao().getLatestChangeDate());
 
 
@@ -83,5 +84,13 @@ public class InfrastructureHelper {
 //			new CampaignFormMetaWithExpDtoHelper().handlePulledList(DatabaseHelper.getCampaignFormMetaWithExpDao(), infrastructureData.getCampaignFormMetaExpiry());
 
 		}
+
+		System.out.println("+++++++++++++222222 before pop");
+
+		new PopulationDataDtoHelper().handlePulledList(DatabaseHelper.getPopulationDataDao(), infrastructureData.getPopulationData());
+
+		System.out.println("+++++++++++++222222 after  pop");
+
+
 	}
 }
