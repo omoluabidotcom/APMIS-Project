@@ -32,8 +32,8 @@ import de.symeda.sormas.app.backend.common.PseudonymizableAdo;
 
 @Entity(name = PopulationData.TABLE_NAME)
 @DatabaseTable(tableName = PopulationData.TABLE_NAME)
-public class PopulationData //extends AbstractDomainObject implements Serializable {
-		extends PseudonymizableAdo {
+public class PopulationData extends AbstractDomainObject implements Serializable {
+//		extends PseudonymizableAdo {
 
 //	private static final long serialVersionUID = -6057113970091470463L;
 
