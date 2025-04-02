@@ -53,7 +53,7 @@ public class CampaignFormDataResource extends EntityDtoResource {
 	}
 	
 	@GET
-	@Path("/formDataHistoryx/{since}")
+	@Path("/formDataHistory/{since}")
 	public List<CampaignFormDataHistoryExtractDto> getRecordsHistory(@PathParam("since") long since, @QueryParam("getRecordHistory") List<String> uuid) {
 		System.out.println(uuid + "UUUID from area resource");
 		List<CampaignFormDataHistoryExtractDto> ref = new ArrayList<CampaignFormDataHistoryExtractDto>();
