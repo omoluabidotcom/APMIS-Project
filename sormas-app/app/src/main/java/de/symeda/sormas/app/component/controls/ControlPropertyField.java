@@ -645,6 +645,4 @@ public abstract class ControlPropertyField<T> extends LinearLayout {
 			field.setValue(null);
 		}
 	}
-
-
 }
