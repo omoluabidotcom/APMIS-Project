@@ -2538,7 +2538,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					dataDto.setCreatingUser(userProvider.getUserReference());
 
 					// dataDto.setSource(PlatformEnum.WEB);
-					dataDto.setRecordgroupuuid(dataDto.getRecordgroupuuid());
+//					dataDto.setRecordgroupuuid(dataDto.getRecordgroupuuid());
 					dataDto.setRecordversion(incrementedVersion);
 					dataDto.setFormValues(entries);
 
@@ -2633,7 +2633,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					dataDto.setCreatingUser(userProvider.getUserReference());
 					dataDto.setFormValues(entries);
 					dataDto.setSource("WEB");
-					dataDto.setRecordgroupuuid(dataDto.getUuid());
+//					dataDto.setRecordgroupuuid(dataDto.getUuid());
 					dataDto.setRecordversion(1L);
 
 //					if (dataDto.getFormType())

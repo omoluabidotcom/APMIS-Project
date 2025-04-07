@@ -1134,7 +1134,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
 
                         helperText = new TextView(requireContext());
                         helperText.setText("Mobile number for " + country
-                                + " must be between " + min + " and " + max + " digits");
+                                + " must be between " + min + " and " + max + " digits without the country code");
                         helperText.setTextSize(10);
                         helperText.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.black));
                         dynamicLayout.addView(helperText, new LinearLayout.LayoutParams(
@@ -1150,7 +1150,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                 currentCountryCode = countryCode;
                                 helperText.setText("Mobile number for " + selectedCountry
                                         + " must be between " + mapvalue.get(selectedCountry).getMinLength() + " and " +
-                                        mapvalue.get(selectedCountry).getMaxLength() + " digits");
+                                        mapvalue.get(selectedCountry).getMaxLength() + " digits without the country code");
                             }
 
                             @Override
@@ -1173,9 +1173,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField = CampaignFormDataFragmentUtils.createControlDateEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                     }else if (type == CampaignFormElementType.TIME) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTimeEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
-                    } else {
-
-
+                    }  else {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
                     }
 //                    System.out.println("Field properties: " + campaignFormElement.getId() + " exp = " + campaignFormElement.getExpression() + " :");
@@ -1271,7 +1269,6 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         });
                     }
 
-<<<<<<< HEAD
                     if (type == CampaignFormElementType.PHONE && campaignFormElement.getId().equalsIgnoreCase("mobileNumber")) {
                         dynamicField.addValueChangedListener(e->{
                             String value = dynamicField.getValue().toString().replace(currentCountryCode, "");
@@ -1282,10 +1279,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             }
                         });
                         }
-=======
 
-
->>>>>>> branch 'development' of https://github.com/omoluabidotcom/APMIS-Project.git
                     if (type == CampaignFormElementType.TEXT && campaignFormElement.getId().equalsIgnoreCase("TazkiraNo")) {
                         dynamicField.addValueChangedListener(e->{
                             if (dynamicField.getValue().toString() != null){

@@ -1187,7 +1187,6 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     } else if (type == CampaignFormElementType.DATE) {
                         dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                         ControlDateField.setValue((ControlDateField) dynamicField, getDateValue(value));
-<<<<<<< HEAD
                     } else if (type == CampaignFormElementType.PHONE) {
 
 //                        System.out.println(value + " valuevaluevaluevaluevaluevaluevvvvvvvvvvvvvvv");
@@ -1274,15 +1273,12 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 //                                public void onNothingSelected(AdapterView<?> parent) {}
 //                            });
 
-                    } else {
-=======
                     }
 //                    else if (type == CampaignFormElementType.EMAIL) {
 //                        dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
 //                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
 //                    }
                     else {
->>>>>>> branch 'development' of https://github.com/omoluabidotcom/APMIS-Project.git
                         dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
                         ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                     }
@@ -1319,10 +1315,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                         });
                     }
 
-<<<<<<< HEAD
                     if (type == CampaignFormElementType.PHONE && campaignFormElement.getId().equalsIgnoreCase("mobileNumber")) {
-                        dynamicField.addValueChangedListener(e->{
-                            System.out.println("hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+                        dynamicField.addValueChangedListener(e->{                       
 //                            String values = dynamicField.getValue().toString().replace(currentCountryCode, "");
                             String values = dynamicField.getValue().toString();
                             if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != ""){
@@ -1333,7 +1327,6 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                         });
                     }
 
-=======
                     if (type == CampaignFormElementType.EMAIL && campaignFormElement.getId().equalsIgnoreCase("email")) {
 //                        initialLotNo = formValuesMap.get(campaignFormElement.getId());
 //                        lotChangedValue = formValuesMap.get(campaignFormElement.getId());
@@ -1348,7 +1341,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             }
                         });
                     }
->>>>>>> branch 'development' of https://github.com/omoluabidotcom/APMIS-Project.git
+
                     if (type == CampaignFormElementType.DROPDOWN && campaignFormElement.getId().equalsIgnoreCase("LotClusterNo")) {
                         initialLotClusterNo = formValuesMap.get(campaignFormElement.getId());
                         dynamicField.addValueChangedListener(field -> {
