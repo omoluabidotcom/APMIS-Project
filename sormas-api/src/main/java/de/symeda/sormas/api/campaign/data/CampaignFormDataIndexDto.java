@@ -108,7 +108,6 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 
 	private String personTitle;
 	
-	private String recordgroupuuid;
 	private Long recordversion;
 
 
@@ -141,7 +140,7 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 	public CampaignFormDataIndexDto(String uuid, String campaign, String form, Object formValues, String area,
 			Long rcode, String region, Long pcode, String district, Long dcode, String community, Integer clusternumber,
 			Long ccode, Date formDate, String formType, String source, String creatingUser, boolean isverified,
-			boolean ispublished, String recordgroupuuid, Long recordversion) {
+			boolean ispublished, Long recordversion) {
 		this.uuid = uuid;
 		this.campaign = campaign;
 		this.form = form;
@@ -161,13 +160,12 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 		this.creatingUser = creatingUser;
 		this.isverified = isverified;
 		this.ispublished = ispublished;
-		this.recordgroupuuid = recordgroupuuid;
 		this.recordversion = recordversion;
 	}
 
 	public CampaignFormDataIndexDto(String uuid, String campaign, String form, Object formValues, String area,
 			Long rcode, String region, Long pcode, String district, Long dcode, String community, Integer clusternumber,
-			Long ccode, Date formDate, String formType, String source, String creatingUser, String recordgroupuuid, Long recordversion) {
+			Long ccode, Date formDate, String formType, String source, String creatingUser,  Long recordversion) {
 		this.uuid = uuid;
 		this.campaign = campaign;
 		this.form = form;
@@ -185,7 +183,6 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 		this.formType = formType;
 		this.source = source;
 		this.creatingUser = creatingUser;
-		this.recordgroupuuid = recordgroupuuid;
 		this.recordversion = recordversion;
 	}
 	
@@ -644,18 +641,6 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 		return ispublished;
 	}
 	
-	
-
-	public String getRecordgroupuuid() {
-		return recordgroupuuid;
-	}
-
-
-	public void setRecordgroupuuid(String recordgroupuuid) {
-		this.recordgroupuuid = recordgroupuuid;
-	}
-
-
 	public Long getRecordversion() {
 		return recordversion;
 	}
@@ -695,7 +680,7 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 		return Objects.hash(analysis_a, analysis_a_, analysis_b, analysis_b_, analysis_c, analysis_c_, analysis_d,
 				analysis_d_, area, campaign, campaign_id, ccode, clusternumber, clusternumber_, community, creatingUser,
 				creatingUserType, dcode, district, error_status, form, formDate, formType, formValues, ispublished,
-				isverified, pcode, personTitle, rcode, region, source, uuid, recordgroupuuid, recordversion);
+				isverified, pcode, personTitle, rcode, region, source, uuid,  recordversion);
 	}
 
 	@Override
@@ -724,9 +709,8 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 				&& Objects.equals(pcode, other.pcode) && Objects.equals(personTitle, other.personTitle)
 				&& Objects.equals(rcode, other.rcode) && Objects.equals(region, other.region)
 				&& Objects.equals(source, other.source) && Objects.equals(uuid, other.uuid)
-				&& Objects.equals(recordgroupuuid, other.recordgroupuuid)
-				&& Objects.equals(recordversion, other.recordversion)
-;
+//				&& Objects.equals(recordgroupuuid, other.recordgroupuuid)
+				&& Objects.equals(recordversion, other.recordversion);
 	}
 
 }

@@ -3,6 +3,7 @@ package de.symeda.sormas.rest;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -28,6 +29,7 @@ import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
 import de.symeda.sormas.api.campaign.data.CampaignAggregateDataDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
+import de.symeda.sormas.api.campaign.data.CampaignFormDataHistoryExtractDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.infrastructure.PopulationDataDto;
 import de.symeda.sormas.api.report.CampaignDataExtractDto;
@@ -193,11 +195,28 @@ public class ApmisCampaignResource {// extends EntityDtoResource {
 
 	@GET
 	@Path("/campaignformdata")
+
 	public List<CampaignFormDataDto> getAllCampaignFormDataWithoutTime(@QueryParam("fetchDataFromIndex") Integer first,
 			@QueryParam("dataFetchSize") Integer max,@QueryParam("includeArchived") Boolean includeArchived) {
 		return FacadeProvider.getCampaignFormDataFacade().getAllActiveData(first, max, includeArchived );
 
 	}
+	
+	@GET
+	@Path("/formdatahistory")
+
+	public List<CampaignFormDataHistoryExtractDto> getAllCampaignFormDataRecordHistory(@QueryParam("fetchFromIndex") Integer first,
+			@QueryParam("fetchSize") Integer max,@QueryParam("getRecordHistory") String uuid) {
+		
+		  List<String> uuidList = new ArrayList<>();
+		    if (uuid != null && !uuid.isEmpty()) {
+		        uuidList = Arrays.asList(uuid.split(","));
+		    }
+
+		return FacadeProvider.getCampaignFormDataFacade().getAllActiveAfter(uuidList, first, max );
+
+	}
+	
 	
 	@GET
 	@Path("/campaignformdatacount")

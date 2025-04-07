@@ -93,11 +93,17 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
         }
 
         final CampaignFormData campaignFormDataToSave = getStoredRootEntity();
+
         campaign = DatabaseHelper.getCampaignDao().queryUuid(campaignFormDataToSave.getCampaign().getUuid());
         campaignFormMeta = DatabaseHelper.getCampaignFormMetaDao().queryUuid(campaignFormDataToSave.getCampaignFormMeta().getUuid());
 
         System.out.println(campaignFormDataToSave.getCampaignFormMeta().getFormCategory()+">>>>>edit>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>__");
-//        campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion() + 1L);
+        //true is returned when the form is yet to be synchronized with the server, so we only increment teh record version when
+        //this form has been subimmted and synchronized with server
+        //in return none synced changes wouldn't increment record version
+        if(!campaignFormDataToSave.isModifiedOrChildModified()){
+            campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion() + 1L);
+        }
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
 
         if(ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)){ // District Officer
