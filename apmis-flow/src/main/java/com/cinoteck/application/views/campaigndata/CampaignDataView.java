@@ -2131,7 +2131,6 @@ public class CampaignDataView extends VerticalLayout
 					.setTooltipGenerator(e -> {
 						int dcode = e.getDcode();
 						return "" + dcode;
-//					e.getDcode().toString()
 					});
 			clusterNameColumn = grid.addColumn(CampaignFormDataIndexDto.COMMUNITY)
 					.setHeader(I18nProperties.getCaption(Captions.community))
@@ -2143,7 +2142,7 @@ public class CampaignDataView extends VerticalLayout
 					.setHeader(I18nProperties.getCaption(Captions.clusterNumber))
 //							createHeaderComponent(I18nProperties.getCaption(Captions.clusterNumber),I18nProperties.getCaption(Captions.clusterNumber)))
 					.setSortable(true).setResizable(true).setAutoWidth(true)
-					.setTooltipGenerator(e -> e.getClusternumber().toString())
+					.setTooltipGenerator(e -> e.getClusternumber().toString() != null ? e.getClusternumber().toString(): "" )
 					.setFooter(CampaignFormDataIndexDto.COMMUNITYNUMBER);
 			ccodeColumn = grid.addColumn(CampaignFormDataIndexDto.CCODE)
 					.setHeader(I18nProperties.getCaption(Captions.Community_externalID)).setSortable(true)
