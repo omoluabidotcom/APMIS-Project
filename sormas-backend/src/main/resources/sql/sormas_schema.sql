@@ -11193,8 +11193,6 @@ ALTER TABLE public.campaignformdata ADD COLUMN sys_period tstzrange NOT null DEF
 
 ALTER TABLE public.campaignformdata ADD COLUMN recordversion int4 DEFAULT 1 NOT null;
 
-create trigger versioning_trigger after insert or delete or update on public.campaignformdata for each row execute function versioning('sys_period','campaignformdata_history','true');   
-
 DROP TABLE public.campaignformdata_history;
 
 CREATE TABLE public.campaignformdata_history (
@@ -11229,6 +11227,10 @@ CREATE TABLE public.campaignformdata_history (
 	CONSTRAINT fk_campaignformdata_history_district_id FOREIGN KEY (district_id) REFERENCES public.district(id),
 	CONSTRAINT fk_campaignformdata_history_region_id FOREIGN KEY (region_id) REFERENCES public.region(id)
 );
+
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.campaignformdata_history TO sormas_user;
+
+create trigger versioning_trigger before insert or delete or update on public.campaignformdata for each row execute function versioning('sys_period','campaignformdata_history','true');   
 
 INSERT INTO schema_version (version_number, comment) VALUES (485, 'Implementing Record Versioning');
 
