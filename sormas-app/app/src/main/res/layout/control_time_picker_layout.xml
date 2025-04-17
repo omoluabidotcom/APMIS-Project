@@ -26,16 +26,32 @@
 
         <include layout="@layout/control_label_layout" />
 
-            <EditText
-                android:id="@+id/time_input"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginStart="@dimen/control_spacing"
-                android:inputType="time"
-                android:focusable="false"
-                style="@style/ControlTimePickerInputStyle" />
+<!--            <EditText-->
+<!--                android:id="@+id/time_input"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_marginStart="@dimen/control_spacing"-->
+<!--                android:inputType="time"-->
+<!--                android:focusable="false"-->
+<!--                style="@style/ControlTimePickerInputStyle" />-->
+        <TextView
+            android:id="@+id/control_time_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Time"
+            android:textColor="@android:color/black"
+            android:paddingBottom="4dp"/>
 
+        <EditText
+            android:id="@+id/control_time_input"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@android:drawable/editbox_background"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"
+            android:padding="8dp"
+            android:textColor="@android:color/black"/>
 
     </LinearLayout>
-
 </merge>

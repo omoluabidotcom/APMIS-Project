@@ -79,6 +79,7 @@ import de.symeda.sormas.app.component.controls.ControlPropertyField;
 import de.symeda.sormas.app.component.controls.ControlSpinnerField;
 import de.symeda.sormas.app.component.controls.ControlSwitchField;
 import de.symeda.sormas.app.component.controls.ControlTextEditField;
+import de.symeda.sormas.app.component.controls.ControlTimeField;
 import de.symeda.sormas.app.databinding.FragmentCampaignDataEditLayoutBinding;
 import de.symeda.sormas.app.util.DataUtils;
 import de.symeda.sormas.app.util.InfrastructureDaoHelper;
@@ -1278,6 +1279,10 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 //                        dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
 //                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
 //                    }
+                    else if (type == CampaignFormElementType.TIME) {
+                        dynamicField = CampaignFormDataFragmentUtils.createControlTimeEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
+                        ControlTimeField.setValue((ControlTimeField) dynamicField, value);
+                    }
                     else {
                         dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
                         ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -1311,6 +1316,15 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
 
+                            }
+                        });
+                    }
+
+                    if (type == CampaignFormElementType.TIME) {
+                        dynamicField.addValueChangedListener(e->{
+                            String timeValue = dynamicField.getValue().toString();
+                            if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != ""){
+                                dynamicField.setValue(timeValue);
                             }
                         });
                     }
