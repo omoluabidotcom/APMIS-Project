@@ -946,14 +946,15 @@ public class CampaignFormDataFragmentUtils {
         }
     }
 
-
-
+    
     public static ControlTimeField createControlTimeEditField(
             CampaignFormElement campaignFormElement,
             Context context,
             Map<String, String> userTranslations,
             Boolean isIntegerField,
-            FragmentManager fm, boolean isRequired) {
+            FragmentManager fm,
+            boolean isRequired) {
+
         return new ControlTimeField(context) {
 
             @Override
@@ -976,7 +977,6 @@ public class CampaignFormDataFragmentUtils {
                 return Gravity.CENTER_VERTICAL;
             }
 
-
             @Override
             protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
                 super.inflateView(context, attrs, defStyle);
@@ -984,10 +984,9 @@ public class CampaignFormDataFragmentUtils {
                 initLabelAndValidationListeners();
                 setLiveValidationDisabled(true);
                 initializeTimeField(fm);
-                initInput(false, isRequired);
+                initInput(false, isRequired, false, 0, 1000, false, false);
             }
         };
     }
-
 
 }

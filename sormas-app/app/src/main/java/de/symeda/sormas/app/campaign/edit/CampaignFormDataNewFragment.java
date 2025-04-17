@@ -1172,7 +1172,13 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                     } else if (type == CampaignFormElementType.DATE) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlDateEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                     }else if (type == CampaignFormElementType.TIME) {
-                        dynamicField = CampaignFormDataFragmentUtils.createControlTimeEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
+                        dynamicField = CampaignFormDataFragmentUtils.createControlTimeEditField(
+                                campaignFormElement,
+                                requireContext(),
+                                CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta),
+                                true,
+                                this.getFragmentManager(),
+                                campaignFormElement.isImportant());
                     }  else {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
                     }
@@ -1266,6 +1272,15 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                         }
                                     }
                         }
+                        });
+                    }
+
+                    if (type == CampaignFormElementType.TIME) {
+                        dynamicField.addValueChangedListener(e->{
+                            String value = dynamicField.getValue().toString();
+                            if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != ""){
+                                dynamicField.setValue(value);
+                            }
                         });
                     }
 
