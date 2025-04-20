@@ -59,6 +59,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vladmihalcea.hibernate.type.util.SQLExtractor;
 
+import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignJurisdictionLevel;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
@@ -92,6 +93,7 @@ import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
 import de.symeda.sormas.api.report.CampaignDataExtractDto;
 import de.symeda.sormas.api.report.JsonDictionaryReportModelDto;
 import de.symeda.sormas.api.user.FormAccess;
+import de.symeda.sormas.api.user.UserDto;
 import de.symeda.sormas.api.user.UserReferenceDto;
 import de.symeda.sormas.api.user.UserRight;
 import de.symeda.sormas.api.user.UserRole;
@@ -259,6 +261,8 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 	@Override
 	public CampaignFormDataDto saveCampaignFormDataMobile(@Valid CampaignFormDataDto campaignFormDataDto)
 			throws ValidationRuntimeException {
+		
+		System.out.println(" MObile version of save chittt ");
 		UserReferenceDto currtUsr = userServiceEBJ.getCurrentUserAsReference();
 		campaignFormDataDto.setSource("MOBILE");
 		campaignFormDataDto.setCreatingUser(currtUsr);
@@ -276,7 +280,6 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 			throws ValidationRuntimeException {
 		UserReferenceDto currtUsr = userServiceEBJ.getCurrentUserAsReference();
 		campaignFormDataDto.setCreatingUser(currtUsr);
-
 		CampaignFormData campaignFormData = fromDto(campaignFormDataDto, true);
 		CampaignFormDataEntry.removeNullValueEntries(campaignFormData.getFormValues());
 
@@ -288,6 +291,9 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 	}
 
 	private void validate(CampaignFormDataDto campaignFormDataDto) {
+		boolean isDistrictLevelForm  = campaignFormMetaService.getDistrictEntryStatusByUuid(campaignFormDataDto.getCampaignFormMeta().getUuid());
+System.out.println("Checking Districtb Level Form Entry in Validation point at EJB --------------------");
+		
 		if (campaignFormDataDto.getCampaign() == null) {
 			throw new ValidationRuntimeException(I18nProperties.getValidationError("Campaign_id now valid!"));
 		}
@@ -300,10 +306,20 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 		if (campaignFormDataDto.getDistrict() == null) {
 			throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validDistrict));
 		}
-		if (campaignFormDataDto.getCommunity() == null) {
-			throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validCommunity));
+		
+		if (!isDistrictLevelForm) {
+			
+			System.out.println("Not District Entry Form Point 3333333333333333333333333333333");
+			if (campaignFormDataDto.getCommunity() == null) {
+				throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validCommunity));
+			}
+		}else {
+			System.out.println("District Entry Form Point 3333333333333333333333333333333 Skipping validation check ");
+
 		}
+		
 	}
+	
 
 	@Override
 	public List<CampaignFormDataDto> getByUuids(List<String> uuids) {
@@ -4113,7 +4129,7 @@ resultData.addAll(resultList.stream()
 
 	
 	@Override
-	public List<CampaignFormDataHistoryExtractDto> getAllActiveAfter(List<String> uuid, int offset, int limit) {
+	public List<CampaignFormDataHistoryExtractDto> getFormDataHistory(List<String> uuid, int offset, int limit) {
 	    List<CampaignFormDataHistoryExtractDto> resultData = new ArrayList<>();
 	    
 	    

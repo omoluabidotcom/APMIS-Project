@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.user.UserRight;
+import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.app.BaseActivity;
 import de.symeda.sormas.app.BaseListActivity;
 import de.symeda.sormas.app.PagedBaseListActivity;
@@ -169,25 +170,56 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
 
     @Override
     public void goToNewView() {
-
         final CampaignFormDataCriteria criteria = model.getCriteria();
         List<PopulationData> list = new ArrayList<>();
 
-        System.out.println("listlist before ---- " + list);
-        list = DatabaseHelper.getPopulationDataDao().getSelectedDistrictByUsersDistrict(ConfigProvider.getUser().getDistrict().getUuid(), criteria.getCampaign().getUuid());
+        if (ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
+            // Get all districts the user has access to
+            List<District> userDistricts = new ArrayList<>();
+            List<Item> districtItemList = InfrastructureDaoHelper.loadAllDistricts();
+            List<String> districtUuids = new ArrayList<>();
 
-        if(list.size() > 0 ){
-            final CampaignFormMetaDialog campaignFormMetaDialog = new CampaignFormMetaDialog(BaseActivity.getActiveActivity(), criteria.getCampaign());
-            campaignFormMetaDialog.setPositiveCallback(() ->{
-                CampaignFormDataNewActivity.startActivity(getContext(), criteria.getCampaign().getUuid(), campaignFormMetaDialog.getCampaignFormMeta().getUuid());});
-            campaignFormMetaDialog.show();
-            campaignFormMetaDialog.setLiveValidationDisabled(true);
-        }else{
-            showCustomDialog(this,
-                    "Data Entry Error",
-                    "Users distcrict is not selected for data entry in this campaign.");
+            // Convert district items to District objects and collect UUIDs
+            districtItemList.forEach(item -> {
+                List<District> districts = DatabaseHelper.getDistrictDao().getByName(item.toString());
+                userDistricts.addAll(districts);
+            });
+
+            userDistricts.forEach(district -> {
+                districtUuids.add(district.getUuid());
+            });
+            System.out.println("User role contains surv Officer --------------------"
+            + list);
+            // Option 1: Pass the list of UUIDs directly to a new DAO method
+            list = DatabaseHelper.getPopulationDataDao().getSelectedDistrictsByMultipleUuids(
+                    districtUuids, criteria.getCampaign().getUuid());
+
+
+            System.out.println("after user role contains surv Officer --------------------"
+                    + list);
+        } else {
+            // Original logic for other user roles
+            list = DatabaseHelper.getPopulationDataDao().getSelectedDistrictByUsersDistrict(
+                    ConfigProvider.getUser().getDistrict().getUuid(), criteria.getCampaign().getUuid());
         }
+//        if(!ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
+            List<District> disTrictuserDistricts = new ArrayList<District>();
 
+            if (list.size() > 0) {
+                final CampaignFormMetaDialog campaignFormMetaDialog = new CampaignFormMetaDialog(BaseActivity.getActiveActivity(), criteria.getCampaign());
+                campaignFormMetaDialog.setPositiveCallback(() -> {
+                    CampaignFormDataNewActivity.startActivity(getContext(), criteria.getCampaign().getUuid(), campaignFormMetaDialog.getCampaignFormMeta().getUuid());
+                });
+                campaignFormMetaDialog.show();
+                campaignFormMetaDialog.setLiveValidationDisabled(true);
+            } else {
+                showCustomDialog(this,
+                        "Data Entry Error",
+                        "Users distcrict is not selected for data entry in this campaign.");
+            }
+//        }else{
+//
+//        }
     }
     private void showCustomDialog(Context context, String title, String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);

@@ -47,6 +47,20 @@ public class DistrictDao extends AbstractInfrastructureAdoDao<District> {
 		return queryActiveForEq(District.REGION + "_id", region, District.NAME, true);
 	}
 
+	public List<District> getByName(String districtName) {
+		return queryActiveForEq(District.NAME, districtName, District.NAME, true);
+	}
+
+//	public List<District> getByDistrictName(String districtName) {
+//		try {
+//			QueryBuilder<District, String> queryBuilder = queryBuilder();
+//			queryBuilder.where().eq("name", districtName);
+//			return queryBuilder.query();
+//		} catch (SQLException e) {
+//			throw new RuntimeException("Error retrieving campaigns for district ID: " + districtId, e);
+//		}
+//	}
+
 
 
 	@Override

@@ -26,6 +26,8 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import de.symeda.sormas.api.EntityDto;
 import de.symeda.sormas.api.ImportIgnore;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
@@ -101,6 +103,27 @@ public class CampaignFormDataDto extends EntityDto {
 
 		return campaignFormData;
 	}
+	
+	public static CampaignFormDataDto buildDistrictLevelForm(
+			CampaignReferenceDto campaign,
+			CampaignFormMetaReferenceDto campaignFormMeta,
+			AreaReferenceDto area,
+			RegionReferenceDto region,
+			DistrictReferenceDto district
+			) {
+			CampaignFormDataDto campaignFormData = new CampaignFormDataDto();
+			campaignFormData.setUuid(DataHelper.createUuid());
+			campaignFormData.setCampaign(campaign);
+			campaignFormData.setCampaignFormMeta(campaignFormMeta);
+			campaignFormData.setArea(area);
+			campaignFormData.setRegion(region);
+			campaignFormData.setDistrict(district);
+//			campaignFormData.setCommunity(community);
+			campaignFormData.setFormDate(new Date());
+			campaignFormData.setFormType(campaignFormMeta.getFormType());
+
+			return campaignFormData;
+		}
 
 	public static CampaignFormDataDto build() {
 		CampaignFormDataDto campaignFormData = new CampaignFormDataDto();
