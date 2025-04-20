@@ -95,13 +95,13 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
     private Map<String, String> optionsValues;
     private List<String> constraints;
 
-    private String currentCountryCode;
-
     private boolean onError;
     private String errorMessage = "";
 
     // private List<CampaignFormTranslations> translationsOpt;
     private Map<String, String> userOptTranslations = null;
+
+    private String currentCountryCode;
     private TextView countryLabel;
     private TextView helperText;
 
@@ -1134,7 +1134,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
 
                         helperText = new TextView(requireContext());
                         helperText.setText("Mobile number for " + country
-                                + " must be between " + min + " and " + max + " digits");
+                                + " must be between " + min + " and " + max + " digits without the country code");
                         helperText.setTextSize(10);
                         helperText.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.black));
                         dynamicLayout.addView(helperText, new LinearLayout.LayoutParams(
@@ -1150,7 +1150,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                 currentCountryCode = countryCode;
                                 helperText.setText("Mobile number for " + selectedCountry
                                         + " must be between " + mapvalue.get(selectedCountry).getMinLength() + " and " +
-                                        mapvalue.get(selectedCountry).getMaxLength() + " digits");
+                                        mapvalue.get(selectedCountry).getMaxLength() + " digits without the country code");
                             }
 
                             @Override
@@ -1171,7 +1171,16 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
                     } else if (type == CampaignFormElementType.DATE) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlDateEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
-                    } else {
+
+                    }else if (type == CampaignFormElementType.TIME) {
+                        dynamicField = CampaignFormDataFragmentUtils.createControlTimeEditField(
+                                campaignFormElement,
+                                requireContext(),
+                                CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta),
+                                true,
+                                this.getFragmentManager(),
+                                campaignFormElement.isImportant());
+                    }  else {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
                     }
 //                    System.out.println("Field properties: " + campaignFormElement.getId() + " exp = " + campaignFormElement.getExpression() + " :");
@@ -1265,7 +1274,25 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         });
                     }
 
+                    if (type == CampaignFormElementType.TIME) {
+                        dynamicField.addValueChangedListener(e->{
+                            String value = dynamicField.getValue().toString();
+                            if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != ""){
+                                dynamicField.setValue(value);
+                            }
+                        });
+                    }
 
+                    if (type == CampaignFormElementType.PHONE && campaignFormElement.getId().equalsIgnoreCase("mobileNumber")) {
+                        dynamicField.addValueChangedListener(e->{
+                            String value = dynamicField.getValue().toString().replace(currentCountryCode, "");
+                            if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != ""){
+                                if (value != null && !value.matches("^[+]?[0-9]*$")) {
+                                    dynamicField.setValue(value.replaceAll("[^0-9+]", ""));// Remove invalid characters
+                                }
+                            }
+                        });
+                        }
 
                     if (type == CampaignFormElementType.TEXT && campaignFormElement.getId().equalsIgnoreCase("eTazkiraNo")) {
                         dynamicField.addValueChangedListener(e->{
