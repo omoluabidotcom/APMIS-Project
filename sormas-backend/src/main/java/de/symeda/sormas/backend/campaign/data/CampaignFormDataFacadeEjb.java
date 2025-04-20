@@ -2944,7 +2944,10 @@ if(criteria.getUserLanguage() != null) {
 		String query = "select cb.uuid from campaignformdata cb left join community cm on cb.community_id = cm.id \r\n"
 				+ "left join campaignformmeta ff on cb.campaignformmeta_id = ff.id left join campaigns gn on cb.campaign_id = gn.id\r\n"
 				+ "where cm.uuid = '" + community.getUuid() + "' and ff.uuid = '" + campaignForm.getUuid()
-				+ "' and gn.uuid = '" + campaign.getUuid() + "' limit 1";
+				+ "' and gn.uuid = '" + campaign.getUuid() + "'and cb.archived = false limit 1";
+		
+		
+			System.out.println(query + "queryqueryqueryqueryqueryqueryqueryqueryqueryquery");
 		Query poquery = em.createNativeQuery(query);
 		try {
 			return (String) poquery.getSingleResult();
