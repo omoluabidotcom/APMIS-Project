@@ -1171,11 +1171,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
                     } else if (type == CampaignFormElementType.DATE) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlDateEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
-                    }else if (type == CampaignFormElementType.TIME) {
-                        dynamicField = CampaignFormDataFragmentUtils.createControlTimeEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                     } else {
-
-
                         dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
                     }
 //                    System.out.println("Field properties: " + campaignFormElement.getId() + " exp = " + campaignFormElement.getExpression() + " :");
@@ -1223,8 +1219,6 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
 
                         });
                     } else {
-
-
                         dynamicField.addValueChangedListener(field -> {
                             baseEditActivity.setDataModified(true);
                             final Boolean isRangeandExpressionx = finalIsRangeandExpression;
@@ -1273,7 +1267,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
 
 
 
-                    if (type == CampaignFormElementType.TEXT && campaignFormElement.getId().equalsIgnoreCase("TazkiraNo")) {
+                    if (type == CampaignFormElementType.TEXT && campaignFormElement.getId().equalsIgnoreCase("eTazkiraNo")) {
                         dynamicField.addValueChangedListener(e->{
                             if (dynamicField.getValue().toString() != null){
                                         if ( dynamicField.getValue().toString().length() == 13) {
@@ -1290,16 +1284,10 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                     Object defaultValue = campaignFormElement.getDefaultvalue();
                     formValues.add(new CampaignFormDataEntry(campaignFormElement.getId(), defaultValue == null ? null : defaultValue));
                     dynamicField.setValue(defaultValue == null ? null : defaultValue);
-
                     if (dependingOn != null && finalIsRangeandExpression) {
-
-
                         dynamicField.hideFieldOnly();
-
                     } else if (dependingOn != null) {
-
                         handleDependingOn(fieldMap, campaignFormElement, dynamicField);
-
                     }
 
                     final String expressionString = campaignFormElement.getExpression();
@@ -1307,29 +1295,38 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         CampaignFormDataFragmentUtils.handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
                         expressionMap.put(campaignFormElement, dynamicField);
                     }
-                } else if (type == CampaignFormElementType.SECTION) {
-                    if (campaignFormElement.getDependingOn() == null) {
-                        ControlPropertyField dynamicField;
-                        dynamicLayout.addView(new ImageView(requireContext(), null, R.style.FullHorizontalDividerStyle));
-                    }else{
-                        ControlPropertyField dynamicField;
-                        dynamicLayout.addView(new ImageView(requireContext(), null, R.style.FullHorizontalDividerStyle));
-                        handleDependingOnSectionAndLabel(fieldMap, campaignFormElement, dynamicLayout);
-
-                    }
-                } else if (type == CampaignFormElementType.LABEL) {
-                    if (campaignFormElement.getDependingOn() == null) {
-                        TextView textView = new TextView(requireContext());
-                        TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
-                        dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                    }else{
-                        TextView textView = new TextView(requireContext());
-                        TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
-                        dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                        handleDependingOnSectionAndLabel(fieldMap, campaignFormElement, dynamicLayout);
-
-                    }
                 }
+//                else if (type == CampaignFormElementType.SECTION) {
+//                    System.out.println("Type is not daywise but section ---------------------");
+//                    if (campaignFormElement.getDependingOn() == null) {
+//                        ControlPropertyField dynamicField;
+//                        dynamicLayout.addView(new ImageView(requireContext(), null, R.style.FullHorizontalDividerStyle));
+//                    }else{
+//                        System.out.println(" Section---------------------Depending on is not null");
+//                        ControlPropertyField dynamicField;
+//                        dynamicLayout.addView(new ImageView(requireContext(), null, R.style.FullHorizontalDividerStyle));
+//                        handleDependingOnSectionAndLabel(fieldMap, campaignFormElement, dynamicLayout);
+//
+//                    }
+//                } else if (type == CampaignFormElementType.LABEL) {
+//                    System.out.println("Type is not daywise but Label ---------------------");
+//
+//                    if (campaignFormElement.getDependingOn() == null) {
+//                        System.out.println("Type is not daywise but Label ---------------------Depending on is null");
+//
+//                        TextView textView = new TextView(requireContext());
+//                        TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
+//                        dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+//                    }else{
+//                        System.out.println(" Label---------------------Depending on is not null");
+//
+//                        TextView textView = new TextView(requireContext());
+//                        TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
+//                        dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+//                        handleDependingOnSectionAndLabel(fieldMap, campaignFormElement, dynamicLayout);
+//
+//                    }
+//                }
 
             }
         }

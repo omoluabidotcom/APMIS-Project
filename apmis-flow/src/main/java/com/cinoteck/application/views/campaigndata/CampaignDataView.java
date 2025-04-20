@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -75,6 +76,7 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.selection.MultiSelect;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -668,6 +670,7 @@ public class CampaignDataView extends VerticalLayout
 				anchor.setHref(exporter.getCsvStreamResource());
 				importanceSwitcher.clear();
 				importanceSwitcher.setReadOnly(false);
+				configureColumnStyles(criteria);
 				reload();
 				updateRowCount();
 			}
@@ -743,6 +746,7 @@ public class CampaignDataView extends VerticalLayout
 			campaignFormCombo.setValue(campaignForms.get(0));
 			remove(grid);
 			configureGrid(criteria);
+			configureColumnStyles(criteria);
 			updateRowCount();
 
 		});
@@ -753,17 +757,6 @@ public class CampaignDataView extends VerticalLayout
 			if (e.getValue() != null) {
 				formMetaReference = FacadeProvider.getCampaignFormMetaFacade()
 						.getCampaignFormMetaByUuid(e.getValue().getUuid());
-//				List<Long> versions = new ArrayList<>();
-//				List<CampaignFormMetaHistoryExtractDto> versionList = FacadeProvider.getCampaignFormMetaFacade()
-//						.getFormsMetaHistory(e.getValue().getUuid());
-//				for (CampaignFormMetaHistoryExtractDto xx : versionList) {
-//					versions.add(xx.getVersion());
-//				}
-//				campaignFormComboVersions.setItems(versions);
-
-//				formMetaReference = FacadeProvider.getCampaignFormMetaFacade()
-//						.getCampaignFormMetaByUuid(e.getValue().getUuid());
-//				
 
 				exportFileName = campaignz.getValue().toString() + "_"
 						+ campaignFormCombo.getValue().toString().replaceAll("[^a-zA-Z0-9]+", " ") + "_"
@@ -800,151 +793,6 @@ public class CampaignDataView extends VerticalLayout
 			updateRowCount();
 			configureColumnStyles(criteria);
 		});
-
-//		campaignFormComboVersions.addValueChangeListener(e -> {
-//			if (e.getValue() != null) {
-//
-//				formMetaReference = FacadeProvider.getCampaignFormMetaFacade()
-//						.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
-//				List<CampaignFormElement> campaignFormElements = new ArrayList<>();
-//				List<CampaignFormMetaHistoryExtractDto> versionList = FacadeProvider.getCampaignFormMetaFacade()
-//						.getFormsMetaHistory(campaignFormCombo.getValue().getUuid());
-//
-//				if (formMetaReference != null) {
-//					remove(grid);
-//
-//					if (versionList != null && !versionList.isEmpty()) {
-//						for (CampaignFormMetaHistoryExtractDto metaHistoryExtractDto : versionList) {
-//							if (metaHistoryExtractDto.getVersion().equals(e.getValue())) { // Match based on version
-//								List<CampaignFormElement> elements = metaHistoryExtractDto.getCampaignFormElements();
-//								if (elements != null && !elements.isEmpty()) {
-//
-//									campaignFormElements.add(elements.get(0)); // Taking the first element
-//									break; // Exit the loop after finding the first matching element
-//								}
-//							}
-//							CampaignFormMetaReferenceDto campaignFormMetaReferenceDto = new CampaignFormMetaReferenceDto(
-//									metaHistoryExtractDto.getUuid());
-//							criteria.setCampaignFormMeta(campaignFormMetaReferenceDto);
-//						}
-//					}
-//
-//					configureGrid(criteria);
-//
-//					CampaignFormElement singleElement;
-//					if (!campaignFormElements.isEmpty()) {
-//						// Return a single element from the list
-//						singleElement = campaignFormElements.get(0);
-//						// Or you can process `singleElement` as needed
-//
-//						String caption = null;
-//						if (caption == null) {
-//							caption = singleElement.getCaption();
-//							System.out.println(singleElement.getId()
-//									+ "66333333333366666666666666666666666666666666666666666666" + caption);
-//
-//						}
-//
-//						if (caption != null) {
-//							addCustomColumn(singleElement.getId(), caption);
-//
-//							System.out.println(
-//									singleElement.getId() + "6666666666666666666666666666666666666666666666" + caption);
-//						}
-//					}
-//
-//				}
-//				configureColumnStyles(criteria);
-//
-//				importanceSwitcher.addValueChangeListener(ee -> {
-//
-//					CampaignFormElement ele = new CampaignFormElement();
-//					if (versionList != null && !versionList.isEmpty()) {
-//
-//						String uuid = "";
-//						List<CampaignFormElement> elements = new ArrayList<>();
-//						for (CampaignFormMetaHistoryExtractDto metaHistoryExtractDto : versionList) {
-//							if (metaHistoryExtractDto.getVersion().equals(e.getValue())) { // Match based on version
-//								elements = metaHistoryExtractDto.getCampaignFormElements();
-//
-//								System.out.println(elements
-//										+ " elementselements Form ele,emnts dfrom the version selection list ");
-//
-//								if (elements != null && !elements.isEmpty()) {
-//
-//									campaignFormElements.add(elements.get(0));
-//									uuid = metaHistoryExtractDto.getUuid();
-//									System.out.println(
-//											campaignFormElements + " Form ele,emnts dfrom the version selection list ");
-////					                ele = elements.get(0);// Taking the first element
-//									break; // Exit the loop after finding the first matching element
-//								}
-//							}
-//
-//						}
-//						CampaignFormMetaReferenceDto campaignFormMetaReferenceDto = new CampaignFormMetaReferenceDto(
-//								uuid);
-//						criteria.setCampaignFormMeta(campaignFormMetaReferenceDto);
-//
-//						if (campaignFormMetaReferenceDto != null) {
-//							remove(grid);
-//							configureGrid(criteria);
-//
-//							final boolean allAndImportantFormElements = ee
-//									.getValue() == CampaignFormElementImportance.ALL;
-//							final boolean onlyImportantFormElements = ee
-//									.getValue() == CampaignFormElementImportance.IMPORTANT;
-//
-//							final List<CampaignFormElement> campaignFormElementsx = elements;
-//
-//							for (CampaignFormElement element : campaignFormElementsx) {
-//								if (element.isImportant() && onlyImportantFormElements) {
-//									String caption = null;
-//									if (caption == null) {
-//										caption = element.getCaption();
-//										System.out.println(caption
-//												+ " caption from importance Form ele,emnts dfrom the version selection list ");
-//
-//									}
-//
-//									if (caption != null) {
-//										addCustomColumn(element.getId(), caption);
-//										System.out.println(element.getId()
-//												+ " custom column  from importance Form ele,emnts dfrom the version selection list ");
-//
-//									}
-//								} else if (allAndImportantFormElements) {
-//									String caption = null;
-//									if (caption == null) {
-//										caption = element.getCaption();
-//										System.out.println(caption
-//												+ " caption all from importance Form ele,emnts dfrom the version selection list ");
-//
-//									}
-//									if (caption != null) {
-//										addCustomColumn(element.getId(), caption);
-//										System.out.println(element.getId()
-//												+ " custom column all  from importance Form ele,emnts dfrom the version selection list ");
-//
-//									}
-//								}
-//							}
-//						}
-//
-//						configureColumnStyles(criteria);
-//
-//						if (leaveBulkEdit.isVisible()) {
-//							leaveBulkEdit.setVisible(false);
-////							bulkActionsItem.setVisible(false);
-//							dropdownBulkOperations.setVisible(false);
-//
-//							enterBulkEdit.setVisible(true);
-//						}
-//					}
-//
-//				});
-//			}
-//		});
 
 		regionCombo.setClearButtonVisible(true);
 		regionCombo.addValueChangeListener(e -> {
@@ -1202,9 +1050,13 @@ public class CampaignDataView extends VerticalLayout
 				final boolean onlyImportantFormElements = e.getValue() == CampaignFormElementImportance.IMPORTANT;
 
 				final List<CampaignFormElement> campaignFormElements = formMetaReference.getCampaignFormElements();
+				
+				
 
 				for (CampaignFormElement element : campaignFormElements) {
 
+					String fieldsType = element.getType();
+					
 					if (element.isImportant() && onlyImportantFormElements) {
 						String caption = null;
 						if (caption == null) {
@@ -1212,7 +1064,7 @@ public class CampaignDataView extends VerticalLayout
 						}
 
 						if (caption != null) {
-							addCustomColumn(element.getId(), caption);
+							addCustomColumn(element.getId(), caption, fieldsType);
 						}
 					} else if (allAndImportantFormElements) {
 						String caption = null;
@@ -1220,7 +1072,7 @@ public class CampaignDataView extends VerticalLayout
 							caption = element.getCaption();
 						}
 						if (caption != null) {
-							addCustomColumn(element.getId(), caption);
+							addCustomColumn(element.getId(), caption, fieldsType);
 						}
 					}
 				}
@@ -1458,8 +1310,7 @@ public class CampaignDataView extends VerticalLayout
 			DownloadTransposedLqasDataUtility downloadTransposedLqasDaywiseDataUtility = new DownloadTransposedLqasDataUtility();
 			transposdeDataAnchor.setHref(downloadTransposedLqasDaywiseDataUtility.createTransposedLqasDataFromIndexList(
 					transposedDataCriteria, formName, campaignz.getValue().toString()));
-			transposdeDataDictionaryAnchor.setHref(downloadTransposedLqasDaywiseDataUtility
-					.createTransposedDataFormExpressions(transposedDataCriteria));
+			transposdeDataDictionaryAnchor.setHref(downloadTransposedLqasDaywiseDataUtility.createTransposedDataFormExpressions(transposedDataCriteria));
 
 		}
 
@@ -1920,6 +1771,15 @@ public class CampaignDataView extends VerticalLayout
 		System.out.println("Configure grid calllllleddddddddddddd");
 		languageHandler();
 		setMargin(false);
+		
+		boolean isActiveFormDistrictLevel = false;
+		
+		if (campaignFormCombo.getValue() != null) {
+			CampaignFormMetaDto campaignFormMetaData = FacadeProvider.getCampaignFormMetaFacade().getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
+			isActiveFormDistrictLevel = campaignFormMetaData.isDistrictentry();
+		}
+		
+		System.out.println("District leval for ? ------------" +  isActiveFormDistrictLevel);
 		grid = new Grid<>(CampaignFormDataIndexDto.class, false);
 //		grid.setSelectionMode(SelectionMode.SINGLE);
 		grid.setColumnReorderingAllowed(true);
@@ -1976,8 +1836,13 @@ public class CampaignDataView extends VerticalLayout
 			} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
 				arabicFormat = NumberFormat.getInstance(new Locale("fa"));
 			}
+			
+			String value = "";
+			if(input.getCcode() != null) {
+				value = String.valueOf(arabicFormat.format(input.getCcode() != null ? input.getCcode(): ""));
 
-			String value = String.valueOf(arabicFormat.format(input.getCcode()));
+				}
+
 			Span label = new Span(value);
 			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
 			return label;
@@ -1991,8 +1856,12 @@ public class CampaignDataView extends VerticalLayout
 			} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
 				arabicFormat = NumberFormat.getInstance(new Locale("fa"));
 			}
+			
+			String value = "";
+			if(input.getClusternumber() != null) {
+				value = String.valueOf(arabicFormat.format(input.getClusternumber() != null ? input.getClusternumber(): ""));
 
-			String value = String.valueOf(arabicFormat.format(input.getClusternumber()));
+				}
 			Span label = new Span(value);
 			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
 			return label;
@@ -2020,6 +1889,9 @@ public class CampaignDataView extends VerticalLayout
 			grid.addColumn(dCodeRender).setHeader(I18nProperties.getCaption(Captions.District_externalID))
 					.setSortable(true).setResizable(true).setAutoWidth(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.District_externalID));
+			
+//			if(!isActiveFormDistrictLevel) {
+
 			clusterNameColumn = grid.addColumn(CampaignFormDataIndexDto.COMMUNITY)
 					.setHeader(I18nProperties.getCaption(Captions.community)).setSortable(true).setResizable(true)
 					.setAutoWidth(true).setTooltipGenerator(e -> I18nProperties.getCaption(Captions.community));
@@ -2030,6 +1902,9 @@ public class CampaignDataView extends VerticalLayout
 					.setHeader(I18nProperties.getCaption(Captions.Community_externalID)).setSortable(true)
 					.setResizable(true).setAutoWidth(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.Community_externalID));
+			
+//			}
+			
 			grid.addColumn(CampaignFormDataIndexDto.FORM_TYPE).setHeader(I18nProperties.getCaption(Captions.formPhase))
 					.setSortable(true).setResizable(true).setAutoWidth(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.formPhase));
@@ -2063,6 +1938,9 @@ public class CampaignDataView extends VerticalLayout
 			grid.addColumn(dCodeRender).setHeader(I18nProperties.getCaption(Captions.District_externalID))
 					.setSortable(true).setResizable(true).setAutoWidth(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.District_externalID));
+			
+//			if(!isActiveFormDistrictLevel) {
+
 			clusterNameColumn = grid.addColumn(CampaignFormDataIndexDto.COMMUNITY)
 					.setHeader(I18nProperties.getCaption(Captions.community)).setSortable(true).setResizable(true)
 					.setAutoWidth(true).setTooltipGenerator(e -> I18nProperties.getCaption(Captions.community));
@@ -2073,6 +1951,8 @@ public class CampaignDataView extends VerticalLayout
 					.setHeader(I18nProperties.getCaption(Captions.Community_externalID)).setSortable(true)
 					.setResizable(true).setAutoWidth(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.Community_externalID));
+//			}
+			
 			grid.addColumn(CampaignFormDataIndexDto.FORM_TYPE).setHeader(I18nProperties.getCaption(Captions.formPhase))
 					.setSortable(true).setResizable(true).setAutoWidth(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.formPhase));
@@ -2132,22 +2012,28 @@ public class CampaignDataView extends VerticalLayout
 						int dcode = e.getDcode();
 						return "" + dcode;
 					});
-			clusterNameColumn = grid.addColumn(CampaignFormDataIndexDto.COMMUNITY)
-					.setHeader(I18nProperties.getCaption(Captions.community))
-//					createHeaderComponent(I18nProperties.getCaption(Captions.community),I18nProperties.getCaption(Captions.community)))
-					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getCommunity())
-					.setFooter(I18nProperties.getCaption(Captions.community));
+			
+//			if(!isActiveFormDistrictLevel) {
+				clusterNameColumn = grid.addColumn(CampaignFormDataIndexDto.COMMUNITY)
+						.setHeader(I18nProperties.getCaption(Captions.community))
+//						createHeaderComponent(I18nProperties.getCaption(Captions.community),I18nProperties.getCaption(Captions.community)))
+						.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getCommunity())
+						.setFooter(I18nProperties.getCaption(Captions.community));
 
-			clusterNumberColumn = grid.addColumn(CampaignFormDataIndexDto.COMMUNITYNUMBER)
-					.setHeader(I18nProperties.getCaption(Captions.clusterNumber))
-//							createHeaderComponent(I18nProperties.getCaption(Captions.clusterNumber),I18nProperties.getCaption(Captions.clusterNumber)))
-					.setSortable(true).setResizable(true).setAutoWidth(true)
-					.setTooltipGenerator(e -> e.getClusternumber().toString() != null ? e.getClusternumber().toString(): "" )
-					.setFooter(CampaignFormDataIndexDto.COMMUNITYNUMBER);
-			ccodeColumn = grid.addColumn(CampaignFormDataIndexDto.CCODE)
-					.setHeader(I18nProperties.getCaption(Captions.Community_externalID)).setSortable(true)
-					.setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getCcode().toString())
-					.setFooter(CampaignFormDataIndexDto.CCODE);
+				clusterNumberColumn = grid.addColumn(CampaignFormDataIndexDto.COMMUNITYNUMBER)
+						.setHeader(I18nProperties.getCaption(Captions.clusterNumber))
+//								createHeaderComponent(I18nProperties.getCaption(Captions.clusterNumber),I18nProperties.getCaption(Captions.clusterNumber)))
+						.setSortable(true).setResizable(true).setAutoWidth(true)
+						.setTooltipGenerator(e -> e.getClusternumber() == null ? "" : e.getClusternumber().toString())
+						.setFooter(CampaignFormDataIndexDto.COMMUNITYNUMBER);
+				ccodeColumn = grid.addColumn(CampaignFormDataIndexDto.CCODE)
+						.setHeader(I18nProperties.getCaption(Captions.Community_externalID)).setSortable(true)
+						.setResizable(true)
+						.setAutoWidth(true)
+						.setTooltipGenerator(e -> e.getCcode() == null ? "" : e.getCcode().toString())
+						.setFooter(CampaignFormDataIndexDto.CCODE);
+//			}
+			
 
 			grid.addColumn(CampaignFormDataIndexDto.FORM_TYPE).setHeader(I18nProperties.getCaption(Captions.formPhase))
 //					createHeaderComponent(I18nProperties.getCaption(Captions.formPhase),I18nProperties.getCaption(Captions.formPhase)))
@@ -2268,8 +2154,9 @@ public class CampaignDataView extends VerticalLayout
 		anchor.getStyle().set("width", "100px");
 
 		icon.getStyle().set("margin-right", "8px");
-		icon.getStyle().set("font-size", "10px");
+		icon.getStyle().set("font-size", "10px");;
 		anchor.getElement().insertChild(0, icon.getElement());
+		
 
 		add(grid);
 	}
@@ -2309,9 +2196,12 @@ public class CampaignDataView extends VerticalLayout
 			boolean isDistictLevelData = formData.isDistrictentry();
 
 			if (isDistictLevelData) {
-				clusterNameColumn.setVisible(false);
-				clusterNumberColumn.setVisible(false);
-				ccodeColumn.setVisible(false);
+				if(clusterNameColumn != null) {
+					clusterNameColumn.setVisible(false);
+					clusterNumberColumn.setVisible(false);
+					ccodeColumn.setVisible(false);	
+				}
+
 
 			} else {
 				clusterNameColumn.setVisible(true);
@@ -2364,36 +2254,156 @@ public class CampaignDataView extends VerticalLayout
 		grid.setDataProvider(dataProvider);
 	}
 
-	public void addCustomColumn(String property, String caption) {
+	public void addCustomColumn(String property, String caption, String fieldsType) {
 		if (!property.toString().contains("readonly")) {
-//			System.out.println(caption + "_--------------------UUUUUUUUUUUUUUUUUUUUUUUUUUUUu");
-			grid.addColumn(e -> {
-				return removeTrailingDecimal(
-						e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-			}).setHeader(caption).setFooter(property).setSortProperty(property).setSortable(false).setResizable(true)
-					.setAutoWidth(true)
-					.setTooltipGenerator(
-							e -> caption + " : "
-									+ removeTrailingDecimal(e.getFormValues().stream()
-											.filter(v -> v.getId().equals(property)).findFirst().orElse(null)))
-					.setClassNameGenerator(item -> "full-width-column");
+			grid.addColumn(e -> {				
+	            CampaignFormDataEntry formValue = e.getFormValues().stream()
+	                    .filter(v -> v.getId().equals(property))
+	                    .findFirst()
+	                    .orElse(null);
+	                if (fieldsType != null && 
+	                   (fieldsType.equalsIgnoreCase("number"))) {
+	                    if(formValue != null) {
+							System.out.println(formValue.getValue().toString().toLowerCase()  + "  ----------------formValue.getValue().toString().toLowerCase() ");
+							return   removeTrailingDecimalFromString(formValue.getValue().toString());//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+						}else {
+							return  "";
+						}
+	                }
+			return removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+			}).setHeader(caption).setFooter(property).setSortProperty(property).setSortable(false).setResizable(true).setAutoWidth(true)
+			.setTooltipGenerator(e->{
+					CampaignFormDataEntry formValue = e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null);
+		              String value;
+
+					if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
+		                 if(formValue != null) {
+								System.out.println(formValue.getValue().toString().toLowerCase()  + "  ----------------formValue.getValue().toString().toLowerCase() ");
+								return  value = removeTrailingDecimalFromString(formValue.getValue().toString());//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+							}else {
+								return value = "";
+							}
+			 	   }else {
+                       value = removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
 
 
-//			grid.addColumn(
-//					e -> e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null))
-//			 		.setHeader(caption)
-////							createHeaderComponent(caption, caption))
-//					.setFooter(property).setSortProperty(property).setSortable(false).setResizable(true)
-//					.setAutoWidth(true)
-//					.setTooltipGenerator(e -> caption + " : " + e.getFormValues().stream()
-//							.filter(v -> v.getId().equals(property)).findFirst().orElse(null))
-//					.setClassNameGenerator(item -> "full-width-column");
+			 	   }
 
+				   return caption + " : " + value;
+					}).setClassNameGenerator(item -> "full-width-column");
 		}
 
 	}
+	
+	
+//	public void addCustomColumn(String property, String caption, String fieldType) {
+//	    if (!property.toString().contains("readonly")) {
+//	        grid.addColumn(e -> {
+//	            e.getFormValues().stream()
+//	                .filter(v -> v.getId().equals(property))
+//	                .findFirst().orElse(null);
+//
+//	            if (e.getFormValues() == null) return "";
+//
+//	            // If field type is number, return full number string
+//	            if ("number".equalsIgnoreCase(fieldType)) {
+//	                return e.getFormValues(); // Return the raw value
+//	            }
+//
+//	            // Otherwise, do any other formatting
+//	            return removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+//	        })
+//	        .setHeader(caption)
+//	        .setFooter(property)
+//	        .setSortProperty(property)
+//	        .setSortable(false)
+//	        .setResizable(true)
+//	        .setAutoWidth(true)
+//	        .setTooltipGenerator(
+//					e -> caption + " : "
+//							+ removeTrailingDecimal(e.getFormValues().stream()
+//									.filter(v -> v.getId().equals(property)).findFirst().orElse(null)))
+//	        .setClassNameGenerator(item -> "full-width-column");
+//	    }
+//	}
+
+	
+	
+//	public void addCustomColumn(String property, String caption, String fieldType) {
+//	    if (!property.toString().contains("readonly")) {
+//	        if ("number".equalsIgnoreCase(fieldType)) {
+//	            grid.addColumn(new NumberRenderer<>(
+//	                item -> {
+//	                	CampaignFormDataEntry value = item.getFormValues().stream()
+//	                        .filter(v -> v.getId().equals(property))
+//	                        .findFirst()
+//	                        .orElse(null);
+//	                    if (value == null || value.getValue() == null) return null;
+//
+//	                    try {
+//	                    	
+//	                    	return new BigDecimal(value.getValue().toString());
+//
+////	                        return new BigDecimal(value.getValue());
+//	                    } catch (NumberFormatException e) {
+//	                        return null;
+//	                    }
+//	                },
+//	                NumberFormat.getIntegerInstance()
+//	            ))
+//	            .setHeader(caption)
+//	            .setFooter(property)
+//	            .setSortProperty(property)
+//	            .setSortable(false)
+//	            .setResizable(true)
+//	            .setAutoWidth(true)
+//	            .setTooltipGenerator(item -> {
+//	                CampaignFormDataEntry value = item.getFormValues().stream()
+//	                    .filter(v -> v.getId().equals(property))
+//	                    .findFirst()
+//	                    .orElse(null);
+//	                return caption + " : " + (value != null && value.getValue() != null ? value.getValue() : "");
+//	            })
+//	            .setClassNameGenerator(item -> "full-width-column");
+//
+//	        } else {
+//	            // Non-numeric fields
+//	            grid.addColumn(item -> {
+//	            	CampaignFormDataEntry value = item.getFormValues().stream()
+//	                    .filter(v -> v.getId().equals(property))
+//	                    .findFirst()
+//	                    .orElse(null);
+//	                return removeTrailingDecimal(value);
+//	            })
+//	            .setHeader(caption)
+//	            .setFooter(property)
+//	            .setSortProperty(property)
+//	            .setSortable(false)
+//	            .setResizable(true)
+//	            .setAutoWidth(true)
+//	            .setTooltipGenerator(item -> {
+//	            	CampaignFormDataEntry value = item.getFormValues().stream()
+//	                    .filter(v -> v.getId().equals(property))
+//	                    .findFirst()
+//	                    .orElse(null);
+//	                return caption + " : " + removeTrailingDecimal(value);
+//	            })
+//	            .setClassNameGenerator(item -> "full-width-column");
+//	        }
+//	    }
+//	}
+
+	
 
 	private String removeTrailingDecimal(CampaignFormDataEntry value) {
+		String valueCleaned = value == null ? null : value.toString();
+		if (valueCleaned != null && valueCleaned.endsWith(".0")) {
+			return valueCleaned.substring(0, valueCleaned.length() - 2);
+		}
+		return valueCleaned;
+	}
+	
+	private String removeTrailingDecimalFromString(String value) {
 		String valueCleaned = value == null ? null : value.toString();
 		if (valueCleaned != null && valueCleaned.endsWith(".0")) {
 			return valueCleaned.substring(0, valueCleaned.length() - 2);

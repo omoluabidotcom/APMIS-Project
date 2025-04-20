@@ -140,13 +140,6 @@ public class CampaignFormMeta extends PseudonymizableAdo {
 		this.campaignFormTranslations = null;
 	}
 
-	public boolean isDistrictentry() {
-		return districtentry;
-	}
-
-	public void setDistrictentry(boolean districtentry) {
-		this.districtentry = districtentry;
-	}
 
 	@Transient
 	public List<CampaignFormTranslations> getCampaignFormTranslations() {
@@ -166,6 +159,14 @@ public class CampaignFormMeta extends PseudonymizableAdo {
 		this.campaignFormTranslations = campaignFormTranslations;
 		Gson gson = new Gson();
 		campaignFormTranslationsJson = gson.toJson(campaignFormTranslations);
+	}
+
+	public boolean isDistrictentry() {
+		return districtentry;
+	}
+
+	public void setDistrictentry(boolean districtentry) {
+		this.districtentry = districtentry;
 	}
 
 	@Override

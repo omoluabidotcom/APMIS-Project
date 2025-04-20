@@ -213,7 +213,7 @@ public class ApmisCampaignResource {// extends EntityDtoResource {
 		        uuidList = Arrays.asList(uuid.split(","));
 		    }
 
-		return FacadeProvider.getCampaignFormDataFacade().getAllActiveAfter(uuidList, first, max );
+		return FacadeProvider.getCampaignFormDataFacade().getFormDataHistory(uuidList, first, max );
 
 	}
 	

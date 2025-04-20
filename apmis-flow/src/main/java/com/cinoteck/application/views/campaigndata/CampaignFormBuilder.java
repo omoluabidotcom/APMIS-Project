@@ -2394,11 +2394,16 @@ public class CampaignFormBuilder extends VerticalLayout {
 				cbDistrict.getElement().setProperty("invalid", true);
 				hasErrorFormValues(3);
 			}
+			if(!isDistrictEntry) {
+				System.out.println("Not a district entry form 1111111");
 			if (cbCommunity.getValue() == null) {
 				cbCommunity.getElement().setProperty("invalid", true);
 				hasErrorFormValues(4);
 			}
+			}else {
+				System.out.println(" district entry form 1111111");
 
+			}
 			if (formDate.getValue() == null) {
 				formDate.getElement().setProperty("invalid", true);
 				hasErrorFormValues(5);
@@ -2446,6 +2451,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		validateAndSave();
 		if (!invalidForm) {
+			
+				
 			if (openData) {
 				boolean saveChecker = true;
 				UserProvider userProvider = new UserProvider();
@@ -2510,7 +2517,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 					// maybe we want to check the name of the updating user here
 					dataDto.setCreatingUser(userProvider.getUserReference());
-
 					// dataDto.setSource(PlatformEnum.WEB);
 					dataDto.setRecordgroupuuid(dataDto.getRecordgroupuuid());
 					dataDto.setRecordversion(incrementedVersion);
@@ -2540,7 +2546,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					notification.open();
 				}
 			} else {
-				
+
 				System.out.println("New Data waiting response -------------");
 				boolean saveChecker = true;
 				boolean ccodeChecker = true;
@@ -2594,28 +2600,50 @@ public class CampaignFormBuilder extends VerticalLayout {
 				
 				
 				if (saveChecker) {
-					CampaignFormDataDto dataDto = CampaignFormDataDto.build(campaignReferenceDto, campaignFormMeta,
-							cbArea.getValue(), cbRegion.getValue(), cbDistrict.getValue(), cbCommunity.getValue());
-
 					Date dateData = Date.from(formDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant());
 
+//					CampaignFormDataDto dataDto = CampaignFormDataDto.build(campaignReferenceDto, campaignFormMeta,
+//							cbArea.getValue(), cbRegion.getValue(), cbDistrict.getValue(), cbCommunity.getValue());
+					
+					if(isDistrictEntry) {
+						System.out.println("District Enry form point 2222222222222222222222222");
+					
+						CampaignFormDataDto dataDto = CampaignFormDataDto.buildDistrictLevelForm(campaignReferenceDto, campaignFormMeta,
+								cbArea.getValue(), cbRegion.getValue(), cbDistrict.getValue());
+						
+//						dataDto.setDistrictEntryForm(isDistrictEntry);
+						dataDto.setFormDate(dateData);
+						dataDto.setCreatingUser(userProvider.getUserReference());
+						dataDto.setFormValues(entries);
+						dataDto.setSource("WEB");
+						dataDto.setRecordgroupuuid(dataDto.getUuid());
+						dataDto.setRecordversion(1L);
+//						if (dataDto.getFormType())
+						dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
+						Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
+						return true;
+						
+					}else {
+						
+						System.out.println("nOT   District Enry form point 2222222222222222222222222");
 
-					System.out.println("New Data waiting response -------------" + dataDto.getFormValues());
+						CampaignFormDataDto dataDto = CampaignFormDataDto.build(campaignReferenceDto, campaignFormMeta,
+								cbArea.getValue(), cbRegion.getValue(), cbDistrict.getValue(), cbCommunity.getValue());
+						
+//						dataDto.setDistrictEntryForm(!isDistrictEntry);
+						dataDto.setFormDate(dateData);
+						dataDto.setCreatingUser(userProvider.getUserReference());
+						dataDto.setFormValues(entries);
+						dataDto.setSource("WEB");
+						dataDto.setRecordgroupuuid(dataDto.getUuid());
+						dataDto.setRecordversion(1L);
+//						if (dataDto.getFormType())
+						dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
+						Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
+						return true;
+					}
 
 
-					dataDto.setFormDate(dateData);
-					dataDto.setCreatingUser(userProvider.getUserReference());
-					dataDto.setFormValues(entries);
-					dataDto.setSource("WEB");
-					dataDto.setRecordgroupuuid(dataDto.getUuid());
-					dataDto.setRecordversion(1L);
-
-//					if (dataDto.getFormType())
-
-					dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
-
-					Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
-					return true;
 
 				} else {
 					Notification notification = new Notification();

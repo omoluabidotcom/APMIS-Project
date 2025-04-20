@@ -189,7 +189,7 @@ public interface CampaignFormDataFacade {
 
 	List<CampaignFormDataHistoryExtractDto> getAllActiveAfter(Date date, List<String> uuid);
 
-	List<CampaignFormDataHistoryExtractDto> getAllActiveAfter(List<String> uuid, int offset, int limit);
+	List<CampaignFormDataHistoryExtractDto> getFormDataHistory(List<String> uuid, int offset, int limit);
 	
 	public long countAllActiveAfter(List<String> uuid);
 
