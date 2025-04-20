@@ -21,6 +21,7 @@ import com.vladmihalcea.hibernate.type.util.SQLExtractor;
 
 import de.symeda.sormas.api.EntityRelevanceStatus;
 import de.symeda.sormas.api.campaign.form.CampaignFormCriteria;
+import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.messaging.MessageCriteria;
@@ -441,6 +442,20 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 
 		return em.createQuery(cq).getResultList();
 	}
+	
+	
+	public Boolean getDistrictEntryStatusByUuid(String formUUid) {
+	    CriteriaBuilder cb = em.getCriteriaBuilder();
+	    CriteriaQuery<Boolean> cq = cb.createQuery(Boolean.class);
+	    Root<CampaignFormMeta> root = cq.from(CampaignFormMeta.class);
+
+	    // Assuming there's a UUID column called "uuid" that you're matching against
+	    cq.select(root.get(CampaignFormMeta.DISTRICTENTRY))
+	      .where(cb.equal(root.get(CampaignFormMeta.UUID), formUUid));
+        return em.createQuery(cq).getSingleResult();
+
+	}
+
 	
 //	@Override
 //	public CampaignFormMeta getByUuidAndFormVersionUuid(String uuid, String formVersionUuid) {

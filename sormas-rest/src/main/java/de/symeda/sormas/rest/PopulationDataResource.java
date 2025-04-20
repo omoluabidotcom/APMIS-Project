@@ -63,10 +63,13 @@ public class PopulationDataResource  extends EntityDtoResource {
 			return FacadeProvider.getDistrictFacade().getAllUuids().stream()
 					.filter(e -> rdto.stream().anyMatch(ee -> e.equals(ee.getUuid()))).collect(Collectors.toList());
 		} else {
+			
 			List<String> retListx = new ArrayList<>();
-			
+			System.out.println(retListx + "retListxretListxretListxretListxbefore------");
+
 			retListx.add(rdtox.getUuid());
-			
+			System.out.println(retListx + "retListxretListxretListxretListxafter ------");
+
 			return retListx;
 		
 		}
@@ -76,6 +79,8 @@ public class PopulationDataResource  extends EntityDtoResource {
 	@Path("/selectedDistricts")
 	public List<PopulationDataDto> fetchPopulationDataSelectionByUserDistricts() {
 		List<String> retListx = getAllUuids();
+		System.out.println(retListx  +  "retListxretListxretListx _-----------------------");
+		
 		
 		final Set<DistrictReferenceDto> rdto = FacadeProvider.getUserFacade().getCurrentUser().getDistricts();
 		final DistrictReferenceDto rdtox = FacadeProvider.getUserFacade().getCurrentUser().getDistrict();
@@ -83,9 +88,9 @@ public class PopulationDataResource  extends EntityDtoResource {
 		System.out.println(FacadeProvider.getUserFacade().getCurrentUser() + "Request Hits Form Meta With Expiry  population data by district  ==========================111111111"+ rdto.size());
 		
 		List<String> resultx = new ArrayList<>();
-		System.out.println("  ==========================111111111cccc"+ rdto.size());
-		System.out.println("  ==========================111111111cccc"+ rdtox.getCaption());
-
+//		System.out.println("  ==========================111111111cccc"+ rdto.size());
+//		System.out.println("  ==========================111111111cccc"+ rdtox.getCaption());
+//
 
 		if(retListx != null && retListx.size() > 1) {
 			for(String district : retListx) {

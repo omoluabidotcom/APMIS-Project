@@ -1036,7 +1036,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		StringBuilder queryStringBuilder = new StringBuilder();
 		queryStringBuilder.append("WITH current_data AS (")
 		                  .append("SELECT id, uuid, CAST(campaignformelements AS TEXT)as campaignformelements, formid, formname, changedate AS start_date, ")
-		                  .append("LEAD(changedate) OVER (PARTITION BY uuid ORDER BY changedate) AS end_date, version ")
+		                  .append("LEAD(changedate) OVER (PARTITION BY uuid ORDER BY changedate) AS end_date, formversion ")
 		                  .append("FROM campaignformmeta_history ");
 
 		if (formUuid != null) {
@@ -1048,7 +1048,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		                  .append("SELECT cd.id, cd.uuid, cd.campaignformelements, cd.formid, cd.formname, cd.start_date, ")
 		                  .append("COALESCE(cd.end_date, (SELECT changedate FROM campaignformmeta WHERE campaignformmeta.uuid = cd.uuid)) AS end_date, version ")
 		                  .append("FROM current_data cd) ")
-		                  .append("SELECT uuid, formname, campaignformelements, formid,  start_date, end_date, version ")
+		                  .append("SELECT uuid, formname, campaignformelements, formid,  start_date, end_date, formversion ")
 		                  .append("FROM updated_end_date ")
 		                  .append("ORDER BY start_date ASC;");
 		
