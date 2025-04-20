@@ -742,9 +742,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 			cbCommunity.setValue(formData.getCommunity());
 
 			if (formData.getFormValues() != null) {
-
-				formData.getFormValues()
-						.forEach(formValue -> formValuesMap.put(formValue.getId(), formValue.getValue()));
+				System.out.println("gggggggggggggggggggggggggggggg");
+				formData.getFormValues().forEach(formValue -> {
+					formValuesMap.put(formValue.getId(), formValue.getValue());
+					System.out.println(
+							"formValue.getId() " + formValue.getId() + " formValue.getValue() " + formValue.getValue());
+				});
 			}
 
 			buildForm(false);
@@ -1231,7 +1234,17 @@ public class CampaignFormBuilder extends VerticalLayout {
 					availableCountries.setLabel("Country");
 
 					TextField numberField = new TextField();
-					numberField.setAllowedCharPattern("[\\d+]");
+//					numberField.setAllowedCharPattern("[\\d+]");
+					numberField.setAllowedCharPattern("^[+]?[0-9]*$");
+					numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+					numberField.setClassName("customTextWrap");
+
+					numberField.setId(formElement.getId());
+					numberField.setSizeFull();
+
+					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
+					vertical.add(availableCountries, numberField);
+					fields.put(formElement.getId(), numberField);
 					List<String> namesListx = new ArrayList<String>();
 
 					for (DialingCodeDto dialingCodeDto : FacadeProvider.getDialingCodeFacade().getAllCountriesDto()) {
@@ -1239,55 +1252,67 @@ public class CampaignFormBuilder extends VerticalLayout {
 					}
 
 					availableCountries.setItems(namesListx);
-					availableCountries.setValue(namesListx.get(0));
 
-					dialingCodeDto = FacadeProvider.getDialingCodeFacade()
-							.getCountryByCode(availableCountries.getValue());
-					numberField.setValue(FacadeProvider.getDialingCodeFacade()
-							.getCountryByCode(availableCountries.getValue()).getCode());
+					if (value == null || value.toString().isEmpty()) {
+
+						availableCountries.setValue(namesListx.get(0));
+						dialingCodeDto = FacadeProvider.getDialingCodeFacade()
+								.getCountryByCode(availableCountries.getValue());
+						numberField.setValue(FacadeProvider.getDialingCodeFacade()
+								.getCountryByCode(availableCountries.getValue()).getCode());
+					} else {
+
+						for (DialingCodeDto dialingCodeDto : FacadeProvider.getDialingCodeFacade()
+								.getAllCountriesDto()) {
+							if (value.toString().startsWith(dialingCodeDto.getCode())) {
+								System.out.println("dialingCodeDto.getCode() " + dialingCodeDto.getCode());
+								availableCountries.setValue(dialingCodeDto.getCountry());
+								dialingCodeDto = FacadeProvider.getDialingCodeFacade()
+										.getCountryByCode(availableCountries.getValue());
+								break;
+							}
+						}
+						numberField.setValue(value.toString());
+					}
+
 					min = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
 							.getMin_length();
 					max = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
 							.getMax_length();
 
-					numberField.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
+					String pattern = "^[+]?[0-9]{" + min + "," + max + "}$";
+//					numberField.setPattern(pattern);
 					numberField.removeClassName("valid-input");
-					numberField.setHelperText("Mobile number for " + dialingCodeDto.getCountry() + " must be between "
-							+ min + " and " + max + " digits");
+					numberField
+							.setHelperText("Mobile number for "
+									+ FacadeProvider.getDialingCodeFacade()
+											.getCountryByCode(availableCountries.getValue()).getCountry()
+									+ " must be between " + min + " and " + max + " digits without the country code");
+
 					availableCountries.addValueChangeListener(e -> {
 
 						if (numberField.getValue() != null) {
 							numberField.clear();
 						}
-						dialingCodeDto = FacadeProvider.getDialingCodeFacade()
-								.getCountryByCode(availableCountries.getValue());
+						dialingCodeDto = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue());
+						
+						min = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMin_length();
+						max = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMax_length();
 
-						min = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
-								.getMin_length();
-						max = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
-								.getMax_length();
-
-						numberField.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
-						numberField.setValue(FacadeProvider.getDialingCodeFacade()
-								.getCountryByCode(availableCountries.getValue()).getCode());
-						numberField.setHelperText("Mobile number for " + dialingCodeDto.getCountry()
-								+ " must be between " + min + " and " + max + " digits");
+						String patternz = "^[+]?[0-9]{" + min + "," + max + "}$";
+//						numberField.setPattern(patternz);												
+						numberField.setValue(
+								FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getCode());
+						numberField.setHelperText("Mobile number for " + dialingCodeDto.getCountry()								
+								+ " must be between " + min + " and " + max + " digits without the country code");
 						numberField.setInvalid(true);
 					});
 
-					numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-//					numberField.setClassName("customTextWrap");
-
-					numberField.setId(formElement.getId());
-					numberField.setSizeFull();
-					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
-					fieldLayout.add(availableCountries, numberField);
-					vertical.add(fieldLayout);
-					fields.put(formElement.getId(), numberField);
-
 					numberField.addValueChangeListener(e -> {
-						String inputValue = e.getValue().replace(dialingCodeDto.getCode(), "");
-
+						String inputValue = e.getValue();
+						
+//						inputValue = inputValue.replace(dialingCodeDto.getCode(), "");
+						
 						if (inputValue.length() > max) {
 							numberField.setInvalid(true);
 							numberField.removeClassName("valid-input");
@@ -1298,6 +1323,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 							numberField.setErrorMessage(null);
 							numberField.setInvalid(false);
 							numberField.addClassName("valid-input");
+							numberField.setValue(e.getValue().toString());
 						}
 					});
 
@@ -2518,7 +2544,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					// maybe we want to check the name of the updating user here
 					dataDto.setCreatingUser(userProvider.getUserReference());
 					// dataDto.setSource(PlatformEnum.WEB);
-					dataDto.setRecordgroupuuid(dataDto.getRecordgroupuuid());
+//					dataDto.setRecordgroupuuid(dataDto.getRecordgroupuuid());
 					dataDto.setRecordversion(incrementedVersion);
 					dataDto.setFormValues(entries);
 
@@ -2616,7 +2642,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 						dataDto.setCreatingUser(userProvider.getUserReference());
 						dataDto.setFormValues(entries);
 						dataDto.setSource("WEB");
-						dataDto.setRecordgroupuuid(dataDto.getUuid());
+//						dataDto.setRecordgroupuuid(dataDto.getUuid());
 						dataDto.setRecordversion(1L);
 //						if (dataDto.getFormType())
 						dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
@@ -2635,15 +2661,13 @@ public class CampaignFormBuilder extends VerticalLayout {
 						dataDto.setCreatingUser(userProvider.getUserReference());
 						dataDto.setFormValues(entries);
 						dataDto.setSource("WEB");
-						dataDto.setRecordgroupuuid(dataDto.getUuid());
+//						dataDto.setRecordgroupuuid(dataDto.getUuid());
 						dataDto.setRecordversion(1L);
 //						if (dataDto.getFormType())
 						dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
 						Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
 						return true;
 					}
-
-
 
 				} else {
 					Notification notification = new Notification();
