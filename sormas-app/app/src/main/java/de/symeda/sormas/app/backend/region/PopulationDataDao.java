@@ -47,24 +47,45 @@ public class PopulationDataDao extends AbstractAdoDao<PopulationData> {
         }
     }
 
-//    public List<PopulationData> getSelectedDistrictByUsersDistrict(String districtUuid, String campaignUuid) {
-//        List<PopulationData> selecTedDistricts = new ArrayList<>();
-//        try {
-//            QueryBuilder<PopulationData, Long> queryBuilder = queryBuilder();
-//            Where<PopulationData, Long> where = queryBuilder.where();
-//            where.eq("campaign_id", campaignUuid).and().eq("district_id", districtUuid);
-//            PreparedQuery<PopulationData> preparedQuery = queryBuilder.prepare();
-//            List<PopulationData> results = queryBuilder.query(); // Here is the change
-//            for(PopulationData result : results){
-//                if (result != null) {
-//                    selecTedDistricts.add(result);
-//                }
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return selecTedDistricts;
-//    }
+public List<PopulationData> getSelectedDistrictsByMultipleUuids(List<String> districtUuids, String campaignUuid) {
+    if (districtUuids == null || districtUuids.isEmpty()) {
+        System.out.println("didtricy uuid is null from backend -------------");
+        return new ArrayList<>();
+    }
+
+    List<PopulationData> result = new ArrayList<>();
+
+    try {
+        QueryBuilder<PopulationData, Long> queryBuilder = queryBuilder();
+
+        // Start WHERE clause
+        Where<PopulationData, Long> where = queryBuilder.where();
+
+        // Add campaign filter
+        where.eq("campaign_id", campaignUuid);
+
+        // Create IN clause for districts
+        where.and();
+
+        // Handle the IN condition for multiple districts
+        if (districtUuids.size() == 1) {
+            where.eq("district_id", districtUuids.get(0));
+        } else {
+
+            System.out.println("District uuid size is greater than 0 -----------------");
+            where.in("district_id", districtUuids);
+        }
+
+        // Execute query
+        result = queryBuilder.query();
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return result;
+}
+
 
     public List<PopulationData> getSelectedDistrictByUsersDistrict(String districtUuid, String campaignUuid) {
         try {

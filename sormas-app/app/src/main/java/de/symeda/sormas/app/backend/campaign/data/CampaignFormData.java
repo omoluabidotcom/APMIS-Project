@@ -263,9 +263,6 @@ public class CampaignFormData extends PseudonymizableAdo {
         this.recordversion = recordversion;
     }
 
-    //    public String getFormCategory() {
-//        return campaignFormMeta.getFormCategory();
-//    }
 
     public void setFormCategory(String formCategory) {
         if (campaignFormMeta != null) {
@@ -273,7 +270,6 @@ public class CampaignFormData extends PseudonymizableAdo {
         }
         this.formCategory = formCategory;
     }
-
 
     @Override
     public String getI18nPrefix() {

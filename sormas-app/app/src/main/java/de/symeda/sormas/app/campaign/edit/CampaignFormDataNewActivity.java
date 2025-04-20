@@ -29,6 +29,7 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
 import de.symeda.sormas.api.user.UserRole;
@@ -63,6 +64,7 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
     private AsyncTask saveTask;
     private Campaign campaign;
     private CampaignFormMeta campaignFormMeta;
+
     private CampaignFormDataCriteria criteria = new CampaignFormDataCriteria();
 
     public static void startActivity(Context context, String campaignUUID, String campaignFormMetaUUID) {
@@ -109,20 +111,20 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         boolean saveChecker = true;
         criteria.setCampaign(campaign);
         criteria.setCampaignFormMeta(campaignFormMeta);
-        criteria.setCommunity(campaignFormDataToSave.getCommunity());
+
+
+        if(!ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) { // District Officer
+            criteria.setCommunity(campaignFormDataToSave.getCommunity());
+        }else{
+            criteria.setCommunity(null);
+
+        }
+
         List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteria(criteria, 0, 100);
 
         campaignFormDataToSave.setRecordversion(1L);
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
 
-        if(ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)){ // District Officer
-            if(campaignFormDataToSave.getDistrict() !=  null){
-                List<Community> newCommunities_ = DatabaseHelper.getCommunityDao().getByDistrict(campaignFormDataToSave.getDistrict());
-                if (newCommunities_.size() > 0) {
-                    campaignFormDataToSave.setCommunity(newCommunities_.get(0));
-                }
-            }
-        }
 
         try {
             FragmentValidator.validate(getContext(), getActiveFragment().getContentBinding());
