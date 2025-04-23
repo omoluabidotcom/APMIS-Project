@@ -11205,7 +11205,7 @@ CREATE TABLE public.campaignformdata_history (
 	campaignformmeta_id int8 NOT NULL,
 	region_id int8 NOT NULL,
 	district_id int8 NOT NULL,
-	community_id int8 NOT NULL,
+	community_id int8 NULL,
 	archived bool DEFAULT false NULL,
 	formdate timestamp NULL,
 	creatinguser_id int8 NULL,
@@ -11233,6 +11233,9 @@ GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE pub
 create trigger versioning_trigger before insert or delete or update on public.campaignformdata for each row execute function versioning('sys_period','campaignformdata_history','true');   
 
 INSERT INTO schema_version (version_number, comment) VALUES (485, 'Implementing Record Versioning');
+
+
+
 
 
 
