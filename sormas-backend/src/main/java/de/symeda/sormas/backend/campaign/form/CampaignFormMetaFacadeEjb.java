@@ -1046,7 +1046,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		queryStringBuilder.append("), ")
 		                  .append("updated_end_date AS (")
 		                  .append("SELECT cd.id, cd.uuid, cd.campaignformelements, cd.formid, cd.formname, cd.start_date, ")
-		                  .append("COALESCE(cd.end_date, (SELECT changedate FROM campaignformmeta WHERE campaignformmeta.uuid = cd.uuid)) AS end_date, version ")
+		                  .append("COALESCE(cd.end_date, (SELECT changedate FROM campaignformmeta WHERE campaignformmeta.uuid = cd.uuid)) AS end_date, formversion ")
 		                  .append("FROM current_data cd) ")
 		                  .append("SELECT uuid, formname, campaignformelements, formid,  start_date, end_date, formversion ")
 		                  .append("FROM updated_end_date ")
