@@ -191,7 +191,7 @@ public interface CampaignFormDataFacade {
 
 	List<CampaignFormDataHistoryExtractDto> getFormDataHistory(List<String> uuid, int offset, int limit);
 	
-	public long countAllActiveAfter(List<String> uuid);
+	public long getFormDataHistoryCount(List<String> uuid);
 
 
 

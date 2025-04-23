@@ -2462,7 +2462,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 	}
 
 	public void hasErrorFormValues(int numer) {
-		Notification.show("Error found in: " + numer);
+//		Notification.show("Error found in: " + numer);
 		invalidForm = true;
 
 	}
@@ -2500,7 +2500,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 				List<CampaignFormDataIndexDto> lotchecker = FacadeProvider.getCampaignFormDataFacade()
 						.getCampaignFormDataByCampaignandFormMeta(campaignReferenceDto.getUuid(),
 								campaignFormMeta.getUuid(), cbDistrict.getValue().getCaption(),
-								cbCommunity.getValue().getCaption());
+								cbCommunity.getValue().getCaption() != null ? cbCommunity.getValue().getCaption() : "");
 
 				lotchecker.removeIf(e -> e.getUuid().equals(uuidForm));
 
@@ -2540,6 +2540,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					
 //			        long versionCount = FacadeProvider.getCampaignFormDataFacade().getRecordCountByGroupUuid(dataDto.getRecordgroupuuid());
 			        long incrementedVersion  = dataDto.getRecordversion() + 1L;
+			        dataDto.setCommunity(cbCommunity.getValue());
 
 					// maybe we want to check the name of the updating user here
 					dataDto.setCreatingUser(userProvider.getUserReference());
@@ -2595,7 +2596,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 				List<CampaignFormDataIndexDto> lotchecker = FacadeProvider.getCampaignFormDataFacade()
 						.getCampaignFormDataByCampaignandFormMeta(campaignReferenceDto.getUuid(),
 								campaignFormMeta.getUuid(), cbDistrict.getValue().getCaption(),
-								cbCommunity.getValue().getCaption());
+								cbCommunity.getValue().getCaption() != null ? cbCommunity.getValue().getCaption() : "");
 
 				List<String> listLotNo = new ArrayList();
 				List<String> listLotClusterNo = new ArrayList();

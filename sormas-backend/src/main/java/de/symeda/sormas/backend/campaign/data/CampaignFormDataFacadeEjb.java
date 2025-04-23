@@ -437,10 +437,25 @@ System.out.println("Checking Districtb Level Form Entry in Validation point at E
 				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME),
 				root.get(CampaignFormData.RECORDVERSION));
 
-		cq.where(cb.and(cb.equal(campaignJoin.get(Campaign.UUID), campaignid),
-				cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignformmetaid),
-				cb.equal(districtJoin.get(District.NAME), district),
-				cb.equal(communityJoin.get(Community.NAME), community)));
+		
+	    List<Predicate> predicates = new ArrayList<>();
+	    predicates.add(cb.equal(campaignJoin.get(Campaign.UUID), campaignid));
+	    predicates.add(cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignformmetaid));
+	    predicates.add(cb.equal(districtJoin.get(District.NAME), district));
+
+	    if (community != null && !community.isEmpty() && !community.equalsIgnoreCase("")) {
+	        predicates.add(cb.equal(communityJoin.get(Community.NAME), community));
+	    }
+
+	    cq.where(cb.and(predicates.toArray(new Predicate[0])));
+//		cq.where(cb.and(cb.equal(campaignJoin.get(Campaign.UUID), campaignid),
+//				cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignformmetaid),
+//				cb.equal(districtJoin.get(District.NAME), district),
+//				cb.equal(communityJoin.get(Community.NAME), community)));
+		
+		
+		System.out.println("---- DEBUGGER r567ujhgty8ijyu8QuetuExtract  this query---- " + SQLExtractor.from(em.createQuery(cq)));
+
 		return em.createQuery(cq).getResultList();
 	}
 
@@ -2937,10 +2952,6 @@ if(criteria.getUserLanguage() != null) {
 	@Override
 	public String getByClusterDropDown(CommunityReferenceDto community, CampaignFormMetaDto campaignForm,
 			CampaignDto campaign) {
-////System.out.println(community.getUuid());
-////System.out.println(campaignForm.getUuid());	
-////System.out.println(campaign.getUuid());
-
 		String query = "select cb.uuid from campaignformdata cb left join community cm on cb.community_id = cm.id \r\n"
 				+ "left join campaignformmeta ff on cb.campaignformmeta_id = ff.id left join campaigns gn on cb.campaign_id = gn.id\r\n"
 				+ "where cm.uuid = '" + community.getUuid() + "' and ff.uuid = '" + campaignForm.getUuid()
@@ -4076,22 +4087,10 @@ resultData.addAll(resultList.stream()
 		campaignFormDataService.updateFormDataUnitAssignment(formDataUuid, clusterUuid);
 		
 	}
-	
-//	@Override
-//	public long getRecordCountByGroupUuid(String groupUuid) {
-//		// TODO Auto-generated method stub
-//		CriteriaBuilder cb = em.getCriteriaBuilder();
-//		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
-//		Root<CampaignFormData> root = cq.from(CampaignFormData.class);		
-//	    cq.select(cb.count(root)).where(cb.equal(root.get(CampaignFormData.RECORDGROUPUUID), groupUuid));
-//	    
-//		return em.createQuery(cq).getSingleResult();
-//
-//	
-//	}
+
 	
 
-	public long countAllActiveAfter(List<String> uuid) {
+	public long getFormDataHistoryCount(List<String> uuid) {
 	    StringBuilder countQueryBuilder = new StringBuilder();
 
 	    countQueryBuilder.append("SELECT COUNT(*) FROM (");
