@@ -192,7 +192,7 @@ public class CampaignFormDataFragmentUtils {
                 final Object expressionValue = getExpressionValue(expressionParser, formValues, expressionString);
                 String valuex = expressionValue + "";
                 ;
-                System.out.println("second method ___)))))))))))))))))))))))))))))))))))))))))))))-----= " + valuex);
+                System.out.println("second method ___))))))))))))   )))))))))))))))))))))))))))))))))-----= " + valuex);
                 if (!valuex.isEmpty() && !valuex.equals("") && expressionValue != null) {//&& !valuex.equals("0")
 
                     if (expressionValue != null) { //we need to see how to check and filter when its blank or empty

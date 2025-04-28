@@ -206,6 +206,7 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 		}
 
 		saveButton.addClickListener(e -> {
+			saveButton.setEnabled(false);
 			if( openData && campaignFormBuilder.updateFormDataUnitAssignment.isVisible() && !campaignFormBuilder.cbCommunity.isReadOnly()) {
 					ConfirmDialog unsavedClusterEditWarninig = new ConfirmDialog();
 					unsavedClusterEditWarninig.setRejectable(false);
@@ -231,6 +232,9 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 
 						dialog.close();
 						grid.getDataProvider().refreshAll();
+					}else {
+						saveButton.setEnabled(true);
+
 					}
 					
 				}else {
@@ -238,39 +242,22 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 					System.out.println("Newwwwww DATA -------------------- ");
 					
 					if (campaignFormBuilder.saveFormValues()) {
-
-//						if (openData) {
 							UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
 							userActivitySummaryDto.setActionModule("Campaign Data");
 							userActivitySummaryDto.setAction("Submited Data: " + campaignFormMetaDto.getFormName() + " in "
 									+ campaignReferenceDto.getCaption());
 							userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
 							FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
-//						}
-
 						dialog.close();
 						grid.getDataProvider().refreshAll();
-					}
+					} else {
+						saveButton.setEnabled(true);
 
-					
+					}
+									
 				}
-//				if (campaignFormBuilder.saveFormValues()) {
-//
-//					if (openData) {
-//						UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
-//						userActivitySummaryDto.setActionModule("Campaign Data");
-//						userActivitySummaryDto.setAction("Edited Data: " + campaignFormMetaDto.getFormName() + " in "
-//								+ campaignReferenceDto.getCaption());
-//						userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
-//						FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
-//					}
-//
-//					dialog.close();
-//					grid.getDataProvider().refreshAll();
-//				}
 			}
 
-			// showConfirmationDialog();
 		});
 
 //		System.out.println(openData + "open dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
