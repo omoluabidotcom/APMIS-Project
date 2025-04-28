@@ -11,6 +11,7 @@ public class CampaignFormDataCriteria implements Serializable {
     private Campaign campaign;
     private CampaignFormMeta campaignFormMeta;
     private Community community;
+    private boolean isFormMetaDistrictLevel;
 
     public Campaign getCampaign() {
         return campaign;
@@ -31,4 +32,12 @@ public class CampaignFormDataCriteria implements Serializable {
     public Community getCommunity() {return community;}
 
     public void setCommunity(Community community) {this.community = community;}
+
+    public boolean isFormMetaDistrictLevel() {
+        return isFormMetaDistrictLevel;
+    }
+
+    public void setFormMetaDistrictLevel(boolean formMetaDistrictLevel) {
+        isFormMetaDistrictLevel = formMetaDistrictLevel;
+    }
 }

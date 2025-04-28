@@ -106,15 +106,6 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
         }
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
 
-        if(ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)){ // District Officer
-            if(campaignFormDataToSave.getDistrict() !=  null){
-                List<Community> newCommunities_ = DatabaseHelper.getCommunityDao().getByDistrict(campaignFormDataToSave.getDistrict());
-                if (newCommunities_.size() > 0) {
-                    campaignFormDataToSave.setCommunity(newCommunities_.get(0));
-                }
-            }
-        }
-
         try {
             FragmentValidator.validate(getContext(), getActiveFragment().getContentBinding());
         } catch (ValidationException e) {
@@ -131,8 +122,6 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
                 filledFormValues.add(campaignFormDataEntry);
             }
         }
-//        );
-
 
         campaignFormDataToSave.setFormValues(filledFormValues);
         campaignFormDataToSave.setSoruce(PlatformEnum.MOBILE);

@@ -253,7 +253,7 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 			TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ControlDateField, 0, 0);
 
 			try {
-				allowedDaysInFuture = a.getInt(R.styleable.ControlDateField_allowedDaysInFuture, 0);
+				allowedDaysInFuture = a.getInt(R.styleable.FontFamilyFont_android_ttcIndex, 0);
 			} finally {
 				a.recycle();
 			}
@@ -279,7 +279,7 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 	protected void onFinishInflate() {
 		super.onFinishInflate();
 
-		initInput(false,true);
+		initInput(false,false);
 	}
 
 	protected void initInput(boolean isIntegerFlag, boolean isRequired) {
@@ -337,60 +337,60 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 	}
 
 
-
-	protected void initInputFirst(boolean isIntegerFlag, boolean isRequired) {
-		input = (EditText) this.findViewById(R.id.date_input);
-		input.setInputType(InputType.TYPE_NULL);
-		input.setTextAlignment(getTextAlignment());
-		//if(isIntegerFlag){
-		setHint("");
-		//	}
-		if (getTextAlignment() == View.TEXT_ALIGNMENT_GRAVITY) {
-			input.setGravity(getGravity());
-		}
-
-		input.addTextChangedListener(new TextWatcher() {
-
-			@Override
-			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-			}
-
-			@Override
-			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-			}
-
-			@Override
-			public void afterTextChanged(Editable editable) {
-				if (inverseBindingListener != null) {
-					inverseBindingListener.onChange();
-				}
-				onValueChanged();
-			}
-		});
-
-		addValueChangedListener(new ValueChangeListener() {
-
-			@Override
-			public void onChange(ControlPropertyField field) {
-				if (!isLiveValidationDisabled()) {
-					((ControlDateField) field).setErrorIfOutOfDateRange();
-				}
-			}
-		});
-
-
-		required = isRequired;
-
-		CharSequence valx = input.getText();
-		if(valx == null && required){
-			setSoftRequired(true);
-			input.setError("!");
-			return;
-		}
-
-//       setUpOnFocusChangeListener();
-		setUpOnClickListener();
-	}
+//
+//	protected void initInputFirst(boolean isIntegerFlag, boolean isRequired) {
+//		input = (EditText) this.findViewById(R.id.date_input);
+//		input.setInputType(InputType.TYPE_NULL);
+//		input.setTextAlignment(getTextAlignment());
+//		//if(isIntegerFlag){
+//		setHint("");
+//		//	}
+//		if (getTextAlignment() == View.TEXT_ALIGNMENT_GRAVITY) {
+//			input.setGravity(getGravity());
+//		}
+//
+//		input.addTextChangedListener(new TextWatcher() {
+//
+//			@Override
+//			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//			}
+//
+//			@Override
+//			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//			}
+//
+//			@Override
+//			public void afterTextChanged(Editable editable) {
+//				if (inverseBindingListener != null) {
+//					inverseBindingListener.onChange();
+//				}
+//				onValueChanged();
+//			}
+//		});
+//
+//		addValueChangedListener(new ValueChangeListener() {
+//
+//			@Override
+//			public void onChange(ControlPropertyField field) {
+//				if (!isLiveValidationDisabled()) {
+//					((ControlDateField) field).setErrorIfOutOfDateRange();
+//				}
+//			}
+//		});
+//
+//
+//		required = isRequired;
+//
+//		CharSequence valx = input.getText();
+//		if(valx == null && required){
+//			setSoftRequired(true);
+//			input.setError("!");
+//			return;
+//		}
+//
+////       setUpOnFocusChangeListener();
+//		setUpOnClickListener();
+//	}
 
 	@Override
 	protected void onAttachedToWindow() {

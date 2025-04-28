@@ -206,14 +206,24 @@ public class ApmisCampaignResource {// extends EntityDtoResource {
 	@Path("/formdatahistory")
 
 	public List<CampaignFormDataHistoryExtractDto> getAllCampaignFormDataRecordHistory(@QueryParam("fetchFromIndex") Integer first,
-			@QueryParam("fetchSize") Integer max,@QueryParam("getRecordHistory") String uuid) {
-		
+			@QueryParam("fetchSize") Integer max,@QueryParam("getRecordHistory") String uuid) {		
+		  List<String> uuidList = new ArrayList<>();
+		    if (uuid != null && !uuid.isEmpty()) {
+		        uuidList = Arrays.asList(uuid.split(","));
+		    }
+		return FacadeProvider.getCampaignFormDataFacade().getFormDataHistory(uuidList, first, max );
+	}
+	
+	@GET
+	@Path("/formdatahistorycount")
+
+	public Long getAllCampaignFormDataRecordHistoryCount(@QueryParam("getRecordHistoryCount") String uuid) {		
 		  List<String> uuidList = new ArrayList<>();
 		    if (uuid != null && !uuid.isEmpty()) {
 		        uuidList = Arrays.asList(uuid.split(","));
 		    }
 
-		return FacadeProvider.getCampaignFormDataFacade().getAllActiveAfter(uuidList, first, max );
+		return FacadeProvider.getCampaignFormDataFacade().getFormDataHistoryCount(uuidList);
 
 	}
 	
