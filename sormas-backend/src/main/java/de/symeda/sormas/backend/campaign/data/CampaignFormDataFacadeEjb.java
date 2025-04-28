@@ -422,9 +422,10 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 				root.get(CampaignFormData.RECORDVERSION));
 
 		cq.where(cb.and(cb.equal(campaignJoin.get(Campaign.UUID), campaignid),
-				cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignformmetaid),
-				cb.equal(districtJoin.get(District.NAME), district),
-				cb.equal(communityJoin.get(Community.NAME), community)));
+				cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignformmetaid)
+//				cb.equal(districtJoin.get(District.NAME), district),
+//				cb.equal(communityJoin.get(Community.NAME), community)
+				));
 		return em.createQuery(cq).getResultList();
 	}
 
