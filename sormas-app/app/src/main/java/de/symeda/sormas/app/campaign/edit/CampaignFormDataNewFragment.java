@@ -1300,7 +1300,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                         if ( dynamicField.getValue().toString().length() == 13) {
                                         String inputValue = e.getValue().toString().replace("-", "").replace(".", "");
                                         if (inputValue.length() == 13) {
-                                            handleTazkiraNoFormatting(inputValue, dynamicField);
+                                            handleETazkiraNoFormatting(inputValue, dynamicField);
                                         }
                                     }
 
@@ -1520,7 +1520,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
         return view;
     }
 
-    private void handleTazkiraNoFormatting(String inputValue, ControlPropertyField dynamicField) {
+    private void handleETazkiraNoFormatting(String inputValue, ControlPropertyField dynamicField) {
         String value = inputValue;
 
             String formattedTazkira = value.substring(0, 4) + "-"
