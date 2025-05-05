@@ -93,20 +93,14 @@ public class UserResource {
 		@QueryParam("size") int size) {
 		return FacadeProvider.getUserFacade().getIndexPage(criteriaWithSorting.getCriteria(), offset, size, criteriaWithSorting.getSortProperties());
 	}
-	
-//	@POST
-//	@Path("/fcm/token/{username}/{token}")
-//	public boolean updateFcmToken(@PathParam("username") String username, @PathParam("token") String token) {
-//		return FacadeProvider.getUserFacade().updateFcmToken(username, token);
-//	}
-	
+
 	@POST
 	@Path("/push")
 	public List<PushResult> postUserFcm(@Valid List<UserDto> dtos) {
-		System.out.println("Before e enter passed userdto from mobile to resttttttttttttttttt " + dtos.get(0).getName());
+		System.out.println("Before enter passed userdto from mobile to resttttttttttttttttt " + dtos.get(0).getName());
 		List<PushResult> resultlist = new ArrayList();
 		for (UserDto userDto : dtos) {
-			System.out.println("after e enter passed userdto from mobile to resttttttttttttttttt " + userDto.getName());
+			System.out.println("after enter passed userdto from mobile to resttttttttttttttttt " + userDto.getName());
 			FacadeProvider.getUserFacade().saveUserFcmMobile(userDto);
 			resultlist.add(PushResult.OK);
 		} 			
