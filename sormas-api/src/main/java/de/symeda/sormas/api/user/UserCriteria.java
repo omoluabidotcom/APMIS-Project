@@ -24,6 +24,9 @@ public class UserCriteria extends BaseCriteria implements Serializable {
 	private String freeText;
 	
     private Set<UserRole> userRoles;
+    
+	private UserType userType;
+
 
     public UserCriteria userRolesMulti(Set<UserRole> userRoles) {
         this.userRoles = userRoles;
@@ -105,4 +108,16 @@ public class UserCriteria extends BaseCriteria implements Serializable {
 	public String getFreeText() {
 		return freeText;
 	}
+
+
+	public UserType getUserType() {
+		return userType;
+	}
+
+
+	public void setUserType(UserType userType) {
+		this.userType = userType;
+	}
+
+	
 }

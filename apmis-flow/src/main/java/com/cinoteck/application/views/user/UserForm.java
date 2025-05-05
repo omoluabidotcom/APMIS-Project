@@ -812,8 +812,55 @@ public class UserForm extends FormLayout {
 		add(horizontallayout);
 		this.setColspan(horizontallayout, 2);
 	}
+	
+public boolean checkUnitAssignmentByJurisdictionLevel() {
+    for (UserRole role : userRoles.getValue()) {
+        if (role.getJurisdictionLevel() == JurisdictionLevel.COMMUNITY) {
+            if (clusterNo.getValue() == null) {
+                clusterNo.setInvalid(true);
+                clusterNo.setErrorMessage("One or More Clusters Must be selected for Cluster Level Users.");
+//                clusterNo.focus();
+                Notification.show("One or More Clusters Must be selected for Cluster Level Users.");
+                return false;
+            }
+        } else if (role.getJurisdictionLevel() == JurisdictionLevel.DISTRICT) {
+            if (role == UserRole.SURVEILLANCE_OFFICER && districtMulti.getValue() == null) {
+                districtMulti.setInvalid(true);
+                districtMulti.setErrorMessage("One or More Districts Must be selected for District Officers.");
+//                districtMulti.focus();
+                Notification.show("One or More Districts Must be selected for District Officers.");
+                return false;
+            } else if (district.getValue() == null) {
+                district.setInvalid(true);
+                district.setErrorMessage("One or More Districts Must be selected for District Level Users.");
+                district.focus();
+                Notification.show("One or More Districts Must be selected for District Level Users.");
+                return false;
+            }
+        } else if (role.getJurisdictionLevel() == JurisdictionLevel.REGION) {
+            if (province.getValue() == null) {
+                province.setInvalid(true);
+                province.setErrorMessage("One or More Province(s) Must be selected for Provincial Level Users.");
+                province.focus();
+                Notification.show("One or More Province(s) Must be selected for Provincial Level Users.");
+                return false;
+            }
+        } else if (role.getJurisdictionLevel() == JurisdictionLevel.AREA) {
+            if (region.getValue() == null) {
+                region.setInvalid(true);
+                region.setErrorMessage("One or More Region(s) Must be selected for Regional Level Users.");
+                region.focus();
+                Notification.show("One or More Region(s) Must be selected for Regional Level Users.");
+                return false;
+            }
+        }
+    }
+    return true; // If no issues
+}
 
 	public void validateAndSaveEdit(UserDto originalUser, String preceedingUsername) {
+		
+
 
 		List<FormAccess> formAccesses = new ArrayList<>(binder.getBean().getFormAccess());
 
@@ -838,6 +885,12 @@ public class UserForm extends FormLayout {
 			notification.open();
 
 		} else {
+			
+		    if (!checkUnitAssignmentByJurisdictionLevel()) {
+		        return;
+		    }
+		    
+		    
 			if (binder.validate().isOk()) {
 
 				boolean isErrored = false;
@@ -1054,6 +1107,10 @@ public class UserForm extends FormLayout {
 			notification.open();
 
 		} else {
+			
+		    if (!checkUnitAssignmentByJurisdictionLevel()) {
+		        return;
+		    }
 
 			if (binder.validate().isOk()) {
 				System.out.println(binder.getBean().getUserEmail() != null

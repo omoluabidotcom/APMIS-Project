@@ -622,8 +622,10 @@ public class UserService extends AdoServiceWithUserFilter<User> {
 				filter = CriteriaBuilderHelper.and(cb, filter, likeFilters);
 			}
 		}
-
-		if (this.getCurrentUser().getUsertype().equals(UserType.EOC_USER)) {
+//			System.out.println("----Get Usertype ---" + this.getCurrentUser().getUsertype());
+		
+			
+			if (this.getCurrentUser().getUsertype().equals(UserType.EOC_USER)) {
 			filter = CriteriaBuilderHelper.and(cb, filter, cb.notEqual(from.get(User.USER_TYPE), UserType.WHO_USER));
 		} else {
 			filter = CriteriaBuilderHelper.and(cb, filter, cb.notEqual(from.get(User.USER_TYPE), UserType.EOC_USER));

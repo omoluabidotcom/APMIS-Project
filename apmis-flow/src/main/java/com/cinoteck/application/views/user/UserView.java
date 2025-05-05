@@ -179,7 +179,11 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 			I18nProperties.getUserLanguage();
 		}
 		FacadeProvider.getI18nFacade().setUserLanguage(userProvider.getUser().getLanguage());
+		criteria = new UserCriteria();
+		
+		criteria.setUserType(userProvider.getUser().getUsertype()); 
 		filterDataProvider = usersDataProvider.withConfigurableFilter();
+		filterDataProvider.setFilter(criteria);
 
 		setSpacing(false);
 		setHeightFull();
