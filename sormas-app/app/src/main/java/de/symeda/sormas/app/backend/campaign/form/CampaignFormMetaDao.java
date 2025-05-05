@@ -16,6 +16,13 @@
 package de.symeda.sormas.app.backend.campaign.form;
 
 import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.stmt.QueryBuilder;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import de.symeda.sormas.app.backend.common.AbstractAdoDao;
 
@@ -34,5 +41,27 @@ public class CampaignFormMetaDao extends AbstractAdoDao<CampaignFormMeta> {
     public String getTableName() {
         return CampaignFormMeta.TABLE_NAME;
     }
+
+    // This method should NOT be static
+    public List<String> getAllFormCategories() {
+        try {
+            QueryBuilder<CampaignFormMeta, Long> queryBuilder = this.queryBuilder();  // 'this' is important
+
+            queryBuilder.selectColumns("formCategory").distinct();
+
+            List<CampaignFormMeta> results = queryBuilder.query();
+
+            return results.stream()
+                    .map(CampaignFormMeta::getFormCategory)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+
 }
 
