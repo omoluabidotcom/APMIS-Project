@@ -1359,7 +1359,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     if (type == CampaignFormElementType.DROPDOWN && campaignFormElement.getId().equalsIgnoreCase("LotClusterNo")) {
                         initialLotClusterNo = formValuesMap.get(campaignFormElement.getId());
                         dynamicField.addValueChangedListener(field -> {
-                            criteria.setCommunity(record.getCommunity());
+//                            criteria.setCommunity(record.getCommunity());
+                            criteria.setCommunity(null);
                             List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteria(criteria, 0, 100);
                             List<String> listLotNo = new ArrayList();
                             List<String> listLotClusterNo = new ArrayList();
