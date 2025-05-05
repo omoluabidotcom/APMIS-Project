@@ -276,8 +276,8 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 		nav.addItem(newDashboardNavItem);
 //		}
 
-		
-		System.out.println("userProvider.hasUserRight(UserRight.CONFIGURATION_ACCESS)" + userProvider.hasUserRight(UserRight.CONFIGURATION_ACCESS));
+		System.out.println("userProvider.hasUserRight(UserRight.CONFIGURATION_ACCESS)"
+				+ userProvider.hasUserRight(UserRight.CONFIGURATION_ACCESS));
 		if (userProvider.hasUserRight(UserRight.CONFIGURATION_ACCESS)) {
 			if (userProvider.getUser().getUsertype() == UserType.WHO_USER
 					|| userProvider.getUser().getUsertype() == UserType.EOC_USER) {
@@ -359,22 +359,16 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 
 		List<MessageDto> mainMessagesList = new ArrayList<>();
 
-
+		for (MessageDto messages : listOfMessagesToRemoveExpiredMessages) {
+			if (messages.getChangeDate().after(thirtyDaysAgo) || messages.getChangeDate().equals(thirtyDaysAgo)) {
+				if (userProvider.getUser().getNotificationlastopendate() != null)
+					if (messages.getChgDate().after(userProvider.getUser().getNotificationlastopendate())) {
+						mainMessagesList.add(messages);
+					}
+			}
+		}
 
 		if (mainMessagesList.size() > 0) {
-			for (MessageDto messages : listOfMessagesToRemoveExpiredMessages) {
-				if (messages.getChangeDate().after(thirtyDaysAgo) || messages.getChangeDate().equals(thirtyDaysAgo)) {
-					if (userProvider.getUser().getNotificationlastopendate() != null) {
-						if (messages.getChgDate().after(userProvider.getUser().getNotificationlastopendate())) {
-							mainMessagesList.add(messages);
-						}
-					}else {
-						System.out.println("NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN------------------");
-					}
-
-				}
-			}
-			
 			if (userProvider.hasUserRight(UserRight.NON_ADMIN_ACCESS)) {
 				nav.addItem(new AppNavItem("Notification", VaadinIcon.SERVER, "notification", notification,
 						UserMessageView.class));

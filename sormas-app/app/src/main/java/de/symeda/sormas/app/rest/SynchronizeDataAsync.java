@@ -649,6 +649,9 @@ if (1 == 3) {
 
 		// CampaignData
 		if (!DatabaseHelper.getFeatureConfigurationDao().isFeatureDisabled(FeatureType.CAMPAIGNS)) {
+//			System.out.println("pushing dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+//			final UserDtoHelper userDtoHelper = new UserDtoHelper();
+//			userDtoHelper.pushEntities(true);
 			final CampaignFormDataDtoHelper campaignFormDataDtoHelper = new CampaignFormDataDtoHelper();
 			campaignFormDataDtoHelper.pushEntities(true);
 			final List<String> campaignFormDataUuids = executeUuidCall(RetroProvider.getCampaignFormDataFacade().pullUuids());

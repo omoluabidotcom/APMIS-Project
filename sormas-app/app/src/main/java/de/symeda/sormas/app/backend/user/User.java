@@ -32,6 +32,7 @@ import com.j256.ormlite.table.DatabaseTable;
 
 import de.symeda.sormas.api.Disease;
 import de.symeda.sormas.api.Language;
+import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.app.backend.common.AbstractDomainObject;
 import de.symeda.sormas.app.backend.facility.Facility;
@@ -106,6 +107,9 @@ public class User extends AbstractDomainObject {
 	@Column(name = "userRole")
 	private String userRolesJson;
 
+	@Column(name = "userFormAccess")
+	private String userFormAccessJson;
+
 	@Column(name = "token")
 	private String token;
 
@@ -120,6 +124,7 @@ public class User extends AbstractDomainObject {
 
 	// initialized from userRolesJson
 	private Set<UserRole> userRoles = null;
+	private Set<FormAccess> userFormAccess = null;
 
 	public String getUserName() {
 		return userName;
@@ -250,6 +255,15 @@ public class User extends AbstractDomainObject {
 		userRoles = null;
 	}
 
+	public String getUserFormAccessJson() {
+		return userFormAccessJson;
+	}
+
+	public void setUserFormAccessJson(String userFormAccessJson) {
+		this.userFormAccessJson = userFormAccessJson;
+		userFormAccess = null;
+	}
+
 	@Transient // Needed for merge logic
 	public Set<UserRole> getUserRoles() {
 		if (userRoles == null) {
@@ -270,6 +284,26 @@ public class User extends AbstractDomainObject {
 		userRolesJson = gson.toJson(userRoles);
 	}
 
+	@Transient // Needed for merge logic
+	public Set<FormAccess> getUserFormAccess() {
+		if (userFormAccess == null) {
+			Gson gson = new Gson();
+			Type type = new TypeToken<Set<FormAccess>>() {
+			}.getType();
+			userFormAccess = gson.fromJson(userFormAccessJson, type);
+			if (userFormAccess == null) {
+				userFormAccess = new HashSet<>();
+			}
+		}
+		return userFormAccess;
+	}
+
+	public void setUserFormAccess(Set<FormAccess> userFormAccess) {
+		this.userFormAccess = userFormAccess;
+		Gson gson = new Gson();
+		userFormAccessJson = gson.toJson(userFormAccess);
+	}
+
 	public boolean hasUserRole(UserRole userRole) {
 		return getUserRoles().contains(userRole);
 	}
@@ -282,6 +316,18 @@ public class User extends AbstractDomainObject {
 				result.append(", ");
 			}
 			result.append(userRole.toString());
+		}
+		return result.toString();
+	}
+
+	public String getUserFormAccessString() {
+
+		StringBuilder result = new StringBuilder();
+		for (FormAccess userFormAccess : getUserFormAccess()) {
+			if (result.length() > 0) {
+				result.append(", ");
+			}
+			result.append(userFormAccess.toString());
 		}
 		return result.toString();
 	}

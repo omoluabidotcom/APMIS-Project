@@ -261,10 +261,6 @@ public class ControlTimeField extends ControlPropertyEditField<String> {
 
 			@Override
 			public void afterTextChanged(Editable editablex) {
-
-				System.out.println("=====================================================aaa "+editablex.toString());
-				System.out.println("=====================================================xxx "+input.getId());
-
 				// Only process if change wasn't from code
 				if (!isTextChangeFromCode) {
 					if (inverseBindingListener != null) {
