@@ -107,4 +107,13 @@
         android:singleLine="false"
         android:textColor="@color/drawerHeaderText"
         android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/userFormAccesses"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:singleLine="false"
+        android:textColor="@color/drawerHeaderText"
+        android:textSize="12sp" />
+
 </LinearLayout>
