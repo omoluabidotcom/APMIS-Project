@@ -741,9 +741,9 @@ public class UserFacadeEjb implements UserFacade {
 
 		cq.select(user).distinct(true);
 
-		TypedQuery<User> query = em.createQuery(cq);
-		String sql = query.unwrap(org.hibernate.query.Query.class).getQueryString();
-
+//		TypedQuery<User> query = em.createQuery(cq);
+//		String sql = query.unwrap(org.hibernate.query.Query.class).getQueryString();
+//      System.out.println("-------------sql ------" +  sql);
 		return QueryHelper.getResultList(em, cq, first, max, UserFacadeEjb::toDto); 
 	}
 
