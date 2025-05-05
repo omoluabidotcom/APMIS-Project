@@ -2500,7 +2500,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 				List<CampaignFormDataIndexDto> lotchecker = FacadeProvider.getCampaignFormDataFacade()
 						.getCampaignFormDataByCampaignandFormMeta(campaignReferenceDto.getUuid(),
 								campaignFormMeta.getUuid(), cbDistrict.getValue().getCaption(),
-								cbCommunity.getValue().getCaption() != null ? cbCommunity.getValue().getCaption() : "");
+								cbCommunity.getValue() == null ? "":  cbCommunity.getValue().getCaption());
 
 				lotchecker.removeIf(e -> e.getUuid().equals(uuidForm));
 
