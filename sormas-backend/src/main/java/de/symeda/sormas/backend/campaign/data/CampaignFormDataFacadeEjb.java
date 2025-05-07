@@ -446,18 +446,11 @@ System.out.println("Checking Districtb Level Form Entry in Validation point at E
 	    List<Predicate> predicates = new ArrayList<>();
 	    predicates.add(cb.equal(campaignJoin.get(Campaign.UUID), campaignid));
 	    predicates.add(cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignformmetaid));
-	    predicates.add(cb.equal(districtJoin.get(District.NAME), district));
+//	    predicates.add(cb.equal(districtJoin.get(District.NAME), district));
 
 	    if (community != null && !community.isEmpty() && !community.equalsIgnoreCase("")) {
-	        predicates.add(cb.equal(communityJoin.get(Community.NAME), community));
-	    }
-
-	    cq.where(cb.and(predicates.toArray(new Predicate[0])));
-//		cq.where(cb.and(cb.equal(campaignJoin.get(Campaign.UUID), campaignid),
-//				cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignformmetaid),
-//				cb.equal(districtJoin.get(District.NAME), district),
-//				cb.equal(communityJoin.get(Community.NAME), community)));
-		
+//	        predicates.add(cb.equal(communityJoin.get(Community.NAME), community));
+	    }		
 		
 		System.out.println("---- DEBUGGER r567ujhgty8ijyu8QuetuExtract  this query---- " + SQLExtractor.from(em.createQuery(cq)));
 		return em.createQuery(cq).getResultList();
