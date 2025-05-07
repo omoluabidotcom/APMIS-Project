@@ -75,11 +75,6 @@ public class CampaignFormMetaWithExp extends AbstractDomainObject implements Ser
 	@DatabaseField(dataType = DataType.DATE_LONG)//, canBeNull = true)
 	private Date expiryDate;
 
-//	@Column
-//	@DatabaseField(dataType = DataType.STRING)
-//	private String uuid ;
-
-
 	public String getCampaignId() {
 		return campaignId;
 	}

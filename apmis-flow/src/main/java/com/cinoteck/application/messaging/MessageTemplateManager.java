@@ -9,8 +9,11 @@ import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.cinoteck.application.UserProvider;
 import com.cinoteck.application.views.utils.gridexporter.GridExporter;
@@ -23,6 +26,7 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridMultiSelectionModel;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
@@ -39,6 +43,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
@@ -55,6 +60,7 @@ import de.symeda.sormas.api.messaging.MessageDto;
 import de.symeda.sormas.api.messaging.MessageTemplateCriteria;
 import de.symeda.sormas.api.messaging.MessageTemplateDto;
 import de.symeda.sormas.api.user.UserActivitySummaryDto;
+import de.symeda.sormas.api.user.UserCriteria;
 import de.symeda.sormas.api.user.UserDto;
 import de.symeda.sormas.api.user.UserRight;
 import de.symeda.sormas.api.user.UserType;
@@ -70,8 +76,18 @@ public class MessageTemplateManager extends VerticalLayout implements RouterLayo
 	private MessageTemplateDto messageTemplateDto;
 
 	private Button newPreWrittenMessage;
-	private Button enterBulkEditMode;
-	private Button leaveBulkEditMode;
+	
+	private Button enterBulkEditMode = new Button(I18nProperties.getCaption(Captions.actionEnterBulkEditMode));
+	private Button leaveBulkEditMode = new Button(I18nProperties.getCaption(Captions.actionLeaveBulkEditMode));
+	GridMultiSelectionModel<MessageTemplateDto> selectionModel;
+	private Set<MessageTemplateDto> selectedItems = new HashSet<>();
+	Button selectAllButton = new Button();
+	Button selectAllButtonpLACEHOLDER = new Button();
+	private DataProvider<MessageTemplateDto, MessageTemplateCriteria> dataProvider;
+
+
+//	private Button enterBulkEditMode;
+//	private Button leaveBulkEditMode;
 
 	private Button archive;
 	private Button dearchive;
@@ -110,11 +126,16 @@ public class MessageTemplateManager extends VerticalLayout implements RouterLayo
 
 		newPreWrittenMessage = new Button("New Message Template");
 		enterBulkEditMode = new Button("Enter Bulk Edit Mode");
+		enterBulkEditMode.addClassName("bulkActionButton");
 		enterBulkEditMode.setText("Enter Bulk Edit Mode");
+
 
 		leaveBulkEditMode = new Button("Leave Bulk Edit Mode");
 		leaveBulkEditMode.setText("Leave Bulk Edit Mode");
+		leaveBulkEditMode.addClassName("leaveBulkActionButton");
+		leaveBulkEditMode.addClassName("leaveBulkActionButton");
 		leaveBulkEditMode.setVisible(false);
+
 
 		archive = new Button("Archive");
 		archive.setVisible(false);
@@ -181,6 +202,7 @@ public class MessageTemplateManager extends VerticalLayout implements RouterLayo
 		enterBulkEditMode.addClickListener(e -> {
 
 			grid.setSelectionMode(Grid.SelectionMode.MULTI);
+			configureGridMultiSelect();
 			leaveBulkEditMode.setVisible(true);
 			archive.setVisible(true);
 			dearchive.setVisible(true);
@@ -238,6 +260,51 @@ public class MessageTemplateManager extends VerticalLayout implements RouterLayo
 
 		add(buttonLayout, filters, grid);
 	}
+	
+	private void configureGridMultiSelect() {
+		selectionModel = (GridMultiSelectionModel<MessageTemplateDto>) grid
+				.setSelectionMode(Grid.SelectionMode.MULTI);
+
+		selectionModel.setSelectAllCheckboxVisibility(GridMultiSelectionModel.SelectAllCheckboxVisibility.VISIBLE);
+
+		selectionModel.addSelectionListener(event -> {
+			if (event.getAllSelectedItems().isEmpty()) {
+				selectedItems.clear();
+			} else if (event.getAllSelectedItems().size() == getDataProviderSize()) {
+				selectedItems.addAll(fetchAllItems());
+			}
+			grid.getDataProvider().refreshAll();
+		});
+
+		ComponentRenderer<Checkbox, MessageTemplateDto> checkboxRenderer = new ComponentRenderer<>(item -> {
+			Checkbox checkboxx = new Checkbox();
+			checkboxx.setValue(grid.getSelectedItems().contains(item)); // Set the initial value
+			checkboxx.addValueChangeListener(event -> {
+				if (event.getValue()) {
+					grid.select(item);
+				} else {
+					grid.deselect(item);
+				}
+			});
+			return checkboxx;
+		});
+
+		grid.addColumn(checkboxRenderer).setHeader(selectAllButton).setSortable(false).setResizable(true)
+				.setAutoWidth(true).setVisible(false);
+	}
+	
+	private Set<MessageTemplateDto> fetchAllItems() {
+		Stream<MessageTemplateDto> stream = dataProvider.fetch(new Query<>());
+		Set<MessageTemplateDto> allItems = new HashSet<>();
+		stream.forEach(allItems::add);
+		return allItems;
+	}
+	
+	private int getDataProviderSize() {
+		return dataProvider.size(new Query<>());
+	}
+	
+	
 
 	private void applyDateFilter(LocalDate startDate, LocalDate endDate) {
 

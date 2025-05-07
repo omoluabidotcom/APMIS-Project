@@ -82,6 +82,7 @@ import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handle
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handleDependingOnSectionAndLabel;
 
 import androidx.core.content.ContextCompat;
+import androidx.databinding.adapters.ImageViewBindingAdapter;
 
 public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampaignDataNewLayoutBinding, CampaignFormData, CampaignFormData> {
 
@@ -272,7 +273,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                     countr++;
                 } else if (countr == 1) {
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet1);
-                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
+                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
@@ -399,10 +400,17 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
+                    }  else if (type == CampaignFormElementType.LINEBREAK) {
+//                        System.out.println("Linke Break detetected in formelements ----------------");
+                        if (campaignFormElement.getDependingOn() == null) {
+                            TextView textView = new TextView(requireContext());
+                            TextViewBindingAdapters.setHtmlValue(textView, "");
+                            dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                        }
                     }
                 } else if (countr == 2) {
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet2);
-                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
+                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
@@ -483,19 +491,27 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         }
                     } else if (type == CampaignFormElementType.SECTION) {
                         if (campaignFormElement.getDependingOn() == null) {
-                            ControlPropertyField dynamicField;
-                            dynamicLayout.addView(new ImageView(requireContext(), null, R.style.FullHorizontalDividerStyle));
+                            ImageView dynamicField = new ImageView(requireContext(), null, R.style.LineBreak);
+//                            dynamicLayout.setDividerPadding(30);
+                            dynamicLayout.addView(dynamicField, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
                     } else if (type == CampaignFormElementType.LABEL) {
                         if (campaignFormElement.getDependingOn() == null) {
                             TextView textView = new TextView(requireContext());
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
+                            dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                        }
+                    }  else if (type == CampaignFormElementType.LINEBREAK) {
+//                        System.out.println("Linke Break detetected in formelements ----------------");
+                        if (campaignFormElement.getDependingOn() == null) {
+                            TextView textView = new TextView(requireContext());
+                            TextViewBindingAdapters.setHtmlValue(textView, "");
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
                     }
                 } else if (countr == 3) {
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet3);
-                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
+                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
@@ -582,12 +598,19 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         if (campaignFormElement.getDependingOn() == null) {
                             TextView textView = new TextView(requireContext());
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
+                            dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                        }
+                    } else if (type == CampaignFormElementType.LINEBREAK) {
+//                        System.out.println("Linke Break detetected in formelements ----------------");
+                        if (campaignFormElement.getDependingOn() == null) {
+                            TextView textView = new TextView(requireContext());
+                            TextViewBindingAdapters.setHtmlValue(textView, "");
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
                     }
                 } else if (countr == 4) {
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet4);
-                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
+                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
@@ -676,10 +699,17 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
+                    } else if (type == CampaignFormElementType.LINEBREAK) {
+//                        System.out.println("Linke Break detetected in formelements ----------------");
+                        if (campaignFormElement.getDependingOn() == null) {
+                            TextView textView = new TextView(requireContext());
+                            TextViewBindingAdapters.setHtmlValue(textView, "");
+                            dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                        }
                     }
                 } else if (countr == 5) {
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet5);
-                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
+                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
@@ -770,10 +800,17 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
+                    } else if (type == CampaignFormElementType.LINEBREAK) {
+//                        System.out.println("Linke Break detetected in formelements ----------------");
+                        if (campaignFormElement.getDependingOn() == null) {
+                            TextView textView = new TextView(requireContext());
+                            TextViewBindingAdapters.setHtmlValue(textView, "");
+                            dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                        }
                     }
                 } else if (countr == 6) {
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet6);
-                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
+                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
@@ -861,12 +898,19 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         if (campaignFormElement.getDependingOn() == null) {
                             TextView textView = new TextView(requireContext());
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
+                            dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                        }
+                    } else if (type == CampaignFormElementType.LINEBREAK) {
+//                        System.out.println("Linke Break detetected in formelements ----------------");
+                        if (campaignFormElement.getDependingOn() == null) {
+                            TextView textView = new TextView(requireContext());
+                            TextViewBindingAdapters.setHtmlValue(textView, "");
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
                     }
                 } else if (countr == 7) {
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet7);
-                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
+                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
@@ -956,10 +1000,17 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
+                    } else if (type == CampaignFormElementType.LINEBREAK) {
+//                        System.out.println("Linke Break detetected in formelements ----------------");
+                        if (campaignFormElement.getDependingOn() == null) {
+                            TextView textView = new TextView(requireContext());
+                            TextViewBindingAdapters.setHtmlValue(textView, "");
+                            dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                        }
                     }
                 } else if (countr == 8) {
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet8);
-                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
+                    if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
@@ -1048,6 +1099,13 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         if (campaignFormElement.getDependingOn() == null) {
                             TextView textView = new TextView(requireContext());
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
+                            dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                        }
+                    } else if (type == CampaignFormElementType.LINEBREAK) {
+//                        System.out.println("Linke Break detetected in formelements ----------------");
+                        if (campaignFormElement.getDependingOn() == null) {
+                            TextView textView = new TextView(requireContext());
+                            TextViewBindingAdapters.setHtmlValue(textView, "");
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
                     }
@@ -1055,7 +1113,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
             } else {
 
                 final LinearLayout dynamicLayout = view.findViewById(R.id.dynamicLayout);
-                if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
+                if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL  && type != CampaignFormElementType.LINEBREAK) {
                     ControlPropertyField dynamicField;
 
                     boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -1300,7 +1358,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                         if ( dynamicField.getValue().toString().length() == 13) {
                                         String inputValue = e.getValue().toString().replace("-", "").replace(".", "");
                                         if (inputValue.length() == 13) {
-                                            handleTazkiraNoFormatting(inputValue, dynamicField);
+                                            handleETazkiraNoFormatting(inputValue, dynamicField);
                                         }
                                     }
 
@@ -1321,6 +1379,12 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                     if (expressionString != null) {
                         CampaignFormDataFragmentUtils.handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
                         expressionMap.put(campaignFormElement, dynamicField);
+                    }
+                } else if (type == CampaignFormElementType.LINEBREAK) {
+                    if (campaignFormElement.getDependingOn() == null) {
+                        TextView textView = new TextView(requireContext());
+                        TextViewBindingAdapters.setHtmlValue(textView, "");
+                        dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                     }
                 }
 //                else if (type == CampaignFormElementType.SECTION) {
@@ -1520,7 +1584,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
         return view;
     }
 
-    private void handleTazkiraNoFormatting(String inputValue, ControlPropertyField dynamicField) {
+    private void handleETazkiraNoFormatting(String inputValue, ControlPropertyField dynamicField) {
         String value = inputValue;
 
             String formattedTazkira = value.substring(0, 4) + "-"

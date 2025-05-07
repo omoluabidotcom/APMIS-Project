@@ -606,6 +606,17 @@
         <item name="android:background">@color/viewSeparator</item>
     </style>
 
+
+
+    <style name="LineBreak">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">20dp</item>
+        <item name="android:background">@color/indicatorTaskPriorityHigh</item>
+        <item name="android:layout_marginTop">15dp</item>
+        <item name="android:layout_marginBottom">15dp</item>
+    </style>
+
+
     <style name="FluidHorizontalDividerStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_weight">1</item>
