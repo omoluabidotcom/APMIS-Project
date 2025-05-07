@@ -286,13 +286,13 @@ public class FlwErrorAnalysisView extends VerticalLayout  {
 		grid.addColumn(CampaignFormDataIndexDto::getClusternumber)
 				.setHeader(I18nProperties.getCaption(Captions.clusterNumber)).setSortProperty("clusterNumber").setSortable(true).setResizable(true);
 
-		grid.addColumn(CampaignFormDataIndexDto::getCreatingUser)
+		grid.addColumn(CampaignFormDataIndexDto::getSource)
 				.setHeader(I18nProperties.getCaption(Captions.firstName)).setSortProperty("creatinguser").setSortable(true).setResizable(true);
 		
-		grid.addColumn(CampaignFormDataIndexDto::getPersonTitle)
+		grid.addColumn(CampaignFormDataIndexDto::getCreatingUser)
 				.setHeader(I18nProperties.getCaption(Captions.Action_title)).setSortProperty("title").setSortable(true).setResizable(true);
 		
-		grid.addColumn(CampaignFormDataIndexDto::getSource).setHeader("Tazkira No.").setSortProperty("source").setSortable(true)
+		grid.addColumn(CampaignFormDataIndexDto::getPersonTitle).setHeader("Tazkira No.").setSortProperty("source").setSortable(true)
 				.setResizable(true);
 		
 		grid.addColumn(CampaignFormDataIndexDto::getError_status).setHeader(I18nProperties.getCaption("Error Status")).setResizable(true);

@@ -147,8 +147,8 @@ public final class DownloadFlowUtilityView {
 							exportLine[11] = dataDistrictStatus;
 						}
 
-						AgeGroup ageGroup = AgeGroup.valueOf((String) populationExportData[8]);
-						if(ageGroup != null) {
+						AgeGroup ageGroup = AgeGroup.valueOf( populationExportData[8] != null ? (String) populationExportData[8] : "");
+						if(ageGroup != null && ageGroup.toString() != "") {
 							String sexString = (String) populationExportData[9];
 							Integer ageGroupPosition = ageGroupPositions.get(ageGroup);
 

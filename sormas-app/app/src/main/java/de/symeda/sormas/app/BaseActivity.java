@@ -21,6 +21,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Html;
@@ -459,6 +460,7 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 			TextView userProvince = (TextView) headerView.findViewById(R.id.userProvince);
 			TextView userDistrict = (TextView) headerView.findViewById(R.id.userDistrict);
 			TextView userClusters = (TextView) headerView.findViewById(R.id.userClusters);
+			TextView userFormAccesses = (TextView) headerView.findViewById(R.id.userFormAccesses);
 
 //			userUserName.setVisibility(View.GONE);
 //			userRegion.setVisibility(View.GONE);
@@ -486,6 +488,9 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 				return;
 
 			if (userClusters == null)
+				return;
+
+			if (userFormAccesses == null)
 				return;
 
 //			if (dropdownButton == null)
@@ -526,10 +531,12 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 				System.out.println(" ++++++++++++ "+user.getDistrict().getName());
 
 				userDistrict.setText("District : " +user.getDistrict());
-				userClusters.setText("Clusters : " + initialCommunities);
+				userClusters.setText(Html.fromHtml("<b>Clusters : </b>" + initialCommunities));
+				userFormAccesses.setText(Html.fromHtml("<b>Form Access : </b>" + user.getUserFormAccessString()));
 			} else {
 				userDistrict.setText("District : " +InfrastructureDaoHelper.loadAllDistricts());
 				userClusters.setVisibility(View.GONE);
+				userFormAccesses.setText(Html.fromHtml("<b>Form Access : </b>" + user.getUserFormAccessString()));
 			}
 
 			Menu menuNav = navView.getMenu();
