@@ -893,6 +893,13 @@ public class CampaignFormBuilder extends VerticalLayout {
 					// needed
 					setVisibilityDependency(labx, dependingOnId, dependingOnValues, type, false);
 				}
+			} else if (type == CampaignFormElementType.LINEBREAK) {
+				Paragraph newLine = new Paragraph();
+				newLine.setId("pageBreak");
+//				newLine.getStyle().set("width", "100% !important");
+				vertical.setColspan(newLine, 3);
+				vertical.add(newLine);
+
 			} else {
 				CampaignFormElementOptions constrainsVal = new CampaignFormElementOptions();
 				boolean fieldIsRequired = formElement.isImportant();
@@ -963,9 +970,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 					textField.setPrefixComponent(VaadinIcon.PENCIL.create());
 					textField.setId(formElement.getId());
 					textField.setSizeFull();
-					
-
-
 					//
 					setFieldValue(textField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 					vertical.add(textField);
@@ -974,8 +978,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					
 					if (fieldId.equalsIgnoreCase("eTazkiraNo")) {
 						
-				        System.out.println("Tazkira Number Found -------------------" );
-				        
+				        System.out.println("Tazkira Number Found -------------------" );				        
 				        // Add validation for Tazkira Number
 				        textField.setAllowedCharPattern("[0-9-]"); // Allow only digits and hyphens
 				        
@@ -1327,7 +1330,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 						}
 					});
 
-				} else if (type == CampaignFormElementType.RANGE) {
+				}else if (type == CampaignFormElementType.RANGE) {
 					IntegerField integerField = new IntegerField();
 					integerField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
 					integerField.setClassName("customTextWrap");
@@ -2055,7 +2058,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 				|| (type == CampaignFormElementType.TEXT || type == CampaignFormElementType.DATE
 						|| type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.EMAIL 
 						|| type == CampaignFormElementType.TIME || type == CampaignFormElementType.PHONE || type == CampaignFormElementType.DECIMAL
-						|| type == CampaignFormElementType.RANGE)) {// && styles.contains(CampaignFormElementStyle.ROW))
+						|| type == CampaignFormElementType.RANGE || type == CampaignFormElementType.LINEBREAK)) {// && styles.contains(CampaignFormElementStyle.ROW))
 																	// {
 			return 12;
 		}

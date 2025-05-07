@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -1866,6 +1868,10 @@ public class CampaignDataView extends VerticalLayout
 			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
 			return label;
 		});
+		
+
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
 
 		if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
 
@@ -1874,6 +1880,15 @@ public class CampaignDataView extends VerticalLayout
 			formNameColumn = grid.addColumn(CampaignFormDataIndexDto.FORM)
 					.setHeader(I18nProperties.getCaption(Captions.campaignCampaignForm)).setSortable(true)
 					.setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getForm());
+			
+			grid.addColumn(e -> e.getFormDate() != null ?  
+			e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader(I18nProperties.getCaption(Captions.date))
+//			createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
+			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate().toString())
+			.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
+			
+			
+			
 			grid.addColumn(CampaignFormDataIndexDto.AREA).setHeader(I18nProperties.getCaption(Captions.area))
 					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getArea());
 			grid.addColumn(rCodeRender).setHeader(I18nProperties.getCaption(Captions.Area_externalId)).setSortable(true)
@@ -1923,6 +1938,15 @@ public class CampaignDataView extends VerticalLayout
 			formNameColumn = grid.addColumn(CampaignFormDataIndexDto.FORM)
 					.setHeader(I18nProperties.getCaption(Captions.campaignCampaignForm)).setSortable(true)
 					.setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getForm());
+			
+			
+			grid.addColumn(e -> e.getFormDate() != null ?  
+			e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader(I18nProperties.getCaption(Captions.date))
+//			createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
+			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate().toString())
+			.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
+			
+			
 			grid.addColumn(CampaignFormDataIndexDto.AREA).setHeader(I18nProperties.getCaption(Captions.area))
 					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getArea());
 			grid.addColumn(rCodeRender).setHeader(I18nProperties.getCaption(Captions.Area_externalId)).setSortable(true)
@@ -1976,6 +2000,14 @@ public class CampaignDataView extends VerticalLayout
 //							createHeaderComponent(I18nProperties.getCaption(Captions.campaignCampaignForm),I18nProperties.getCaption(Captions.campaignCampaignForm)))
 					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getForm())
 					.setFooter(CampaignFormDataIndexDto.FORM);
+			
+			grid.addColumn(e -> e.getFormDate() != null ?  
+			e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader(I18nProperties.getCaption(Captions.date))
+//			createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
+			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate().toString())
+			.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
+			
+			
 			grid.addColumn(CampaignFormDataIndexDto.AREA).setHeader(I18nProperties.getCaption(Captions.area))
 //					createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
 					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getArea())
@@ -2053,7 +2085,6 @@ public class CampaignDataView extends VerticalLayout
 					.setFooter(CampaignFormDataIndexDto.CREATED_BY);
 
 			if (userProvider.getUser().getUsertype() == UserType.WHO_USER) {
-
 				verifiedColumn = grid.addColumn(CampaignFormDataIndexDto::getVerifiedStringValue)
 						.setHeader(I18nProperties.getCaption("Verified Status")).setSortable(true).setResizable(true)
 						.setAutoWidth(true)
@@ -2068,8 +2099,7 @@ public class CampaignDataView extends VerticalLayout
 								e -> I18nProperties.getCaption("Published Status: ") + e.getPublishedStringValue())
 						.setFooter(CampaignFormDataIndexDto.ISPUBLISHED);
 
-				if (campaignPhase.getValue() != null
-						&& campaignPhase.getValue().toString().equalsIgnoreCase("post-campaign")) {
+				if (campaignPhase.getValue() != null&& campaignPhase.getValue().toString().equalsIgnoreCase("post-campaign")) {
 					publishedColumn.setVisible(true);
 					verifiedColumn.setVisible(true);
 				} else {
@@ -2079,6 +2109,7 @@ public class CampaignDataView extends VerticalLayout
 			}
 		}
 
+		
 		grid.setVisible(true);
 		grid.setWidthFull();
 		grid.setAllRowsVisible(false);
