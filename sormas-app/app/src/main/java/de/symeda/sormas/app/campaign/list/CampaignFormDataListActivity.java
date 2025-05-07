@@ -28,8 +28,12 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,6 +51,7 @@ import de.symeda.sormas.app.backend.campaign.CampaignDao;
 import de.symeda.sormas.app.backend.campaign.data.CampaignFormData;
 import de.symeda.sormas.app.backend.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
+import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaRegion;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
 import de.symeda.sormas.app.backend.region.District;
@@ -67,6 +72,7 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
     private CampaignFormDataListViewModel model;
     private CampaignDao campaignDao;
     private FilterCampaignFormDataListLayoutBinding filterBinding;
+
     //this resets active campaign to servers active campaign...
     public static void startActivity(Context context) {
         List<Campaign> activeCampaigns = DatabaseHelper.getCampaignDao().getAllActive();
@@ -189,7 +195,7 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
                 districtUuids.add(district.getUuid());
             });
             System.out.println("User role contains surv Officer --------------------"
-            + list);
+                    + list);
             // Option 1: Pass the list of UUIDs directly to a new DAO method
             list = DatabaseHelper.getPopulationDataDao().getSelectedDistrictsByMultipleUuids(
                     districtUuids, criteria.getCampaign().getUuid());
@@ -203,24 +209,25 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
                     ConfigProvider.getUser().getDistrict().getUuid(), criteria.getCampaign().getUuid());
         }
 //        if(!ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
-            List<District> disTrictuserDistricts = new ArrayList<District>();
+        List<District> disTrictuserDistricts = new ArrayList<District>();
 
-            if (list.size() > 0) {
-                final CampaignFormMetaDialog campaignFormMetaDialog = new CampaignFormMetaDialog(BaseActivity.getActiveActivity(), criteria.getCampaign());
-                campaignFormMetaDialog.setPositiveCallback(() -> {
-                    CampaignFormDataNewActivity.startActivity(getContext(), criteria.getCampaign().getUuid(), campaignFormMetaDialog.getCampaignFormMeta().getUuid());
-                });
-                campaignFormMetaDialog.show();
-                campaignFormMetaDialog.setLiveValidationDisabled(true);
-            } else {
-                showCustomDialog(this,
-                        "Data Entry Error",
-                        "Users distcrict is not selected for data entry in this campaign.");
-            }
+        if (list.size() > 0) {
+            final CampaignFormMetaDialog campaignFormMetaDialog = new CampaignFormMetaDialog(BaseActivity.getActiveActivity(), criteria.getCampaign());
+            campaignFormMetaDialog.setPositiveCallback(() -> {
+                CampaignFormDataNewActivity.startActivity(getContext(), criteria.getCampaign().getUuid(), campaignFormMetaDialog.getCampaignFormMeta().getUuid());
+            });
+            campaignFormMetaDialog.show();
+            campaignFormMetaDialog.setLiveValidationDisabled(true);
+        } else {
+            showCustomDialog(this,
+                    "Data Entry Error",
+                    "Users distcrict is not selected for data entry in this campaign.");
+        }
 //        }else{
 //
 //        }
     }
+
     private void showCustomDialog(Context context, String title, String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(title)
@@ -253,7 +260,6 @@ showCustomDialog(
 // showErrorDialog("An error occurred while processing your request");
 
 
-
     @Override
     public boolean isEntryCreateAllowed() {
         return model.getCriteria().getCampaign() != null && ConfigProvider.hasUserRight(UserRight.CAMPAIGN_FORM_DATA_EDIT);
@@ -268,18 +274,38 @@ showCustomDialog(
         filterBinding.campaignFilter.initializeSpinner(campaigns);
         filterBinding.campaignFilter.addValueChangedListener(e -> {
             Campaign campaign = new Campaign();
-            campaign =  (Campaign) e.getValue();
+            campaign = (Campaign) e.getValue();
             if (campaign != null) {
-                if(campaign.getCampaignFormMetas() != null){
+                if (campaign.getCampaignFormMetas() != null) {
                     List<Item> forms = new ArrayList<Item>();
 
+                    List<CampaignFormMeta> allUnexpiredFormsForCampaign = new ArrayList<>();
 
-                    campaignFormMetasToItems(campaign.getCampaignFormMetas());
+                    for (CampaignFormMeta campaignFormMeta : campaign.getCampaignFormMetas()) {
+                        Date expiryDate = DatabaseHelper.getCampaignFormMetaWithExpDao().getCampaignFormExpiryDateByCampaignIdAndFormId(campaign.getUuid(), campaignFormMeta.getUuid());
+                        LocalDate currentDate = LocalDate.now();
 
-                     System.out.println("--------cccccbb---------------"+forms);
+                        if (expiryDate != null) {
+                            LocalDate expiryLocalDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                            if (currentDate.isBefore(expiryLocalDate) || expiryLocalDate.isEqual(currentDate)) {
+                                User user = ConfigProvider.getUser();
 
+                                List<CampaignFormMetaRegion> formsSelectedForCampaign = DatabaseHelper.getCampaignFormMetaRegionDao().getSelectedFormsByRegion(campaignFormMeta.getUuid(), user.getRegion().getArea().getUuid());
+                                if (formsSelectedForCampaign.size() > 0) {
+                                    allUnexpiredFormsForCampaign.add(campaignFormMeta);
+                                }
+                            }
+                        } else {
+                            System.out.println("This form does not have an expiry date set  " + campaignFormMeta.getFormName());
+                        }
+                    }
+                    Collections.sort(allUnexpiredFormsForCampaign, Comparator.comparing(CampaignFormMeta::getFormName));
+
+                    forms = campaignFormMetasToItems(allUnexpiredFormsForCampaign);
+
+                    System.out.println("--------cccccbb---------------" + forms);
                     forms.stream().filter(ee -> ee.getValue() != null)
-                            .sorted(Comparator.comparing(item -> ((CampaignFormMeta)item.getValue()).getFormName()))
+                            .sorted(Comparator.comparing(item -> ((CampaignFormMeta) item.getValue()).getFormName()))
                             .collect(Collectors.toList());
                     filterBinding.campaignFormFilter.initializeSpinner(forms);
                     setSubHeadingTitle(campaign != null ? campaign.getName() : I18nProperties.getCaption(Captions.all));
@@ -293,18 +319,17 @@ showCustomDialog(
         pageMenu.addFilter(campaignsFormDataListFilterView);
 
 
-
-
         filterBinding.applyFilters.setOnClickListener(e -> {
 
             showPreloader();
             pageMenu.hideAll();
-           // System.out.println("-----------------------"+model.getCriteria().getCampaign().getUuid());
-            if(model.getCriteria().getCampaign() != null){
+            // System.out.println("-----------------------"+model.getCriteria().getCampaign().getUuid());
+            if (model.getCriteria().getCampaign() != null) {
                 DatabaseHelper.getCampaignDao().updateCampaignLastOpenedDate(model.getCriteria().getCampaign().getUuid());
                 // campaignDao.updateCampaignLastOpenedDate(model.getCriteria().getCampaign().getUuid());
                 setSetSubHeadingTitleForCampaign(model.getCriteria().getCampaign());
-            }else{
+//                model.getCriteria().setCampaignFormMeta(null);
+            } else {
                 Context context = getApplicationContext();
                 CharSequence text = "You did not select any Campaign!";
                 int duration = Toast.LENGTH_LONG;
@@ -344,10 +369,10 @@ showCustomDialog(
         List<Item> listOut = new ArrayList<>();
         listOut.add(new Item<Integer>("", null));
         for (CampaignFormMeta campaignFormMeta : campaignFormMetas) {
-            if(campaignFormMeta != null) {
+            if (campaignFormMeta != null) {
 
                 listOut.add(new Item<>(campaignFormMeta.getFormName(), campaignFormMeta));
-                 System.out.println("-----------ddd-----------"+ listOut);
+                System.out.println("-----------ddd-----------" + listOut);
 
             }
         }
@@ -357,11 +382,11 @@ showCustomDialog(
 // Sorting the list alphabetically based on the form names
         listOut.stream()
                 .filter(ee -> ee.getValue() != null)
-                .sorted(Comparator.comparing(item -> ((CampaignFormMeta)item.getValue()).getFormName()))
+                .sorted(Comparator.comparing(item -> ((CampaignFormMeta) item.getValue()).getFormName()))
                 .collect(Collectors.toList());
 
 
-        System.out.println("-----------ddd-----------"+ listOut);
+        System.out.println("-----------ddd-----------" + listOut);
 
         return listOut;
 
