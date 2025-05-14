@@ -2506,16 +2506,13 @@ public class CampaignFormBuilder extends VerticalLayout {
 					}
 				}
 
-				System.out.println(isDistrictEntry + " isDistrictEntryvalueeeeeeeeeeeeeeeee");
-				if (isDistrictEntry) {
-					for (String string : listLotClusterNo) {
-						if (listLotNo.size() > 0) {
-							if ((Long.parseLong(string) - Long.parseLong(lotClusterNo.getValue().toString()) == 0)
-									&& (Long.parseLong(listLotNo.get(0))
-											- Long.parseLong(lotNo.getValue().toString()) == 0)) {
-								saveChecker = false;
-								break;
-							}
+				for (String string : listLotClusterNo) {
+					if (listLotNo.size() > 0) {
+						if ((Long.parseLong(string) - Long.parseLong(lotClusterNo.getValue().toString()) == 0)
+								&& (Long.parseLong(listLotNo.get(0))
+										- Long.parseLong(lotNo.getValue().toString()) == 0)) {
+							saveChecker = false;
+							break;
 						}
 					}
 				}
@@ -2602,16 +2599,13 @@ public class CampaignFormBuilder extends VerticalLayout {
 					}
 				}
 
-				System.out.println(isDistrictEntry + " gdgdgdtdgststsggtegstsgsgsfs");
-				if (isDistrictEntry) {
-					for (String string : listLotClusterNo) {
-						if (listLotNo.size() > 0) {
-							if ((Long.parseLong(string) - Long.parseLong(lotClusterNo.getValue().toString()) == 0)
-									&& (Long.parseLong(listLotNo.get(0))
-											- Long.parseLong(lotNo.getValue().toString()) == 0)) {
-								saveChecker = false;
-								break;
-							}
+				for (String string : listLotClusterNo) {
+					if (listLotNo.size() > 0) {
+						if ((Long.parseLong(string) - Long.parseLong(lotClusterNo.getValue().toString()) == 0)
+								&& (Long.parseLong(listLotNo.get(0))
+										- Long.parseLong(lotNo.getValue().toString()) == 0)) {
+							saveChecker = false;
+							break;
 						}
 					}
 				}
