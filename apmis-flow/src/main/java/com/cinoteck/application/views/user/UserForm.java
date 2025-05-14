@@ -552,7 +552,7 @@ public class UserForm extends FormLayout {
 				sortedUserRoles.remove(UserRole.AREA_ADMIN_SUPERVISOR);
 				sortedUserRoles.remove(UserRole.ADMIN_SUPERVISOR);
 				sortedUserRoles.remove(UserRole.BAG_USER);
-				sortedUserRoles.remove(UserRole.REST_USER);
+//				sortedUserRoles.remove(UserRole.REST_USER);
 				sortedUserRoles.remove(UserRole.PUBLISH_USER);
 				sortedUserRoles.remove(UserRole.EDITOR_USER);
 
