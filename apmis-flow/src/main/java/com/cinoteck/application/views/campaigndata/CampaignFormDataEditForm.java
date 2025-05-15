@@ -384,17 +384,18 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 		});
 
 		saveAndContinueButton.addClickListener(e -> {
-			if (campaignFormBuilder.saveFormValues()) {
+		boolean isFormValueSaved = 	campaignFormBuilder.saveFormValues();
+			
+			
+			if (isFormValueSaved) {
 				dialog.close();
 				dialog = new Dialog();
-				grid.getDataProvider().refreshAll();
-
-				CampaignFormBuilder campaignFormBuilderx;
-				campaignFormBuilderx = new CampaignFormBuilder(campaignFormMetaDto.getCampaignFormElements(), null,
-						campaignReferenceDto, campaignFormMetaDto.getCampaignFormTranslations(),
-						campaignFormMetaDto.getFormName(), campaignFormMetaReferenceDto, openData, uuidForm,
-						campaignFormMetaDtox);
-				dialog.add(campaignFormBuilderx);
+			
+				campaignFormBuilder = new CampaignFormBuilder(campaignFormMetaDto.getCampaignFormElements(), null,campaignReferenceDto, campaignFormMetaDto.getCampaignFormTranslations(),
+						campaignFormMetaDto.getFormName(), campaignFormMetaReferenceDto, false, null, campaignFormMetaDtox);
+				
+				
+				dialog.add(campaignFormBuilder);
 				dialog.setSizeFull();
 				dialog.setCloseOnOutsideClick(false);
 				dialog.getFooter().add(saveAndContinueButton);
