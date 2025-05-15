@@ -465,15 +465,8 @@ public class ControlTimeField extends ControlPropertyEditField<String> {
 	public void setLabel(String labelText) {
 		label.setText(labelText);
 	}
-
 	public void showError(String message) {
 		input.setError(message);
 	}
-
-	/** Stub methods for optional customization in anonymous subclasses */
-	protected void initLabel() {}
-	protected void initLabelAndValidationListeners() {}
-	public void setLiveValidationDisabled(boolean disabled) {}
-
 	protected void initializeTimeField(FragmentManager fm) {}
 }
