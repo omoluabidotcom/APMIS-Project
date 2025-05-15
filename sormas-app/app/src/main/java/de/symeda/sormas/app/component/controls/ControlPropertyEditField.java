@@ -302,7 +302,7 @@ public abstract class ControlPropertyEditField<T> extends ControlPropertyField<T
 			hideNotification();
 		} else {
 			changeVisualState(VisualState.NORMAL);
-//			labelError.setVisibility(GONE);
+			labelError.setVisibility(GONE);
 			if (required) {
 				labelRequired.setVisibility(VISIBLE);
 			} else if (softRequired) {
