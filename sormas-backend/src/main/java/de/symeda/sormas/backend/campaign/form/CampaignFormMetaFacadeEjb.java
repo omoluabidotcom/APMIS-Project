@@ -118,8 +118,6 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 	private AreaService areaService;
 
 	public CampaignFormMeta fromDto(@NotNull CampaignFormMetaDto source, boolean checkChangeDate) {
-		
-		System.out.println("xxxdssssssssssssssefaasdgasdgasdgasdfasdfasdfasfeasfdasdfs " + source);
 
 //		getByUuidAndFormVersionUuid
 		CampaignFormMeta target = DtoHelper.fillOrBuildEntity(source, service.getByUuid(source.getUuid()),
@@ -138,7 +136,6 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		target.setFormCategory(source.getFormCategory());
 		if (source.getArea() != null) {
 			target.setArea(areaService.getByReferenceDto(source.getArea()));
-			System.out.println("woleeeeeeeeeeeee sehhhhhhhhhhhhhhh");
 		}
 		target.setLanguageCode(source.getLanguageCode());
 		target.setCampaignFormElements(source.getCampaignFormElements());
@@ -268,13 +265,9 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 	public CampaignFormMetaDto saveCampaignFormMeta(@Valid CampaignFormMetaDto campaignFormMetaDto)
 			throws ValidationRuntimeException {
 		
-		System.out.println("campaignFormMetaDtocampaignFormMetaDto" +  campaignFormMetaDto);
-		campaignFormMetaDto.getArea().forEach(e -> System.out.println(e.getCaption() + " captionssssssssssssss"));
-		
 		validateAndClean(campaignFormMetaDto);
 
-		CampaignFormMeta campaignFormMeta = fromDto(campaignFormMetaDto, true);
-		campaignFormMeta.getArea().forEach(e -> System.out.println(e.getName() + " bnbnbnbnghghghtytytytuiuiujkjkj"));
+		CampaignFormMeta campaignFormMeta = fromDto(campaignFormMetaDto, true);	
 		service.ensurePersisted(campaignFormMeta);
 		return toDto(campaignFormMeta);
 	}
@@ -839,13 +832,13 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 
 		// The element referenced by the dependingOn attribute must be of a type that is
 		// compatible with the dependingOnValues.
-		for (String dependingOnValue : dependingOnValues) {
-			if (!isValueValidForType(otherElements.get(dependingOn), dependingOnValue)) {
-				throw new ValidationRuntimeException(
-						I18nProperties.getValidationError(Validations.campaignFormUnsupportedDependingOnValue,
-								dependingOnValue, id, otherElements.get(dependingOn), dependingOn));
-			}
-		}
+//		for (String dependingOnValue : dependingOnValues) {
+//			if (!isValueValidForType(otherElements.get(dependingOn), dependingOnValue)) {
+//				throw new ValidationRuntimeException(
+//						I18nProperties.getValidationError(Validations.campaignFormUnsupportedDependingOnValue,
+//								dependingOnValue, id, otherElements.get(dependingOn), dependingOn));
+//			}
+//		}
 	}
 
 	private boolean isValueValidForType(String type, String value) {
