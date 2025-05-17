@@ -1522,7 +1522,12 @@ if(criteria.getUserLanguage() != null) {
 				+ "    community.externalid AS ccode,\n"
 				+ "    users.firstname as firstName,\n"
 				+ "    users.userposition as title,\n"
-				+ "    TO_CHAR(CAST(jsondata.value ->> 'value' AS NUMERIC), 'FM999999999999999999') as tazkiraNumber, \n"
+				//With the introduction of the new imput method for TazkiraANd E-Tazkira Number, where we are now collecting etazkira into 
+				//a different format wit "-" we need to be safe when extracting the value, casting it as numeric returns an exception 
+				//so now we retrieve the tazkira no without casting it to numeric
+//				+ "    TO_CHAR(CAST(jsondata.value ->> 'value' AS NUMERIC), 'FM999999999999999999') as tazkiraNumber, \n"
+				+ " (jsondata.value ->> 'value') AS tazkiraNumber,\r\n"
+
 				 + "    CASE \n"
 				    + "        WHEN EXISTS (\n"
 				    + "            SELECT 1\n"
@@ -1580,14 +1585,15 @@ if(criteria.getUserLanguage() != null) {
 						(String) result[0].toString(), 
 						(String) result[1].toString(),
 						(String) result[2].toString(),
-						(Integer) result[3], 
-						((BigInteger) result[4]).longValue(),  
+//						(Integer) result[3], 
+						(result[3] != null ? (Integer) result[3] : 0),
+
+						(result[4] != null ? ((BigInteger) result[4]).longValue() : 0L),
+
+//						(result[4] != null ? ((BigInteger) result[4]).longValue() : ,  
 						((String) result[5]).toString(), 
 						((String) result[6]).toString(), 
-						((String) result[7]).toString() != null 
-						|| !((String) result[7]).toString().isEmpty() 
-						? ((String) result[7]).toString() 
-								: "No Title",
+						((String) result[7]).toString() != null || !((String) result[7]).toString().isEmpty() ? ((String) result[7]).toString() : "No Title",
 						((String) result[8]).toString()
 					)).collect(Collectors.toList()));
 		

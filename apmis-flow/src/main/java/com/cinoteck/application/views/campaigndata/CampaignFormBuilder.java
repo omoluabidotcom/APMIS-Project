@@ -894,6 +894,13 @@ public class CampaignFormBuilder extends VerticalLayout {
 					// needed
 					setVisibilityDependency(labx, dependingOnId, dependingOnValues, type, false);
 				}
+			} else if (type == CampaignFormElementType.LINEBREAK) {
+				Paragraph newLine = new Paragraph();
+				newLine.setId("pageBreak");
+//				newLine.getStyle().set("width", "100% !important");
+				vertical.setColspan(newLine, 3);
+				vertical.add(newLine);
+
 			} else {
 				CampaignFormElementOptions constrainsVal = new CampaignFormElementOptions();
 				boolean fieldIsRequired = formElement.isImportant();
@@ -971,6 +978,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					fields.put(formElement.getId(), textField);
 
 					if (fieldId.equalsIgnoreCase("eTazkiraNo")) {
+
 
 						System.out.println("Tazkira Number Found -------------------");
 
@@ -1322,7 +1330,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 						}
 					});
 
-				} else if (type == CampaignFormElementType.RANGE) {
+				}else if (type == CampaignFormElementType.RANGE) {
 					IntegerField integerField = new IntegerField();
 					integerField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
 					integerField.setClassName("customTextWrap");
@@ -2041,11 +2049,11 @@ public class CampaignFormBuilder extends VerticalLayout {
 				|| type == CampaignFormElementType.RADIOBASIC && !styles.contains(CampaignFormElementStyle.INLINE)
 				|| type == CampaignFormElementType.TEXTBOX && !styles.contains(CampaignFormElementStyle.INLINE)
 				|| (type == CampaignFormElementType.TEXT || type == CampaignFormElementType.DATE
-						|| type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.EMAIL
-						|| type == CampaignFormElementType.TIME || type == CampaignFormElementType.PHONE
-						|| type == CampaignFormElementType.DECIMAL || type == CampaignFormElementType.RANGE)) {// &&
-																												// styles.contains(CampaignFormElementStyle.ROW))
-																												// {
+				|| type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.EMAIL 
+				|| type == CampaignFormElementType.TIME || type == CampaignFormElementType.PHONE || type == CampaignFormElementType.DECIMAL
+				|| type == CampaignFormElementType.RANGE || type == CampaignFormElementType.LINEBREAK)) {// && styles.contains(CampaignFormElementStyle.ROW))
+																	// {
+
 			return 12;
 		}
 
@@ -2486,6 +2494,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 				List<CampaignFormDataIndexDto> lotchecker = FacadeProvider.getCampaignFormDataFacade()
 						.getCampaignFormDataByCampaignandFormMeta(campaignReferenceDto.getUuid(),
 								campaignFormMeta.getUuid(), cbDistrict.getValue().getCaption(),
+
 								cbCommunity.getValue().getCaption() != null ? cbCommunity.getValue().getCaption() : "");
 
 				lotchecker.removeIf(e -> e.getUuid().equals(uuidForm));
