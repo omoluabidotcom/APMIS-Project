@@ -206,7 +206,6 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 		}
 
 		saveButton.addClickListener(e -> {
-			saveButton.setEnabled(false);
 			if( openData && campaignFormBuilder.updateFormDataUnitAssignment.isVisible() && !campaignFormBuilder.cbCommunity.isReadOnly()) {
 					ConfirmDialog unsavedClusterEditWarninig = new ConfirmDialog();
 					unsavedClusterEditWarninig.setRejectable(false);
@@ -216,7 +215,8 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 					unsavedClusterEditWarninig.addConfirmListener(ee -> unsavedClusterEditWarninig.close());
 			}else {
 				if (openData) {
-					
+					saveButton.setEnabled(false);
+
 					System.out.println("OPEN DATA EXISTING ");
 					
 					if (campaignFormBuilder.saveFormValues()) {
@@ -240,7 +240,8 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 				}else {
 					
 					System.out.println("Newwwwww DATA -------------------- ");
-					
+					saveButton.setEnabled(false);
+
 					if (campaignFormBuilder.saveFormValues()) {
 							UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
 							userActivitySummaryDto.setActionModule("Campaign Data");

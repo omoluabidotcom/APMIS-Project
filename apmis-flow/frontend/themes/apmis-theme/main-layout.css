@@ -756,6 +756,10 @@ tfoot#footer {
 	text-wrap: balance;
 }
 
+#pageBreak{
+	width : 100% !important;
+}
+
 vaadin-vertical-layout#campaignFormLayout vaadin-tabsheet vaadin-tabs {
 	background: rgb(67, 67, 67) !important
 }

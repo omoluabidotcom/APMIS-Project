@@ -21,6 +21,7 @@ public enum CampaignFormElementType {
 	EMAIL,
 	TIME,
 	PHONE,
+	LINEBREAK,
 	ARRAY;
 
 	
