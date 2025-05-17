@@ -138,6 +138,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		target.setFormCategory(source.getFormCategory());
 		if (source.getArea() != null) {
 			target.setArea(areaService.getByReferenceDto(source.getArea()));
+			System.out.println("woleeeeeeeeeeeee sehhhhhhhhhhhhhhh");
 		}
 		target.setLanguageCode(source.getLanguageCode());
 		target.setCampaignFormElements(source.getCampaignFormElements());
@@ -268,10 +269,12 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 			throws ValidationRuntimeException {
 		
 		System.out.println("campaignFormMetaDtocampaignFormMetaDto" +  campaignFormMetaDto);
+		campaignFormMetaDto.getArea().forEach(e -> System.out.println(e.getCaption() + " captionssssssssssssss"));
 		
 		validateAndClean(campaignFormMetaDto);
 
 		CampaignFormMeta campaignFormMeta = fromDto(campaignFormMetaDto, true);
+		campaignFormMeta.getArea().forEach(e -> System.out.println(e.getName() + " bnbnbnbnghghghtytytytuiuiujkjkj"));
 		service.ensurePersisted(campaignFormMeta);
 		return toDto(campaignFormMeta);
 	}

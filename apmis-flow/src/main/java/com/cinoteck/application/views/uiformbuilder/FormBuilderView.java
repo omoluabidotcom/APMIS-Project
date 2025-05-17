@@ -513,6 +513,7 @@ public class FormBuilderView extends VerticalLayout {
 	}
 
 	private void saveForm(FormBuilderLayout.SaveEvent event) {	
+		event.getForm().getArea().forEach( e -> System.out.println(e.getCaption() + " fgfgfgfgfgdfdfdfdfdfsdsdsdsdsasasas"));
 		FacadeProvider.getCampaignFormMetaFacade().saveCampaignFormMeta(event.getForm());
 	}
 	

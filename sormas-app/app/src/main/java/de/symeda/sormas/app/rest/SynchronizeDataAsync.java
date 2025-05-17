@@ -335,6 +335,11 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 
 		// Campaigns
 		if (!DatabaseHelper.getFeatureConfigurationDao().isFeatureDisabled(FeatureType.CAMPAIGNS)) {
+//			final UserDtoHelper userDtoHelper = new UserDtoHelper();
+//			if (userDtoHelper.pullAndPushEntities()) {
+//				userDtoHelper.pushEntities(true);
+//				System.out.println("vbvbvbvbvbvbvbvbvbvbvbvbvbvbvbvbvbvbvbvbv");
+//			}
 			final CampaignFormMetaDtoHelper campaignFormMetaDtoHelper = new CampaignFormMetaDtoHelper();
 			if (campaignFormMetaDtoHelper.pullAndPushEntities())
 				campaignFormMetaDtoHelper.pullEntities(true);
