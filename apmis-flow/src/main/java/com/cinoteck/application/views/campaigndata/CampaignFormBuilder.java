@@ -1873,26 +1873,68 @@ public class CampaignFormBuilder extends VerticalLayout {
 			break;
 			
 		case NUMBER:
-
-		    if (value != null) {
-		        String cvalue = value.toString().replace("null", "").trim();
-		        if (cvalue.equals("") || cvalue.equals("null")) {
-		            ((NumberField) field).setValue(null);
-		        } else {
-		            Double doubleValue = Double.parseDouble(cvalue);
-		            ((NumberField) field).setValue(doubleValue.intValue() * 1.0); // force integer without decimals
+		    if (field instanceof NumberField) {
+		        NumberField numberField = (NumberField) field;
+		        
+		        if (value != null) {
+		            String cvalue = value.toString().replace("null", "").trim();
+		            if (cvalue.equals("") || cvalue.equals("null")) {
+		                numberField.setValue(null);
+		            } else {
+		                try {
+		                    // For extremely large numbers, store as string value
+		                    // This is supposed to help us avoids precision issues with double particularly for tazkirano thats large
+		                    if (cvalue.contains("E") || cvalue.length() > 15) {
+		                        // Set the string representation as the value
+		                        numberField.setValue(Double.parseDouble(cvalue));
+		                        // Store the full string representation in a hidden field or data attribute if needed
+		                        // numberField.getElement().setAttribute("data-full-value", cvalue);
+		                    } else {
+		                        Double doubleValue = Double.parseDouble(cvalue);
+		                        numberField.setValue(doubleValue);
+		                    }
+		                } catch (NumberFormatException e) {
+		                    // Handle parsing error
+		                    numberField.setValue(null);
+		                    
+		                }
+		            }
+		        } else if (defaultvalue != null) {
+		            try {
+		                Double doubleValue = Double.parseDouble(defaultvalue);
+		                numberField.setValue(doubleValue);
+		            } catch (NumberFormatException e) {
+		                numberField.setValue(null);
+		            }
 		        }
-
-		    } else if (defaultvalue != null) {
-		        Double doubleValue = Double.parseDouble(defaultvalue);
-		        ((NumberField) field).setValue(doubleValue.intValue() * 1.0);
+		    } else if (field instanceof BigDecimalField) {
+		        // Handle BigDecimalField separately
+		        BigDecimalField bigDecimalField = (BigDecimalField) field;
+		        
+		        if (value != null) {
+		            String cvalue = value.toString().replace("null", "").trim();
+		            if (cvalue.equals("") || cvalue.equals("null")) {
+		                bigDecimalField.setValue(null);
+		            } else {
+		                try {
+		                    BigDecimal bigValue = new BigDecimal(cvalue);
+		                    bigDecimalField.setValue(bigValue);
+		                } catch (NumberFormatException e) {
+		                    bigDecimalField.setValue(null);
+		                }
+		            }
+		        } else if (defaultvalue != null) {
+		            try {
+		                BigDecimal bigValue = new BigDecimal(defaultvalue);
+		                bigDecimalField.setValue(bigValue);
+		            } catch (NumberFormatException e) {
+		                bigDecimalField.setValue(null);
+		            }
+		        }
 		    }
-
-		    // Enforce integer-only behavior
-		    ((NumberField) field).setStep(1.0); // restrict input to integer steps
-		    ((NumberField) field).setHasControls(true); // optional: show + / - buttons
-
 		    break;
+		    
+
 
 //		case NUMBER:
 //

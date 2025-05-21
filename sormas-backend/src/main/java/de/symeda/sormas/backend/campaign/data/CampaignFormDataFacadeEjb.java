@@ -1926,10 +1926,8 @@ if(criteria.getUserLanguage() != null) {
 
 	    // Further filter CampaignFormData based on user's communities
 	    List<CampaignFormData> filterednewlstLst = filterednewlst.stream()
-	        .filter(data -> data.getCommunity() != null && 
-	                        userService.getCurrentUser().getCommunity().stream()
-	                            .anyMatch(comm -> comm.getId().equals(data.getCommunity().getId()) && 
-	                                              data.getCampaign().isOpenandclose()))
+	        .filter(data -> data.getCommunity() != null ? userService.getCurrentUser().getCommunity().stream().anyMatch(comm -> comm.getId().equals(data.getCommunity().getId()) && data.getCampaign().isOpenandclose()) 
+	        		: userService.getCurrentUser().getDistricts().stream().anyMatch(comm -> comm.getId().equals(data.getDistrict().getId()) && data.getCampaign().isOpenandclose()))
 	        .collect(Collectors.toList());
 
 	    // Get the final list of UUIDs
