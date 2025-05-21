@@ -22,6 +22,8 @@ public class CampaignFormDataListAdapter extends BindingPagedListAdapter<Campaig
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        System.out.println("Onview binderrr rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr-------------");
+
         super.onBindViewHolder(holder, position);
 
         if (getItemViewType(position) == TYPE_ITEM) {
@@ -32,10 +34,14 @@ public class CampaignFormDataListAdapter extends BindingPagedListAdapter<Campaig
             pagedHolder.setOnListItemClickListener(this.mOnListItemClickListener);
 
             if (item.isModifiedOrChildModified()) {
+                System.out.println("Onview binderrr rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr-------------Modified ");
+
                 pagedHolder.binding.imgSyncIcon.setVisibility(View.VISIBLE);
                 pagedHolder.binding.rowItem.setBackgroundColor(R.drawable.background_list_activity_row_unsent);
                 pagedHolder.binding.imgSyncIcon.setImageResource(R.drawable.ic_sync_blue_24dp_white);
             } else {
+                System.out.println("Onview binderrr rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr------------- Not Modified ");
+
                 pagedHolder.binding.imgSyncIcon.setVisibility(View.GONE);
             }
         }

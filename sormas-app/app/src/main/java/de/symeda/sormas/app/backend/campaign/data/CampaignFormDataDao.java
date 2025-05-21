@@ -55,6 +55,15 @@ public class CampaignFormDataDao extends AbstractAdoDao<CampaignFormData> {
 		}
 	}
 
+	public List<CampaignFormData> queryByCriteriaa(CampaignFormDataCriteria criteria, long offset, long limit) {
+		try {
+			return buildQueryBuilderr(criteria).orderBy(CampaignFormData.FORM_DATE, false).offset(offset).limit(limit).query();
+		} catch (SQLException e) {
+			Log.e(getTableName(), "Could not perform queryByCriteria on CampaignFormData");
+			throw new RuntimeException(e);
+		}
+	}
+
 	public long countByCriteria(CampaignFormDataCriteria criteria) {
 		try {
 			return buildQueryBuilder(criteria).countOf();
@@ -70,6 +79,33 @@ public class CampaignFormDataDao extends AbstractAdoDao<CampaignFormData> {
 		List<Where<CampaignFormData, Long>> whereStatements = new ArrayList<>();
 		Where<CampaignFormData, Long> where = queryBuilder.where();
 		whereStatements.add(where.eq(AbstractDomainObject.SNAPSHOT, false));
+
+		if (criteria.getCampaign() != null) {
+			whereStatements.add(where.eq(CampaignFormData.CAMPAIGN +  "_id", criteria.getCampaign().getId()));
+		}
+
+		if (criteria.getCampaignFormMeta() != null) {
+			whereStatements.add((where.eq(CampaignFormData.CAMPAIGN_FORM_META + "_id", criteria.getCampaignFormMeta().getId())));
+		}
+
+		if (criteria.getCommunity() != null) {
+			whereStatements.add((where.eq(CampaignFormData.COMMUNITY +  "_id", criteria.getCommunity())));
+		}
+
+		if (!whereStatements.isEmpty()) {
+			Where<CampaignFormData, Long> whereStatement = where.and(whereStatements.size());
+			queryBuilder.setWhere(whereStatement);
+		}
+
+		return queryBuilder;
+	}
+
+	private QueryBuilder<CampaignFormData, Long> buildQueryBuilderr(CampaignFormDataCriteria criteria) throws SQLException {
+		QueryBuilder<CampaignFormData, Long> queryBuilder = queryBuilder();
+
+		List<Where<CampaignFormData, Long>> whereStatements = new ArrayList<>();
+		Where<CampaignFormData, Long> where = queryBuilder.where();
+//		whereStatements.add(where.eq(AbstractDomainObject.SNAPSHOT, true));
 
 		if (criteria.getCampaign() != null) {
 			whereStatements.add(where.eq(CampaignFormData.CAMPAIGN +  "_id", criteria.getCampaign().getId()));

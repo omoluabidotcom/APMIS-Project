@@ -205,6 +205,8 @@ public class CampaignFormDataImporter extends DataImporter {
 				}
 			}
 			
+			CampaignFormMetaDto  ccc = FacadeProvider.getCampaignFormMetaFacade().getCampaignFormMetaByUuid(campaignFormMetaUuid);
+			ccc.isDistrictentry();
 			if (D_CODE.equalsIgnoreCase(entityProperties[i]) && regionExists) {
 				logger.debug("there is dcode -------------------------------------------" + regionExists);
 
@@ -242,6 +244,28 @@ public class CampaignFormDataImporter extends DataImporter {
 					writeImportError(values, I18nProperties.getCaption("District is not selected for this campaign"));
 					return ImportLineResult.ERROR;
 				} 
+				
+				try {
+					CampaignFormMetaDto campaignMetaDto = FacadeProvider.getCampaignFormMetaFacade().getCampaignFormMetaByUuid(campaignFormMetaUuid);
+					
+					campaignFormData.setRecordversion(1L);
+					if(campaignMetaDto.isDistrictentry()) {
+						campaignFormData.setCommunity(null);						
+						try {
+							campaignFormData = insertImportRowIntoData(campaignFormData, values, entityProperties);							
+							campaignFormData.setCampaign(campaignReferenceDto);							
+							FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(campaignFormData);				
+						}catch (ImportErrorException | InvalidColumnException | ValidationRuntimeException e) {
+							logger.debug(e.getLocalizedMessage()+ "ddddddddddddddddddddddd: "+e.getMessage());
+							writeImportError(values, e.getLocalizedMessage());
+							return ImportLineResult.ERROR;
+						}
+						return ImportLineResult.SUCCESS;
+					}
+				}finally {
+					
+				}
+				
 			}
 			
 			if (C_CODE.equalsIgnoreCase(entityProperties[i]) && districtExists) {
@@ -281,27 +305,16 @@ public class CampaignFormDataImporter extends DataImporter {
 								Validations.importCommunityNotUnique, values[i], entityProperties[i]));
 					} else {
 						campaignFormData.setCommunity(community.get(0));
-
-
 						try {
-							campaignFormData = insertImportRowIntoData(campaignFormData, values, entityProperties);
-							
+							campaignFormData = insertImportRowIntoData(campaignFormData, values, entityProperties);							
 							campaignFormData.setCampaign(campaignReferenceDto);
-
-//							CampaignFormDataDto existingData = FacadeProvider.getCampaignFormDataFacade()
-//									.getExistingData(new CampaignFormDataCriteria().campaign(campaignFormData.getCampaign())
-//											.campaignFormMeta(campaignFormData.getCampaignFormMeta())
-//											.community((CommunityReferenceDto) campaignFormData.getCommunity())
-//											.formDate(campaignFormData.getFormDate()));
 							logger.debug("1111111"+campaignFormData.getDistrict());
 							logger.debug("1111112"+campaignFormData.getRegion());
 							logger.debug("1111113"+campaignFormData.getCommunity());
 							logger.debug("1111114"+campaignFormData.getFormDate());
 							logger.debug("1111115"+campaignFormData.getArea());
 							logger.debug("1111116"+campaignFormData.getCampaignFormMeta());
-							logger.debug("1111116"+campaignFormData.getCampaign());
-							
-							
+							logger.debug("1111116"+campaignFormData.getCampaign());				
 							
 							FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(campaignFormData);
 						} catch (ImportErrorException | InvalidColumnException | ValidationRuntimeException e) {
