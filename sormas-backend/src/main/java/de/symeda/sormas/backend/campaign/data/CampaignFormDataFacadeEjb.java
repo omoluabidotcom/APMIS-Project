@@ -1513,55 +1513,137 @@ if(criteria.getUserLanguage() != null) {
 		
 		
 		
+//		final String joinBuilder = ""
+//				+ " SELECT \n"
+//				+ "    areas.name AS area,\n"
+//				+ "    region.name AS region,\n"
+//				+ "    district.name AS district,\n"
+//				+ "    community.clusternumber AS clusterNo,\n"
+//				+ "    community.externalid AS ccode,\n"
+////				+ "    users.firstname as firstName,\n"
+////				+ "    users.userposition as title,\n"
+//+ "    (jsonfirstname.value ->> 'value') AS firstName,\n"  // <-- ADDED THIS
+//+ "    (jsontitle.value ->> 'value') AS title,\n"
+//
+//				//With the introduction of the new imput method for TazkiraANd E-Tazkira Number, where we are now collecting etazkira into 
+//				//a different format wit "-" we need to be safe when extracting the value, casting it as numeric returns an exception 
+//				//so now we retrieve the tazkira no without casting it to numeric
+////				+ "    TO_CHAR(CAST(jsondata.value ->> 'value' AS NUMERIC), 'FM999999999999999999') as tazkiraNumber, \n"
+//				+ " (jsondata.value ->> 'value') AS tazkiraNumber,\r\n"
+//
+//				 + "    CASE \n"
+//				    + "        WHEN EXISTS (\n"
+//				    + "            SELECT 1\n"
+//				    + "            FROM campaignformdata c2\n"
+//				    + "            CROSS JOIN LATERAL json_array_elements(c2.formvalues) j2(value)\n"
+//				    + "            WHERE (j2.value ->> 'id') = 'TazkiraNo'\n"
+//				    + "            AND (j2.value ->> 'value') = (jsondata.value ->> 'value')\n"
+//				    + "            AND c2.id != campaignformdata.id\n"
+//				    + "        ) THEN 'Error: Duplicate Tazkira number'\n"
+//				    + "        ELSE 'No Error'\n"
+//				    + "    END as error_status\n"
+//				+ "FROM campaignformdata\n"
+//				+ "LEFT JOIN campaignformmeta ON campaignformdata.campaignformmeta_id = campaignformmeta.id\n"
+//				+ "LEFT JOIN region ON campaignformdata.region_id = region.id\n"
+//				+ "LEFT JOIN areas ON campaignformdata.area_id = areas.id\n"
+//				+ "LEFT JOIN district ON campaignformdata.district_id = district.id\n"
+//				+ "LEFT JOIN community ON campaignformdata.community_id = community.id\n"
+//				+ "LEFT JOIN users ON campaignformdata.creatinguser_id = users.id\n"
+//				+ "LEFT JOIN campaigns ON campaignformdata.campaign_id = campaigns.id,\n"
+//				
+//				+ "LATERAL json_array_elements(campaignformdata.formvalues) jsondata(value),\n"
+//				+ "LATERAL json_array_elements(campaignformmeta.campaignformelements) jsonmeta(value),\n"
+//				
+//			    // Additional lateral joins to get firstname and title
+//			    + "LATERAL (\n"
+//			    + "  SELECT * FROM json_array_elements(campaignformdata.formvalues) jsonfirstname(value)\n"
+//			    + "  WHERE (jsonfirstname.value ->> 'id') = 'Firstname'\n"
+//			    + ") jsonfirstname,\n"
+//
+//			    + "LATERAL (\n"
+//			    + "  SELECT * FROM json_array_elements(campaignformdata.formvalues) jsontitle(value)\n"
+//			    + "  WHERE (jsontitle.value ->> 'id') = 'Title'\n"
+//			    + ") jsontitle\n"
+//			    
+//				+ "WHERE \n"
+//				+ "    (jsondata.value ->> 'id') IN ('TazkiraNo') AND\n"
+//				+ "    (jsondata.value ->> 'id') = (jsonmeta.value ->> 'id') \n"
+//				+whereclause+"\n"
+//				+ "    and campaignformdata.id in (\n"
+//				+ "	    SELECT CAST(unnest(string_to_array(array_to_string(array_agg (id),', '), ',')) AS bigint) AS individual_values\n"
+//				+ "		FROM flwduplicateerrorreport\n"
+//				+ "		GROUP BY value\n"
+//				+ "		HAVING COUNT(*) > 1\n"
+//				+ "    ) "
+//				
+//				+ orderby
+//				+ " limit "+max+" offset "+first+";";
+		
 		final String joinBuilder = ""
-				+ " SELECT \n"
-				+ "    areas.name AS area,\n"
-				+ "    region.name AS region,\n"
-				+ "    district.name AS district,\n"
-				+ "    community.clusternumber AS clusterNo,\n"
-				+ "    community.externalid AS ccode,\n"
-				+ "    users.firstname as firstName,\n"
-				+ "    users.userposition as title,\n"
-				//With the introduction of the new imput method for TazkiraANd E-Tazkira Number, where we are now collecting etazkira into 
-				//a different format wit "-" we need to be safe when extracting the value, casting it as numeric returns an exception 
-				//so now we retrieve the tazkira no without casting it to numeric
-//				+ "    TO_CHAR(CAST(jsondata.value ->> 'value' AS NUMERIC), 'FM999999999999999999') as tazkiraNumber, \n"
-				+ " (jsondata.value ->> 'value') AS tazkiraNumber,\r\n"
+			    + " SELECT \n"
+			    + "    areas.name AS area,\n"
+			    + "    region.name AS region,\n"
+			    + "    district.name AS district,\n"
+			    + "    community.clusternumber AS clusterNo,\n"
+			    + "    community.externalid AS ccode,\n"
+			    + "    (jsonfirstname.value ->> 'value') AS firstName,\n"
+			    + "    (jsontitle.value ->> 'value') AS title,\n"
+			    + "    (jsondata.value ->> 'value') AS tazkiraNumber,\n"
+			    + "    CASE \n"
+			    + "        WHEN EXISTS (\n"
+			    + "            SELECT 1\n"
+			    + "            FROM campaignformdata c2\n"
+			    + "            CROSS JOIN LATERAL json_array_elements(c2.formvalues) j2(value)\n"
+			    + "            WHERE (j2.value ->> 'id') = 'TazkiraNo'\n"
+			    + "              AND (j2.value ->> 'value') = (jsondata.value ->> 'value')\n"
+			    + "              AND c2.id != campaignformdata.id\n"
+			    + "        ) THEN 'Error: Duplicate Tazkira number'\n"
+			    + "        ELSE 'No Error'\n"
+			    + "    END as error_status\n"
+			    + "FROM campaignformdata\n"
+			    + "LEFT JOIN campaignformmeta ON campaignformdata.campaignformmeta_id = campaignformmeta.id\n"
+			    + "LEFT JOIN region ON campaignformdata.region_id = region.id\n"
+			    + "LEFT JOIN areas ON campaignformdata.area_id = areas.id\n"
+			    + "LEFT JOIN district ON campaignformdata.district_id = district.id\n"
+			    + "LEFT JOIN community ON campaignformdata.community_id = community.id\n"
+			    + "LEFT JOIN users ON campaignformdata.creatinguser_id = users.id\n"
+			    + "LEFT JOIN campaigns ON campaignformdata.campaign_id = campaigns.id\n"
 
-				 + "    CASE \n"
-				    + "        WHEN EXISTS (\n"
-				    + "            SELECT 1\n"
-				    + "            FROM campaignformdata c2\n"
-				    + "            CROSS JOIN LATERAL json_array_elements(c2.formvalues) j2(value)\n"
-				    + "            WHERE (j2.value ->> 'id') = 'TazkiraNo'\n"
-				    + "            AND (j2.value ->> 'value') = (jsondata.value ->> 'value')\n"
-				    + "            AND c2.id != campaignformdata.id\n"
-				    + "        ) THEN 'Error: Duplicate Tazkira number'\n"
-				    + "        ELSE 'No Error'\n"
-				    + "    END as error_status\n"
-				+ "FROM campaignformdata\n"
-				+ "LEFT JOIN campaignformmeta ON campaignformdata.campaignformmeta_id = campaignformmeta.id\n"
-				+ "LEFT JOIN region ON campaignformdata.region_id = region.id\n"
-				+ "LEFT JOIN areas ON campaignformdata.area_id = areas.id\n"
-				+ "LEFT JOIN district ON campaignformdata.district_id = district.id\n"
-				+ "LEFT JOIN community ON campaignformdata.community_id = community.id\n"
-				+ "LEFT JOIN users ON campaignformdata.creatinguser_id = users.id\n"
-				+ "LEFT JOIN campaigns ON campaignformdata.campaign_id = campaigns.id,\n"
-				+ "LATERAL json_array_elements(campaignformdata.formvalues) jsondata(value),\n"
-				+ "LATERAL json_array_elements(campaignformmeta.campaignformelements) jsonmeta(value)\n"
-				+ "WHERE \n"
-				+ "    (jsondata.value ->> 'id') IN ('TazkiraNo') AND\n"
-				+ "    (jsondata.value ->> 'id') = (jsonmeta.value ->> 'id') \n"
-				+whereclause+"\n"
-				+ "    and campaignformdata.id in (\n"
-				+ "	    SELECT CAST(unnest(string_to_array(array_to_string(array_agg (id),', '), ',')) AS bigint) AS individual_values\n"
-				+ "		FROM flwduplicateerrorreport\n"
-				+ "		GROUP BY value\n"
-				+ "		HAVING COUNT(*) > 1\n"
-				+ "    ) "
-				
-				+ orderby
-				+ " limit "+max+" offset "+first+";";
+			    // Extract TazkiraNo
+			    + "CROSS JOIN LATERAL json_array_elements(campaignformdata.formvalues) jsondata(value)\n"
+
+			    // Extract FirstName safely
+			    + "LEFT JOIN LATERAL (\n"
+			    + "    SELECT elem.value\n"
+			    + "    FROM json_array_elements(campaignformdata.formvalues) elem(value)\n"
+			    + "    WHERE elem.value ->> 'id' = 'FirstName'\n"
+			    + "    LIMIT 1\n"
+			    + ") jsonfirstname ON TRUE\n"
+
+			    // Extract Title safely
+			    + "LEFT JOIN LATERAL (\n"
+			    + "    SELECT elem.value\n"
+			    + "    FROM json_array_elements(campaignformdata.formvalues) elem(value)\n"
+			    + "    WHERE elem.value ->> 'id' = 'Title'\n"
+			    + "    LIMIT 1\n"
+			    + ") jsontitle ON TRUE\n"
+
+			    // Join campaignformelements to match against Tazkira field
+			    + "CROSS JOIN LATERAL json_array_elements(campaignformmeta.campaignformelements) jsonmeta(value)\n"
+
+			    + "WHERE \n"
+			    + "    (jsondata.value ->> 'id') IN ('TazkiraNo')\n"
+			    + "    AND (jsondata.value ->> 'id') = (jsonmeta.value ->> 'id')\n"
+			    + whereclause + "\n"
+			    + "    AND campaignformdata.id IN (\n"
+			    + "        SELECT CAST(unnest(string_to_array(array_to_string(array_agg(id), ', '), ',')) AS bigint) AS individual_values\n"
+			    + "        FROM flwduplicateerrorreport\n"
+			    + "        GROUP BY value\n"
+			    + "        HAVING COUNT(*) > 1\n"
+			    + "    )\n"
+			    + orderby + "\n"
+			    + "LIMIT " + max + " OFFSET " + first + ";";
+
 		
 	System.out.println("=====seriesDataQuery======== "+joinBuilder);
 		
@@ -1844,10 +1926,8 @@ if(criteria.getUserLanguage() != null) {
 
 	    // Further filter CampaignFormData based on user's communities
 	    List<CampaignFormData> filterednewlstLst = filterednewlst.stream()
-	        .filter(data -> data.getCommunity() != null && 
-	                        userService.getCurrentUser().getCommunity().stream()
-	                            .anyMatch(comm -> comm.getId().equals(data.getCommunity().getId()) && 
-	                                              data.getCampaign().isOpenandclose()))
+	        .filter(data -> data.getCommunity() != null ? userService.getCurrentUser().getCommunity().stream().anyMatch(comm -> comm.getId().equals(data.getCommunity().getId()) && data.getCampaign().isOpenandclose()) 
+	        		: userService.getCurrentUser().getDistricts().stream().anyMatch(comm -> comm.getId().equals(data.getDistrict().getId()) && data.getCampaign().isOpenandclose()))
 	        .collect(Collectors.toList());
 
 	    // Get the final list of UUIDs

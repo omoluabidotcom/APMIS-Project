@@ -30,7 +30,7 @@ import static de.symeda.sormas.api.user.UserRole.DISTRICT_OBSERVER;
 import static de.symeda.sormas.api.user.UserRole.EVENT_OFFICER;
 import static de.symeda.sormas.api.user.UserRole.EXTERNAL_LAB_USER;
 import static de.symeda.sormas.api.user.UserRole.HOSPITAL_INFORMANT;
-//import static de.symeda.sormas.api.user.UserRole.IMPORT_USER;
+import static de.symeda.sormas.api.user.UserRole.EDITOR_USER;
 import static de.symeda.sormas.api.user.UserRole.LAB_USER;
 import static de.symeda.sormas.api.user.UserRole.NATIONAL_CLINICIAN;
 import static de.symeda.sormas.api.user.UserRole.NATIONAL_OBSERVER;
@@ -1471,7 +1471,8 @@ public enum UserRight {
 			NATIONAL_USER
 	),
 	CAMPAIGN_DELETE(
-			ADMIN
+			ADMIN,
+			EDITOR_USER
 	),
 	CAMPAIGN_PUBLISH(
 			ADMIN

@@ -46,9 +46,7 @@ public class UserDtoHelper extends AdoDtoHelper<User, UserDto> {
 	}
 
 	@Override
-	protected Class<UserDto> getDtoClass() {
-		throw new UnsupportedOperationException();
-	}
+	protected Class<UserDto> getDtoClass() {return UserDto.class;}
 
 	@Override
 	protected Call<List<UserDto>> pullAllSince(long since) throws NoConnectionException {
