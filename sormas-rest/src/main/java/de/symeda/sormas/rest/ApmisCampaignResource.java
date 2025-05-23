@@ -16,8 +16,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -202,16 +204,40 @@ public class ApmisCampaignResource {// extends EntityDtoResource {
 
 	}
 	
+	
+	@Context
+	UriInfo uriInfo;
 	@GET
 	@Path("/formdatahistory")
 
-	public List<CampaignFormDataHistoryExtractDto> getAllCampaignFormDataRecordHistory(@QueryParam("fetchFromIndex") Integer first,
-			@QueryParam("fetchSize") Integer max,@QueryParam("getRecordHistory") String uuid) {		
+	public List<CampaignFormDataHistoryExtractDto> getAllCampaignFormDataRecordHistory(@QueryParam("fetchFromIndex") Integer fetchFromIndex,
+			@QueryParam("fetchSize") Integer fetchSize,@QueryParam("getRecordHistory") String uuid) {		
 		  List<String> uuidList = new ArrayList<>();
 		    if (uuid != null && !uuid.isEmpty()) {
 		        uuidList = Arrays.asList(uuid.split(","));
+		    }else {
+		    	String getRecordHistory = uriInfo.getQueryParameters().getFirst("amp;getRecordHistory");		    	
+	    if(getRecordHistory == null) {
+			    	uuidList =  new ArrayList<>();	
+			    }else {
+			        uuidList = Arrays.asList(getRecordHistory.split(","));
+			    }
 		    }
-		return FacadeProvider.getCampaignFormDataFacade().getFormDataHistory(uuidList, first, max );
+		    
+		    if (fetchFromIndex == null) {
+		    	fetchFromIndex = 0;
+		    }
+		    
+		    if (fetchSize == null) {
+		    	String cleanFetchSize = uriInfo.getQueryParameters().getFirst("amp;fetchSize");
+			    if (cleanFetchSize == null) {
+		    	fetchSize = 50; 
+			    }else {
+			    	fetchSize = Integer.parseInt(cleanFetchSize); 
+			    }
+		    }
+
+		return FacadeProvider.getCampaignFormDataFacade().getFormDataHistory(uuidList, fetchFromIndex, fetchSize );
 	}
 	
 	@GET
