@@ -406,6 +406,8 @@ public class ControlTextEditField extends ControlPropertyEditField<String> {
                                             "Please enter a valid number");
                                 } else {
                                     input.setError("Please enter a valid number");
+                                    enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+
                                 }
                             }
                         }
@@ -417,6 +419,8 @@ public class ControlTextEditField extends ControlPropertyEditField<String> {
                         enableErrorState("Number not in provided range!");
 
                     }
+
+
                 }
             }
         });
