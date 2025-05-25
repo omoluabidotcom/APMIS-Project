@@ -22,6 +22,7 @@ import de.symeda.sormas.api.infrastructure.PopulationDataDto;
 import de.symeda.sormas.api.infrastructure.PopulationDataReferenceDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
+import de.symeda.sormas.api.user.UserRole;
 
 @Path("/populationData")
 @Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
@@ -105,11 +106,20 @@ public class PopulationDataResource  extends EntityDtoResource {
 
 		} else if(retListx != null && retListx.size() == 1) {
 			
+			Set<UserRole> roles = FacadeProvider.getUserFacade().getCurrentUser().getUserRoles();
+			
 			System.out.println("  ==========================22221111ccccvv" + resultx);
-			resultx.add(rdtox.getUuid());
+			
+			for(String districtUUid : retListx) {
+				resultx.add(districtUUid);
+
+			}
+//			resultx.add(rdtox.getUuid());
+			
+			System.out.println("  ==========================cccccc22221111ccccvv" + resultx);
+
 
 			List<PopulationDataDto> result = FacadeProvider.getPopulationDataFacade()
-
 					.fetchPopulationDataSelectionByUserDistricts(resultx);
 			System.out.println("  ==========================22221111ccccvv" + result);
 

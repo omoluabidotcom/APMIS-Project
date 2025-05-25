@@ -8,6 +8,7 @@ import com.vaadin.ui.Notification;
 
 import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
+import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Strings;
@@ -23,14 +24,22 @@ public class CampaignFormDataImportLayout extends AbstractImportLayout {
 
 	public CampaignFormDataImportLayout(CampaignFormMetaReferenceDto campaignForm, CampaignReferenceDto campaignReferenceDto) throws IOException {
 		super();
-
+		CampaignFormMetaDto campaignFormMetaData = FacadeProvider.getCampaignFormMetaFacade().getCampaignFormMetaByUuid(campaignForm.getUuid());
 		ImportFacade importFacade = FacadeProvider.getImportFacade();
+		if(campaignFormMetaData.isDistrictentry()) {
 		importFacade.generateCampaignFormImportTemplateFile(campaignForm.getUuid());
+		}else {
+		importFacade.generateDistrictLevelCampaignFormImportTemplateFile(campaignForm.getUuid());
 
+		}
 		String templateFileName = DataHelper.sanitizeFileName(campaignReferenceDto.getCaption().replaceAll(" ", "_")) + "_"
 			+ DataHelper.sanitizeFileName(campaignForm.getCaption().replaceAll(" ", "_")) + ".csv";
-		
-		addDownloadImportTemplateComponent(1, importFacade.getCampaignFormImportTemplateFilePath(), templateFileName);
+
+		if(campaignFormMetaData.isDistrictentry()) {
+			addDownloadImportTemplateComponent(1, importFacade.getDistrictLevelCampaignFormImportTemplateFilePath(), templateFileName);
+		}else {
+			addDownloadImportTemplateComponent(1, importFacade.getCampaignFormImportTemplateFilePath(), templateFileName);
+		}
 		
 		
 		addImportCsvComponent(2, new ImportReceiver("_campaign_data_import_", file -> {
