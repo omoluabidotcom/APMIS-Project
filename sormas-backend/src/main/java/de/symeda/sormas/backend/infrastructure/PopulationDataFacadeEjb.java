@@ -1173,7 +1173,7 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 						result[1] != null ? (String) result[1].toString() : "",
 						result[2] != null ? (String) result[2].toString() : "True", 
 						result[3] != null ? (String) result[3].toString() : "",
-						result[4] != null ? (Date) result[4] : null
+						result[4] != null ? (Date) result[4] : new Date()
 								)).collect(Collectors.toList()));
 		
 
