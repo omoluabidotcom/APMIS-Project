@@ -189,7 +189,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	// any time you make changes to your database objects, you may have to increase the database version
 
 
-	public static final int DATABASE_VERSION = 348;
+	public static final int DATABASE_VERSION = 350;
 
 	private static DatabaseHelper instance = null;
 
@@ -3254,14 +3254,63 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 							"ALTER TABLE campaignformdata ADD COLUMN recordversion BIGINT DEFAULT 1;"
 					);
 
+//				case 348:
+//					currentVersion = 348;
+//					getDao(User.class).executeRaw(
+//							"ALTER TABLE users ADD COLUMN userFormAccess varchar(255);");
+//
 				case 348:
 					currentVersion = 348;
-					getDao(User.class).executeRaw(
-							"ALTER TABLE users ADD COLUMN userFormAccess varchar(255);");
+
+					// Check if userFormAccess column exists
+					GenericRawResults<String[]> tableColumnsx = getDao(User.class).queryRaw("pragma table_info(users)");
+					int nameColumnIndexx = Arrays.asList(tableColumnsx.getColumnNames()).indexOf("name");
+					boolean columnUserFormAccessNotExists =
+							tableColumnsx.getResults().stream().noneMatch(columnRowData -> "userFormAccess".equals(columnRowData[nameColumnIndexx]));
+
+					if (columnUserFormAccessNotExists) {
+						getDao(User.class).executeRaw("ALTER TABLE users ADD COLUMN userFormAccess varchar(255);");
+					}
 
 
+				case 349:
+					currentVersion = 349;
+					getDao(PopulationData.class).executeRaw("DROP TABLE IF EXISTS populationdata;");
+					getDao(CampaignFormMetaRegion.class).executeRaw("DROP TABLE IF EXISTS campaignformmeta_area;");
 
-					break;
+					System.out.println("----------gggggggggggggggggggggggguuuuuuuuuuuuuuuuuuuuuuuuuuuuuu");
+					getDao(CampaignFormMetaRegion.class).executeRaw(
+							"CREATE TABLE IF NOT EXISTS campaignformmeta_area ("
+									+ "	snapshot SMALLINT DEFAULT 0, area_id VARCHAR NOT NULL, "
+									+" uuid VARCHAR not null, "
+									+ " changeDate BIGINT NOT NULL , "
+									+"creationDate BIGINT NOT NULL , "
+
+									+ "id INTEGER PRIMARY KEY AUTOINCREMENT , "
+									+ "		campaignformmeta_id VARCHAR NOT NULL, "
+									+"lastOpenedDate BIGINT , "
+									+"localChangeDate BIGINT, "
+									+" modified SMALLINT DEFAULT 0, "
+									+ " pseudonymized SMALLINT"
+
+									+ " );");
+
+					getDao(PopulationData.class).executeRaw(
+							"CREATE TABLE IF NOT EXISTS populationdata (" +
+									" 	id INTEGER PRIMARY KEY,"
+									+"lastOpenedDate BIGINT , "
+									+"localChangeDate BIGINT, snapshot SMALLINT DEFAULT 0,"
+									+" modified SMALLINT DEFAULT 0, "
+									+ " pseudonymized SMALLINT, "
+									+ "		campaign_id VARCHAR NOT NULL,"
+									+ "		district_id VARCHAR NOT NULL," +
+									" uuid varchar not null, "
+									+ " changeDate BIGINT NOT NULL , "
+									+" creationDate BIGINT NOT NULL ,"
+									+ "		selected varchar);");
+
+
+                    break;
 
 
 				default:
@@ -3273,6 +3322,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			throw new RuntimeException("Database upgrade failed for version " + currentVersion + ": " + ex.getMessage(), ex);
 		}
 	}
+
+
+
+
 	private void updatePatchForTriggers() throws SQLException {
 		getDao(CampaignFormData.class).executeRaw(
 				"CREATE TRIGGER prevent_duplicate_on_admin_forms\n" +

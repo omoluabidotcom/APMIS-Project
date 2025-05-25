@@ -326,14 +326,14 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 			nav.addItem(new AppNavItem("Form Manager", FormBuilderView.class, VaadinIcon.BUILDING, "navitem"));
 		}
 
-		if (userProvider.getUser().getUsertype() == UserType.WHO_USER) {
+		if (userProvider.getUser().getUsertype() == UserType.WHO_USER || userProvider.getUser().getUsertype() == UserType.EOC_USER) {
 			if (userProvider.hasUserRight(UserRight.USER_ACTIVITY_SUMMARYVIEW)) {
 				nav.addItem(new AppNavItem(I18nProperties.getCaption("User Activity Summary"),
 						UserActivitySummary.class, VaadinIcon.CHART_LINE, "navitem"));
 			}
 		}
 
-		if ((userProvider.getUser().getUsertype() == UserType.WHO_USER)
+		if ((userProvider.getUser().getUsertype() == UserType.WHO_USER || userProvider.getUser().getUsertype() == UserType.EOC_USER)
 				&& userProvider.hasUserRight(UserRight.PUSH_NOTIFICATION_ACCESS)) {
 			nav.addItem(new AppNavItem("Notification", MessagingView.class, VaadinIcon.SERVER, "navitem"));
 		}
