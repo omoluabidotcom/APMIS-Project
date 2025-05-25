@@ -68,7 +68,7 @@ public class CampaignFormMetaRegionDtoHelper extends AdoDtoHelper<CampaignFormMe
 
     @Override
     protected void fillInnerFromDto(CampaignFormMetaRegion target, CampaignFormMetaRegionDto source) {
-        target.setUuid(source.getUuid());
+//        target.setUuid(source.getUuid());
         target.setUuid(source.getUuid());
         target.setCampaignformmeta_id(source.getCampaignformmeta_id());
         target.setArea_id(source.getArea_id());

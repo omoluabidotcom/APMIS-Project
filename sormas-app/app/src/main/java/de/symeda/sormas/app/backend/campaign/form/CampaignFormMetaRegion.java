@@ -37,19 +37,21 @@ import de.symeda.sormas.app.backend.common.PseudonymizableAdo;
 
 @Entity(name = CampaignFormMetaRegion.TABLE_NAME)
 @DatabaseTable(tableName = CampaignFormMetaRegion.TABLE_NAME)
-public class CampaignFormMetaRegion extends PseudonymizableAdo {
-
+public class CampaignFormMetaRegion extends PseudonymizableAdo implements Serializable {
 	public static final String TABLE_NAME = "campaignformmeta_area";
 	public static final String I18N_PREFIX = "CampaignFormMetaArea";
 
 	public static final String FORM_ID = "area_id";
 	public static final String FORM_NAME = "campaignformmeta_id";
+//	public static final String UUID = "uuid";
+
 
 	@Column(name = "area_id")
 	private String area_id;  // Change to Long to match server
 
 	@Column(name = "campaignformmeta_id")
 	private String campaignformmeta_id;  // Change to Long to match server
+
 
 
 	public String getArea_id() {
@@ -67,6 +69,7 @@ public class CampaignFormMetaRegion extends PseudonymizableAdo {
 	public void setCampaignformmeta_id(String campaignformmeta_id) {
 		this.campaignformmeta_id = campaignformmeta_id;
 	}
+
 
 	// Internationalization prefix
 	public String getI18nPrefix() {

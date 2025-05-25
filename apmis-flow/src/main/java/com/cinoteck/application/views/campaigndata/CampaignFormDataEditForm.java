@@ -405,6 +405,8 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 				dialog.open();
 			}
 			// showConfirmationDialog();
+			
+			
 		});
 		dialog.setCloseOnEsc(false);
 		dialog.setCloseOnOutsideClick(false);

@@ -582,6 +582,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 			}
 
+		}else {
+			cbCommunity.setVisible(false);
 		}
 
 		if (uuidForm != null) {

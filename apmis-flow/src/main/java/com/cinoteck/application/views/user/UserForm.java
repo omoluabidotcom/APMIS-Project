@@ -260,7 +260,7 @@ public class UserForm extends FormLayout {
 		.bind(userx -> userx.getLanguage(),(userx, userOrganisation) -> userx.setLanguage(userOrganisation));
 		
 		
-		this.binder.forField(this.userRoles).withValidator(new UserRolesValidator())
+		this.binder.forField(this.userRoles ).withValidator(new UserRolesValidator())
 		.asRequired(I18nProperties.getCaption(Captions.userRoleRequired))//.asRequired("Please Fill Out a First and Last Name")
 		.bind(userx -> userx.getUserRoles(),(userx, userOrganisation) -> userx.setUserRoles(userOrganisation));
 
@@ -307,8 +307,8 @@ public class UserForm extends FormLayout {
 				roles.remove(UserRole.PUBLISH_USER);
 //				System.out.println("PUBLISH_USER removed +++___________333333: " + roles);
 			}
-			if (roles.contains(UserRole.EDITOR_USER)) {
-				roles.remove(UserRole.EDITOR_USER);
+			if (!roles.contains(UserRole.EDITOR_USER)) {
+				roles.add(UserRole.EDITOR_USER);
 //				System.out.println("PUBLISH_USER removed +++___________333333: " + roles);
 			}
 		}
@@ -381,7 +381,7 @@ public class UserForm extends FormLayout {
 				final JurisdictionLevel jurisdictionLevel = UserRole.getJurisdictionLevel(userRoles.getValue());
 				System.out.println((jurisdictionLevel == JurisdictionLevel.DISTRICT) + " +++___________111"
 						+ userRoles.getValue());
-				if (jurisdictionLevel == JurisdictionLevel.DISTRICT) {
+				if (jurisdictionLevel == JurisdictionLevel.DISTRICT && userRoles.getValue().contains(UserRole.SURVEILLANCE_OFFICER)) {
 
 					districtMulti.setVisible(true);
 					district.setVisible(false);
@@ -443,6 +443,14 @@ public class UserForm extends FormLayout {
 					} else {
 						district.setItems(districts);
 					}
+					
+					isDistrictMulti = false;
+					
+					districtMulti.setVisible(false);
+					district.setVisible(true);
+					clusterNo.setVisible(false);
+
+					
 				}
 			}
 
@@ -450,7 +458,11 @@ public class UserForm extends FormLayout {
 
 		district.setItemLabelGenerator(DistrictReferenceDto::getCaption);
 		district.addValueChangeListener(e -> {
-			if (!isDistrictMulti) {
+			
+			
+			System.out.println(isDistrictMulti + " isDistrictMultiisDistrictMultivvvvvvvddddddDISTRICT CHANGES!!ssssssssssefasdfa:");
+
+			if (!isDistrictMulti && !userRoles.getValue().contains(UserRole.DISTRICT_OBSERVER)) {
 				DistrictReferenceDto districtDto = (DistrictReferenceDto) e.getValue();
 				System.out.println(districtDto + " vvvvvvvddddddDISTRICT CHANGES!!ssssssssssefasdfa:" + e.getValue());
 
@@ -516,7 +528,18 @@ public class UserForm extends FormLayout {
 //		            
 					}
 				}
-			} else {
+			}
+			else if(!isDistrictMulti && userRoles.getValue().contains(UserRole.DISTRICT_OBSERVER)) {
+				if (e.getValue() != null) {
+					clusterNo.clear();
+
+					clusterNo.setVisible(false);
+					
+					
+				}
+			}
+			else {
+			
 				district.clear();
 				district.setVisible(false);
 				clusterNo.clear();
@@ -1342,11 +1365,16 @@ public boolean checkUnitAssignmentByJurisdictionLevel() {
 	protected void updateFieldsByUserRole(Set<UserRole> userRoles) {
 		final JurisdictionLevel jurisdictionLevel = UserRole.getJurisdictionLevel(userRoles);
 		final boolean useCommunity = jurisdictionLevel == JurisdictionLevel.COMMUNITY;
-		final boolean useDistrictOnly = jurisdictionLevel == JurisdictionLevel.DISTRICT;
-		final boolean useDistrict = jurisdictionLevel == JurisdictionLevel.DISTRICT || useCommunity;
+		final boolean useDistrictOnly = jurisdictionLevel == JurisdictionLevel.DISTRICT && userRoles.contains(UserRole.SURVEILLANCE_OFFICER);
+		final boolean useDistrict = jurisdictionLevel == JurisdictionLevel.DISTRICT && !userRoles.contains(UserRole.SURVEILLANCE_OFFICER) ;
 		final boolean useRegion = jurisdictionLevel == JurisdictionLevel.REGION || useDistrict;
 		final boolean useArea = jurisdictionLevel == JurisdictionLevel.AREA || useRegion;
+		
+		System.out.println(useArea + "useArea" +  useRegion + "useRegion" + useDistrict + "useDistrict" +  useDistrictOnly + "useDistrictOnly" + useCommunity + "useCommunity");
 		if (useCommunity) {
+			
+			System.out.println(useCommunity + "useCommunity" );
+
 			clusterNo.setVisible(true);
 			district.setVisible(true);
 			districtMulti.clear();
@@ -1354,6 +1382,9 @@ public boolean checkUnitAssignmentByJurisdictionLevel() {
 			province.setVisible(true);
 			region.setVisible(true);
 		} else if (useDistrictOnly) {
+			
+			System.out.println(useDistrictOnly + "useDistrictOnly" );
+
 			clusterNo.clear();
 			clusterNo.setVisible(false);
 //			district.clear();
@@ -1362,14 +1393,20 @@ public boolean checkUnitAssignmentByJurisdictionLevel() {
 			province.setVisible(true);
 			region.setVisible(true);
 		} else if (useDistrict) {
+			
+			System.out.println(useDistrict + "useDistrict" );
+
 			clusterNo.clear();
 			clusterNo.setVisible(false);
 			district.clear();
 			district.setVisible(false);
-			districtMulti.setVisible(true);
+			districtMulti.setVisible(false);
 			province.setVisible(true);
 			region.setVisible(true);
 		} else if (useRegion) {
+			
+			System.out.println(useRegion + "useRegion" );
+
 			clusterNo.clear();
 			clusterNo.setVisible(false);
 			district.clear();
@@ -1379,6 +1416,9 @@ public boolean checkUnitAssignmentByJurisdictionLevel() {
 			province.setVisible(true);
 			region.setVisible(true);
 		} else if (useArea) {
+			
+			System.out.println(useArea + "useArea" );
+
 			clusterNo.clear();
 			clusterNo.setVisible(false);
 			district.clear();
@@ -1389,6 +1429,10 @@ public boolean checkUnitAssignmentByJurisdictionLevel() {
 			province.setVisible(false);
 			region.setVisible(true);
 		} else {
+			
+			
+			System.out.println("voidddddd---- " + "useArea" );
+
 			clusterNo.clear();
 			clusterNo.setVisible(false);
 			district.clear();

@@ -1900,35 +1900,54 @@ if(criteria.getUserLanguage() != null) {
 	        .map(CampaignFormMeta::getId)
 	        .filter(Objects::nonNull)
 	        .collect(Collectors.toList());
+	    
+	    System.out.println("-----------------------------formMetaIdList " +  formMetaIdList);
+
 
 	    // Collect community and district IDs
 	    List<Long> commIdList = userService.getCurrentUser().getCommunity().stream()
 	        .map(Community::getId)
 	        .filter(Objects::nonNull)
 	        .collect(Collectors.toList());
+	    
+	    System.out.println("-----------------------------commIdListcommIdList " +  commIdList);
+
 
 	    List<Long> distrIdList = userService.getCurrentUser().getDistricts().stream()
 	        .map(District::getId)
 	        .filter(Objects::nonNull)
 	        .collect(Collectors.toList());
+	    
+	    System.out.println("-------------------------------New list " +  distrIdList);
+
 
 	    // Fetch CampaignFormData
 	    List<CampaignFormData> newlst = campaignFormDataService.getAllActiveAfter(date, formMetaIdList, commIdList, distrIdList);
 	    if (newlst == null) {
 	        return Collections.emptyList();
 	    }
+	    
+	    
+	    System.out.println("-------------------------------New list " +  newlst);
 
 	    // Filter CampaignFormData based on FormMeta
 	    List<CampaignFormData> filterednewlst = newlst.stream()
 	        .filter(data -> filtered.stream()
 	            .anyMatch(meta -> meta.getId().equals(data.getCampaignFormMeta().getId())))
 	        .collect(Collectors.toList());
+	    
+	    
+	    System.out.println("-------------------------------filterednewlstNew list " +  filterednewlst);
+
 
 	    // Further filter CampaignFormData based on user's communities
 	    List<CampaignFormData> filterednewlstLst = filterednewlst.stream()
 	        .filter(data -> data.getCommunity() != null ? userService.getCurrentUser().getCommunity().stream().anyMatch(comm -> comm.getId().equals(data.getCommunity().getId()) && data.getCampaign().isOpenandclose()) 
 	        		: userService.getCurrentUser().getDistricts().stream().anyMatch(comm -> comm.getId().equals(data.getDistrict().getId()) && data.getCampaign().isOpenandclose()))
 	        .collect(Collectors.toList());
+
+	    
+	    System.out.println("-------------------------------filterednewlstLst list " +  filterednewlstLst);
 
 	    // Get the final list of UUIDs
 	    return filterednewlstLst.stream()
