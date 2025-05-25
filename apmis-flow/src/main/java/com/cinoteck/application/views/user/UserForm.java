@@ -307,8 +307,8 @@ public class UserForm extends FormLayout {
 				roles.remove(UserRole.PUBLISH_USER);
 //				System.out.println("PUBLISH_USER removed +++___________333333: " + roles);
 			}
-			if (roles.contains(UserRole.EDITOR_USER)) {
-				roles.remove(UserRole.EDITOR_USER);
+			if (!roles.contains(UserRole.EDITOR_USER)) {
+				roles.add(UserRole.EDITOR_USER);
 //				System.out.println("PUBLISH_USER removed +++___________333333: " + roles);
 			}
 		}
