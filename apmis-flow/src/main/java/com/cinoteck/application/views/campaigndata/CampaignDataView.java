@@ -1884,7 +1884,8 @@ public class CampaignDataView extends VerticalLayout
 			grid.addColumn(e -> e.getFormDate() != null ?  
 			e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader(I18nProperties.getCaption(Captions.date))
 //			createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
-			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate().toString())
+			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate() != null ?  
+					e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
 			.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
 			
 			
@@ -1943,7 +1944,8 @@ public class CampaignDataView extends VerticalLayout
 			grid.addColumn(e -> e.getFormDate() != null ?  
 			e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader(I18nProperties.getCaption(Captions.date))
 //			createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
-			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate().toString())
+			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate() != null ?  
+					e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
 			.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
 			
 			
@@ -2004,7 +2006,8 @@ public class CampaignDataView extends VerticalLayout
 			grid.addColumn(e -> e.getFormDate() != null ?  
 			e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader(I18nProperties.getCaption(Captions.date))
 //			createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
-			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate().toString())
+			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate() != null ?  
+					e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
 			.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
 			
 			
@@ -2292,16 +2295,28 @@ public class CampaignDataView extends VerticalLayout
 	                    .filter(v -> v.getId().equals(property))
 	                    .findFirst()
 	                    .orElse(null);
-	                if (fieldsType != null && 
-	                   (fieldsType.equalsIgnoreCase("number"))) {
-	                    if(formValue != null) {
-							System.out.println(formValue.getValue().toString().toLowerCase()  + "  ----------------formValue.getValue().toString().toLowerCase() ");
-							return   removeTrailingDecimalFromString(formValue.getValue().toString());//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+	                if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
+	                    if(formValue != null) {	                   
+						return   removeTrailingDecimalFromString(formValue.getValue().toString());//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
 						}else {
 							return  "";
 						}
+	                }else if(fieldsType != null && (fieldsType.equalsIgnoreCase("yes_no"))) {
+	                    if(formValue != null) {	
+	                 	if(formValue.toString().equalsIgnoreCase("Yes") || formValue.toString().equalsIgnoreCase("True")) {
+							return   removeTrailingDecimalFromString("Yes");//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+                    	}else if(formValue.toString().equalsIgnoreCase("No") || formValue.toString().equalsIgnoreCase("False")) {
+							return   removeTrailingDecimalFromString("No");//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+                    	}else {
+							return   "";//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+                    	}
+	                 	}else {
+							return  "";
+						}
+	                }else {
+	        			return removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+
 	                }
-			return removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
 			}).setHeader(caption).setFooter(property).setSortProperty(property).setSortable(false).setResizable(true).setAutoWidth(true)
 			.setTooltipGenerator(e->{
 					CampaignFormDataEntry formValue = e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null);
@@ -2316,10 +2331,7 @@ public class CampaignDataView extends VerticalLayout
 							}
 			 	   }else {
                        value = removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-
-
 			 	   }
-
 				   return caption + " : " + value;
 					}).setClassNameGenerator(item -> "full-width-column");
 		}

@@ -219,86 +219,76 @@ public class UserForm extends FormLayout {
 		this.setColspan(userData, 2);
 
 		firstName = new TextField(I18nProperties.getCaption(Captions.firstName));
-		binder.forField(firstName).asRequired(I18nProperties.getCaption(Captions.firstNameRequired))
-				.bind(UserDto::getFirstName, UserDto::setFirstName);
+		
 
-		binder.forField(lastName).asRequired(I18nProperties.getCaption(Captions.lastNameRequired))
-				.bind(UserDto::getLastName, UserDto::setLastName);
-
-		binder.forField(userEmail)// .asRequired(I18nProperties.getCaption(Captions.emailRequired))
-				.bind(UserDto::getUserEmail, UserDto::setUserEmail);
-		// map.put("email", userEmail);
-
-		binder.forField(phone).bind(UserDto::getPhone, UserDto::setPhone);
-
-		binder.forField(userPosition).bind(UserDto::getUserPosition, UserDto::setUserPosition);
-
-		binder.forField(userOrganisation).bind(UserDto::getUserOrganisation, UserDto::setUserOrganisation);
-
-		binder.forField(userName).asRequired("Please Fill Out a First and Last Name").bind(UserDto::getUserName,
-				UserDto::setUserName);
-
+		this.binder.forField(this.firstName).asRequired(I18nProperties.getCaption("firstNameRequired"))
+		.bind(userx -> userx.getFirstName(),(userx, firstName) -> userx.setFirstName(firstName));
+		this.binder.forField(this.lastName).asRequired(I18nProperties.getCaption("lastNameRequired"))
+		.bind(userx -> userx.getLastName(),(userx, lastName) -> userx.setLastName(lastName));
+		this.binder.forField(this.userEmail)//.asRequired(I18nProperties.getCaption("lastNameRequired"))
+		.bind(userx -> userx.getUserEmail(),(userx, userEmail) -> userx.setUserEmail(userEmail));
+		this.binder.forField(this.phone)//.asRequired(I18nProperties.getCaption("lastNameRequired"))
+		.bind(userx -> userx.getPhone(),(userx, phone) -> userx.setPhone(phone));
+		this.binder.forField(this.userPosition)//.asRequired(I18nProperties.getCaption("lastNameRequired"))
+		.bind(userx -> userx.getUserPosition(),(userx, userPosition) -> userx.setUserPosition(userPosition));
+		this.binder.forField(this.userOrganisation)//.asRequired(I18nProperties.getCaption("lastNameRequired"))
+		.bind(userx -> userx.getUserOrganisation(),(userx, userOrganisation) -> userx.setUserOrganisation(userOrganisation));
+		this.binder.forField(this.userName).asRequired("Please Fill Out a First and Last Name")
+		.bind(userx -> userx.getUserName(),(userx, userOrganisation) -> userx.setUserName(userOrganisation));
+		
 		this.setColspan(activeCheck, 2);
 		activeCheck.setLabel("Active ?");
 		activeCheck.setValue(active);
-		binder.forField(activeCheck).bind(UserDto::isActive, UserDto::setActive);
+		
 
-//		commusr.setLabel("Common User ? ");
+		this.binder.forField(this.activeCheck)//.asRequired("Please Fill Out a First and Last Name")
+		.bind(userx -> userx.isActive(),(userx, userOrganisation) -> userx.setActive(userOrganisation));
+		
 
-		binder.forField(commusr).bind(UserDto::isCommomUser, UserDto::setCommomUser);
-
-//		binder.forField(userRoles).asRequired("User Role is Required").bind(UserDto::getUserRoles,
-//				UserDto::setUserRoles);
-//		this.setColspan(userRoles, 1);
+		this.binder.forField(this.commusr)//.asRequired("Please Fill Out a First and Last Name")
+		.bind(userx -> userx.isCommomUser(),(userx, userOrganisation) -> userx.setCommomUser(userOrganisation));
+		
+		
 
 		formAccess.setLabel(I18nProperties.getCaption(Captions.formAccess));
-//		preCampformAccess.setLabel(I18nProperties.getCaption(Captions.preCampaign + " :"));
-//		intraCampformAccess.setLabel(I18nProperties.getCaption(Captions.intraCampaign + " :"));
-//		postCampformAccess.setLabel(I18nProperties.getCaption(Captions.postCampaign + " :"));
-		binder.forField(formAccess).bind(UserDto::getFormAccess, UserDto::setFormAccess);
 
-//		binder.forField(preCampformAccess).bind(UserDto::getFormAccess, UserDto::setFormAccess);
-//
-//		binder.forField(intraCampformAccess).bind(UserDto::getFormAccess, UserDto::setFormAccess);
-//
-//		binder.forField(postCampformAccess).bind(UserDto::getFormAccess, UserDto::setFormAccess);
+		this.binder.forField(this.formAccess)//.asRequired("Please Fill Out a First and Last Name")
+		.bind(userx -> userx.getFormAccess(),(userx, userOrganisation) -> userx.setFormAccess(userOrganisation));
+		
 
-		binder.forField(language).asRequired("Language is Required").bind(UserDto::getLanguage, UserDto::setLanguage);
+		this.binder.forField(this.language)//.asRequired("Please Fill Out a First and Last Name")
+		.bind(userx -> userx.getLanguage(),(userx, userOrganisation) -> userx.setLanguage(userOrganisation));
+		
+		
+		this.binder.forField(this.userRoles ).withValidator(new UserRolesValidator())
+		.asRequired(I18nProperties.getCaption(Captions.userRoleRequired))//.asRequired("Please Fill Out a First and Last Name")
+		.bind(userx -> userx.getUserRoles(),(userx, userOrganisation) -> userx.setUserRoles(userOrganisation));
 
-		binder.forField(userRoles).withValidator(new UserRolesValidator())
-				.asRequired(I18nProperties.getCaption(Captions.userRoleRequired))
-				.bind(UserDto::getUserRoles, UserDto::setUserRoles);
+		
+		this.binder.forField(this.region)//.withValidator(new UserRolesValidator())
+		//.asRequired(I18nProperties.getCaption(Captions.userRoleRequired))//.asRequired("Please Fill Out a First and Last Name")
+		.bind(userx -> userx.getArea(),(userx, userOrganisation) -> userx.setArea(userOrganisation));
 
-		binder.forField(region).bind(UserDto::getArea, UserDto::setArea);
+		
+		this.binder.forField(this.province)//.withValidator(new UserRolesValidator())
+		//.asRequired(I18nProperties.getCaption(Captions.userRoleRequired))//.asRequired("Please Fill Out a First and Last Name")
+		.bind(userx -> userx.getRegion(),(userx, userOrganisation) -> userx.setRegion(userOrganisation));
 
-		binder.forField(province).bind(UserDto::getRegion, UserDto::setRegion);
+		
+		this.binder.forField(this.district)//.withValidator(new UserRolesValidator())
+		//.asRequired(I18nProperties.getCaption(Captions.userRoleRequired))//.asRequired("Please Fill Out a First and Last Name")
+		.bind(userx -> userx.getDistrict(),(userx, userOrganisation) -> userx.setDistrict(userOrganisation));
+		
+		this.binder.forField(this.districtMulti);
+		binder.bind(districtMulti, userx -> userx.getDistricts(),(userx, userOrganisation) -> userx.setDistricts(userOrganisation));//UserDto::getDistricts, UserDto::setDistricts);
 
-		binder.forField(district).bind(UserDto::getDistrict, UserDto::setDistrict);
-
-		binder.forField(districtMulti);
-
-		binder.bind(districtMulti, UserDto::getDistricts, UserDto::setDistricts);
 		districtMulti.setVisible(true);
 
-		binder.forField(clusterNo);
+		
+		this.binder.forField(this.clusterNo);
+		binder.bind(clusterNo, userx -> userx.getCommunity(),(userx, userOrganisation) -> userx.setCommunity(userOrganisation));//UserDto::getDistricts, UserDto::setDistricts);
 
-		binder.bind(clusterNo, UserDto::getCommunity, UserDto::setCommunity);
 
-//		binder.forField(userName).withValidator(this::validateUserName).asRequired(I18nProperties.getCaption(Captions.pleaseFillOutFirstLastname))
-//				.bind(UserDto::getUserName, UserDto::setUserName);
-//		userName.addValueChangeListener(ex -> {
-//			UserDto checkNewusernamefromDB = FacadeProvider.getUserFacade().getByUserName(ex.getValue());
-//
-//			if (checkNewusernamefromDB != null) {
-//				save.setEnabled(false);
-//			}else {
-//				save.setEnabled(true);
-//
-//			}
-//		});
-
-		// TODO: Change implemenation to only add assignable roles sormas style.
-//		userRoles.setItems(UserRole.getAssignableRoles(FacadeProvider.getUserRoleConfigFacade().getEnabledUserRoles()));
 		roles = FacadeProvider.getUserRoleConfigFacade().getEnabledUserRoles();
 		roles.remove(UserRole.BAG_USER);
 //		System.out.println("User typ  beforee sorting  " + userProvider.getUser().getUsertype());
@@ -317,8 +307,8 @@ public class UserForm extends FormLayout {
 				roles.remove(UserRole.PUBLISH_USER);
 //				System.out.println("PUBLISH_USER removed +++___________333333: " + roles);
 			}
-			if (roles.contains(UserRole.EDITOR_USER)) {
-				roles.remove(UserRole.EDITOR_USER);
+			if (!roles.contains(UserRole.EDITOR_USER)) {
+				roles.add(UserRole.EDITOR_USER);
 //				System.out.println("PUBLISH_USER removed +++___________333333: " + roles);
 			}
 		}
@@ -391,7 +381,7 @@ public class UserForm extends FormLayout {
 				final JurisdictionLevel jurisdictionLevel = UserRole.getJurisdictionLevel(userRoles.getValue());
 				System.out.println((jurisdictionLevel == JurisdictionLevel.DISTRICT) + " +++___________111"
 						+ userRoles.getValue());
-				if (jurisdictionLevel == JurisdictionLevel.DISTRICT) {
+				if (jurisdictionLevel == JurisdictionLevel.DISTRICT && userRoles.getValue().contains(UserRole.SURVEILLANCE_OFFICER)) {
 
 					districtMulti.setVisible(true);
 					district.setVisible(false);
@@ -453,6 +443,14 @@ public class UserForm extends FormLayout {
 					} else {
 						district.setItems(districts);
 					}
+					
+					isDistrictMulti = false;
+					
+					districtMulti.setVisible(false);
+					district.setVisible(true);
+					clusterNo.setVisible(false);
+
+					
 				}
 			}
 
@@ -460,7 +458,11 @@ public class UserForm extends FormLayout {
 
 		district.setItemLabelGenerator(DistrictReferenceDto::getCaption);
 		district.addValueChangeListener(e -> {
-			if (!isDistrictMulti) {
+			
+			
+			System.out.println(isDistrictMulti + " isDistrictMultiisDistrictMultivvvvvvvddddddDISTRICT CHANGES!!ssssssssssefasdfa:");
+
+			if (!isDistrictMulti && !userRoles.getValue().contains(UserRole.DISTRICT_OBSERVER)) {
 				DistrictReferenceDto districtDto = (DistrictReferenceDto) e.getValue();
 				System.out.println(districtDto + " vvvvvvvddddddDISTRICT CHANGES!!ssssssssssefasdfa:" + e.getValue());
 
@@ -526,7 +528,18 @@ public class UserForm extends FormLayout {
 //		            
 					}
 				}
-			} else {
+			}
+			else if(!isDistrictMulti && userRoles.getValue().contains(UserRole.DISTRICT_OBSERVER)) {
+				if (e.getValue() != null) {
+					clusterNo.clear();
+
+					clusterNo.setVisible(false);
+					
+					
+				}
+			}
+			else {
+			
 				district.clear();
 				district.setVisible(false);
 				clusterNo.clear();
@@ -808,24 +821,20 @@ public boolean checkUnitAssignmentByJurisdictionLevel() {
                 return false;
             }
         } else if (role.getJurisdictionLevel() == JurisdictionLevel.DISTRICT) {
-        	
-        	System.out.println(district.getValue() +  "District Level User Detected " + districtMulti.getValue().toString() );
+        	System.out.println(district.getValue() +  "District Level User Detected " + districtMulti.getValue().toString() + "hhhh" + districtMulti.getSelectedItems().size() );
 
-            if (role == UserRole.SURVEILLANCE_OFFICER && districtMulti.getSelectedItems().size() == 0) {
-            	
-//            	System.out.println("District Multi level  Level User Detected " + district.getValue().toString() );
-
-                districtMulti.setInvalid(true);
-                districtMulti.setErrorMessage("One or More Districts Must be selected for District Officers.");
-//                districtMulti.focus();
-//                Notification.show("One or More Districts Must be selected for District Officers.");
-                return false;
-            } else if (district.getValue() == null) {
-                district.setInvalid(true);
-                district.setErrorMessage("One or More Districts Must be selected for District Level Users.");
-                district.focus();
-//                Notification.show("One or More Districts Must be selected for District Level Users.");
-                return false;
+            if (role == UserRole.SURVEILLANCE_OFFICER) {
+            	 if (districtMulti.getSelectedItems().size() == 0) { 
+                     districtMulti.setInvalid(true);
+                     districtMulti.setErrorMessage("One or More Districts Must be selected for District Officers.");
+                     return false;
+            	 }
+            }else {
+            	if(district.getValue() == null) {
+            		 district.setInvalid(true);
+                     district.setErrorMessage("One or More Districts Must be selected for District Level Users.");
+                     district.focus();
+            	}            	
             }
         } else if (role.getJurisdictionLevel() == JurisdictionLevel.REGION) {
             if (province.getValue() == null) {
@@ -1356,11 +1365,16 @@ public boolean checkUnitAssignmentByJurisdictionLevel() {
 	protected void updateFieldsByUserRole(Set<UserRole> userRoles) {
 		final JurisdictionLevel jurisdictionLevel = UserRole.getJurisdictionLevel(userRoles);
 		final boolean useCommunity = jurisdictionLevel == JurisdictionLevel.COMMUNITY;
-		final boolean useDistrictOnly = jurisdictionLevel == JurisdictionLevel.DISTRICT;
-		final boolean useDistrict = jurisdictionLevel == JurisdictionLevel.DISTRICT || useCommunity;
+		final boolean useDistrictOnly = jurisdictionLevel == JurisdictionLevel.DISTRICT && userRoles.contains(UserRole.SURVEILLANCE_OFFICER);
+		final boolean useDistrict = jurisdictionLevel == JurisdictionLevel.DISTRICT && !userRoles.contains(UserRole.SURVEILLANCE_OFFICER) ;
 		final boolean useRegion = jurisdictionLevel == JurisdictionLevel.REGION || useDistrict;
 		final boolean useArea = jurisdictionLevel == JurisdictionLevel.AREA || useRegion;
+		
+		System.out.println(useArea + "useArea" +  useRegion + "useRegion" + useDistrict + "useDistrict" +  useDistrictOnly + "useDistrictOnly" + useCommunity + "useCommunity");
 		if (useCommunity) {
+			
+			System.out.println(useCommunity + "useCommunity" );
+
 			clusterNo.setVisible(true);
 			district.setVisible(true);
 			districtMulti.clear();
@@ -1368,6 +1382,9 @@ public boolean checkUnitAssignmentByJurisdictionLevel() {
 			province.setVisible(true);
 			region.setVisible(true);
 		} else if (useDistrictOnly) {
+			
+			System.out.println(useDistrictOnly + "useDistrictOnly" );
+
 			clusterNo.clear();
 			clusterNo.setVisible(false);
 //			district.clear();
@@ -1376,14 +1393,20 @@ public boolean checkUnitAssignmentByJurisdictionLevel() {
 			province.setVisible(true);
 			region.setVisible(true);
 		} else if (useDistrict) {
+			
+			System.out.println(useDistrict + "useDistrict" );
+
 			clusterNo.clear();
 			clusterNo.setVisible(false);
 			district.clear();
 			district.setVisible(false);
-			districtMulti.setVisible(true);
+			districtMulti.setVisible(false);
 			province.setVisible(true);
 			region.setVisible(true);
 		} else if (useRegion) {
+			
+			System.out.println(useRegion + "useRegion" );
+
 			clusterNo.clear();
 			clusterNo.setVisible(false);
 			district.clear();
@@ -1393,6 +1416,9 @@ public boolean checkUnitAssignmentByJurisdictionLevel() {
 			province.setVisible(true);
 			region.setVisible(true);
 		} else if (useArea) {
+			
+			System.out.println(useArea + "useArea" );
+
 			clusterNo.clear();
 			clusterNo.setVisible(false);
 			district.clear();
@@ -1403,6 +1429,10 @@ public boolean checkUnitAssignmentByJurisdictionLevel() {
 			province.setVisible(false);
 			region.setVisible(true);
 		} else {
+			
+			
+			System.out.println("voidddddd---- " + "useArea" );
+
 			clusterNo.clear();
 			clusterNo.setVisible(false);
 			district.clear();
