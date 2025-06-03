@@ -209,7 +209,7 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
                     ConfigProvider.getUser().getDistrict().getUuid(), criteria.getCampaign().getUuid());
         }
 //        if(!ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
-        List<District> disTrictuserDistricts = new ArrayList<District>();
+//        List<District> disTrictuserDistricts = new ArrayList<District>();
 
         if (list.size() > 0) {
             final CampaignFormMetaDialog campaignFormMetaDialog = new CampaignFormMetaDialog(BaseActivity.getActiveActivity(), criteria.getCampaign());
@@ -223,9 +223,6 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
                     "Data Entry Error",
                     "Users distcrict is not selected for data entry in this campaign.");
         }
-//        }else{
-//
-//        }
     }
 
     private void showCustomDialog(Context context, String title, String message) {

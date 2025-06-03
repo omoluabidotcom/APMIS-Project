@@ -4282,7 +4282,7 @@ resultData.addAll(resultList.stream()
 	                    .append(") ");
 	    }
 
-	    queryBuilder.append("ORDER BY campaignuuid, uuid, changedate DESC");
+	    queryBuilder.append("ORDER BY  changedate ASC, campaignuuid, uuid");
 
 	    System.out.println("queryString----------" + queryBuilder.toString());
 
