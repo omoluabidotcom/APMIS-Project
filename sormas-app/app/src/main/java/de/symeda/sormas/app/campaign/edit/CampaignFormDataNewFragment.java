@@ -110,7 +110,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
     private int min = 9;
     private int max = 9;
     private String country = "Afghanistan";
-    private Map<String, CountryDetails> mapvalue = new HashMap<>();
+    private final Map<String, CountryDetails> mapvalue = new HashMap<>();
 
     public void addMapValue() {
 
