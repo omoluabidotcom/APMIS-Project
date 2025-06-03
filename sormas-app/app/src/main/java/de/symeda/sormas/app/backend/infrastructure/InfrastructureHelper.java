@@ -42,6 +42,8 @@ public class InfrastructureHelper {
 		changeDates.setUserRoleConfigurationChangeDate(DatabaseHelper.getUserRoleConfigDao().getLatestChangeDate());
 		changeDates.setFeatureConfigurationChangeDate(DatabaseHelper.getFeatureConfigurationDao().getLatestChangeDate());
 		changeDates.setCampaignChangeDate(DatabaseHelper.getCampaignDao().getLatestChangeDate());
+		System.out.println(DatabaseHelper.getCampaignDao().getLatestChangeDate() +"DatabaseHelper.getPopulationDataDao().getLatestChangeDate()" + DatabaseHelper.getCampaignDao().getLatestChangeDate());
+
 		changeDates.setCampaignFormMetaChangeDate(DatabaseHelper.getCampaignFormMetaDao().getLatestChangeDate());
 		changeDates.setCampaignFormMetaExpiryChangeDate(DatabaseHelper.getCampaignFormMetaWithExpDao().getLatestChangeDate());
 		System.out.println(DatabaseHelper.getCampaignFormMetaDao().getLatestChangeDate() +"DatabaseHelper.getPopulationDataDao().getLatestChangeDate()" + DatabaseHelper.getPopulationDataDao().getLatestChangeDate());
@@ -78,18 +80,26 @@ public class InfrastructureHelper {
 		DatabaseHelper.getFeatureConfigurationDao().delete(infrastructureData.getDeletedFeatureConfigurationUuids());
 		new FeatureConfigurationDtoHelper()
 			.handlePulledList(DatabaseHelper.getFeatureConfigurationDao(), infrastructureData.getFeatureConfigurations());
-		if (!DatabaseHelper.getFeatureConfigurationDao().isFeatureDisabled(FeatureType.CAMPAIGNS)) {
-			new CampaignDtoHelper().handlePulledList(DatabaseHelper.getCampaignDao(), infrastructureData.getCampaigns());
-			new CampaignFormMetaDtoHelper().handlePulledList(DatabaseHelper.getCampaignFormMetaDao(), infrastructureData.getCampaignFormMetas());
+
+		try{
+			if (!DatabaseHelper.getFeatureConfigurationDao().isFeatureDisabled(FeatureType.CAMPAIGNS)) {
+				new CampaignDtoHelper().handlePulledList(DatabaseHelper.getCampaignDao(), infrastructureData.getCampaigns());
+				new CampaignFormMetaDtoHelper().handlePulledList(DatabaseHelper.getCampaignFormMetaDao(), infrastructureData.getCampaignFormMetas());
 //			new CampaignFormMetaWithExpDtoHelper().handlePulledList(DatabaseHelper.getCampaignFormMetaWithExpDao(), infrastructureData.getCampaignFormMetaExpiry());
+
+			}
+		}finally{
+			System.out.println(DatabaseHelper.getPopulationDataDao() + "+++++++++++++222222 before pop" );
+			System.out.println( "+++++++++++++222222 before pop" + infrastructureData.getPopulationData().toArray());
+			new CampaignDtoHelper().handlePulledList(DatabaseHelper.getCampaignDao(), infrastructureData.getCampaigns());
+
+			new PopulationDataDtoHelper().handlePulledList(DatabaseHelper.getPopulationDataDao(), infrastructureData.getPopulationData());
+
+			System.out.println("+++++++++++++222222 after  pop" );
 
 		}
 
-		System.out.println("+++++++++++++222222 before pop");
 
-		new PopulationDataDtoHelper().handlePulledList(DatabaseHelper.getPopulationDataDao(), infrastructureData.getPopulationData());
-
-		System.out.println("+++++++++++++222222 after  pop");
 
 
 	}

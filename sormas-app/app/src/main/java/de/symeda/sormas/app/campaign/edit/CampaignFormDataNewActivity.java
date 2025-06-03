@@ -27,6 +27,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
@@ -122,7 +123,7 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
         List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteria(criteria, 0, 100);
 
-        campaignFormDataToSave.setRecordversion(1L);
+//        campaignFormDataToSave.setRecordversion(1L);
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
 
 
@@ -191,7 +192,8 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
                 @Override
                 public void doInBackground(TaskResultHolder resultHolder) throws DaoException {
-
+                	campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion() == null ? 1L : campaignFormDataToSave.getRecordversion());
+//
                     DatabaseHelper.getCampaignFormDataDao().saveAndSnapshot(campaignFormDataToSave);
                 }
 

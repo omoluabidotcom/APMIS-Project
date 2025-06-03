@@ -65,6 +65,7 @@ import de.symeda.sormas.app.backend.config.ConfigProvider;
 import de.symeda.sormas.app.backend.region.Community;
 import de.symeda.sormas.app.backend.user.User;
 import de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils;
+import de.symeda.sormas.app.component.controls.ControlPhoneField;
 import de.symeda.sormas.app.component.controls.ControlPropertyEditField;
 import de.symeda.sormas.app.component.controls.ControlPropertyField;
 import de.symeda.sormas.app.util.DataUtils;
@@ -109,7 +110,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
     private int min = 9;
     private int max = 9;
     private String country = "Afghanistan";
-    private Map<String, CountryDetails> mapvalue = new HashMap<>();
+    private final Map<String, CountryDetails> mapvalue = new HashMap<>();
 
     public void addMapValue() {
 
@@ -1188,7 +1189,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         // Add spinner to dynamic layout
                         dynamicLayout.addView(countrySpinner, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
-                        dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+                        dynamicField = CampaignFormDataFragmentUtils.createControlPhoneField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
 
                         helperText = new TextView(requireContext());
                         helperText.setText("Mobile number for " + country
