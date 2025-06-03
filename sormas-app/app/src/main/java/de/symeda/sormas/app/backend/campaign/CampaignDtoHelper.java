@@ -51,11 +51,14 @@ public class CampaignDtoHelper extends AdoDtoHelper<Campaign, CampaignDto> {
 
     @Override
     protected Call<List<CampaignDto>> pullAllSince(long since) throws NoConnectionException {
+        System.out.println("=======================99999999999999999000000000" + RetroProvider.getCampaignFacade().pullAllSince(since));
         return RetroProvider.getCampaignFacade().pullAllSince(since);
     }
 
     @Override
     protected Call<List<CampaignDto>> pullByUuids(List<String> uuids) throws NoConnectionException {
+        System.out.println("=======================9999999999999999900000000043" + RetroProvider.getCampaignFacade().pullByUuids(uuids));
+
         return RetroProvider.getCampaignFacade().pullByUuids(uuids);
     }
 
@@ -71,6 +74,9 @@ public class CampaignDtoHelper extends AdoDtoHelper<Campaign, CampaignDto> {
         target.setStartDate(source.getStartDate());
         target.setEndDate(source.getEndDate());
         target.setCreatingUser(DatabaseHelper.getUserDao().getByReferenceDto(source.getCreatingUser()));
+        System.out.println(source.getName() + "=======================9999999999999999900000000043" + source.campaignStatus);
+
+        target.setClosed(source.campaignStatus != null ? source.campaignStatus.equalsIgnoreCase("True") ? true :  false : false );
         final Set<CampaignFormMetaReferenceDto> campaignFormMetaReferenceDtos = source.getCampaignFormMetas();
         if (campaignFormMetaReferenceDtos != null) {
             target.setCampaignFormMetas(new ArrayList<>(campaignFormMetaReferenceDtos));

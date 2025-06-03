@@ -75,6 +75,7 @@ import de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils;
 import de.symeda.sormas.app.component.Item;
 import de.symeda.sormas.app.component.controls.ControlCheckBoxField;
 import de.symeda.sormas.app.component.controls.ControlDateField;
+import de.symeda.sormas.app.component.controls.ControlPhoneField;
 import de.symeda.sormas.app.component.controls.ControlPropertyField;
 import de.symeda.sormas.app.component.controls.ControlSpinnerField;
 import de.symeda.sormas.app.component.controls.ControlSwitchField;
@@ -133,7 +134,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
     //private List<CampaignFormTranslations> translationsOpt;
     private Map<String, String> userOptTranslations = null;
     private Campaign campaign;
-//    private CampaignFormMeta campaignFormMeta;
+    //    private CampaignFormMeta campaignFormMeta;
     private CampaignFormDataCriteria criteria = new CampaignFormDataCriteria();
     private String initialLotNo = "";
     private String lotChangedValue = "";
@@ -141,6 +142,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
     private boolean lotNoChanged = false;
     private boolean lotClusterNoChanged = false;
     private boolean validateChecker = true;
+
+    private String countryCodeHolder = "";
     int doubleLotChecker = 0;
 
     private SimpleDateFormat dateFormat;
@@ -155,6 +158,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
     private Map<String, CountryDetails> mapvalue = new HashMap<>();
 
     boolean isSpinnerInitialized = false;
+
     public void addMapValue() {
 
         mapvalue.put("Afghanistan", new CountryDetails("+93", 9, 9));
@@ -274,9 +278,9 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                 if (locale != null) {
                     translationsOpt.stream().filter(t -> t.getLanguageCode().equals(locale.toString()))
                             .findFirst().ifPresent(filteredTranslations -> filteredTranslations.getTranslations().stream()
-                            .filter(cd -> cd.getOptions() != null)
-                            .findFirst().ifPresent(optionsList -> userOptTranslations = optionsList.getOptions().stream()
-                                    .filter(c -> c.getCaption() != null).collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption))));
+                                    .filter(cd -> cd.getOptions() != null)
+                                    .findFirst().ifPresent(optionsList -> userOptTranslations = optionsList.getOptions().stream()
+                                            .filter(c -> c.getCaption() != null).collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption))));
                 }
 
                 optionsValues = campaignFormElement.getOptions().stream().collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));  // .collect(Collectors.toList());
@@ -426,7 +430,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
-                    }else if (type == CampaignFormElementType.LINEBREAK) {
+                    } else if (type == CampaignFormElementType.LINEBREAK) {
                         if (campaignFormElement.getDependingOn() == null) {
                             TextView textView = new TextView(requireContext());
                             TextViewBindingAdapters.setHtmlValue(textView, "");
@@ -534,7 +538,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
-                    }else if (type == CampaignFormElementType.LINEBREAK) {
+                    } else if (type == CampaignFormElementType.LINEBREAK) {
                         if (campaignFormElement.getDependingOn() == null) {
                             TextView textView = new TextView(requireContext());
                             TextViewBindingAdapters.setHtmlValue(textView, "");
@@ -639,7 +643,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
-                    }else if (type == CampaignFormElementType.LINEBREAK) {
+                    } else if (type == CampaignFormElementType.LINEBREAK) {
                         if (campaignFormElement.getDependingOn() == null) {
                             TextView textView = new TextView(requireContext());
                             TextViewBindingAdapters.setHtmlValue(textView, "");
@@ -762,7 +766,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
-                    }else if (type == CampaignFormElementType.LINEBREAK) {
+                    } else if (type == CampaignFormElementType.LINEBREAK) {
                         if (campaignFormElement.getDependingOn() == null) {
                             TextView textView = new TextView(requireContext());
                             TextViewBindingAdapters.setHtmlValue(textView, "");
@@ -864,7 +868,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
-                    }else if (type == CampaignFormElementType.LINEBREAK) {
+                    } else if (type == CampaignFormElementType.LINEBREAK) {
                         if (campaignFormElement.getDependingOn() == null) {
                             TextView textView = new TextView(requireContext());
                             TextViewBindingAdapters.setHtmlValue(textView, "");
@@ -966,7 +970,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
-                    }else if (type == CampaignFormElementType.LINEBREAK) {
+                    } else if (type == CampaignFormElementType.LINEBREAK) {
                         if (campaignFormElement.getDependingOn() == null) {
                             TextView textView = new TextView(requireContext());
                             TextViewBindingAdapters.setHtmlValue(textView, "");
@@ -1068,7 +1072,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
                             dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         }
-                    }else if (type == CampaignFormElementType.LINEBREAK) {
+                    } else if (type == CampaignFormElementType.LINEBREAK) {
                         if (campaignFormElement.getDependingOn() == null) {
                             TextView textView = new TextView(requireContext());
                             TextViewBindingAdapters.setHtmlValue(textView, "");
@@ -1214,14 +1218,13 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                         dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                         ControlDateField.setValue((ControlDateField) dynamicField, getDateValue(value));
                     } else if (type == CampaignFormElementType.PHONE) {
-                        dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
-                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
-                    }
-                    else if (type == CampaignFormElementType.TIME) {
+                        addMapValue();
+                        dynamicField = CampaignFormDataFragmentUtils.createControlPhoneField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+                        ControlPhoneField.setValue((ControlPhoneField) dynamicField, value);
+                    } else if (type == CampaignFormElementType.TIME) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTimeEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                         ControlTimeField.setValue((ControlTimeField) dynamicField, value);
-                    }
-                    else {
+                    } else {
                         dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
                         ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                     }
@@ -1241,13 +1244,13 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                         initialLotNo = formValuesMap.get(campaignFormElement.getId());
                         lotChangedValue = formValuesMap.get(campaignFormElement.getId());
 
-                        List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteriaa(criteria, 0, 100);                        
+                        List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteriaa(criteria, 0, 100);
                         List<String> listLotNo = new ArrayList();
                         List<String> listLotClusterNo = new ArrayList();
 
                         dynamicField.addValueChangedListener(field -> {
                             if (field.getValue() != null && !field.getValue().toString().isEmpty()) {
-                                if(initialLotNo != null) {
+                                if (initialLotNo != null) {
                                     double initialLotNoValueHelper = Double.parseDouble(initialLotNo);
                                     Long initialLotNoValueHelperUsed = (long) initialLotNoValueHelper;
                                     if ((Long.parseLong(field.getValue().toString()) -
@@ -1259,7 +1262,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
 
-                                if(lotNoChanged || lotClusterNoChanged) {
+                                if (lotNoChanged || lotClusterNoChanged) {
                                     CampaignFormDataEntry lotNo = new CampaignFormDataEntry();
                                     lotNo.setId("LotNo");
                                     lotNo.setValue(lotChangedValue);
@@ -1272,7 +1275,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                                             for (CampaignFormDataEntry campaignFormDataEntry : lotOwnSec) {
                                                 if (campaignFormDataEntry.getId().equalsIgnoreCase(lotNo.getId().toString())) {
-                                                    listLotNo.add(campaignFormDataEntry.getValue().toString());;
+                                                    listLotNo.add(campaignFormDataEntry.getValue().toString());
+                                                    ;
                                                 }
                                                 if (campaignFormDataEntry.getId().equalsIgnoreCase(lotClusterNo.getId().toString())) {
                                                     listLotClusterNo.add(campaignFormDataEntry.getValue().toString());
@@ -1295,7 +1299,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                                     && (Long.parseLong(listLotNo.get(index))
                                                     - lotChangedValueHelperUsed == 0)
                                             ) {
-                                                if((Long.parseLong(string) - initialLotClusterNoHelperUsed == 0)
+                                                if ((Long.parseLong(string) - initialLotClusterNoHelperUsed == 0)
                                                         && (Long.parseLong(listLotNo.get(index))
                                                         - initialLotNoValueHelperUsed == 0)) {
                                                     validateChecker = true;
@@ -1319,25 +1323,60 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     }
 
                     if (type == CampaignFormElementType.TIME) {
-                        dynamicField.addValueChangedListener(e->{
+                        dynamicField.addValueChangedListener(e -> {
                             String timeValue = dynamicField.getValue().toString();
-                            if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != ""){
+                            if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != "") {
                                 dynamicField.setValue(timeValue);
                             }
                         });
                     }
 
                     if (type == CampaignFormElementType.PHONE && campaignFormElement.getId().equalsIgnoreCase("mobileNumber")) {
-                        dynamicField.addValueChangedListener(e->{                       
-//                            String values = dynamicField.getValue().toString().replace(currentCountryCode, "");
+                        dynamicField.addValueChangedListener(e -> {
                             String values = dynamicField.getValue().toString();
-                            if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != ""){
+                            if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != "") {
                                 if (values != null && !values.matches("^[+]?[0-9]*$")) {
                                     dynamicField.setValue(values.replaceAll("[^0-9+]", ""));// Remove invalid characters
                                 }
                             }
                         });
                     }
+
+//                    if (type == CampaignFormElementType.PHONE && campaignFormElement.getId().equalsIgnoreCase("mobileNumber")) {
+//                        dynamicField.addValueChangedListener(e -> {
+//                            String values = dynamicField.getValue().toString();
+//
+//                            // First, clean non-numeric and '+' characters
+//                            if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != "") {
+//                                if (values != null && !values.matches("^[+]?[0-9]*$")) {
+//                                    values = values.replaceAll("[^0-9+]", ""); // Remove invalid characters
+//                                    dynamicField.setValue(values);
+//                                }
+//
+////                                for
+//
+//                                // Then apply min/max validation
+//                                int minLength = 7; // Common minimum for most countries
+//                                int maxLength = 15; // International standard E.164 maximum
+//
+//                                // For values that start with +, adjust the checking to account for country code
+//                                if (values.startsWith("+")) {
+//                                    if (values.length() > maxLength) {
+//                                        // Truncate to max length
+//                                        dynamicField.setValue(values.substring(0, maxLength));
+//                                    } else if (values.length() < minLength) {
+//                                        // Optional: You can add a visual indicator here that the number is too short
+//                                        // But typically don't prevent typing until they're done
+//                                    }
+//                                } else {
+//                                    // For values without + prefix
+//                                    if (values.length() > maxLength - 1) { // -1 to account for missing +
+//                                        dynamicField.setValue(values.substring(0, maxLength - 1));
+//                                    }
+//                                }
+//                            }
+//                        });
+//                    }
 
                     if (type == CampaignFormElementType.EMAIL && campaignFormElement.getId().equalsIgnoreCase("email")) {
 //                        initialLotNo = formValuesMap.get(campaignFormElement.getId());
@@ -1360,22 +1399,22 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 //                            criteria.setCommunity(record.getCommunity());
                             criteria.setCommunity(null);
                             List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteriaa(criteria, 0, 100);
-                            
+
                             List<String> listLotNo = new ArrayList();
                             List<String> listLotClusterNo = new ArrayList();
 
                             if (field.getValue() != null && !field.getValue().toString().isEmpty()) {
 
-                                if(initialLotClusterNo != null && !initialLotClusterNo.isEmpty()) {
+                                if (initialLotClusterNo != null && !initialLotClusterNo.isEmpty()) {
                                     if ((Long.parseLong(field.getValue().toString()) - Long.parseLong(initialLotClusterNo.toString()) != 0)) {
                                         lotClusterNoChanged = true;
                                     }
                                 } else {
 //                                    if ((Long.parseLong(field.getValue().toString()) - Long.parseLong(initialLotClusterNo.toString()) != 0)) {
-                                        lotClusterNoChanged = false;
+                                    lotClusterNoChanged = false;
 //                                    }
                                 }
-                                if(lotNoChanged || lotClusterNoChanged) {
+                                if (lotNoChanged || lotClusterNoChanged) {
                                     CampaignFormDataEntry lotNo = new CampaignFormDataEntry();
                                     lotNo.setId("LotNo");
                                     lotNo.setValue(lotChangedValue);
@@ -1388,7 +1427,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                                             for (CampaignFormDataEntry campaignFormDataEntry : lotOwnSec) {
                                                 if (campaignFormDataEntry.getId().equalsIgnoreCase(lotNo.getId().toString())) {
-                                                    listLotNo.add(campaignFormDataEntry.getValue().toString());;
+                                                    listLotNo.add(campaignFormDataEntry.getValue().toString());
+                                                    ;
                                                 }
                                                 if (campaignFormDataEntry.getId().equalsIgnoreCase(lotClusterNo.getId().toString())) {
                                                     listLotClusterNo.add(campaignFormDataEntry.getValue().toString());
@@ -1412,7 +1452,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                                     && (Long.parseLong(listLotNo.get(index))
                                                     - lotChangedValueHelperUsed == 0)
                                             ) {
-                                                if((Long.parseLong(string) - initialLotClusterNoHelperUsed == 0)
+                                                if ((Long.parseLong(string) - initialLotClusterNoHelperUsed == 0)
                                                         && (Long.parseLong(listLotNo.get(index))
                                                         - initialLotNoValueHelperUsed == 0)) {
                                                     validateChecker = true;
@@ -1483,12 +1523,12 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     }
 
                     if (type == CampaignFormElementType.NUMBER && campaignFormElement.getId().equalsIgnoreCase("villageCode")) {
-                        dynamicField.addValueChangedListener(e->{
-                            if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != ""){
+                        dynamicField.addValueChangedListener(e -> {
+                            if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != "") {
                                 if (record != null && record.getCommunity() != null) {
 
 
-                                    if ( dynamicField.getValue().toString().length() == 3) {
+                                    if (dynamicField.getValue().toString().length() == 3) {
                                         String inputValue = e.getValue().toString();
                                         if (inputValue.length() == 3) {
                                             handleVillageCodeValueGeneration(inputValue, dynamicField);
@@ -1500,12 +1540,12 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     }
 
                     if (type == CampaignFormElementType.TEXT && campaignFormElement.getId().equalsIgnoreCase("eTazkiraNo")) {
-                        dynamicField.addValueChangedListener(e->{
-                            if (dynamicField.getValue().toString() != null){
-                                if ( dynamicField.getValue().toString().length() == 13) {
+                        dynamicField.addValueChangedListener(e -> {
+                            if (dynamicField.getValue().toString() != null) {
+                                if (dynamicField.getValue().toString().length() == 13) {
                                     String inputValue = e.getValue().toString().replace("-", "").replace(".", "");
 //                                    if (inputValue.length() == 13) {
-                                        handleETazkiraNoFormatting(inputValue, dynamicField);
+                                    handleETazkiraNoFormatting(inputValue, dynamicField);
 //                                    }
                                 }
                             }
@@ -1551,28 +1591,28 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
             if (countr > 0) {
                 spec = mTabHost.newTabSpec("tab1").setIndicator("D1",//caption_1,
-                        res.getDrawable(R.drawable.ic_clear_black_24dp))
+                                res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet1);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(0).getLayoutParams().width = 140;
             }
             if (countr > 1) {
                 spec = mTabHost.newTabSpec("tab2").setIndicator("D2",//caption_1,
-                        res.getDrawable(R.drawable.ic_clear_black_24dp))
+                                res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet2);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(1).getLayoutParams().width = 140;
             }
             if (countr > 2) {
                 spec = mTabHost.newTabSpec("tab3").setIndicator("D3",//caption_1,
-                        res.getDrawable(R.drawable.ic_clear_black_24dp))
+                                res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet3);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(2).getLayoutParams().width = 140;
             }
             if (countr > 3) {
                 spec = mTabHost.newTabSpec("tab4").setIndicator("D4",//caption_1,
-                        res.getDrawable(R.drawable.ic_clear_black_24dp))
+                                res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet4);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(3).getLayoutParams().width = 140;
@@ -1580,7 +1620,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
             if (countr == 6) { //>5 (four day form with summary
                 spec = mTabHost.newTabSpec("tab5").setIndicator(" ",//caption_1,
-                        res.getDrawable(R.drawable.ic_clear_black_24dp))
+                                res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet5);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(4).getLayoutParams().width = 140;
@@ -1589,7 +1629,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
             if (countr > 4 && countr != 6) {
                 spec = mTabHost.newTabSpec("tab5").setIndicator("D5",//caption_1,
-                        res.getDrawable(R.drawable.ic_clear_black_24dp))
+                                res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet5);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(4).getLayoutParams().width = 140;
@@ -1597,7 +1637,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
             if (countr > 5 && countr != 6) {
                 spec = mTabHost.newTabSpec("tab6").setIndicator("D6",//caption_1,
-                        res.getDrawable(R.drawable.ic_clear_black_24dp))
+                                res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet6);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(5).getLayoutParams().width = 140;
@@ -1605,7 +1645,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
             if (countr > 6) {
                 spec = mTabHost.newTabSpec("tab7").setIndicator("D7",//caption_1,
-                        res.getDrawable(R.drawable.ic_clear_black_24dp))
+                                res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet7);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(6).getLayoutParams().width = 140;
@@ -1613,7 +1653,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
             if (countr > 7) {
                 spec = mTabHost.newTabSpec("tab8").setIndicator("D8",//caption_1,
-                        res.getDrawable(R.drawable.ic_clear_black_24dp))
+                                res.getDrawable(R.drawable.ic_clear_black_24dp))
                         .setContent(R.id.tabSheet8);
                 mTabHost.addTab(spec);
                 mTabHost.getTabWidget().getChildAt(7).getLayoutParams().width = 140;

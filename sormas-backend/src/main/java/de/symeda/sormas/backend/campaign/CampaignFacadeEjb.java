@@ -736,9 +736,12 @@ public class CampaignFacadeEjb implements CampaignFacade {
 		target.setPublished(source.isPublished());
 		target.setArchived(source.isArchived());
 		target.setDeleted(source.isDeleted());
+		target.setCampaignStatus(source.isOpenandclose() == true ? "True" : "False");
+
 
 		return target;
 	}
+
 
 	@Override
 	public CampaignDto getByUuid(String uuid) {

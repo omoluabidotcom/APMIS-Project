@@ -101,9 +101,9 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
         //true is returned when the form is yet to be synchronized with the server, so we only increment teh record version when
         //this form has been subimmted and synchronized with server
         //in return none synced changes wouldn't increment record version
-        if(!campaignFormDataToSave.isModifiedOrChildModified()){
-            campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion() + 1L);
-        }
+//        if(!campaignFormDataToSave.isModifiedOrChildModified()){
+//            campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion() + 1L);
+//        }
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
 
         try {
@@ -130,6 +130,13 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
 
             @Override
             public void doInBackground(TaskResultHolder resultHolder) throws DaoException {
+
+                if(!campaignFormDataToSave.isModifiedOrChildModified()){
+                    campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion()== null ? 1l  : campaignFormDataToSave.getRecordversion() + 1L);
+                }
+
+//                campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion() == null ? 1L : campaignFormDataToSave.getRecordversion());
+
                 DatabaseHelper.getCampaignFormDataDao().saveAndSnapshot(campaignFormDataToSave);
             }
 

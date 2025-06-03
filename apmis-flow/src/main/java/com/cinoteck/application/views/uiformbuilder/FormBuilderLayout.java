@@ -6,7 +6,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -73,7 +72,7 @@ public class FormBuilderLayout extends VerticalLayout {
 	ComboBox<Boolean> districtEntry;
 	ComboBox<String> languageCode;
 	List<AreaReferenceDto> regions = FacadeProvider.getAreaFacade().getAllActiveAsReference();
-	
+
 	FormGridComponent formGridComponent;
 	TranslationGridComponent translationGridComponent;
 
@@ -122,8 +121,7 @@ public class FormBuilderLayout extends VerticalLayout {
 	}
 
 	void configureFields(CampaignFormMetaDto campaignFormMetaDto_) {
-		
-		
+
 		formName = new TextField("Form Name");
 		formId = new TextField("Id");
 		formType = new ComboBox<CampaignPhase>("Form Type");
@@ -153,7 +151,7 @@ public class FormBuilderLayout extends VerticalLayout {
 				CampaignFormMetaDto::setFormCategory);
 
 		binder.forField(areaSelector).bind(CampaignFormMetaDto::getArea, CampaignFormMetaDto::setArea);
-		
+
 		binder.forField(modality).asRequired("Modality is Required").bind(CampaignFormMetaDto::getModality,
 				CampaignFormMetaDto::setModality);
 
@@ -166,8 +164,8 @@ public class FormBuilderLayout extends VerticalLayout {
 		binder.forField(languageCode).asRequired("Language Code is Required").bind(CampaignFormMetaDto::getLanguageCode,
 				CampaignFormMetaDto::setLanguageCode);
 
-		formLayout.add(formBasics, formName, formId, formType, formCategory, areaSelector, modality, daysExpired, languageCode,
-				districtEntry);
+		formLayout.add(formBasics, formName, formId, formType, formCategory, areaSelector, modality, daysExpired,
+				languageCode, districtEntry);
 
 		formLayout.setColspan(formBasics, 2);
 
@@ -202,19 +200,20 @@ public class FormBuilderLayout extends VerticalLayout {
 		Icon saveIcon = new Icon(VaadinIcon.CHECK_CIRCLE_O);
 		saveIcon.getStyle().set("color", "green");
 		Button saved = new Button("Save", saveIcon);
-		
+
 		Button duplicateForm = new Button("Duplicate Form");
 		duplicateForm.setText("Duplicate Form");
 
 		Icon downloadIcon = new Icon(VaadinIcon.DOWNLOAD);
 		Button downloadButton = new Button("Export JSON", downloadIcon);
 		downloadButton.setText("Export JSON");
-		
+
 		Anchor downloadLink = new Anchor("", "Export JSON");
-	    downloadLink.getElement().setAttribute("download", true);
-	    downloadLink.add(downloadButton);	   
-	    
-		HorizontalLayout buttonLayout = new HorizontalLayout(duplicateForm, downloadButton, downloadLink, discardChanges, saved);
+		downloadLink.getElement().setAttribute("download", true);
+		downloadLink.add(downloadButton);
+
+		HorizontalLayout buttonLayout = new HorizontalLayout(duplicateForm, downloadButton, downloadLink,
+				discardChanges, saved);
 		downloadLink.getStyle().set("display", "none");
 		buttonLayout.getStyle().set("margin-left", "auto");
 
@@ -222,72 +221,165 @@ public class FormBuilderLayout extends VerticalLayout {
 
 		discardChanges.addClickListener(e -> discardChanges());
 		saved.addClickListener(e -> {
-			validateAndSave();
+
+			if (isNew) {
+				validateAndSaveNew();
+			} else {
+				validateAndSave();
+			}
 		});
-		
+
 		downloadButton.addClickListener(event -> {
-            StreamResource resource = createJsonStreamResource();
-            downloadLink.setHref(resource);  
-            downloadLink.getElement().callJsFunction("click");
-        });
-		
-		duplicateForm.addClickListener(e -> {
-		    try {
-		        // Get the current version count
-		        long version = FacadeProvider.getCampaignFormMetaFacade().getFormCountByGroupUuid(campaignFormMetaDto_.getFormGroupUuid());
-		        
-		        long incrementedVersion  = version + 1L;
-		        String incrementedVersionString = incrementedVersion+"";
-		        // Create a completely new DTO instance
-		        CampaignFormMetaDto campaignFormMetaDtoDupli = new CampaignFormMetaDto();
-		        campaignFormMetaDtoDupli = campaignFormMetaDto_;
-		        // Copy all relevant fields from the original
-		        campaignFormMetaDtoDupli.setUuid(DataHelper.createUuid()); // Keep same uuid
-		        campaignFormMetaDtoDupli.setFormId(campaignFormMetaDto.getFormId() + incrementedVersionString);
-		        campaignFormMetaDtoDupli.setFormversion(incrementedVersion);
-		        campaignFormMetaDtoDupli.setCreationDate(new Timestamp(new Date().getTime()));
-		        campaignFormMetaDtoDupli.setArchived(false);
-
-		        // Save the new duplicate
-		        fireEvent(new DuplicateEvent(this, campaignFormMetaDtoDupli));
-
-		        // Refresh UI and show notification
-//		        UI.getCurrent().getPage().reload();
-		        Notification notification = new Notification("Form Duplicated", 3000, Position.MIDDLE);
-		        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-		        notification.open();
-
-		    } catch(Exception ex) {
-		        System.out.println("Exception Occurred while saving: " + ex);
-		        Notification.show("Error duplicating form: " + ex.getMessage(), 3000, Position.MIDDLE);
-		    }
-		    
-		    discardChanges();
+			StreamResource resource = createJsonStreamResource();
+			downloadLink.setHref(resource);
+			downloadLink.getElement().callJsFunction("click");
 		});
-		
+
+		duplicateForm.addClickListener(e -> {
+			try {
+				// Get the current version count
+				long version = FacadeProvider.getCampaignFormMetaFacade()
+						.getFormCountByGroupUuid(campaignFormMetaDto_.getFormGroupUuid());
+
+				long incrementedVersion = version + 1L;
+				String incrementedVersionString = incrementedVersion + "";
+				// Create a completely new DTO instance
+				CampaignFormMetaDto campaignFormMetaDtoDupli = new CampaignFormMetaDto();
+				campaignFormMetaDtoDupli = campaignFormMetaDto_;
+				// Copy all relevant fields from the original
+				campaignFormMetaDtoDupli.setUuid(DataHelper.createUuid()); // Keep same uuid
+				campaignFormMetaDtoDupli.setFormId(campaignFormMetaDto.getFormId() + incrementedVersionString);
+				campaignFormMetaDtoDupli.setFormversion(incrementedVersion);
+				campaignFormMetaDtoDupli.setCreationDate(new Timestamp(new Date().getTime()));
+				campaignFormMetaDtoDupli.setArchived(false);
+
+				// Save the new duplicate
+				fireEvent(new DuplicateEvent(this, campaignFormMetaDtoDupli));
+
+				// Refresh UI and show notification
+//		        UI.getCurrent().getPage().reload();
+				Notification notification = new Notification("Form Duplicated", 3000, Position.MIDDLE);
+				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+				notification.open();
+
+			} catch (Exception ex) {
+				System.out.println("Exception Occurred while saving: " + ex);
+				Notification.show("Error duplicating form: " + ex.getMessage(), 3000, Position.MIDDLE);
+			}
+
+			discardChanges();
+		});
+
 	}
 
-		
-		
 	private StreamResource createJsonStreamResource() {
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ObjectMapper objectMapper = new ObjectMapper();
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        try {
-            objectMapper.writeValue(outputStream, campaignFormMetaDto.getCampaignFormElements());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+		try {
+			objectMapper.writeValue(outputStream, campaignFormMetaDto.getCampaignFormElements());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
-        return new StreamResource(campaignFormMetaDto.getFormName()+".json", () -> {
-            byte[] jsonBytes = outputStream.toByteArray();
-            return new ByteArrayInputStream(jsonBytes);
-        });
-    }
+		return new StreamResource(campaignFormMetaDto.getFormName() + ".json", () -> {
+			byte[] jsonBytes = outputStream.toByteArray();
+			return new ByteArrayInputStream(jsonBytes);
+		});
+	}
 
 	public void setForm(CampaignFormMetaDto formData) {
 		binder.setBean(formData);
+	}
+	
+	private void validateAndSaveNew() {
+
+		if (binder.validate().isOk()) {
+
+			campaignFormMetaDto = binder.getBean();
+			campaignFormMetaDto.setFormname_fa_af(binder.getBean().getFormName());
+			campaignFormMetaDto.setFormname_ps_af(binder.getBean().getFormName());
+			campaignFormMetaDto.setCampaignFormElements(formGridComponent.getGridData());
+			campaignFormMetaDto.setCampaignFormTranslations(translationGridComponent.getGridData());
+			campaignFormMetaDto.setFormversion(1L);
+			campaignFormMetaDto.setFormGroupUuid(DataHelper.createUuid());
+
+			List<String> listofElement = formGridComponent.getGridData().stream().map(CampaignFormElement::getId)
+					.collect(Collectors.toList());
+
+			Set<String> seen = new HashSet<>();
+
+			List<String> filteredList = listofElement.stream().filter(s -> !seen.add(s)).collect(Collectors.toList());
+
+			if (filteredList.isEmpty()) {
+
+				try {
+					fireEvent(new SaveEvent(this, campaignFormMetaDto));
+
+				} catch (Exception e) {
+					System.out.println("Exception Occured while saving : " + e);
+
+				} finally {
+					UserProvider usr = new UserProvider();
+
+					UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
+					userActivitySummaryDto.setActionModule("Form Manager");
+					userActivitySummaryDto.setAction("Form Saved: " + campaignFormMetaDto.getFormName());
+					userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
+					FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
+
+					UI.getCurrent().getPage().reload();
+
+					Notification notification = new Notification("Form Saved", 3000, Position.MIDDLE);
+					notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+					notification.open();
+
+				}
+
+			} else {
+
+				Notification notification = new Notification();
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+				notification.setPosition(Position.MIDDLE);
+				Button closeButton = new Button(new Icon("lumo", "cross"));
+				closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+				closeButton.getElement().setAttribute("aria-label", "Close");
+				closeButton.addClickListener(event -> {
+					notification.close();
+				});
+
+				Paragraph text = new Paragraph(
+						"This Form cannot save because you have multiple elements with the same id "
+								+ filteredList.get(0));
+				System.out.println("This Form cannot save because you have multiple elements with the same id "
+						+ filteredList.get(0));
+				HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+				layout.setAlignItems(Alignment.CENTER);
+
+				notification.add(layout);
+				notification.open();
+			}
+		} else {
+
+			Notification notification = new Notification();
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			notification.setPosition(Position.MIDDLE);
+			Button closeButton = new Button(new Icon("lumo", "cross"));
+			closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+			closeButton.getElement().setAttribute("aria-label", "Close");
+			closeButton.addClickListener(event -> {
+				notification.close();
+			});
+
+			Paragraph text = new Paragraph("Unable to Save Form");
+
+			HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+			layout.setAlignItems(Alignment.CENTER);
+
+			notification.add(layout);
+			notification.open();
+		}
 	}
 
 	private void validateAndSave() {
@@ -304,57 +396,57 @@ public class FormBuilderLayout extends VerticalLayout {
 					.collect(Collectors.toList());
 
 			Set<String> seen = new HashSet<>();
-			
-			List<String> filteredList = listofElement.stream()
-		            .filter(s -> !seen.add(s))
-		            .collect(Collectors.toList());
-			 
+
+			List<String> filteredList = listofElement.stream().filter(s -> !seen.add(s)).collect(Collectors.toList());
+
 			if (filteredList.isEmpty()) {
 
-			try {
-				fireEvent(new SaveEvent(this, campaignFormMetaDto));
+				try {
+					fireEvent(new SaveEvent(this, campaignFormMetaDto));
 
-			}catch(Exception e ) {
-				System.out.println("Exception Occured while saving : " +  e);
-				
-			}finally {
-		        UserProvider usr = new UserProvider();
+				} catch (Exception e) {
+					System.out.println("Exception Occured while saving : " + e);
 
-				UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
-				userActivitySummaryDto.setActionModule("Form Manager");
-				userActivitySummaryDto.setAction("Form Saved: " + campaignFormMetaDto.getFormName());
-				userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
-				FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
-				
-				UI.getCurrent().getPage().reload();
-				
-				Notification notification = new Notification("Form Saved", 3000, Position.MIDDLE);
-				notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+				} finally {
+					UserProvider usr = new UserProvider();
+
+					UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
+					userActivitySummaryDto.setActionModule("Form Manager");
+					userActivitySummaryDto.setAction("Form Saved: " + campaignFormMetaDto.getFormName());
+					userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
+					FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
+
+					UI.getCurrent().getPage().reload();
+
+					Notification notification = new Notification("Form Saved", 3000, Position.MIDDLE);
+					notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+					notification.open();
+
+				}
+
+			} else {
+
+				Notification notification = new Notification();
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+				notification.setPosition(Position.MIDDLE);
+				Button closeButton = new Button(new Icon("lumo", "cross"));
+				closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+				closeButton.getElement().setAttribute("aria-label", "Close");
+				closeButton.addClickListener(event -> {
+					notification.close();
+				});
+
+				Paragraph text = new Paragraph(
+						"This Form cannot save because you have multiple elements with the same id "
+								+ filteredList.get(0));
+				System.out.println("This Form cannot save because you have multiple elements with the same id "
+						+ filteredList.get(0));
+				HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+				layout.setAlignItems(Alignment.CENTER);
+
+				notification.add(layout);
 				notification.open();
-
 			}
-
-			
-		} else {
-
-			Notification notification = new Notification();
-			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-			notification.setPosition(Position.MIDDLE);
-			Button closeButton = new Button(new Icon("lumo", "cross"));
-			closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-			closeButton.getElement().setAttribute("aria-label", "Close");
-			closeButton.addClickListener(event -> {
-				notification.close();
-			});
-
-			Paragraph text = new Paragraph("This Form cannot save because you have multiple elements with the same id " + filteredList.get(0));
-			System.out.println("This Form cannot save because you have multiple elements with the same id " + filteredList.get(0));
-			HorizontalLayout layout = new HorizontalLayout(text, closeButton);
-			layout.setAlignItems(Alignment.CENTER);
-
-			notification.add(layout);
-			notification.open();
-		}
 		} else {
 
 			Notification notification = new Notification();
@@ -405,10 +497,9 @@ public class FormBuilderLayout extends VerticalLayout {
 		return addListener(SaveEvent.class, listener);
 	}
 
-	
 	public static class DuplicateEvent extends FormBuilderEvent {
 		DuplicateEvent(FormBuilderLayout source, CampaignFormMetaDto form) {
-			
+
 			super(source, form);
 		}
 	}
