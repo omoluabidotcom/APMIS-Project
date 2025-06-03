@@ -147,6 +147,8 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 				synchronizeChangedData();
 
 				pullMissingAndDeleteInvalidInfrastructure();
+
+//				pullMissingAndDeleteInvalidInfrastructure
 				//repullData();
 				pushNewPullMissingAndDeleteInvalidData();
 
@@ -335,15 +337,17 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 
 		// Campaigns
 		if (!DatabaseHelper.getFeatureConfigurationDao().isFeatureDisabled(FeatureType.CAMPAIGNS)) {
-//			final UserDtoHelper userDtoHelper = new UserDtoHelper();
-//			if (userDtoHelper.pullAndPushEntities()) {
-//				userDtoHelper.pushEntities(true);
-//				System.out.println("vbvbvbvbvbvbvbvbvbvbvbvbvbvbvbvbvbvbvbvbv");
-//			}
+
+
+			final CampaignDtoHelper campaignDtoHelper = new CampaignDtoHelper();
+			System.out.println(campaignDtoHelper + "++++++------------------__campaignFormDataDtoHelpercampaignFormDataDtoHelpercampaignFormDataDtoHelper");
+			System.out.println(campaignDtoHelper.pullAndPushEntities() + "campaignFormDataDtoHelpercampaignFormDataDtoHelpercampaignFormDataDtoHelper");
+			if (campaignDtoHelper.pullAndPushEntities())
+				campaignDtoHelper.pullEntities(true);
+
 			final CampaignFormMetaDtoHelper campaignFormMetaDtoHelper = new CampaignFormMetaDtoHelper();
 			if (campaignFormMetaDtoHelper.pullAndPushEntities())
 				campaignFormMetaDtoHelper.pullEntities(true);
-
 
 			final CampaignFormDataDtoHelper campaignFormDataDtoHelper = new CampaignFormDataDtoHelper();
 			if (campaignFormDataDtoHelper.pullAndPushEntities())
@@ -375,11 +379,12 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 
 		// Campaigns
 		if (!DatabaseHelper.getFeatureConfigurationDao().isFeatureDisabled(FeatureType.CAMPAIGNS)) {
+			final CampaignDtoHelper campaignDtoHelper = new CampaignDtoHelper();
 			final CampaignFormDataDtoHelper campaignFormDataDtoHelper = new CampaignFormDataDtoHelper();
 			final CampaignFormMetaDtoHelper campaignFormMetaDtoHelper = new CampaignFormMetaDtoHelper();
 			final CampaignFormMetaWithExpDtoHelper campaignFormMetaWithExpDtoHelper = new CampaignFormMetaWithExpDtoHelper();
 
-
+			campaignDtoHelper.repullEntities();
 			campaignFormMetaDtoHelper.repullEntities();
 			campaignFormDataDtoHelper.repullEntities();
 			campaignFormMetaWithExpDtoHelper.repullEntities();
@@ -473,37 +478,6 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 	@AddTrace(name = "pullAndRemoveArchivedUuidsSinceTrace")
 	private void pullAndRemoveArchivedUuidsSince(Date since) throws NoConnectionException, ServerConnectionException, ServerCommunicationException {
 		Log.d(SynchronizeDataAsync.class.getSimpleName(), "pullArchivedUuidsSince");
-
-	//	try {
-			// Cases
-			//List<String> caseUuids = executeUuidCall(RetroProvider.getCaseFacade().pullArchivedUuidsSince(since != null ? since.getTime() : 0));
-			//for (String caseUuid : caseUuids) {
-			//	DatabaseHelper.getCaseDao().deleteCaseAndAllDependingEntities(caseUuid);
-			//}
-
-			// Events
-			//List<String> eventUuids = executeUuidCall(RetroProvider.getEventFacade().pullArchivedUuidsSince(since != null ? since.getTime() : 0));
-			//for (String eventUuid : eventUuids) {
-			//	DatabaseHelper.getEventDao().deleteEventAndAllDependingEntities(eventUuid);
-			//}
-
-			// Tasks
-		//	List<String> taskUuids = executeUuidCall(RetroProvider.getTaskFacade().pullArchivedUuidsSince(since != null ? since.getTime() : 0));
-			//for (String taskUuid : taskUuids) {
-			//	DatabaseHelper.getTaskDao().deleteTaskAndAllDependingEntities(taskUuid);
-			//}
-
-			// Inactive outbreaks
-		//List<String> outbreakUuids =
-			//	executeUuidCall(RetroProvider.getOutbreakFacade().pullInactiveUuidsSince(since != null ? since.getTime() : 0));
-		//	for (String outbreakUuid : outbreakUuids) {
-		//		DatabaseHelper.getOutbreakDao().deleteOutbreakAndAllDependingEntities(outbreakUuid);
-		//	}
-
-		//	ConfigProvider.setLastArchivedSyncDate(new Date());
-	//	} catch (SQLException e) {
-		//	Log.e(SynchronizeDataAsync.class.getSimpleName(), "pullAndRemoveArchivedUuidsSince failed: " + e.getMessage());
-		//}
 	}
 
 	@AddTrace(name = "pullAndRemoveDeletedUuidsSinceTrace")
@@ -512,40 +486,6 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 if (1 == 3) {
 	// Cases
 	List<String> caseUuids = executeUuidCall(RetroProvider.getCaseFacade().pullDeletedUuidsSince(since != null ? since.getTime() : 0));
-	//for (String caseUuid : caseUuids) {
-		//	DatabaseHelper.getCaseDao().deleteCaseAndAllDependingEntities(caseUuid);
-	//}
-
-	// Immunization
-//	List<String> immunizationUuids = executeUuidCall(RetroProvider.getImmunizationFacade().pullDeletedUuidsSince(since != null ? since.getTime() : 0));
-	//	for (String immunizationUuid : immunizationUuids) {
-	//		DatabaseHelper.getImmunizationDao().deleteImmunizationAndAllDependingEntities(immunizationUuid);
-	//	}
-
-	// Events
-//	List<String> eventUuids = executeUuidCall(RetroProvider.getEventFacade().pullDeletedUuidsSince(since != null ? since.getTime() : 0));
-	//for (String eventUuid : eventUuids) {
-	//	DatabaseHelper.getEventDao().deleteEventAndAllDependingEntities(eventUuid);
-	//}
-
-	//Event participants
-	//List<String> eventParticipantUuids =
-	//		executeUuidCall(RetroProvider.getEventParticipantFacade().pullDeletedUuidsSince(since != null ? since.getTime() : 0));
-	//	for (String eventParticipantUuid : eventParticipantUuids) {
-	///	DatabaseHelper.getEventParticipantDao().deleteEventParticipant(eventParticipantUuid);
-	//}
-
-	// Contacts
-//	List<String> contactUuids = executeUuidCall(RetroProvider.getContactFacade().pullDeletedUuidsSince(since != null ? since.getTime() : 0));
-	//	for (String contactUuid : contactUuids) {
-	//DatabaseHelper.getContactDao().deleteContactAndAllDependingEntities(contactUuid);
-	//}
-
-	// Samples
-	//List<String> sampleUuids = executeUuidCall(RetroProvider.getSampleFacade().pullDeletedUuidsSince(since != null ? since.getTime() : 0));
-	//for (String sampleUuid : sampleUuids) {
-	//	DatabaseHelper.getSampleDao().deleteSampleAndAllDependingEntities(sampleUuid);
-	//}
 }
 	ConfigProvider.setLastDeletedSyncDate(new Date());
 
@@ -654,13 +594,15 @@ if (1 == 3) {
 
 		// CampaignData
 		if (!DatabaseHelper.getFeatureConfigurationDao().isFeatureDisabled(FeatureType.CAMPAIGNS)) {
-//			System.out.println("pushing dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-//			final UserDtoHelper userDtoHelper = new UserDtoHelper();
-//			userDtoHelper.pushEntities(true);
+
 			final CampaignFormDataDtoHelper campaignFormDataDtoHelper = new CampaignFormDataDtoHelper();
 			campaignFormDataDtoHelper.pushEntities(true);
 			final List<String> campaignFormDataUuids = executeUuidCall(RetroProvider.getCampaignFormDataFacade().pullUuids());
 			DatabaseHelper.getCampaignFormDataDao().deleteInvalid(campaignFormDataUuids);
+			campaignFormDataDtoHelper.pullMissing(campaignFormDataUuids);
+
+			final List<String> campaignUuids = executeUuidCall(RetroProvider.getCampaignFacade().pullUuids());
+			DatabaseHelper.getCampaignFormDataDao().deleteInvalid(campaignUuids);
 			campaignFormDataDtoHelper.pullMissing(campaignFormDataUuids);
 		//TODO: Add Expiry Date Login
 
@@ -706,7 +648,6 @@ if (1 == 3) {
 		List<String> districtUuids = executeUuidCall(RetroProvider.getDistrictFacade().pullUuids());
 		DatabaseHelper.getDistrictDao().deleteInvalid(districtUuids);
 		// regions
-	//	List<String> regionUuids = executeUuidCall(RetroProvider.getRegionFacade().pullUuids());
 		List<String> regionUuids = executeUuidCall(RetroProvider.getRegionFacade().pullUuids());
 		DatabaseHelper.getRegionDao().deleteInvalid(regionUuids);
 		// areas
@@ -716,21 +657,7 @@ if (1 == 3) {
 		//population data
 		List<String> populationDataUuids =  executeUuidCall(RetroProvider.getPopulationDataFacade().pullUuids());
 		DatabaseHelper.getPopulationDataDao().deleteInvalid(populationDataUuids);
-		// countries
-	//	List<String> countryUuids = executeUuidCall(RetroProvider.getCountryFacade().pullUuids());
-	//	DatabaseHelper.getCountryDao().deleteInvalid(countryUuids);
-		// subcontinents
-	//	List<String> subcontinentUuids = executeUuidCall(RetroProvider.getSubcontinentFacade().pullUuids());
-	//	DatabaseHelper.getSubcontinentDao().deleteInvalid(subcontinentUuids);
-		// continents
-	//	List<String> continentUuids = executeUuidCall(RetroProvider.getContinentFacade().pullUuids());
-	//	DatabaseHelper.getContinentDao().deleteInvalid(continentUuids);
 
-		// order is important, due to dependencies
-
-		//new ContinentDtoHelper().pullMissing(continentUuids);
-	//	new SubcontinentDtoHelper().pullMissing(subcontinentUuids);
-	//	new CountryDtoHelper().pullMissing(countryUuids);
 
 		if (!DatabaseHelper.getFeatureConfigurationDao().isFeatureDisabled(FeatureType.INFRASTRUCTURE_TYPE_AREA)) {
 			new AreaDtoHelper().pullMissing(areaUuids);
@@ -739,15 +666,10 @@ if (1 == 3) {
 		new RegionDtoHelper().pullMissing(regionUuids);
 		new DistrictDtoHelper().pullMissing(districtUuids);
 		new CommunityDtoHelper().pullMissing(communityUuids);
-//		new PopulationDataDtoHelper().pullMissing(populationDataUuids);
 
-	//	new FacilityDtoHelper().pullMissing(facilityUuids);
-		//new PointOfEntryDtoHelper().pullMissing(pointOfEntryUuids);
+
 		new UserRoleConfigDtoHelper().pullMissing(userRoleConfigUuids);
 		new UserDtoHelper().pullMissing(userUuids);
-	//	new DiseaseConfigurationDtoHelper().pullMissing(diseaseConfigurationUuids);
-	//	new CustomizableEnumValueDtoHelper().pullMissing(customizableEnumValueUuids);
-
 
 		new FeatureConfigurationDtoHelper().pullMissing(featureConfigurationUuids);
 
@@ -755,19 +677,16 @@ if (1 == 3) {
 			// campaigns
 			List<String> campaignUuids = executeUuidCall(RetroProvider.getCampaignFacade().pullUuids());
 			//for(String dcs : campaignUuids){
-				System.out.println("  ============================--0-0-0-0-0-0-0  CHecking Missingand DeleteInvalid");
+				System.out.println(campaignUuids + "++++++--------------------============================--0-0-0-0-0-0-0  CHecking Missingand DeleteInvalid");
 			//}
-
 			DatabaseHelper.getCampaignDao().deleteInvalid(campaignUuids);
+			new CampaignDtoHelper().pullMissing(campaignUuids);
+
 			// campaignFormMetas
 			List<String> campaignFormMetaUuids = executeUuidCall(RetroProvider.getCampaignFormMetaFacade().pullUuids());
 			DatabaseHelper.getCampaignFormMetaDao().deleteInvalid(campaignFormMetaUuids);
 
 			new CampaignFormMetaDtoHelper().pullMissing(campaignFormMetaUuids);
-//			new CampaignFormMetaWithExpDtoHelper().pullMissing(campaignFormMetaUuids);
-
-			new CampaignDtoHelper().pullMissing(campaignUuids);
-
 			new PopulationDataDtoHelper().pullMissing(populationDataUuids);
 			new CampaignFormMetaRegionDtoHelper().pullMissing(populationDataUuids);
 

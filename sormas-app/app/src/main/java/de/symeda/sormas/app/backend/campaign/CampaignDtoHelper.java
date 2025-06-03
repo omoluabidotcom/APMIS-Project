@@ -71,6 +71,7 @@ public class CampaignDtoHelper extends AdoDtoHelper<Campaign, CampaignDto> {
         target.setStartDate(source.getStartDate());
         target.setEndDate(source.getEndDate());
         target.setCreatingUser(DatabaseHelper.getUserDao().getByReferenceDto(source.getCreatingUser()));
+        target.setClosed(source.campaignStatus != null ? source.campaignStatus.equalsIgnoreCase("True") ? true :  false : false );
         final Set<CampaignFormMetaReferenceDto> campaignFormMetaReferenceDtos = source.getCampaignFormMetas();
         if (campaignFormMetaReferenceDtos != null) {
             target.setCampaignFormMetas(new ArrayList<>(campaignFormMetaReferenceDtos));
