@@ -143,7 +143,11 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 //        formValues.forEach(campaignFormDataEntry ->
         for(CampaignFormDataEntry campaignFormDataEntry : formValues) {
             if (campaignFormDataEntry.getId() != null && campaignFormDataEntry.getValue() != null) {
-//                campaignFormDataEntry.getValue().toString().replaceAll(".0","");
+                String value = campaignFormDataEntry.getValue().toString();
+                if (value.endsWith(".0")) {
+                    value = value.replaceAll(".0", "");// .replaceALl(".0", "");
+                    campaignFormDataEntry.setValue(value);
+                }
                 filledFormValues.add(campaignFormDataEntry);
                 if (campaignFormDataEntry.getId().equalsIgnoreCase("LotNo")) {
                     lotNo = campaignFormDataEntry;

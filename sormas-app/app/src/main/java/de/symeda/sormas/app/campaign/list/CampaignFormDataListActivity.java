@@ -15,7 +15,10 @@
 
 package de.symeda.sormas.app.campaign.list;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -72,6 +75,7 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
     private CampaignFormDataListViewModel model;
     private CampaignDao campaignDao;
     private FilterCampaignFormDataListLayoutBinding filterBinding;
+    private BroadcastReceiver refreshReceiver;
 
     //this resets active campaign to servers active campaign...
     public static void startActivity(Context context) {
@@ -109,6 +113,10 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
 
         model = ViewModelProviders.of(this).get(CampaignFormDataListViewModel.class);
         model.getCriteria().setCampaign(DatabaseHelper.getCampaignDao().getLastStartedCampaign());
+
+        model.getRowCount().observe(this, count -> {
+            setRowCount(count);
+        });
         model.getCampaignFormDataList().observe(this, campaignFormDataPagedList -> {
             adapter.submitList(campaignFormDataPagedList);
             setSetSubHeadingTitleForCampaign(model.getCriteria().getCampaign());
@@ -138,6 +146,16 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
                 model.getCampaignFormDataList().getValue().getDataSource().invalidate();
             }
         }
+
+        refreshReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if ("REFRESH_ROW_COUNT".equals(intent.getAction())) {
+                    model.updateRowCount();
+                }
+            }
+        };
+        registerReceiver(refreshReceiver, new IntentFilter("REFRESH_ROW_COUNT"));
     }
 
     @Override

@@ -333,7 +333,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet1);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.replace(".0", "");
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -441,7 +441,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet2);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.replace(".0", "");
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -549,7 +549,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet3);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.replace(".0", "");
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -654,7 +654,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet4);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.replace(".0", "");
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -777,7 +777,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet5);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.replace(".0", "");
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -879,7 +879,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet6);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.replace(".0", "");
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -981,7 +981,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet7);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.replace(".0", "");
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -1083,7 +1083,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet8);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.replace(".0", "");
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
@@ -1189,7 +1189,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                 final LinearLayout dynamicLayout = view.findViewById(R.id.dynamicLayoutxXEd);
                 if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                     String value = formValuesMap.get(campaignFormElement.getId());
-                    value = value == null ? null : value.replace(".0", "");
+                    value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                     String yes_no = "";
                     ControlPropertyField dynamicField;
                     boolean ignoreDisable = campaignFormElement.isIgnoredisable();
