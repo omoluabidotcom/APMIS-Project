@@ -501,6 +501,7 @@ public class UserFacadeEjb implements UserFacade {
 		if (dto.getCreationDate() != null) {
 			try {
 				oldUser = (User) BeanUtils.cloneBean(userService.getByUuid(dto.getUuid()));
+				dto.setChangeDate(oldUser.getChangeDate());
 			} catch (Exception e) {
 				throw new IllegalArgumentException("Invalid bean access", e);
 			}

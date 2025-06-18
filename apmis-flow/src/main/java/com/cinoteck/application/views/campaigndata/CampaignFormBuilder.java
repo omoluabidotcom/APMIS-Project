@@ -1234,16 +1234,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 					fields.put(formElement.getId(), numberField);
 
 				} else if (type == CampaignFormElementType.PHONE) {
-					HorizontalLayout fieldLayout = new HorizontalLayout();
 					ComboBox<String> availableCountries = new ComboBox<String>();
 					availableCountries.setLabel("Country");
 
-					TextField numberField = new TextField();
-//					numberField.setAllowedCharPattern("[\\d+]");
-					numberField.setAllowedCharPattern("^[+]?[0-9]*$");
+					TextField numberField = new TextField();										
 					numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
 					numberField.setClassName("customTextWrap");
-
 					numberField.setId(formElement.getId());
 					numberField.setSizeFull();
 
@@ -1279,57 +1275,37 @@ public class CampaignFormBuilder extends VerticalLayout {
 						}
 						numberField.setValue(value.toString());
 					}
-
+					
 					min = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
-							.getMin_length();
+							.getMin_length() + 2;
 					max = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
-							.getMax_length();
+							.getMax_length() + 2;
 
-					String pattern = "^[+]?[0-9]{" + min + "," + max + "}$";
-//					numberField.setPattern(pattern);
-					numberField.removeClassName("valid-input");
 					numberField.setHelperText("Mobile number for "
 							+ FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
 									.getCountry()
 							+ " must be between " + min + " and " + max + " digits without the country code");
 
+					numberField.setPattern("^[+]?[0-9]{"+ min +","+max+"}$");
+					numberField.setErrorMessage("Invalid");
+					
 					availableCountries.addValueChangeListener(e -> {
 
 						if (numberField.getValue() != null) {
 							numberField.clear();
 						}
-						dialingCodeDto = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue());
+						dialingCodeDto = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue());					
+						int addition = dialingCodeDto.getCode().length() - 1;
+						min = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMin_length() + addition;
+						max = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMax_length() + addition;
 
-						min = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMin_length();
-						max = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMax_length();
-
-						String patternz = "^[+]?[0-9]{" + min + "," + max + "}$";
-//						numberField.setPattern(patternz);												
 						numberField.setValue(
 								FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getCode());
 						numberField.setHelperText("Mobile number for " + dialingCodeDto.getCountry()
 								+ " must be between " + min + " and " + max + " digits without the country code");
-						numberField.setInvalid(true);
-					});
-
-					numberField.addValueChangeListener(e -> {
-						String inputValue = e.getValue();
-
-//						inputValue = inputValue.replace(dialingCodeDto.getCode(), "");
-
-						if (inputValue.length() > max) {
-							numberField.setInvalid(true);
-							numberField.removeClassName("valid-input");
-						} else if (inputValue.length() < min) {
-							numberField.setInvalid(true);
-							numberField.removeClassName("valid-input");
-						} else {
-							numberField.setErrorMessage(null);
-							numberField.setInvalid(false);
-							numberField.addClassName("valid-input");
-							numberField.setValue(e.getValue().toString());
-						}
-					});
+						numberField.setPattern("^[+]?[0-9]{"+ min +","+max+"}$");
+						numberField.setErrorMessage("Invalid");
+					});									
 
 				}else if (type == CampaignFormElementType.RANGE) {
 					IntegerField integerField = new IntegerField();
