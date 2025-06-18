@@ -199,6 +199,8 @@
     <dimen name="activitySubHeadingHorizontalPadding">24dp</dimen>
     <dimen name="activitySubHeadingVerticalPadding">0dp</dimen>
     <dimen name="activitySubHeadingTextSize">14sp</dimen>
+    <dimen name="activitySubHeadingRowCountTextSize">12sp</dimen>
+
     <dimen name="activitySubHeadingElevation">3dp</dimen>
 
 
