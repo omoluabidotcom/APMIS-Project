@@ -169,7 +169,8 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     final LinearLayout dynamicLayout = view.findViewById(R.id.tabSheet1);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ? value.substring(0, value.length() - 2): value;
+//                        value = value == null ? null : value.endsWith(".0") ? value.substring(0, value.length() - 2): value;
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -239,7 +240,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
 
-                        value = value == null ? null : value.endsWith(".0") ? value.substring(0, value.length() - 2): value;
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -309,7 +310,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet3);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ? value.substring(0, value.length() - 2): value;
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                         String yes_no = "";
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -376,7 +377,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet4);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ? value.substring(0, value.length() - 2): value;
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                         String yes_no = "";
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -443,7 +444,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet5);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ? value.substring(0, value.length() - 2): value;
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                         String yes_no = "";
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -510,7 +511,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet6);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ? value.substring(0, value.length() - 2): value;
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                         String yes_no = "";
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -577,7 +578,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet7);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ? value.substring(0, value.length() - 2): value;
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                         String yes_no = "";
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -644,7 +645,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet8);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ? value.substring(0, value.length() - 2): value;
+                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                         String yes_no = "";
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -713,7 +714,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                 final LinearLayout dynamicLayout = view.findViewById(R.id.dynamicLayoutxXRd);
                 if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                     String value = formValuesMap.get(campaignFormElement.getId());
-                    value = value == null ? null : value.endsWith(".0") ? value.substring(0, value.length() - 2): value;
+                    value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
 
                     ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));

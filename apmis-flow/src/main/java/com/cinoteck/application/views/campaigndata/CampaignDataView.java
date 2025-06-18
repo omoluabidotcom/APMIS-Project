@@ -711,7 +711,12 @@ public class CampaignDataView extends VerticalLayout
 
 						verifiedColumn.setVisible(true);
 						publishedColumn.setVisible(true);
+						enterBulkEdit.setVisible(true);
 //						System.out.println("user ca n do bulk peration an is who  ");
+					} else if(userProvider.getUser().getUsertype() == UserType.EOC_USER && campaignPhase.getValue() != null
+							&& userProvider.getUser().getUserRoles().contains(UserRole.EDITOR_USER)) {
+						
+							enterBulkEdit.setVisible(false);						
 					} else {
 						verifiedStatusCombo.setVisible(false);
 						publishedStatusCombo.setVisible(false);
@@ -721,6 +726,7 @@ public class CampaignDataView extends VerticalLayout
 						}
 						verifyDataBulkItem.setVisible(false);
 						publishDataBulkItem.setVisible(false);
+						enterBulkEdit.setVisible(true);
 //						System.out.println("can either not don bvulk or is not who   ");
 					}
 
@@ -735,6 +741,7 @@ public class CampaignDataView extends VerticalLayout
 //					publishedColumn.setVisible(false);
 					verifyDataBulkItem.setVisible(false);
 					publishDataBulkItem.setVisible(false);
+					enterBulkEdit.setVisible(true);
 //					System.out.println("non - post campaign selected ");
 
 				}
@@ -2130,7 +2137,21 @@ public class CampaignDataView extends VerticalLayout
 //		        newSelectionModel = new GridSelectionModel<CampaignFormDataIndexDto>(Grid.SelectionMode.NONE);
 //				System.out.println("1111111111111111111aaaaaaaaaaaaaa");
 				if (isPublished) {
-					grid.setSelectionMode(Grid.SelectionMode.NONE);
+					grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+					grid.asSingleSelect().addValueChangeListener(e -> {
+						if (e.getValue() != null) {
+							CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
+									.getCampaignFormDataByUuid(e.getValue().getUuid());
+
+							CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
+									.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
+
+							CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
+									campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
+
+						}
+
+					});
 //					System.out.println("1111111111111111111bbbbbbbbbbbbbbb");
 				}
 
