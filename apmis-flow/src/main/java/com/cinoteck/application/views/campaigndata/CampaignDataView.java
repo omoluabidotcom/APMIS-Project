@@ -711,7 +711,12 @@ public class CampaignDataView extends VerticalLayout
 
 						verifiedColumn.setVisible(true);
 						publishedColumn.setVisible(true);
+						enterBulkEdit.setVisible(true);
 //						System.out.println("user ca n do bulk peration an is who  ");
+					} else if(userProvider.getUser().getUsertype() == UserType.EOC_USER && campaignPhase.getValue() != null
+							&& userProvider.getUser().getUserRoles().contains(UserRole.EDITOR_USER)) {
+						
+							enterBulkEdit.setVisible(false);						
 					} else {
 						verifiedStatusCombo.setVisible(false);
 						publishedStatusCombo.setVisible(false);
@@ -721,6 +726,7 @@ public class CampaignDataView extends VerticalLayout
 						}
 						verifyDataBulkItem.setVisible(false);
 						publishDataBulkItem.setVisible(false);
+						enterBulkEdit.setVisible(true);
 //						System.out.println("can either not don bvulk or is not who   ");
 					}
 
@@ -735,6 +741,7 @@ public class CampaignDataView extends VerticalLayout
 //					publishedColumn.setVisible(false);
 					verifyDataBulkItem.setVisible(false);
 					publishDataBulkItem.setVisible(false);
+					enterBulkEdit.setVisible(true);
 //					System.out.println("non - post campaign selected ");
 
 				}

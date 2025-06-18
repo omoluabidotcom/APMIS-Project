@@ -15,6 +15,8 @@
 
 package de.symeda.sormas.app.component.controls;
 
+import static de.symeda.sormas.app.core.notification.NotificationType.WARNING;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
@@ -44,6 +46,8 @@ import de.symeda.sormas.app.backend.config.ConfigProvider;
 import de.symeda.sormas.app.campaign.edit.CountryDetails;
 import de.symeda.sormas.app.component.VisualState;
 import de.symeda.sormas.app.component.VisualStateControlType;
+import de.symeda.sormas.app.core.NotificationContext;
+import de.symeda.sormas.app.core.notification.NotificationHelper;
 
 public class ControlPhoneField extends ControlPropertyEditField<String> {
 
@@ -351,63 +355,34 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
                     inverseBindingListener.onChange();
                 }
                 onValueChanged();
-//                String valuesHolder = "";
+                String valuesHolder = "";
+                String validatingHolder = "";
+                int max = 0;
+                int min = 0;
+//                Integer validatingHolderInt = 0;
 
-//                for (Map.Entry<String, CountryDetails> mapEachValues: mapvalue.entrySet()) {
-//                    if(editablex.toString().startsWith(mapEachValues.getValue().getDialCode())) {
-//                          valuesHolder = mapEachValues.getValue().getDialCode();
-//                          System.out.println("valuesHoldervaluesHoldervaluesHolder " + valuesHolder + " replacersss " + editablex.toString().replace(mapEachValues.getValue().getDialCode(), ""));
-//                          break;
-//                    }
-//                }
-
-//                input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
-//                setErrorIfEmptyRange();
-//                enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
-
-            }
-        });
-/*
-        addValueChangedListener(new ValueChangeListener() {
-
-
-            public void checkValue(){
-                System.out.println(minValue+"-----------------------------------------------"+isExpression+"------>>"+isRange);
-                if (isRange && !isExpression) {
-                    System.out.println(maxValue+"----------------------------------------------------->>");
-                    if (minValue != null && maxValue != null && input.getText() != null) {
-                        if (!input.getText().toString().equals("") || !input.getText().toString().isEmpty()) {
-                            int valxx = Integer.parseInt(input.getText().toString());
-                            if (valxx >= minValue && valxx <= maxValue) {
-                            } else if(warnOnError){
-                                NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
-                            }else{
-                                input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
-                                setErrorIfEmptyRange();
-                                enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
-
-                            }
-                        }
-
+                for (Map.Entry<String, CountryDetails> mapEachValues: mapvalue.entrySet()) {
+                    if(editablex.toString().startsWith(mapEachValues.getValue().getDialCode())) {
+                        max = mapEachValues.getValue().getMaxLength();
+                        min = mapEachValues.getValue().getMinLength();
+                        valuesHolder = mapEachValues.getValue().getDialCode();
+                        validatingHolder = editablex.toString().replace(mapEachValues.getValue().getDialCode(), "");
+                        System.out.println("valuesHoldervaluesHoldervaluesHolder " + valuesHolder + " replacersss " + editablex.toString().replace(mapEachValues.getValue().getDialCode(), ""));
+                        break;
                     }
-
                 }
 
-            }
-
-
-
-            @Override
-            public void onChange(ControlPropertyField field) {
-                checkValue();
-
-              //  if (!isLiveValidationDisabled()) {
-              //      ((ControlPhoneField) field).setErrorIfEmptyRange();
-               // }
-
+                if(validatingHolder.length() > max || validatingHolder.length() < min) {
+//                    input.setError("Mobile Number cannot be less than " + min + " or greater than " + max);
+                    setErrorIfEmptyRange();
+                    enableErrorState("Mobile Number cannot be less than " + min + " or greater than " + max);
+//                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING,
+//                            "Mobile Number cannot be less than " + min + " or greater than " + max);
+                } else {
+                    System.out.println("tytytytytytytytytytytytyt");
+                }
             }
         });
-*/
 
         setUpOnEditorActionListener();
         setUpOnFocusChangeListener();
