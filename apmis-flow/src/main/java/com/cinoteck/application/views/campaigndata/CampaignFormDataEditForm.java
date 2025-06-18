@@ -175,11 +175,16 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 		
 		if(currentCampaign.campaignStatus.equalsIgnoreCase("true")) {
 			if (openData) {
-				if(usr.getUser().getUsertype() == UserType.EOC_USER && campaignFormMetaDto.getFormType().toString().equalsIgnoreCase("post-campaign")
-							&& usr.getUser().getUserRoles().contains(UserRole.EDITOR_USER)) {
-					dialog.getFooter().remove(deleteButton);
-				} else if (usr.hasUserRight(UserRight.CAMPAIGN_DELETE)) {
+//				if(usr.getUser().getUsertype() == UserType.EOC_USER && campaignFormMetaDto.getFormType().toString().equalsIgnoreCase("post-campaign")
+//							&& usr.getUser().getUserRoles().contains(UserRole.EDITOR_USER)) {
+//					dialog.getFooter().remove(deleteButton);
+//				} else 
+				if (usr.hasUserRight(UserRight.CAMPAIGN_DELETE)) {
 					dialog.getFooter().add(deleteButton);
+					if(usr.getUser().getUsertype() == UserType.EOC_USER && campaignFormMetaDto.getFormType().toString().equalsIgnoreCase("POST-CAMPAIGN")
+							&& usr.getUser().getUserRoles().contains(UserRole.EDITOR_USER)) {						
+						deleteButton.setVisible(false);
+				}
 				}
 			}	
 		}
