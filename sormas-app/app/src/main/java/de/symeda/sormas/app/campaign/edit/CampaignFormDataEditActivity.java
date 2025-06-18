@@ -19,17 +19,14 @@
 package de.symeda.sormas.app.campaign.edit;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Bundle;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.PlatformEnum;
-import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
-import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.api.utils.ValidationException;
 import de.symeda.sormas.app.BaseActivity;
 import de.symeda.sormas.app.BaseEditActivity;
@@ -41,22 +38,15 @@ import de.symeda.sormas.app.backend.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.backend.common.DaoException;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
-import de.symeda.sormas.app.backend.config.ConfigProvider;
-import de.symeda.sormas.app.backend.region.Community;
 import de.symeda.sormas.app.component.menu.PageMenuItem;
 import de.symeda.sormas.app.component.validation.FragmentValidator;
 import de.symeda.sormas.app.core.async.AsyncTaskResult;
 import de.symeda.sormas.app.core.async.SavingAsyncTask;
 import de.symeda.sormas.app.core.async.TaskResultHolder;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
-import de.symeda.sormas.app.util.Bundler;
 
 import static de.symeda.sormas.app.core.notification.NotificationType.ERROR;
 import static de.symeda.sormas.app.core.notification.NotificationType.WARNING;
-
-import androidx.annotation.Nullable;
-
-import org.springframework.core.env.SystemEnvironmentPropertySource;
 
 public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormData> {
 
@@ -145,6 +135,10 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
                 super.onPostExecute(taskResult);
 
                 if (taskResult.getResultStatus().isSuccess()) {
+                    Intent intent = new Intent();
+                    intent.setAction("REFRESH_ROW_COUNT");
+                    sendBroadcast(intent);
+
                     finish();
                 } else {
                  //   onResume(); // reload data
@@ -153,7 +147,9 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
             }
         }.executeOnThreadPool();
     }
+    void setSetSubHeadingRowCountForCampaign(){
 
+    };
     @Override
     public Enum getPageStatus() {
         return null;

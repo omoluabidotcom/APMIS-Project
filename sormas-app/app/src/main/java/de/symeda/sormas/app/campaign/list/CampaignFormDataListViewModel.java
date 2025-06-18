@@ -19,6 +19,8 @@ public class CampaignFormDataListViewModel extends ViewModel {
 
     private LiveData<PagedList<CampaignFormData>> campaignFormDataList;
     private CampaignFormDataFactory campaignFormDataFactory;
+    private MutableLiveData<Integer> rowCount = new MutableLiveData<>();
+
 
     public CampaignFormDataListViewModel() {
         campaignFormDataFactory = new CampaignFormDataFactory();
@@ -28,7 +30,28 @@ public class CampaignFormDataListViewModel extends ViewModel {
 
         LivePagedListBuilder campaignsListBuilder = new LivePagedListBuilder(campaignFormDataFactory, config);
         campaignFormDataList = campaignsListBuilder.build();
+
+        // Observe the data changes to update row count
+        campaignFormDataList.observeForever(pagedList -> {
+            if (pagedList != null) {
+                updateRowCount();
+            }
+        });
     }
+
+    public LiveData<Integer> getRowCount() {
+        return rowCount;
+    }
+
+    public void updateRowCount() {
+        new Thread(() -> {
+            long count = DatabaseHelper.getCampaignFormDataDao().countByCriteria(
+                    campaignFormDataFactory.getCampaignFormDataCriteria()
+                    );
+            rowCount.postValue(Integer.parseInt(count+""));
+        }).start();
+    }
+
 
     public LiveData<PagedList<CampaignFormData>> getCampaignFormDataList() {
         return campaignFormDataList;
