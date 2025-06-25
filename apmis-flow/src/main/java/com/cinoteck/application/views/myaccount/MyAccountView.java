@@ -266,31 +266,35 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		fielddataVieww.getStyle().set("margin-left", "20px");
 		fielddataVieww.getStyle().set("margin-right", "20px");
  	
-		MultiSelectComboBox<FormAccess> userFormAccesses = new MultiSelectComboBox<>(I18nProperties.getCaption("Form Acceses"));
+		TextField userFormAccesses =  new TextField();
+		userFormAccesses.setLabel("User Form Accesses");
+//		MultiSelectComboBox<FormAccess> userFormAccesses = new MultiSelectComboBox<>(I18nProperties.getCaption("Form Acceses"));
 		// regionn.setLabel("Region");
 		userFormAccesses.setWidthFull();
 		userFormAccesses.setReadOnly(true);
 
 		Set<FormAccess> userFormAccessesx = FacadeProvider.getUserFacade().getCurrentUser().getFormAccess();// .getAreaFacade().getAllActiveAsReference();
-		userFormAccesses.setItems(userFormAccessesx);
+//		userFormAccesses.setItems(userFormAccessesx);
 		if(userFormAccessesx.size() < 1) {
 			
 		}else {
-			userFormAccesses.setValue(userFormAccessesx);
+//			userFormAccesses.setValue(userFormAccessesx);
+			userFormAccesses.setValue(userFormAccessesx.toString().replace("[", "").replace("]", ""));
 		}
 
+		TextField userUsersRoles =  new TextField();
 
-		MultiSelectComboBox<UserRole> userUsersRoles = new MultiSelectComboBox<>(I18nProperties.getCaption("User Roles"));
+//		MultiSelectComboBox<UserRole> userUsersRoles = new MultiSelectComboBox<>(I18nProperties.getCaption("User Roles"));
 		// regionn.setLabel("Region");
 		userUsersRoles.setWidthFull();
-		userUsersRoles.setReadOnly(true);
+		userUsersRoles.setEnabled(false);
 
 		Set<UserRole> userRoles = FacadeProvider.getUserFacade().getCurrentUser().getUserRoles();// .getAreaFacade().getAllActiveAsReference();
-		userUsersRoles.setItems(userRoles);
+//		userUsersRoles.setItems(userRoles);
 		if(userRoles.size() < 1) {
 			
 		}else {
-			userUsersRoles.setValue(userRoles);
+			userUsersRoles.setValue(userRoles.toString().replace("[", "").replace("]", ""));
 		}
 		
 
