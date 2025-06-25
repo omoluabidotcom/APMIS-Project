@@ -165,6 +165,9 @@ public class ClusterDataImporter extends DataImporter {
 		Long clusterExtId = null;
 		Integer clusterNumber = null;
 		String clusterName = "";
+		String floatStatus = "";
+		boolean activeStatus = false;
+
 
 		// Retrieve the region and district from the database or throw an error if more
 		// or less than one entry have been retrieved
@@ -390,11 +393,47 @@ public class ClusterDataImporter extends DataImporter {
 					}
 				}
 			}
+			
+			if ("Float_Status".equalsIgnoreCase(entityProperties[i])) {
+
+				if (DataHelper.isNullOrEmpty(values[i])) {
+					
+
+		
+					floatStatus = "Normal";
+					System.out.println(floatStatus + "floatStatusfloatStatusfloatStatusf)");
+
+					} else {
+					floatStatus = values[i];
+					}
+
+				}
+			
+			if ("Active_Status".equalsIgnoreCase(entityProperties[i])) {
+
+				if (DataHelper.isNullOrEmpty(values[i])) {		
+					activeStatus = false;
+					System.out.println(activeStatus + "floatStatusfloatStatusfloatStatusf)");
+
+					} else {
+						if (values[i].toString().equalsIgnoreCase("Archived")) {
+							activeStatus = true;
+
+					}else {
+						activeStatus = false;
+	
+					}
+
+				}
+			}
+				
+
+			
 
 		}
 
 		if (province_xt_id != null && province != null && clusterName != "" && clusterExtId != null
-				&& clusterNumber != null) {
+				&& clusterNumber != null && floatStatus != null) {
 		} else {
 			writeImportError(values, " | Somthing went wrong: Required data not supplied");
 			return ImportLineResult.ERROR;
@@ -414,6 +453,10 @@ public class ClusterDataImporter extends DataImporter {
 		final String finalClustername = clusterName;
 		final Long clusterid = clusterExtId;
 		final Integer clusterNo = clusterNumber;
+		final String finalFloatStatus = floatStatus;
+		final boolean finalActiveStatus = activeStatus;
+
+
 
 		List<CommunityDto> newUserLinetoSave = new ArrayList<>();
 
@@ -426,6 +469,10 @@ public class ClusterDataImporter extends DataImporter {
 				newUserLine_.setDistrict(finalDistrict);
 				newUserLine_.setClusterNumber(clusterNo);
 				newUserLine_.setExternalId(clusterid);
+				newUserLine_.setFloating(finalFloatStatus);
+				newUserLine_.setArchived(finalActiveStatus);// setFloating(finalFloatStatus);
+
+
 
 				boolean usersDataHasImportError = insertRowIntoData(values, entityClasses, entityPropertyPaths, false,
 						new Function<ImportCellData, Exception>() {
@@ -470,7 +517,26 @@ public class ClusterDataImporter extends DataImporter {
 									 * 
 									 * REPEAT THE PROCESS IN THE ELSE STATEMENT WHEN THIS HAS BEEN FIXED 
 									 */
-									newUserLine_.setFloating("");
+									
+									if ("Float_Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+										System.out.println(cellData.getValue() + "tttttttttttfloating cellData.getValue()cellData.getValue()");
+
+										newUserLine_.setFloating(cellData.getValue());
+
+//										newUserLine_.setName(cellData.getValue());
+									}
+									
+									
+									if ("Active_Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+										System.out.println(cellData.getValue() + "tttttttttttfloating cellData.getValue()cellData.getValue()");
+
+										newUserLine_.setArchived(finalActiveStatus);
+
+//										newUserLine_.setName(cellData.getValue());
+									}
+									
+
+//									newUserLine_.setFloating("");
 									
 									
 									
@@ -510,6 +576,8 @@ public class ClusterDataImporter extends DataImporter {
 				newUserLine_.setDistrict(finalDistrict);
 				newUserLine_.setClusterNumber(clusterNo);
 				newUserLine_.setExternalId(clusterid);
+				newUserLine_.setFloating(finalFloatStatus);
+				newUserLine_.setArchived(finalActiveStatus);
 
 				boolean usersDataHasImportError = insertRowIntoData(values, entityClasses, entityPropertyPaths, false,
 						new Function<ImportCellData, Exception>() {
@@ -552,7 +620,20 @@ public class ClusterDataImporter extends DataImporter {
 									 * 
 									 * REPEAT THE PROCESS IN THE IF STATEMENT WHEN THIS HAS BEEN FIXED 
 									 */
-									newUserLine_.setFloating("");
+									if (CommunityDto.FLOATING_ATTRIBUTE.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+										System.out.println(cellData.getValue() + "floating cellData.getValue()cellData.getValue()");
+										newUserLine_.setFloating(cellData.getValue());
+
+//										newUserLine_.setName(cellData.getValue());
+									}
+									
+									if ("Active_Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+										System.out.println(cellData.getValue() + "tttttttttttfloating cellData.getValue()cellData.getValue()");
+
+										newUserLine_.setArchived(finalActiveStatus);
+
+//										newUserLine_.setName(cellData.getValue());
+									}
 									
 									
 
@@ -594,8 +675,8 @@ public class ClusterDataImporter extends DataImporter {
 			newUserLine.setDistrict(finalDistrict);
 			newUserLine.setClusterNumber(clusterNo);
 			newUserLine.setExternalId(clusterid);
-//				newUserLine.setName(finalRProvincename);
-
+			newUserLine.setFloating(finalFloatStatus);
+			newUserLine.setArchived(finalActiveStatus);
 			boolean usersDataHasImportError = insertRowIntoData(values, entityClasses, entityPropertyPaths, false,
 					new Function<ImportCellData, Exception>() {
 
@@ -637,7 +718,22 @@ public class ClusterDataImporter extends DataImporter {
 								 * 
 								 * REPEAT THE PROCESS IN THE ELSE STATEMENT WHEN THIS HAS BEEN FIXED 
 								 */
-								newUserLine.setFloating("");
+								if (CommunityDto.FLOATING_ATTRIBUTE.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+									System.out.println(cellData.getValue() + "eeeeefloating cellData.getValue()cellData.getValue()");
+
+									newUserLine.setFloating(cellData.getValue());
+
+//									newUserLine_.setName(cellData.getValue());
+								}
+								
+								if ("Active_Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+									System.out.println(cellData.getValue() + "tttttttttttfloating cellData.getValue()cellData.getValue()");
+
+									newUserLine.setArchived(finalActiveStatus);
+
+//									newUserLine_.setName(cellData.getValue());
+								}
+								
 								
 								
 
