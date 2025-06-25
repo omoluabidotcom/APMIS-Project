@@ -238,9 +238,6 @@ public class ControlTimeField extends ControlPropertyEditField<String> {
 
 		CharSequence valx = input.getText();
 		if (valx == null && required) {
-			//  setSoftRequired(true);
-
-			//   input.setError("!");
 			return;
 		}
 
