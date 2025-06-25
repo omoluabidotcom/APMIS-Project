@@ -136,13 +136,13 @@ public class FormGridComponent extends VerticalLayout {
 	private void configureFields() {
 
 		Set<CampaignFormElementType> formTypeAll = new TreeSet<>(Arrays.asList(CampaignFormElementType.values()));
-		formTypeAll.remove(CampaignFormElementType.CHECKBOX);
-		formTypeAll.remove(CampaignFormElementType.CHECKBOXBASIC);
-		formTypeAll.remove(CampaignFormElementType.DECIMAL);
-		formTypeAll.remove(CampaignFormElementType.COMMENT);
+//		formTypeAll.remove(CampaignFormElementType.CHECKBOX);
+//		formTypeAll.remove(CampaignFormElementType.CHECKBOXBASIC);
+//		formTypeAll.remove(CampaignFormElementType.DECIMAL);
+//		formTypeAll.remove(CampaignFormElementType.COMMENT);
 		formTypeAll.remove(CampaignFormElementType.ARRAY);
-		formTypeAll.remove(CampaignFormElementType.RADIO);
-		formTypeAll.remove(CampaignFormElementType.RADIOBASIC);
+//		formTypeAll.remove(CampaignFormElementType.RADIO);
+//		formTypeAll.remove(CampaignFormElementType.RADIOBASIC);
 		caption.setHelperText("Enter the Label size by wrapping your Label with a <h1> to <h6> tag");
 		options.setHelperText("Enter your option in this format [[key:bike, caption:bike, order:0]]");
 		expression.setHelperText("Please use the Edit Expression button to enter Expression");
