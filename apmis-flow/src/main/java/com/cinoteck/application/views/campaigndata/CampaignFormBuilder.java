@@ -1383,25 +1383,79 @@ public class CampaignFormBuilder extends VerticalLayout {
 					}
 
 				} else if (type == CampaignFormElementType.DECIMAL) {
-					BigDecimalField bigDecimalField = new BigDecimalField();
-					bigDecimalField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-					bigDecimalField.setClassName("customTextWrap");
+					NumberField  numberField = new NumberField ();
+					numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+					numberField.setClassName("customTextWrap");
 
-					bigDecimalField.setWidth("240px");
+					numberField.setWidth("240px");
 //					bigDecimalField.setValue(new BigDecimal("948205817.472950487"));
-					bigDecimalField.setId(formElement.getId());
-					bigDecimalField.setSizeFull();
-					setFieldValue(bigDecimalField, type, value, optionsValues, formElement.getDefaultvalue(), false,
+					numberField.setId(formElement.getId());
+					numberField.setSizeFull();
+					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false,
 							null);
-					vertical.add(bigDecimalField);
-					fields.put(formElement.getId(), bigDecimalField);
+					vertical.add(numberField);
+					fields.put(formElement.getId(), numberField);
+					
+					String validationMessageTag = "";
+					Map<String, Object> validationMessageArgs = new HashMap<>();
+
+					if (constrainsVal.isExpression()) {
+
+						if (!fieldIsRequired) {
+							// ApmisNotification notification = new ApmisNotification("Application
+							// submitted!");
+						}
+
+						constrainsVal.setExpression(false);
+
+					} else {
+
+						if (constrainsVal.getMin() != null || constrainsVal.getMax() != null) {
+
+							
+							numberField.setMin(constrainsVal.getMin()); 
+							numberField.setMax(constrainsVal.getMax()); 
+
+
+							if (constrainsVal.getMin() == null) {
+								validationMessageTag = Validations.numberTooBig;
+								validationMessageArgs.put("value", constrainsVal.getMax());
+							} else if (constrainsVal.getMax() == null) {
+								validationMessageTag = Validations.numberTooSmall;
+								validationMessageArgs.put("value", constrainsVal.getMin());
+							} else {
+								validationMessageTag = Validations.numberNotInRange;
+								validationMessageArgs.put("min", constrainsVal.getMin());
+								validationMessageArgs.put("max", constrainsVal.getMax());
+							}
+
+							// needed
+							// field.addValidator(
+							// new NumberValidator(I18nProperties.getValidationError(validationMessageTag,
+							// validationMessageArgs), minValue, maxValue));
+
+//							((TextField) field).addValidator(new NumberNumericValueValidator(
+//									caption.toUpperCase() + ": "
+//											+ 
+//											
+//											I18nProperties.getValidationError(validationMessageTag,
+//													validationMessageArgs),
+//									constrainsVal.getMin(), constrainsVal.getMax(), true, isOnError));
+
+						} else {
+
+							// needed
+							// This should throw error as range suppose to have min and max if not taken
+							// care by expression
+						}
+					}
 
 					if (dependingOnId != null && dependingOnValues != null) {
 						// needed
-						setVisibilityDependency(bigDecimalField, dependingOnId, dependingOnValues, type,
+						setVisibilityDependency(numberField, dependingOnId, dependingOnValues, type,
 								formElement.isImportant());
 					} else {
-						bigDecimalField.setRequiredIndicatorVisible(formElement.isImportant());
+						numberField.setRequiredIndicatorVisible(formElement.isImportant());
 					}
 
 				} else if (type == CampaignFormElementType.TEXTBOX) {
@@ -1935,7 +1989,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		case DECIMAL:
 			if (value != null) {
-				((BigDecimalField) field).setValue(value != null ? new BigDecimal(value.toString()) : null);
+				 ((NumberField) field).setValue(Double.parseDouble(value.toString()));
+//				((NumberField) field).setValue(value != null ? new NumberField(Double.parseDouble(value.toString()) : null);
 //				((BigDecimalField) field).setValue(value != null ? value.toString() : null);
 			}
 			break;
