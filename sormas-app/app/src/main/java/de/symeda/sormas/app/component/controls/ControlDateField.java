@@ -38,10 +38,13 @@ import androidx.fragment.app.FragmentManager;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Validations;
@@ -68,6 +71,12 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 	private SimpleDateFormat dateFormat;
 	private int allowedDaysInFuture;
 	private Date cachedTime;
+
+
+	private static final String STANDARD_DATE_FORMAT = "dd-MM-yyyy";
+	private SimpleDateFormat standardDateFormat = new SimpleDateFormat(STANDARD_DATE_FORMAT, Locale.US);
+
+
 
 	// Constructors
 
@@ -120,13 +129,38 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 
 		ControlDatePickerFragment fragment = new ControlDatePickerFragment();
 		fragment.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
-
 			@Override
 			public void onDateSet(DatePicker view, int yy, int mm, int dd) {
-				if (cachedTime == null) {
-					cachedTime = new Date();
-				}
-				input.setText(DateHelper.formatLocalDate(DateHelper.getDateZero(yy, mm, dd), dateFormat));
+				// Create calendar in device's local timezone
+				Calendar cal = Calendar.getInstance();
+
+				// Set the exact date selected (mm is 0-based in DatePicker)
+				cal.set(Calendar.YEAR, yy);
+				cal.set(Calendar.MONTH, mm);
+				cal.set(Calendar.DAY_OF_MONTH, dd);
+
+				// If you want to preserve existing time from cachedTime
+//				if (cachedTime != null) {
+//					Calendar cachedCal = Calendar.getInstance();
+//					cachedCal.setTime(cachedTime);
+//
+//					cal.set(Calendar.HOUR_OF_DAY, cachedCal.get(Calendar.HOUR_OF_DAY));
+//					cal.set(Calendar.MINUTE, cachedCal.get(Calendar.MINUTE));
+//					cal.set(Calendar.SECOND, cachedCal.get(Calendar.SECOND));
+//					cal.set(Calendar.MILLISECOND, cachedCal.get(Calendar.MILLISECOND));
+//				} else {
+					// Set to current time if no cached time
+					Calendar now = Calendar.getInstance();
+					cal.set(Calendar.HOUR_OF_DAY, now.get(Calendar.HOUR_OF_DAY));
+					cal.set(Calendar.MINUTE, now.get(Calendar.MINUTE));
+					cal.set(Calendar.SECOND, now.get(Calendar.SECOND));
+					cal.set(Calendar.MILLISECOND, now.get(Calendar.MILLISECOND));
+//				}
+
+				cachedTime = cal.getTime();
+
+				// Display only the date part in DD-MM-YYYY format
+				input.setText(dateFormat.format(cachedTime));
 			}
 		});
 		fragment.setOnClearListener(new DialogInterface.OnClickListener() {
@@ -143,30 +177,6 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 		fragment.show(fragmentManager, getResources().getText(R.string.hint_select_a_date).toString());
 	}
 
-//    private void setUpOnFocusChangeListener() {
-//        input.setOnFocusChangeListener(new OnFocusChangeListener() {
-//            @Override
-//            public void onFocusChange(View v, boolean hasFocus) {
-//                if (!v.isEnabled()) {
-//                    return;
-//                }
-//
-//                showOrHideNotifications(hasFocus);
-//
-//                if (hasFocus) {
-//                    changeVisualState(VisualState.FOCUSED);
-//                    //showDateFragment();
-//                } else {
-//                    if (hasError) {
-//                        changeVisualState(VisualState.ERROR);
-//                    } else {
-//                        changeVisualState(VisualState.NORMAL);
-//                    }
-//                }
-//            }
-//        });
-//    }
-
 	private void setUpOnClickListener() {
 		input.setOnClickListener(new OnClickListener() {
 
@@ -175,12 +185,7 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 				if (!v.isEnabled()) {
 					return;
 				}
-
-//                showOrHideNotifications(v.hasFocus());
-
-				//if (v.hasFocus()) {
 				showDateFragment();
-				//}
 			}
 		});
 	}
@@ -196,39 +201,46 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 		return (Date) super.getValue();
 	}
 
+
 	@Override
 	protected Date getFieldValue() {
 		if (StringUtils.isEmpty(input.getText())) {
 			return null;
 		}
 
-		Date date = DateHelper.parseDate(input.getText().toString(), dateFormat);
-		Calendar dateCalendar = Calendar.getInstance();
-		Calendar cachedCalendar = Calendar.getInstance();
-		dateCalendar.setTime(date);
+		try {
+			// Parse with time included
+			return dateFormat.parse(input.getText().toString());
+		} catch (ParseException e) {
+			// Fallback to date-only parsing if time isn't included
+			try {
+				SimpleDateFormat fallbackFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+				Date dateOnly = fallbackFormat.parse(input.getText().toString());
 
-		if (cachedTime != null) {
-			cachedCalendar.setTime(cachedTime);
-		} else {
-			cachedCalendar.setTime(new Date());
+				// Add current time if only date was provided
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(dateOnly);
+				Calendar now = Calendar.getInstance();
+				cal.set(Calendar.HOUR_OF_DAY, now.get(Calendar.HOUR_OF_DAY));
+				cal.set(Calendar.MINUTE, now.get(Calendar.MINUTE));
+				cal.set(Calendar.SECOND, now.get(Calendar.SECOND));
+
+				return cal.getTime();
+			} catch (ParseException e2) {
+				Log.e(getClass().getName(), "Error parsing date--: " + input.getText().toString(), e2);
+				return null;
+			}
 		}
-
-		cachedCalendar.set(Calendar.YEAR, dateCalendar.get(Calendar.YEAR));
-		cachedCalendar.set(Calendar.MONTH, dateCalendar.get(Calendar.MONTH));
-		cachedCalendar.set(Calendar.DAY_OF_MONTH, dateCalendar.get(Calendar.DAY_OF_MONTH));
-		date = cachedCalendar.getTime();
-
-		return date;
 	}
 
 	@Override
 	protected void setFieldValue(Date value) {
 		cachedTime = value;
-
 		if (value == null) {
 			input.setText(null);
 		} else {
-			input.setText(DateHelper.formatLocalDate(value, dateFormat));
+			// Always format with full datetime
+			input.setText(dateFormat.format(value));
 		}
 	}
 
@@ -247,11 +259,12 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 
 	@Override
 	protected void initialize(Context context, AttributeSet attrs, int defStyle) {
-		dateFormat = DateFormatHelper.getLocalDateFormat();
+		// Use local timezone, not UTC, to avoid date shifting
+		dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+		// Don't set UTC timezone here as it causes date shifting
 
 		if (attrs != null) {
 			TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ControlDateField, 0, 0);
-
 			try {
 				allowedDaysInFuture = a.getInt(R.styleable.FontFamilyFont_android_ttcIndex, 0);
 			} finally {
@@ -335,62 +348,6 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 //       setUpOnFocusChangeListener();
 		setUpOnClickListener();
 	}
-
-
-//
-//	protected void initInputFirst(boolean isIntegerFlag, boolean isRequired) {
-//		input = (EditText) this.findViewById(R.id.date_input);
-//		input.setInputType(InputType.TYPE_NULL);
-//		input.setTextAlignment(getTextAlignment());
-//		//if(isIntegerFlag){
-//		setHint("");
-//		//	}
-//		if (getTextAlignment() == View.TEXT_ALIGNMENT_GRAVITY) {
-//			input.setGravity(getGravity());
-//		}
-//
-//		input.addTextChangedListener(new TextWatcher() {
-//
-//			@Override
-//			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//			}
-//
-//			@Override
-//			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//			}
-//
-//			@Override
-//			public void afterTextChanged(Editable editable) {
-//				if (inverseBindingListener != null) {
-//					inverseBindingListener.onChange();
-//				}
-//				onValueChanged();
-//			}
-//		});
-//
-//		addValueChangedListener(new ValueChangeListener() {
-//
-//			@Override
-//			public void onChange(ControlPropertyField field) {
-//				if (!isLiveValidationDisabled()) {
-//					((ControlDateField) field).setErrorIfOutOfDateRange();
-//				}
-//			}
-//		});
-//
-//
-//		required = isRequired;
-//
-//		CharSequence valx = input.getText();
-//		if(valx == null && required){
-//			setSoftRequired(true);
-//			input.setError("!");
-//			return;
-//		}
-//
-////       setUpOnFocusChangeListener();
-//		setUpOnClickListener();
-//	}
 
 	@Override
 	protected void onAttachedToWindow() {
