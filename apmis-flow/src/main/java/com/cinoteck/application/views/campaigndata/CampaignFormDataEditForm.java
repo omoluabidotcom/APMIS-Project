@@ -75,7 +75,7 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 			Grid<CampaignFormDataIndexDto> grid, boolean campaignFormMetaDtox) {
 
 		setSizeFull();
-		CampaignDto currentCampaign =  FacadeProvider.getCampaignFacade().getByUuid(campaignReferenceDto.getUuid());
+		CampaignDto currentCampaign = FacadeProvider.getCampaignFacade().getByUuid(campaignReferenceDto.getUuid());
 
 		campaignFormMetaDto = FacadeProvider.getCampaignFormMetaFacade()
 				.getCampaignFormMetaByUuid(campaignFormMetaReferenceDto.getUuid());
@@ -91,15 +91,9 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 					campaignFormMetaDto.getFormname_fa_af(), campaignFormMetaReferenceDto, openData, uuidForm,
 					campaignFormMetaDtox);
 		} else {
-			campaignFormBuilder = new CampaignFormBuilder(
-					campaignFormMetaDto.getCampaignFormElements(),
-					null,
-					campaignReferenceDto, 
-					campaignFormMetaDto.getCampaignFormTranslations(),
-					campaignFormMetaDto.getFormName(), 
-					campaignFormMetaReferenceDto, 
-					openData, 
-					uuidForm,
+			campaignFormBuilder = new CampaignFormBuilder(campaignFormMetaDto.getCampaignFormElements(), null,
+					campaignReferenceDto, campaignFormMetaDto.getCampaignFormTranslations(),
+					campaignFormMetaDto.getFormName(), campaignFormMetaReferenceDto, openData, uuidForm,
 					campaignFormMetaDtox);
 		}
 
@@ -122,16 +116,15 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 
 		if (usr.getUser().getLanguage().toString().equals("Pashto")) {
 			dialog.setHeaderTitle(
-					campaignFormMetaDto.getFormname_ps_af() + " | " + campaignFormBuilder.cbCampaign.getValue() + 
-					(currentCampaign.campaignStatus.equalsIgnoreCase("false") ? " (Closed)" : ""));
+					campaignFormMetaDto.getFormname_ps_af() + " | " + campaignFormBuilder.cbCampaign.getValue()
+							+ (currentCampaign.campaignStatus.equalsIgnoreCase("false") ? " (Closed)" : ""));
 		} else if (usr.getUser().getLanguage().toString().equals("Dari")) {
 			dialog.setHeaderTitle(
-					campaignFormMetaDto.getFormname_fa_af() + " | " + campaignFormBuilder.cbCampaign.getValue()+ 
-					(currentCampaign.campaignStatus.equalsIgnoreCase("false") ? " (Closed)" : ""));
+					campaignFormMetaDto.getFormname_fa_af() + " | " + campaignFormBuilder.cbCampaign.getValue()
+							+ (currentCampaign.campaignStatus.equalsIgnoreCase("false") ? " (Closed)" : ""));
 		} else {
-			dialog.setHeaderTitle(
-					campaignFormMetaDto.getFormName() + " | " + campaignFormBuilder.cbCampaign.getValue()+ 
-					(currentCampaign.campaignStatus.equalsIgnoreCase("false") ? " (Closed)" : ""));
+			dialog.setHeaderTitle(campaignFormMetaDto.getFormName() + " | " + campaignFormBuilder.cbCampaign.getValue()
+					+ (currentCampaign.campaignStatus.equalsIgnoreCase("false") ? " (Closed)" : ""));
 		}
 
 		Button deleteButton = new Button(I18nProperties.getCaption(Captions.actionDelete));
@@ -167,40 +160,34 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 				Notification.show("Unable to delete Form at the moment, Try Again", 10, Position.MIDDLE);
 			}
 		});
-		System.out.println( campaignReferenceDto.getUuid() + "Campaign Status from the------  ");
+		System.out.println(campaignReferenceDto.getUuid() + "Campaign Status from the------  ");
 
-		
-		
-		System.out.println( currentCampaign.getCampaignStatus() + "Campaign Status from the  ");
-		
-		if(currentCampaign.campaignStatus.equalsIgnoreCase("true")) {
+		System.out.println(currentCampaign.getCampaignStatus() + "Campaign Status from the  ");
+
+		if (currentCampaign.campaignStatus.equalsIgnoreCase("true")) {
 			if (openData) {
-//				if(usr.getUser().getUsertype() == UserType.EOC_USER && campaignFormMetaDto.getFormType().toString().equalsIgnoreCase("post-campaign")
-//							&& usr.getUser().getUserRoles().contains(UserRole.EDITOR_USER)) {
-//					dialog.getFooter().remove(deleteButton);
-//				} else 
 				if (usr.hasUserRight(UserRight.CAMPAIGN_DELETE)) {
 					dialog.getFooter().add(deleteButton);
-					if(usr.getUser().getUsertype() == UserType.EOC_USER && campaignFormMetaDto.getFormType().toString().equalsIgnoreCase("POST-CAMPAIGN")
-							&& usr.getUser().getUserRoles().contains(UserRole.EDITOR_USER)) {						
+					if (usr.getUser().getUsertype() == UserType.EOC_USER
+							&& campaignFormMetaDto.getFormType().toString().equalsIgnoreCase("POST-CAMPAIGN")
+							&& usr.getUser().getUserRoles().contains(UserRole.EDITOR_USER)) {
 						deleteButton.setVisible(false);
+					}
 				}
-				}
-			}	
+			}
 		}
-
 
 		Button saveAndContinueButton = new Button(I18nProperties.getCaption(Captions.actionSaveAndAddNew));// , (e) ->
 		// dialog.close());
 		saveAndContinueButton.setIcon(new Icon(VaadinIcon.CHECK));
 		saveAndContinueButton.getStyle().set("margin-right", "auto");
-		
-		if(currentCampaign.campaignStatus.equalsIgnoreCase("true")) {
-		if (!openData) {
-			dialog.getFooter().add(saveAndContinueButton);
+
+		if (currentCampaign.campaignStatus.equalsIgnoreCase("true")) {
+			if (!openData) {
+				dialog.getFooter().add(saveAndContinueButton);
+			}
 		}
-		}
-		
+
 		Button cancelButton = new Button(I18nProperties.getCaption(Captions.actionCancel), (e) -> dialog.close());
 		cancelButton.setIcon(new Icon(VaadinIcon.REFRESH));
 		cancelButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_CONTRAST);
@@ -208,62 +195,64 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 
 		Button saveButton = new Button(I18nProperties.getCaption(Captions.actionSave));// , (e) -> dialog.close());
 		saveButton.setIcon(new Icon(VaadinIcon.CHECK));
-		
-		if(currentCampaign.campaignStatus.equalsIgnoreCase("true")) {
-		dialog.getFooter().add(saveButton);
+
+		if (currentCampaign.campaignStatus.equalsIgnoreCase("true")) {
+			dialog.getFooter().add(saveButton);
 		}
 
 		saveButton.addClickListener(e -> {
-			if( openData && campaignFormBuilder.updateFormDataUnitAssignment.isVisible() && !campaignFormBuilder.cbCommunity.isReadOnly()) {
-					ConfirmDialog unsavedClusterEditWarninig = new ConfirmDialog();
-					unsavedClusterEditWarninig.setRejectable(false);
-					unsavedClusterEditWarninig.setConfirmText("I understand");
-					unsavedClusterEditWarninig.setText("Warning: You have unsaved changes in the cluster selection. To save these changes, please click 'Update Form Data Unit,' to update selection or select 'Cancel' to discard them, or you will be unable to save.");
-					unsavedClusterEditWarninig.open();
-					unsavedClusterEditWarninig.addConfirmListener(ee -> unsavedClusterEditWarninig.close());
-			}else {
+			if (openData && campaignFormBuilder.updateFormDataUnitAssignment.isVisible()
+					&& !campaignFormBuilder.cbCommunity.isReadOnly()) {
+				ConfirmDialog unsavedClusterEditWarninig = new ConfirmDialog();
+				unsavedClusterEditWarninig.setRejectable(false);
+				unsavedClusterEditWarninig.setConfirmText("I understand");
+				unsavedClusterEditWarninig.setText(
+						"Warning: You have unsaved changes in the cluster selection. To save these changes, please click 'Update Form Data Unit,' to update selection or select 'Cancel' to discard them, or you will be unable to save.");
+				unsavedClusterEditWarninig.open();
+				unsavedClusterEditWarninig.addConfirmListener(ee -> unsavedClusterEditWarninig.close());
+			} else {
 				if (openData) {
 					saveButton.setEnabled(false);
 
 					System.out.println("OPEN DATA EXISTING ");
-					
+
 					if (campaignFormBuilder.saveFormValues()) {
 
 						if (openData) {
 							UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
 							userActivitySummaryDto.setActionModule("Campaign Data");
-							userActivitySummaryDto.setAction("Edited Data: " + campaignFormMetaDto.getFormName() + " in "
-									+ campaignReferenceDto.getCaption());
+							userActivitySummaryDto.setAction("Edited Data: " + campaignFormMetaDto.getFormName()
+									+ " in " + campaignReferenceDto.getCaption());
 							userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
 							FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
 						}
 
 						dialog.close();
 						grid.getDataProvider().refreshAll();
-					}else {
+					} else {
 						saveButton.setEnabled(true);
 
 					}
-					
-				}else {
-					
+
+				} else {
+
 					System.out.println("Newwwwww DATA -------------------- ");
 					saveButton.setEnabled(false);
 
 					if (campaignFormBuilder.saveFormValues()) {
-							UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
-							userActivitySummaryDto.setActionModule("Campaign Data");
-							userActivitySummaryDto.setAction("Submited Data: " + campaignFormMetaDto.getFormName() + " in "
-									+ campaignReferenceDto.getCaption());
-							userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
-							FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
+						UserActivitySummaryDto userActivitySummaryDto = new UserActivitySummaryDto();
+						userActivitySummaryDto.setActionModule("Campaign Data");
+						userActivitySummaryDto.setAction("Submited Data: " + campaignFormMetaDto.getFormName() + " in "
+								+ campaignReferenceDto.getCaption());
+						userActivitySummaryDto.setCreatingUser_string(usr.getUser().getUserName());
+						FacadeProvider.getUserFacade().saveUserActivitySummary(userActivitySummaryDto);
 						dialog.close();
 						grid.getDataProvider().refreshAll();
 					} else {
 						saveButton.setEnabled(true);
 
 					}
-									
+
 				}
 			}
 
@@ -288,8 +277,8 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 		unPublishButton.setIcon(unPublishButtonIcon);
 
 		if (usr.getUser().getUsertype() == UserType.WHO_USER) {
-			
-			if(usr.getUser().getUserRoles().contains(UserRole.PUBLISH_USER)) {
+
+			if (usr.getUser().getUserRoles().contains(UserRole.PUBLISH_USER)) {
 				if (campaignFormMetaReferenceDto.getFormType().equalsIgnoreCase("post-campaign")) {
 
 //					System.out.println(uuidForm + "uuuuuuuuuuuuuuuuuuiddddddddddddddddddddddddddd from view ");
@@ -314,7 +303,7 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 
 				}
 			}
-			
+
 		}
 
 		verifyButton.addClickListener(e -> {
@@ -392,17 +381,17 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 		});
 
 		saveAndContinueButton.addClickListener(e -> {
-		boolean isFormValueSaved = 	campaignFormBuilder.saveFormValues();
-			
-			
+			boolean isFormValueSaved = campaignFormBuilder.saveFormValues();
+
 			if (isFormValueSaved) {
 				dialog.close();
 				dialog = new Dialog();
-			
-				campaignFormBuilder = new CampaignFormBuilder(campaignFormMetaDto.getCampaignFormElements(), null,campaignReferenceDto, campaignFormMetaDto.getCampaignFormTranslations(),
-						campaignFormMetaDto.getFormName(), campaignFormMetaReferenceDto, false, null, campaignFormMetaDtox);
-				
-				
+
+				campaignFormBuilder = new CampaignFormBuilder(campaignFormMetaDto.getCampaignFormElements(), null,
+						campaignReferenceDto, campaignFormMetaDto.getCampaignFormTranslations(),
+						campaignFormMetaDto.getFormName(), campaignFormMetaReferenceDto, false, null,
+						campaignFormMetaDtox);
+
 				dialog.add(campaignFormBuilder);
 				dialog.setSizeFull();
 				dialog.setCloseOnOutsideClick(false);
@@ -413,8 +402,7 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 				dialog.open();
 			}
 			// showConfirmationDialog();
-			
-			
+
 		});
 		dialog.setCloseOnEsc(false);
 		dialog.setCloseOnOutsideClick(false);
@@ -423,6 +411,5 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 		// dialog.getElement().setAttribute("theme", "my-custom-dialog");
 		dialog.open();
 	}
-
 
 }
