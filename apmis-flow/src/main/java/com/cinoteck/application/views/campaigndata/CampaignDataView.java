@@ -2130,21 +2130,21 @@ public class CampaignDataView extends VerticalLayout
 //		        newSelectionModel = new GridSelectionModel<CampaignFormDataIndexDto>(Grid.SelectionMode.NONE);
 //				System.out.println("1111111111111111111aaaaaaaaaaaaaa");
 				if (isPublished) {
-					grid.setSelectionMode(Grid.SelectionMode.SINGLE);
-					grid.asSingleSelect().addValueChangeListener(e -> {
-						if (e.getValue() != null) {
-							CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
-									.getCampaignFormDataByUuid(e.getValue().getUuid());
-
-							CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
-									.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
-
-							CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
-									campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
-
-						}
-
-					});
+					grid.setSelectionMode(Grid.SelectionMode.NONE);
+//					grid.asSingleSelect().addValueChangeListener(e -> {
+//						if (e.getValue() != null) {
+//							CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
+//									.getCampaignFormDataByUuid(e.getValue().getUuid());
+//
+//							CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
+//									.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
+//
+//							CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
+//									campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
+//
+//						}
+//
+//					});
 //					System.out.println("1111111111111111111bbbbbbbbbbbbbbb");
 				}
 
