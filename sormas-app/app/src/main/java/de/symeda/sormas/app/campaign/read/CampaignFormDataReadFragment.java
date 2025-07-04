@@ -29,12 +29,17 @@ import android.widget.LinearLayout;
 import android.widget.TabHost;
 import android.widget.TextView;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -55,12 +60,14 @@ import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.campaign.data.CampaignFormData;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
+import de.symeda.sormas.app.component.controls.ControlDateField;
 import de.symeda.sormas.app.component.controls.ControlPropertyField;
 import de.symeda.sormas.app.component.controls.ControlSpinnerField;
 import de.symeda.sormas.app.component.controls.ControlTextReadField;
 import de.symeda.sormas.app.databinding.FragmentCampaignDataReadLayoutBinding;
 import de.symeda.sormas.app.util.TextViewBindingAdapters;
 
+import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlDateEditField;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlTextReadField;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.getExpressionValue;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.getUserTranslations;
@@ -737,6 +744,12 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                             }
                         } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
                             ControlTextReadField.setValue((ControlTextReadField) dynamicField, value, null, null);
+                        }else if (type == CampaignFormElementType.DATE) {
+//value = getDateValue(value).toString();
+
+//                            ControlTextReadField.setValue((ControlTextReadField) dynamicField, getDateValue(value).toString(), null, null);
+                            ControlTextReadField.setValue((ControlTextReadField) dynamicField, getDateValueString(value), null, null);
+
                         } else if(type == CampaignFormElementType.DROPDOWN){
                             //TODO get the tranlated version
 
@@ -877,6 +890,103 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 
         return view;
     }
+
+
+    protected String getDateValueString(String input) {
+        if (StringUtils.isEmpty(input)) {
+            return null;
+        }
+
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+            Date parsedDate = dateFormat.parse(input);
+            // Clear time components
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(parsedDate);
+            return parsedDate.toString();
+        } catch (ParseException e) {
+            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+            return null;
+        }
+    }
+
+
+    protected Date getDateValue(String input) {
+        if (StringUtils.isEmpty(input)) {
+            return null;
+        }
+
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+            Date parsedDate = dateFormat.parse(input);
+            // Clear time components
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(parsedDate);
+            return cal.getTime();
+        } catch (ParseException e) {
+            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+            return null;
+        }
+    }
+
+//    protected Date getDateValue(String input) {
+//        if (StringUtils.isEmpty(input)) {
+//            return null;
+//        }
+//
+//        try {
+//            try {
+//                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+//                Date parsedDate = dateFormat.parse(input);
+//
+//                // Add current time to date-only input
+//                Calendar cal = Calendar.getInstance();
+//                Calendar parsedCal = Calendar.getInstance();
+//                parsedCal.setTime(parsedDate);
+//
+//                cal.set(Calendar.YEAR, parsedCal.get(Calendar.YEAR));
+//                cal.set(Calendar.MONTH, parsedCal.get(Calendar.MONTH));
+//                cal.set(Calendar.DAY_OF_MONTH, parsedCal.get(Calendar.DAY_OF_MONTH));
+//
+//                return cal.getTime();
+//            } catch (ParseException e1) {
+//                // Continue to next format
+//
+//                try {
+//                    SimpleDateFormat dateTimeFormatAmPm = new SimpleDateFormat("dd-MM-yyyy h:mm:ss a", Locale.getDefault());
+//                    return dateTimeFormatAmPm.parse(input);
+//                } catch (ParseException e3) {
+//                    // Continue to next format
+//
+//                    try {
+//                        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
+//                        return dateTimeFormat.parse(input);
+//                    } catch (ParseException e2) {
+//                        // Continue to next format
+//
+//                        try {
+//                            SimpleDateFormat monthNameFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a", Locale.US);
+//                            return monthNameFormat.parse(input);
+//                        } catch (ParseException e4) {
+//                            // Continue to next format
+//
+//                            try {
+//                                SimpleDateFormat rfc1123Format = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
+//                                return rfc1123Format.parse(input);
+//                            } catch (ParseException e5) {
+//                                Log.e(getClass().getName(), "Error parsing date: " + input, e5);
+//                                return null;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        } catch (Exception e) {
+//            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+//            return null;
+//        }
+//    }
+
 
 
     @Override

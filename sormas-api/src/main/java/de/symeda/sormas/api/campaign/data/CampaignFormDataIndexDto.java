@@ -244,6 +244,20 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 		this.personTitle = personTitle;
 		this.error_status = "Error: Duplicate Tazkira number";
 	}
+	
+	public CampaignFormDataIndexDto(String area, String region, String district,
+			String source, String creatingUser, String personTitle, String error_status) {
+		this.area = area;
+		this.region = region;
+		this.district = district;
+//		this.clusternumber = clusternumber;
+//		this.ccode = ccode;
+		this.source = source; // taskiaNumber
+		this.creatingUser = creatingUser;
+		this.personTitle = personTitle;
+		this.error_status = "Error: Duplicate Tazkira number";
+	}
+
 
 	
 	//*

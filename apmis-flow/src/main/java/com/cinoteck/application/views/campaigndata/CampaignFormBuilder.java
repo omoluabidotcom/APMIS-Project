@@ -1762,6 +1762,41 @@ public class CampaignFormBuilder extends VerticalLayout {
 		}
 		return orderValue;
 	}
+	
+	private Date parseDateFromString(Object value) throws ParseException {
+	    if (value == null) return null;
+	    
+	    String dateStr = value.toString().trim();
+	    if (dateStr.isEmpty()) return null;
+
+	    try {
+	        return new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").parse(dateStr);
+	    } catch (ParseException e) {
+	    	
+	    	try {
+		        return new SimpleDateFormat("dd-MM-yyyy").parse(dateStr);
+
+	    	}catch(ParseException ex) {
+	            // Fallback to other likely formats
+		        String[] possibleFormats = {
+		            "yyyy-MM-dd",          // ISO format
+		            "MM/dd/yyyy",         // US format
+		            "EEE MMM dd HH:mm:ss z yyyy"  // Default toString() format
+		        };
+		        
+		        for (String format : possibleFormats) {
+		            try {
+		                return new SimpleDateFormat(format).parse(dateStr);
+		            } catch (ParseException ignored) {
+		                // Try next format
+		            }
+		        }
+	    	}
+	
+	    }
+	    
+	    throw new ParseException("Could not parse date: " + dateStr, 0);
+	}
 
 	public <T extends Component> void setFieldValue(T field, CampaignFormElementType type, Object value,
 			Map<String, String> options, String defaultvalue, Boolean isErrored, Object defaultErrorMsgr) {
@@ -2009,34 +2044,56 @@ public class CampaignFormBuilder extends VerticalLayout {
 			;
 			((TextArea) field).setValue(value != null ? value.toString() : null);
 			break;
+//		case DATE:
+//			if (value != null) {
+//
+//				try {
+//
+//					String vc = value + "";
+//
+////					logger.debug(vc.isEmpty() + "@@@=" + vc.equals("") + "==" + vc != "" + "@@ date to parse |"
+////							+ value + "|");
+//
+//					if (vc != "" || !vc.isEmpty() || !vc.equals("")) {
+//						Date dst = vc.contains("00:00:00") ? dateFormatter(value) : dateFormatterLongAndMobile(value);
+//
+//						LocalDate value_Date = dst.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//						((DatePicker) field).setValue(value_Date);
+//					}
+//
+//				} catch (ConversionException e) {
+//					// TODO Auto-generated catch block
+//					((DatePicker) field).setValue(null);
+//					// e.printStackTrace();
+//				} catch (ParseException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+//			;
+//			break;
+			
 		case DATE:
-			if (value != null) {
-
-				try {
-
-					String vc = value + "";
-
-//					logger.debug(vc.isEmpty() + "@@@=" + vc.equals("") + "==" + vc != "" + "@@ date to parse |"
-//							+ value + "|");
-
-					if (vc != "" || !vc.isEmpty() || !vc.equals("")) {
-						Date dst = vc.contains("00:00:00") ? dateFormatter(value) : dateFormatterLongAndMobile(value);
-
-						LocalDate value_Date = dst.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-						((DatePicker) field).setValue(value_Date);
-					}
-
-				} catch (ConversionException e) {
-					// TODO Auto-generated catch block
-					((DatePicker) field).setValue(null);
-					// e.printStackTrace();
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			;
-			break;
+		    if (value != null) {
+		        try {
+		            String stringValue = value.toString().trim();
+		            if (!stringValue.isEmpty()) {
+		                Date date = parseDateFromString(value);
+		                LocalDate localDate = date.toInstant()
+		                    .atZone(ZoneId.systemDefault())
+		                    .toLocalDate();		                    
+		                ((DatePicker) field).setValue(localDate);
+		            } else {
+		                ((DatePicker) field).setValue(null);
+		            }
+		        } catch (Exception e) {
+		            logger.error("Error parsing date value: " + value, e);
+		            ((DatePicker) field).setValue(null);
+		        }
+		    } else {
+		        ((DatePicker) field).setValue(null);
+		    }
+		    break;
 		case RADIO:
 			((RadioButtonGroup) field).setValue(Sets.newHashSet(value).toString().replace("[", "").replace("]", ""));
 			break;

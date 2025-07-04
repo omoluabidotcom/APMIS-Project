@@ -190,7 +190,6 @@ public class CampaignDataView extends VerticalLayout
 
 	HorizontalLayout actionButtonlayout = new HorizontalLayout();
 	Button exportTransposedDataButton = new Button();
-//	Button exporttransposeDataDictionary = new Button();
 
 	GridMultiSelectionModel<CampaignFormDataIndexDto> selectionModel;
 	private Set<CampaignFormDataIndexDto> selectedItems = new HashSet<>();
@@ -782,12 +781,10 @@ public class CampaignDataView extends VerticalLayout
 				if (actionButtonlayout.getChildren()
 						.anyMatch(component -> component.equals(exportTransposedDataButton))) {
 					actionButtonlayout.remove(exportTransposedDataButton);
-//					actionButtonlayout.remove(exporttransposeDataDictionary);
 				}
 				if (actionButtonlayout.getChildren().anyMatch(component -> component.equals(transposdeDataAnchor))) {
 					actionButtonlayout.remove(transposdeDataAnchor);
 					actionButtonlayout.remove(transposdeDataDictionaryAnchor);
-
 				}
 
 				// Check if the value contains "Day 1" and add new components
@@ -883,11 +880,6 @@ public class CampaignDataView extends VerticalLayout
 					districtCombo.setItems(allDistricts);
 				}
 				districtCombo.setEnabled(true);
-
-//				if (campaignFormCombo.getValue() != null && campaignFormCombo.getValue().toString().contains("Day 1")) {
-//					generateTransposeDataFunctions(actionButtonlayout, campaignFormCombo.getValue().toString(), criteria);
-//				}
-
 			} else {
 				if (districtCombo.getValue() != null) {
 					districtCombo.clear();
@@ -1208,6 +1200,8 @@ public class CampaignDataView extends VerticalLayout
 	public void buildLqasTransposedData(CampaignFormDataCriteria criteria) {
 //		FacadeProvider.getCampaignFormDataFacade().getTransposedCampaignFormDataLQAS(criteria);
 	};
+	
+
 
 	private void configureGridMultiSelect() {
 		selectionModel = (GridMultiSelectionModel<CampaignFormDataIndexDto>) grid
@@ -1258,30 +1252,29 @@ public class CampaignDataView extends VerticalLayout
 		return new HashSet<>(selectedItems);
 	}
 
-	public void checkIfExportTransposedDataButtonIsAttached() {
-		boolean exportButtonExists = actionButtonlayout.getChildren()
-				.anyMatch(component -> component.equals(exportTransposedDataButton));
-
-		boolean transposdeDataAnchorExists = actionButtonlayout.getChildren()
-				.anyMatch(component -> component.equals(transposdeDataAnchor));
-
-//		boolean exporttransposeDataDictionaryExists = actionButtonlayout.getChildren()
-//				.anyMatch(component -> component.equals(exporttransposeDataDictionary));
-
-//		System.out.println("exportButtonExists" + exportButtonExists +  "transposdeDataAnchorExists" + transposdeDataAnchorExists + "0=====================");
-
-		if (exportButtonExists && transposdeDataAnchorExists) {
-			actionButtonlayout.remove(exportTransposedDataButton, transposdeDataAnchor);
-		} else {
-
-		}
-	}
+//	public void checkIfExportTransposedDataButtonIsAttached() {
+//		boolean exportButtonExists = actionButtonlayout.getChildren()
+//				.anyMatch(component -> component.equals(exportTransposedDataButton));
+//
+//		boolean transposdeDataAnchorExists = actionButtonlayout.getChildren()
+//				.anyMatch(component -> component.equals(transposdeDataAnchor));
+//
+////		boolean exporttransposeDataDictionaryExists = actionButtonlayout.getChildren()
+////				.anyMatch(component -> component.equals(exporttransposeDataDictionary));
+//
+////		System.out.println("exportButtonExists" + exportButtonExists +  "transposdeDataAnchorExists" + transposdeDataAnchorExists + "0=====================");
+//
+//		if (exportButtonExists && transposdeDataAnchorExists) {
+//			actionButtonlayout.remove(exportTransposedDataButton, transposdeDataAnchor);
+//		} else {
+//
+//		}
+//	}
 
 	public void generateTransposeDataFunctions(HorizontalLayout actionButionLayout, String formName,
 			CampaignFormDataCriteria criteria) {
 
 		if (exportTransposedDataButton.isVisible()) {
-
 			actionButionLayout.remove(exportTransposedDataButton, transposdeDataAnchor);
 		}
 
@@ -1293,7 +1286,6 @@ public class CampaignDataView extends VerticalLayout
 
 		exportTransposedDataButton = new Button("Export Transposed Data");
 
-//		exporttransposeDataDictionary = new Button("Export Transposed Data Guide");
 
 		if (transposdeDataAnchor.getElement().getAttribute("href") != "") {
 			transposdeDataAnchor.setHref("");
@@ -1307,33 +1299,34 @@ public class CampaignDataView extends VerticalLayout
 				transposdeDataDictionaryAnchor);
 
 		if (formName.toString().contains("Day 1")) {
+			
+			exportTransposedDataButton.addClickListener(e->{
+				DownloadTransposedDaywiseDataUtility downloadTransposedDaywiseICMDataUtility = new DownloadTransposedDaywiseDataUtility();
+				transposdeDataAnchor.setHref(downloadTransposedDaywiseICMDataUtility.createTransposedDataFromIndexList(
+						criteria, formName, campaignz.getValue().toString()));
+				transposdeDataDictionaryAnchor.setHref(downloadTransposedDaywiseICMDataUtility
+						.createTransposedDataFormExpressions(criteria));	
+				
+				transposdeDataAnchor.getElement().setAttribute("download", true);
+				transposdeDataAnchor.getElement().callJsFunction("click");
+			});
 
-			DownloadTransposedDaywiseDataUtility downloadTransposedDaywiseICMDataUtility = new DownloadTransposedDaywiseDataUtility();
-			transposdeDataAnchor.setHref(downloadTransposedDaywiseICMDataUtility.createTransposedDataFromIndexList(
-					transposedDataCriteria, formName, campaignz.getValue().toString()));
-			transposdeDataDictionaryAnchor.setHref(downloadTransposedDaywiseICMDataUtility
-					.createTransposedDataFormExpressions(transposedDataCriteria));
+
 
 		} else if (formName.toString().contains("LQAS")) {
+			exportTransposedDataButton.addClickListener(e->{
+				DownloadTransposedLqasDataUtility downloadTransposedLqasDaywiseDataUtility = new DownloadTransposedLqasDataUtility();
+				transposdeDataAnchor.setHref(downloadTransposedLqasDaywiseDataUtility.createTransposedLqasDataFromIndexList(
+						criteria, formName, campaignz.getValue().toString()));
+				transposdeDataDictionaryAnchor.setHref(downloadTransposedLqasDaywiseDataUtility.createTransposedDataFormExpressions(criteria));
+				
+				transposdeDataAnchor.getElement().setAttribute("download", true);
+				transposdeDataAnchor.getElement().callJsFunction("click");
+			});
 
-			DownloadTransposedLqasDataUtility downloadTransposedLqasDaywiseDataUtility = new DownloadTransposedLqasDataUtility();
-			transposdeDataAnchor.setHref(downloadTransposedLqasDaywiseDataUtility.createTransposedLqasDataFromIndexList(
-					transposedDataCriteria, formName, campaignz.getValue().toString()));
-			transposdeDataDictionaryAnchor.setHref(downloadTransposedLqasDaywiseDataUtility.createTransposedDataFormExpressions(transposedDataCriteria));
+			
 
 		}
-
-		exportTransposedDataButton.addClickListener(ex -> {
-			transposdeDataAnchor.getElement().setAttribute("download", true);
-			transposdeDataAnchor.getElement().callJsFunction("click");
-		});
-
-//		exporttransposeDataDictionary.addClickListener(ex -> {
-//
-//			transposdeDataDictionaryAnchor.getElement().setAttribute("download", true);
-//			transposdeDataDictionaryAnchor.getElement().callJsFunction("click");
-//		});
-
 	}
 
 	public void removeColumnsSelectionn() {

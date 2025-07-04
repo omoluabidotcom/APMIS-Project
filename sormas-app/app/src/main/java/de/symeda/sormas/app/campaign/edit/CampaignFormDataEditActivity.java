@@ -168,35 +168,74 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
 
     };
 
+//    public String dateFormatterLongAndMobile(Object value) {
+//        String dateStr = String.valueOf(value);
+//        System.out.println("Date in question: " + dateStr);
+//
+//        String[] inputFormats = {
+//                "yyyy-MM-dd",                   // e.g., 2025-06-25
+//                "MMM dd, yyyy HH:mm:ss a",      // e.g., Jun 25, 2025 10:30:00 AM
+//                "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
+//                "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
+//                "dd/MM/yyyy",                   // e.g., 25/06/2025
+//                "EEE MMM dd HH:mm:ss z yyyy"    // e.g., Wed Jun 25 10:30:00 GMT 2025
+//        };
+//
+//        // The desired output format (date only)
+//        DateFormat outputFormatter = new SimpleDateFormat("dd-MM-yyyy");
+//
+//        for (String formatString : inputFormats) {
+//            try {
+//                DateFormat inputFormatter = new SimpleDateFormat(formatString);
+//                Date parsedDate = inputFormatter.parse(dateStr);
+//                String formattedDate = outputFormatter.format(parsedDate);
+//
+//                return formattedDate; // Return date in yyyy-MM-dd format
+//            } catch (ParseException e) {
+//                System.out.println("Failed to parse with format '" + formatString + "': " + e.getMessage());
+//            }
+//        }
+//        System.out.println("Could not parse date----: " + dateStr);
+//        return value.toString();
+//    }
+
     public String dateFormatterLongAndMobile(Object value) {
+        if (value == null) return null;
+
         String dateStr = String.valueOf(value);
         System.out.println("Date in question: " + dateStr);
 
-        String[] inputFormats = {
-                "yyyy-MM-dd",                   // e.g., 2025-06-25
-                "MMM dd, yyyy HH:mm:ss a",      // e.g., Jun 25, 2025 10:30:00 AM
-                "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
-                "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
-                "dd/MM/yyyy",                   // e.g., 25/06/2025
-                "EEE MMM dd HH:mm:ss z yyyy"    // e.g., Wed Jun 25 10:30:00 GMT 2025
-        };
-
-        // The desired output format (date only)
+        // Standard output format
         DateFormat outputFormatter = new SimpleDateFormat("dd-MM-yyyy");
 
-        for (String formatString : inputFormats) {
-            try {
-                DateFormat inputFormatter = new SimpleDateFormat(formatString);
-                Date parsedDate = inputFormatter.parse(dateStr);
-                String formattedDate = outputFormatter.format(parsedDate);
+        try {
+            // First try parsing with the standard format
+            Date parsedDate = outputFormatter.parse(dateStr);
+            return outputFormatter.format(parsedDate);
+        } catch (ParseException e) {
+            // If standard format fails, try other formats
+            String[] inputFormats = {
+                    "yyyy-MM-dd",                   // e.g., 2025-06-25
+                    "MMM dd, yyyy HH:mm:ss a",      // e.g., Jun 25, 2025 10:30:00 AM
+                    "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
+                    "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
+                    "dd/MM/yyyy",                   // e.g., 25/06/2025
+                    "EEE MMM dd HH:mm:ss z yyyy"    // e.g., Wed Jun 25 10:30:00 GMT 2025
+            };
 
-                return formattedDate; // Return date in yyyy-MM-dd format
-            } catch (ParseException e) {
-                System.out.println("Failed to parse with format '" + formatString + "': " + e.getMessage());
+            for (String formatString : inputFormats) {
+                try {
+                    DateFormat inputFormatter = new SimpleDateFormat(formatString);
+                    Date parsedDate = inputFormatter.parse(dateStr);
+                    return outputFormatter.format(parsedDate);
+                } catch (ParseException e2) {
+                    // Continue to next format
+                }
             }
         }
-        System.out.println("Could not parse date----: " + dateStr);
-        return value.toString();
+
+        System.out.println("Could not parse date: " + dateStr);
+        return dateStr; // Return original if we can't parse it
     }
 
     @Override
