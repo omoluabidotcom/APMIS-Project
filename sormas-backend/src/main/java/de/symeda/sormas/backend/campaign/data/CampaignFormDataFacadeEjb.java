@@ -1409,272 +1409,274 @@ if(criteria.getUserLanguage() != null) {
 	
 	
 	
+//	@Override
+//	public List<CampaignFormDataIndexDto> getFlwDuplicateErrorAnalysis(CampaignFormDataCriteria criteria, Integer first, Integer max,
+//			List<SortProperty> sortProperties) {
+//		String error_statusFilter ="";
+//		boolean filterIsNull = criteria.getCampaign() == null ;		
+//		String whereclause = "";
+//		
+//		if(!filterIsNull) {
+//		final CampaignReferenceDto campaign = criteria.getCampaign();
+//		final AreaReferenceDto area = criteria.getArea();
+//		final RegionReferenceDto region = criteria.getRegion();
+//		final DistrictReferenceDto district = criteria.getDistrict();
+//		final String error_status = criteria.getError_status();
+//		
+//		final String campaignFilter = campaign != null ? "campaigns.uuid = '"+campaign.getUuid()+"'" : "";
+//		final String areaFilter = area != null ? "AND areas.uuid = '"+area.getUuid()+"'" : "";
+//		final String regionFilter = region != null ? " AND region.uuid = '"+region.getUuid()+"'" : "";
+//		final String districtFilter = district != null ? " AND district.uuid = '"+district.getUuid()+"'" : "";
+//		if(error_status != null) {
+//			error_statusFilter = "and error_status = '" +error_status + "'" ;
+//			System.out.println(error_statusFilter+" =========errrrrooor status ============ "+whereclause);
+//		}
+//		
+//		whereclause = "and " + campaignFilter + areaFilter + regionFilter + districtFilter ;
+//				
+//		System.out.println(campaignFilter+" ===================== "+whereclause);
+//		}
+//		String addedWhere = "";
+//		
+//		if(!filterIsNull) {			
+//			whereclause = whereclause;
+//		}
+//		
+//		String orderby = "";
+//
+//		if (sortProperties != null && sortProperties.size() > 0) {
+//			for (SortProperty sortProperty : sortProperties) {
+//				switch (sortProperty.propertyName) {
+//				case "region":
+//					orderby = orderby.isEmpty() ? " order by areas.name " + (sortProperty.ascending ? "asc" : "desc") : orderby+", areas.name " + (sortProperty.ascending ? "asc" : "desc");
+//				break;				
+//				case "province":
+//					orderby = orderby.isEmpty() ? " order by region.name " + (sortProperty.ascending ? "asc" : "desc") : orderby+", region.name " + (sortProperty.ascending ? "asc" : "desc");
+//				break;					
+//				case "district":
+//					orderby = orderby.isEmpty() ? " order by district.name " + (sortProperty.ascending ? "asc" : "desc") : orderby+", district.name " + (sortProperty.ascending ? "asc" : "desc");
+//				break;					
+//				case "clusterNumber":
+//					orderby = orderby.isEmpty() ? " order by community.clusternumber " + (sortProperty.ascending ? "asc" : "desc") : orderby+", community.clusternumber " + (sortProperty.ascending ? "asc" : "desc");
+//				break;				
+//				case "ccode":
+//					orderby = orderby.isEmpty() ? " order by community.externalid " + (sortProperty.ascending ? "asc" : "desc") : orderby+", community.externalid " + (sortProperty.ascending ? "asc" : "desc");
+//				break;								
+//				case "creatinguser":
+//					orderby = orderby.isEmpty() ? " order by users.firstname " + (sortProperty.ascending ? "asc" : "desc") : orderby+", users.firstname " + (sortProperty.ascending ? "asc" : "desc");
+//				break;				
+//				case "title":
+//					orderby = orderby.isEmpty() ? " order by users.userposition " + (sortProperty.ascending ? "asc" : "desc") : orderby+", users.userposition " + (sortProperty.ascending ? "asc" : "desc");
+//				break;				
+//				default:
+//					throw new IllegalArgumentException(sortProperty.propertyName);
+//				}				
+//			}
+//		}		
+//		System.out.println(" ====orderbyorderbyderby====== "+orderby);
+//		
+//		final String joinBuilder = ""
+//		    + "WITH duplicate_tazkiras AS (\n"
+//		    + "    SELECT (elem.value ->> 'value') AS tazkira_value\n"
+//		    + "    FROM campaignformdata cfd\n"
+//		    + "    CROSS JOIN LATERAL json_array_elements(cfd.formvalues) elem(value)\n"
+//		    + "    WHERE elem.value ->> 'id' = 'TazkiraNo'\n"
+//		    + "    GROUP BY (elem.value ->> 'value')\n"
+//		    + "    HAVING COUNT(*) > 1\n"
+//		    + "),\n"
+//		    + "filtered_campaign_ids AS (\n"
+//		    + "    SELECT CAST(unnest(string_to_array(array_to_string(array_agg(id), ', '), ',')) AS bigint) AS campaign_id\n"
+//		    + "    FROM flwduplicateerrorreport\n"
+//		    + "    GROUP BY value\n"
+//		    + "    HAVING COUNT(*) > 1\n"
+//		    + ")\n"
+//		    + "SELECT \n"
+//		    + "    areas.name AS area,\n"
+//		    + "    region.name AS region,\n"
+//		    + "    district.name AS district,\n"
+//		    + "    community.clusternumber AS clusterNo,\n"
+//		    + "    community.externalid AS ccode,\n"
+//		    + "    (jsonfirstname.value ->> 'value') AS firstName,\n"
+//		    + "    (jsontitle.value ->> 'value') AS title,\n"
+//		    + "    (jsondata.value ->> 'value') AS tazkiraNumber,\n"
+//		    + "    CASE \n"
+//		    + "        WHEN dt.tazkira_value IS NOT NULL THEN 'Error: Duplicate Tazkira number'\n"
+//		    + "        ELSE 'No Error'\n"
+//		    + "    END as error_status\n"
+//		    + "FROM campaignformdata\n"
+//		    + "INNER JOIN filtered_campaign_ids fci ON campaignformdata.id = fci.campaign_id\n"
+//		    + "LEFT JOIN campaignformmeta ON campaignformdata.campaignformmeta_id = campaignformmeta.id\n"
+//		    + "LEFT JOIN region ON campaignformdata.region_id = region.id\n"
+//		    + "LEFT JOIN areas ON campaignformdata.area_id = areas.id\n"
+//		    + "LEFT JOIN district ON campaignformdata.district_id = district.id\n"
+//		    + "LEFT JOIN community ON campaignformdata.community_id = community.id\n"
+//		    + "LEFT JOIN users ON campaignformdata.creatinguser_id = users.id\n"
+//		    + "LEFT JOIN campaigns ON campaignformdata.campaign_id = campaigns.id\n"
+//		    + "CROSS JOIN LATERAL json_array_elements(campaignformdata.formvalues) jsondata(value)\n"
+//		    + "LEFT JOIN LATERAL (\n"
+//		    + "    SELECT elem.value\n"
+//		    + "    FROM json_array_elements(campaignformdata.formvalues) elem(value)\n"
+//		    + "    WHERE elem.value ->> 'id' = 'FirstName'\n"
+//		    + "    LIMIT 1\n"
+//		    + ") jsonfirstname ON TRUE\n"
+//		    + "LEFT JOIN LATERAL (\n"
+//		    + "    SELECT elem.value\n"
+//		    + "    FROM json_array_elements(campaignformdata.formvalues) elem(value)\n"
+//		    + "    WHERE elem.value ->> 'id' = 'Title'\n"
+//		    + "    LIMIT 1\n"
+//		    + ") jsontitle ON TRUE\n"
+//		    + "CROSS JOIN LATERAL json_array_elements(campaignformmeta.campaignformelements) jsonmeta(value)\n"
+//		    + "LEFT JOIN duplicate_tazkiras dt ON (jsondata.value ->> 'value') = dt.tazkira_value\n"
+//		    + "WHERE \n"
+//		    + "    (jsondata.value ->> 'id') IN ('TazkiraNo')\n"
+//		    + "    AND (jsondata.value ->> 'id') = (jsonmeta.value ->> 'id')\n"
+//		    + whereclause + "\n"
+//		    + orderby + "\n"
+//		    + "LIMIT " + max + " OFFSET " + first + ";";
+//		
+//		System.out.println("=====seriesDataQuery======== "+joinBuilder);		
+//		Query seriesDataQuery = em.createNativeQuery(joinBuilder);		
+//		List<CampaignFormDataIndexDto> resultData = new ArrayList<>();		
+//		
+//		@SuppressWarnings("unchecked")
+//		List<Object[]> resultList = seriesDataQuery.getResultList(); 
+//		
+//		System.out.println("starting....");
+//		
+//		resultData.addAll(resultList.stream()
+//			.map((result) -> new CampaignFormDataIndexDto(
+//						(String) result[0].toString(), 
+//						(String) result[1].toString(),
+//						(String) result[2].toString(),
+//						((String) result[3]).toString(), 
+//						((String) result[6]).toString(), 
+//						((String) result[7]).toString() != null || !((String) result[7]).toString().isEmpty() ? ((String) result[7]).toString() : "No Title",
+//						((String) result[8]).toString()
+//					)).collect(Collectors.toList()));
+//		
+//		return resultData;
+//	}
+	
+	
 	@Override
 	public List<CampaignFormDataIndexDto> getFlwDuplicateErrorAnalysis(CampaignFormDataCriteria criteria, Integer first, Integer max,
-			List<SortProperty> sortProperties) {
-		String error_statusFilter ="";
+	        List<SortProperty> sortProperties) {
 
-		boolean filterIsNull = criteria.getCampaign() == null ;
-		
-		String whereclause = "";
-		
-		if(!filterIsNull) {
-		final CampaignReferenceDto campaign = criteria.getCampaign();
-		final AreaReferenceDto area = criteria.getArea();
-		final RegionReferenceDto region = criteria.getRegion();
-		final DistrictReferenceDto district = criteria.getDistrict();
-		final String error_status = criteria.getError_status();
-		
-		
-		
-		
-		//@formatter:off
-		
+	    // Extract filter values
+	    String campaignUuid = criteria.getCampaign() != null ? criteria.getCampaign().getUuid() : null;
+	    String areaUuid = criteria.getArea() != null ? criteria.getArea().getUuid() : null;
+	    String regionUuid = criteria.getRegion() != null ? criteria.getRegion().getUuid() : null;
+	    String districtUuid = criteria.getDistrict() != null ? criteria.getDistrict().getUuid() : null;
+	    String errorStatus = criteria.getError_status();
 
-		
-		final String campaignFilter = campaign != null ? "campaigns.uuid = '"+campaign.getUuid()+"'" : "";
-		final String areaFilter = area != null ? "AND areas.uuid = '"+area.getUuid()+"'" : "";
-		final String regionFilter = region != null ? " AND region.uuid = '"+region.getUuid()+"'" : "";
-		final String districtFilter = district != null ? " AND district.uuid = '"+district.getUuid()+"'" : "";
-		if(error_status != null) {
-			error_statusFilter = "and error_status = '" +error_status + "'" ;
-			System.out.println(error_statusFilter+" =========errrrrooor status ============ "+whereclause);
+	    // Extract sort property
+	    String sortBy = "region"; // default fallback
+	    boolean sortAsc = true;   // default sort direction
 
-				}
-		
+	    if (sortProperties != null && !sortProperties.isEmpty()) {
+	        SortProperty sortProperty = sortProperties.get(0); // assuming 1 sort for simplicity
+	        sortBy = mapSortPropertyToDbColumn(sortProperty.propertyName);
+	        sortAsc = sortProperty.ascending;
+	    }
 
-		
-		whereclause = "and " + campaignFilter + areaFilter + regionFilter + districtFilter ;
-		
-		
-		
-		
-		System.out.println(campaignFilter+" ===================== "+whereclause);
-		}
-		String addedWhere = "";
-		
-		
-		if(!filterIsNull) {
-			
-			whereclause = whereclause;
-//			+" and (analyticz.supervisor = 0 or analyticz.revisit = 0 or analyticz.household = 0 or analyticz.teammonitori = 0)";
-			
-		} 
-//		else {
-//			whereclause = "where analyticz.supervisor = 0 or analyticz.revisit = 0 or analyticz.household = 0 or analyticz.teammonitori = 0";
-//		}
+	    // Call the stored function
+//	    String sql = "SELECT * FROM get_flw_duplicate_error_analysis_dynamic(?::TEXT, ?::TEXT, ?::TEXT, ?::TEXT, ?::TEXT, ?::TEXT, ?, ?, ?)";
+	    
+//	    String sql = "SELECT * FROM get_flw_duplicate_error_analysis_dynamic(:campaignUuid, :areaUuid, :regionUuid, :districtUuid, :errorStatus, :sortBy, :sortAsc, :max, :first)";
+	    
+	    String sql = "SELECT * FROM get_flw_duplicate_error_analysis_dynamic("
+	    		+ "cast(:campaignUuid as text), "
+	    		+ "cast(:areaUuid as text), "
+	    		+ "cast(:regionUuid as text), "
+	    		+ "cast(:districtUuid as text), "
+	    		+ "cast(:errorStatus as text), "
+	    		+ "cast(:sortBy as text), "
+	    		+ "cast(:sortAsc as boolean), "
+	    		+ "cast(:max as integer), "
+	    		+ "cast(:first as integer))";
+	    Query query = em.createNativeQuery(sql);
 
-		String orderby = "";
+	    // Set parameters
+//	    query.setParameter(1, campaignUuid);
+//	    query.setParameter(2, areaUuid);
+//	    query.setParameter(3, regionUuid);
+//	    query.setParameter(4, districtUuid);
+//	    query.setParameter(5, errorStatus);
+//	    query.setParameter(6, sortBy);
+//	    query.setParameter(7, sortAsc);
+//	    query.setParameter(8, max);
+//	    query.setParameter(9, first);
+	    
+	    query.setParameter("campaignUuid", campaignUuid);
+	    query.setParameter("areaUuid", areaUuid);
+	    query.setParameter("regionUuid", regionUuid);
+	    query.setParameter("districtUuid", districtUuid);
+	    query.setParameter("errorStatus", errorStatus);
+	    query.setParameter("sortBy", sortBy);
+	    query.setParameter("sortAsc", sortAsc);
+	    query.setParameter("max", max);
+	    query.setParameter("first", first);
 
-		if (sortProperties != null && sortProperties.size() > 0) {
-			for (SortProperty sortProperty : sortProperties) {
-				switch (sortProperty.propertyName) {
-				case "region":
-					orderby = orderby.isEmpty() ? " order by areas.name " + (sortProperty.ascending ? "asc" : "desc") : orderby+", areas.name " + (sortProperty.ascending ? "asc" : "desc");
-				break;
-				
-				case "province":
-					orderby = orderby.isEmpty() ? " order by region.name " + (sortProperty.ascending ? "asc" : "desc") : orderby+", region.name " + (sortProperty.ascending ? "asc" : "desc");
-				break;
-					
-				case "district":
-					orderby = orderby.isEmpty() ? " order by district.name " + (sortProperty.ascending ? "asc" : "desc") : orderby+", district.name " + (sortProperty.ascending ? "asc" : "desc");
-				break;	
-				
-				case "clusterNumber":
-					orderby = orderby.isEmpty() ? " order by community.clusternumber " + (sortProperty.ascending ? "asc" : "desc") : orderby+", community.clusternumber " + (sortProperty.ascending ? "asc" : "desc");
-				break;
-				
-				case "ccode":
-					orderby = orderby.isEmpty() ? " order by community.externalid " + (sortProperty.ascending ? "asc" : "desc") : orderby+", community.externalid " + (sortProperty.ascending ? "asc" : "desc");
-				break;
-								
-				case "creatinguser":
-					orderby = orderby.isEmpty() ? " order by users.firstname " + (sortProperty.ascending ? "asc" : "desc") : orderby+", users.firstname " + (sortProperty.ascending ? "asc" : "desc");
-				break;
-//				
-				case "title":
-					orderby = orderby.isEmpty() ? " order by users.userposition " + (sortProperty.ascending ? "asc" : "desc") : orderby+", users.userposition " + (sortProperty.ascending ? "asc" : "desc");
-				break;
-				
-				default:
-					throw new IllegalArgumentException(sortProperty.propertyName);
-				}
-				
-			}
-		}
-		
-		System.out.println(" ====orderbyorderbyderby====== "+orderby);
-		
-	
-//		final String joinBuilder = ""
-//			    + " SELECT \n"
-//			    + "    areas.name AS area,\n"
-//			    + "    region.name AS region,\n"
-//			    + "    district.name AS district,\n"
-//			    + "    community.clusternumber AS clusterNo,\n"
-//			    + "    community.externalid AS ccode,\n"
-//			    + "    (jsonfirstname.value ->> 'value') AS firstName,\n"
-//			    + "    (jsontitle.value ->> 'value') AS title,\n"
-//			    + "    (jsondata.value ->> 'value') AS tazkiraNumber,\n"
-//			    + "    CASE \n"
-//			    + "        WHEN EXISTS (\n"
-//			    + "            SELECT 1\n"
-//			    + "            FROM campaignformdata c2\n"
-//			    + "            CROSS JOIN LATERAL json_array_elements(c2.formvalues) j2(value)\n"
-//			    + "            WHERE (j2.value ->> 'id') = 'TazkiraNo'\n"
-//			    + "              AND (j2.value ->> 'value') = (jsondata.value ->> 'value')\n"
-//			    + "              AND c2.id != campaignformdata.id\n"
-//			    + "        ) THEN 'Error: Duplicate Tazkira number'\n"
-//			    + "        ELSE 'No Error'\n"
-//			    + "    END as error_status\n"
-//			    + "FROM campaignformdata\n"
-//			    + "LEFT JOIN campaignformmeta ON campaignformdata.campaignformmeta_id = campaignformmeta.id\n"
-//			    + "LEFT JOIN region ON campaignformdata.region_id = region.id\n"
-//			    + "LEFT JOIN areas ON campaignformdata.area_id = areas.id\n"
-//			    + "LEFT JOIN district ON campaignformdata.district_id = district.id\n"
-//			    + "LEFT JOIN community ON campaignformdata.community_id = community.id\n"
-//			    + "LEFT JOIN users ON campaignformdata.creatinguser_id = users.id\n"
-//			    + "LEFT JOIN campaigns ON campaignformdata.campaign_id = campaigns.id\n"
-//
-//			    // Extract TazkiraNo
-//			    + "CROSS JOIN LATERAL json_array_elements(campaignformdata.formvalues) jsondata(value)\n"
-//
-//			    // Extract FirstName safely
-//			    + "LEFT JOIN LATERAL (\n"
-//			    + "    SELECT elem.value\n"
-//			    + "    FROM json_array_elements(campaignformdata.formvalues) elem(value)\n"
-//			    + "    WHERE elem.value ->> 'id' = 'FirstName'\n"
-//			    + "    LIMIT 1\n"
-//			    + ") jsonfirstname ON TRUE\n"
-//
-//			    // Extract Title safely
-//			    + "LEFT JOIN LATERAL (\n"
-//			    + "    SELECT elem.value\n"
-//			    + "    FROM json_array_elements(campaignformdata.formvalues) elem(value)\n"
-//			    + "    WHERE elem.value ->> 'id' = 'Title'\n"
-//			    + "    LIMIT 1\n"
-//			    + ") jsontitle ON TRUE\n"
-//
-//			    // Join campaignformelements to match against Tazkira field
-//			    + "CROSS JOIN LATERAL json_array_elements(campaignformmeta.campaignformelements) jsonmeta(value)\n"
-//
-//			    + "WHERE \n"
-//			    + "    (jsondata.value ->> 'id') IN ('TazkiraNo')\n"
-//			    + "    AND (jsondata.value ->> 'id') = (jsonmeta.value ->> 'id')\n"
-//			    + whereclause + "\n"
-//			    + "    AND campaignformdata.id IN (\n"
-//			    + "        SELECT CAST(unnest(string_to_array(array_to_string(array_agg(id), ', '), ',')) AS bigint) AS individual_values\n"
-//			    + "        FROM flwduplicateerrorreport\n"
-//			    + "        GROUP BY value\n"
-//			    + "        HAVING COUNT(*) > 1\n"
-//			    + "    )\n"
-//			    + orderby + "\n"
-//			    + "LIMIT " + max + " OFFSET " + first + ";";
-		
-		// Alternative optimization - closer to your original structure
-		final String joinBuilder = ""
-		    // Create a hash set of duplicate tazkira numbers first
-		    + "WITH duplicate_tazkiras AS (\n"
-		    + "    SELECT (elem.value ->> 'value') AS tazkira_value\n"
-		    + "    FROM campaignformdata cfd\n"
-		    + "    CROSS JOIN LATERAL json_array_elements(cfd.formvalues) elem(value)\n"
-		    + "    WHERE elem.value ->> 'id' = 'TazkiraNo'\n"
-		    + "    GROUP BY (elem.value ->> 'value')\n"
-		    + "    HAVING COUNT(*) > 1\n"
-		    + "),\n"
-		    + "filtered_campaign_ids AS (\n"
-		    + "    SELECT CAST(unnest(string_to_array(array_to_string(array_agg(id), ', '), ',')) AS bigint) AS campaign_id\n"
-		    + "    FROM flwduplicateerrorreport\n"
-		    + "    GROUP BY value\n"
-		    + "    HAVING COUNT(*) > 1\n"
-		    + ")\n"
-		    + "SELECT \n"
-		    + "    areas.name AS area,\n"
-		    + "    region.name AS region,\n"
-		    + "    district.name AS district,\n"
-		    + "    community.clusternumber AS clusterNo,\n"
-		    + "    community.externalid AS ccode,\n"
-		    + "    (jsonfirstname.value ->> 'value') AS firstName,\n"
-		    + "    (jsontitle.value ->> 'value') AS title,\n"
-		    + "    (jsondata.value ->> 'value') AS tazkiraNumber,\n"
-		    + "    CASE \n"
-		    + "        WHEN dt.tazkira_value IS NOT NULL THEN 'Error: Duplicate Tazkira number'\n"
-		    + "        ELSE 'No Error'\n"
-		    + "    END as error_status\n"
-		    + "FROM campaignformdata\n"
-		    + "INNER JOIN filtered_campaign_ids fci ON campaignformdata.id = fci.campaign_id\n"
-		    + "LEFT JOIN campaignformmeta ON campaignformdata.campaignformmeta_id = campaignformmeta.id\n"
-		    + "LEFT JOIN region ON campaignformdata.region_id = region.id\n"
-		    + "LEFT JOIN areas ON campaignformdata.area_id = areas.id\n"
-		    + "LEFT JOIN district ON campaignformdata.district_id = district.id\n"
-		    + "LEFT JOIN community ON campaignformdata.community_id = community.id\n"
-		    + "LEFT JOIN users ON campaignformdata.creatinguser_id = users.id\n"
-		    + "LEFT JOIN campaigns ON campaignformdata.campaign_id = campaigns.id\n"
-		    // Extract TazkiraNo
-		    + "CROSS JOIN LATERAL json_array_elements(campaignformdata.formvalues) jsondata(value)\n"
-		    // Extract FirstName safely
-		    + "LEFT JOIN LATERAL (\n"
-		    + "    SELECT elem.value\n"
-		    + "    FROM json_array_elements(campaignformdata.formvalues) elem(value)\n"
-		    + "    WHERE elem.value ->> 'id' = 'FirstName'\n"
-		    + "    LIMIT 1\n"
-		    + ") jsonfirstname ON TRUE\n"
-		    // Extract Title safely
-		    + "LEFT JOIN LATERAL (\n"
-		    + "    SELECT elem.value\n"
-		    + "    FROM json_array_elements(campaignformdata.formvalues) elem(value)\n"
-		    + "    WHERE elem.value ->> 'id' = 'Title'\n"
-		    + "    LIMIT 1\n"
-		    + ") jsontitle ON TRUE\n"
-		    // Join campaignformelements to match against Tazkira field
-		    + "CROSS JOIN LATERAL json_array_elements(campaignformmeta.campaignformelements) jsonmeta(value)\n"
-		    // Join with pre-computed duplicates
-		    + "LEFT JOIN duplicate_tazkiras dt ON (jsondata.value ->> 'value') = dt.tazkira_value\n"
-		    + "WHERE \n"
-		    + "    (jsondata.value ->> 'id') IN ('TazkiraNo')\n"
-		    + "    AND (jsondata.value ->> 'id') = (jsonmeta.value ->> 'id')\n"
-		    + whereclause + "\n"
-		    + orderby + "\n"
-		    + "LIMIT " + max + " OFFSET " + first + ";";
 
-		
-	System.out.println("=====seriesDataQuery======== "+joinBuilder);
-		
-		
-		Query seriesDataQuery = em.createNativeQuery(joinBuilder);
-		
-		List<CampaignFormDataIndexDto> resultData = new ArrayList<>();
-		
-		
-		@SuppressWarnings("unchecked")
-		List<Object[]> resultList = seriesDataQuery.getResultList(); 
-		
-	System.out.println("starting....");
-		
-	
-	//public CampaignFormDataIndexDto(String area, String region, String district, Integer clusternumber, Long ccode,
-	//String source, String creatingUser, String title, String error_status) {
-	
-	resultData.addAll(resultList.stream()
-			.map((result) -> new CampaignFormDataIndexDto(
-						(String) result[0].toString(), 
-						(String) result[1].toString(),
-						(String) result[2].toString(),
-//						(Integer) result[3], 
-						(result[3] != null ? (Integer) result[3] : 0),
+	    @SuppressWarnings("unchecked")
+	    List<Object[]> resultList = query.getResultList();
+	    List<CampaignFormDataIndexDto> resultData = new ArrayList<>();
 
-						(result[4] != null ? ((BigInteger) result[4]).longValue() : 0L),
-
-//						(result[4] != null ? ((BigInteger) result[4]).longValue() : ,  
-						((String) result[5]).toString(), 
-						((String) result[6]).toString(), 
-						((String) result[7]).toString() != null || !((String) result[7]).toString().isEmpty() ? ((String) result[7]).toString() : "No Title",
-						((String) result[8]).toString()
-					)).collect(Collectors.toList()));
+//	    for (Object[] row : resultList) {
+//	        resultData.add(new CampaignFormDataIndexDto(
+//	            (String) row[0],                     // area
+//	            (String) row[1],                     // region
+//	            (String) row[2],                     // district
+////	            row[3] != null ? (Integer) row[3] : 0, // clusterNumber
+////	            row[4] != null ? ((BigInteger) row[4]).longValue() : 0L, // ccode
+//	            (String) row[5],                     // firstname
+//	            (String) row[6],                     // title
+//	            (String) row[7],                     // tazkiraNumber
+//	            (String) row[8]                      // error_status
+//	        ));
+//	    }
+	    
+//		resultData.addAll(resultList.stream()
+//		.map((result) -> new CampaignFormDataIndexDto(
+//					(String) result[0].toString(), 
+//					(String) result[1].toString(),
+//					(String) result[2].toString(),
+//					((String) result[3]).toString(), 
+//					((String) result[4]).toString(), 
+//					((String) result[5]).toString() != null || !((String) result[5]).toString().isEmpty() ? ((String) result[5]).toString() : "No Title",
+//					((String) result[6]).toString()
+//				)).collect(Collectors.toList()));
 		
-	return resultData;
+		
+		resultData.addAll(resultList.stream()
+			    .map((result) -> new CampaignFormDataIndexDto(
+			        result[0] != null ? result[0].toString() : "", 
+			        result[1] != null ? result[1].toString() : "",
+			        result[2] != null ? result[2].toString() : "",
+			        result[3] != null ? result[3].toString() : "", 
+			        result[4] != null ? result[4].toString() : "", 
+			        result[5] != null ? result[5].toString() : "No Title",
+			        result[6] != null ? result[6].toString() : ""
+			    )).collect(Collectors.toList()));
+
+	    return resultData;
 	}
+	
+	private String mapSortPropertyToDbColumn(String propertyName) {
+	    switch (propertyName) {
+	        case "region": return "region";
+	        case "province": return "region";
+	        case "area": return "area";
+	        case "district": return "district";
+	        case "clusterNumber": return "clusternumber";
+	        case "ccode": return "ccode";
+	        case "firstname": return "firstname";
+	        case "title": return "title";
+	        default: throw new IllegalArgumentException("Invalid sort field: " + propertyName);
+	    }
+	}
+
+
 	
 	
 	

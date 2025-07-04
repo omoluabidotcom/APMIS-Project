@@ -1778,57 +1778,81 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
         }
 
         try {
-            try {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
-                Date parsedDate = dateFormat.parse(input);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+            Date parsedDate = dateFormat.parse(input);
 
-                // Add current time to date-only input
-                Calendar cal = Calendar.getInstance();
-                Calendar parsedCal = Calendar.getInstance();
-                parsedCal.setTime(parsedDate);
+            // Clear time components
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(parsedDate);
+//            cal.set(Calendar.HOUR_OF_DAY, 0);
+//            cal.set(Calendar.MINUTE, 0);
+//            cal.set(Calendar.SECOND, 0);
+//            cal.set(Calendar.MILLISECOND, 0);
 
-                cal.set(Calendar.YEAR, parsedCal.get(Calendar.YEAR));
-                cal.set(Calendar.MONTH, parsedCal.get(Calendar.MONTH));
-                cal.set(Calendar.DAY_OF_MONTH, parsedCal.get(Calendar.DAY_OF_MONTH));
-
-                return cal.getTime();
-            } catch (ParseException e1) {
-                // Continue to next format
-
-                try {
-                    SimpleDateFormat dateTimeFormatAmPm = new SimpleDateFormat("dd-MM-yyyy h:mm:ss a", Locale.getDefault());
-                    return dateTimeFormatAmPm.parse(input);
-                } catch (ParseException e3) {
-                    // Continue to next format
-
-                    try {
-                        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
-                        return dateTimeFormat.parse(input);
-                    } catch (ParseException e2) {
-                        // Continue to next format
-
-                        try {
-                            SimpleDateFormat monthNameFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a", Locale.US);
-                            return monthNameFormat.parse(input);
-                        } catch (ParseException e4) {
-                            // Continue to next format
-
-                            try {
-                                SimpleDateFormat rfc1123Format = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
-                                return rfc1123Format.parse(input);
-                            } catch (ParseException e5) {
-                                Log.e(getClass().getName(), "Error parsing date: " + input, e5);
-                                return null;
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
+            return cal.getTime();
+        } catch (ParseException e) {
             Log.e(getClass().getName(), "Error parsing date: " + input, e);
             return null;
         }
     }
+
+//    protected Date getDateValue(String input) {
+//        if (StringUtils.isEmpty(input)) {
+//            return null;
+//        }
+//
+//        try {
+//            try {
+//                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+//                Date parsedDate = dateFormat.parse(input);
+//
+//                // Add current time to date-only input
+//                Calendar cal = Calendar.getInstance();
+//                Calendar parsedCal = Calendar.getInstance();
+//                parsedCal.setTime(parsedDate);
+//
+//                cal.set(Calendar.YEAR, parsedCal.get(Calendar.YEAR));
+//                cal.set(Calendar.MONTH, parsedCal.get(Calendar.MONTH));
+//                cal.set(Calendar.DAY_OF_MONTH, parsedCal.get(Calendar.DAY_OF_MONTH));
+//
+//                return cal.getTime();
+//            } catch (ParseException e1) {
+//                // Continue to next format
+//
+//                try {
+//                    SimpleDateFormat dateTimeFormatAmPm = new SimpleDateFormat("dd-MM-yyyy h:mm:ss a", Locale.getDefault());
+//                    return dateTimeFormatAmPm.parse(input);
+//                } catch (ParseException e3) {
+//                    // Continue to next format
+//
+//                    try {
+//                        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
+//                        return dateTimeFormat.parse(input);
+//                    } catch (ParseException e2) {
+//                        // Continue to next format
+//
+//                        try {
+//                            SimpleDateFormat monthNameFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a", Locale.US);
+//                            return monthNameFormat.parse(input);
+//                        } catch (ParseException e4) {
+//                            // Continue to next format
+//
+//                            try {
+//                                SimpleDateFormat rfc1123Format = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
+//                                return rfc1123Format.parse(input);
+//                            } catch (ParseException e5) {
+//                                Log.e(getClass().getName(), "Error parsing date: " + input, e5);
+//                                return null;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        } catch (Exception e) {
+//            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+//            return null;
+//        }
+//    }
 
 
 //    protected Date getDateValue(String input) {

@@ -280,12 +280,14 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		}else {
 //			userFormAccesses.setValue(userFormAccessesx);
 			userFormAccesses.setValue(userFormAccessesx.toString().replace("[", "").replace("]", ""));
+			userFormAccesses.setTooltipText(userFormAccesses.getValue());
+
 		}
 
 		TextField userUsersRoles =  new TextField();
 
 //		MultiSelectComboBox<UserRole> userUsersRoles = new MultiSelectComboBox<>(I18nProperties.getCaption("User Roles"));
-		// regionn.setLabel("Region");
+		userUsersRoles.setLabel("User Roles");
 		userUsersRoles.setWidthFull();
 		userUsersRoles.setEnabled(false);
 
@@ -295,6 +297,7 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 			
 		}else {
 			userUsersRoles.setValue(userRoles.toString().replace("[", "").replace("]", ""));
+			userUsersRoles.setTooltipText(userUsersRoles.getValue());
 		}
 		
 
