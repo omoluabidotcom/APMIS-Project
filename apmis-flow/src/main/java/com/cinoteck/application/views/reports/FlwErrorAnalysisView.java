@@ -280,11 +280,11 @@ public class FlwErrorAnalysisView extends VerticalLayout  {
 				.setSortable(true).setResizable(true);
 		grid.addColumn(CampaignFormDataIndexDto::getDistrict).setHeader(I18nProperties.getCaption(Captions.district)).setSortProperty("district")
 				.setSortable(true).setResizable(true);
-		grid.addColumn(CampaignFormDataIndexDto::getCcode)
-				.setHeader(I18nProperties.getCaption(Captions.Community_externalID)).setSortProperty("ccode").setSortable(true)
-				.setResizable(true);
-		grid.addColumn(CampaignFormDataIndexDto::getClusternumber)
-				.setHeader(I18nProperties.getCaption(Captions.clusterNumber)).setSortProperty("clusterNumber").setSortable(true).setResizable(true);
+//		grid.addColumn(CampaignFormDataIndexDto::getCcode)
+//				.setHeader(I18nProperties.getCaption(Captions.Community_externalID)).setSortProperty("ccode").setSortable(true)
+//				.setResizable(true);
+//		grid.addColumn(CampaignFormDataIndexDto::getClusternumber)
+//				.setHeader(I18nProperties.getCaption(Captions.clusterNumber)).setSortProperty("clusterNumber").setSortable(true).setResizable(true);
 
 		grid.addColumn(CampaignFormDataIndexDto::getSource)
 				.setHeader(I18nProperties.getCaption(Captions.firstName)).setSortProperty("creatinguser").setSortable(true).setResizable(true);

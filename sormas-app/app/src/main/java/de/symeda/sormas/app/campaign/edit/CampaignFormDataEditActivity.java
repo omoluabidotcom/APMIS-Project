@@ -19,17 +19,20 @@
 package de.symeda.sormas.app.campaign.edit;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Bundle;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.PlatformEnum;
-import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
-import de.symeda.sormas.api.user.UserRole;
+import de.symeda.sormas.api.campaign.form.CampaignFormElement;
+import de.symeda.sormas.api.campaign.form.CampaignFormElementType;
 import de.symeda.sormas.api.utils.ValidationException;
 import de.symeda.sormas.app.BaseActivity;
 import de.symeda.sormas.app.BaseEditActivity;
@@ -41,22 +44,15 @@ import de.symeda.sormas.app.backend.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.backend.common.DaoException;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
-import de.symeda.sormas.app.backend.config.ConfigProvider;
-import de.symeda.sormas.app.backend.region.Community;
 import de.symeda.sormas.app.component.menu.PageMenuItem;
 import de.symeda.sormas.app.component.validation.FragmentValidator;
 import de.symeda.sormas.app.core.async.AsyncTaskResult;
 import de.symeda.sormas.app.core.async.SavingAsyncTask;
 import de.symeda.sormas.app.core.async.TaskResultHolder;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
-import de.symeda.sormas.app.util.Bundler;
 
 import static de.symeda.sormas.app.core.notification.NotificationType.ERROR;
 import static de.symeda.sormas.app.core.notification.NotificationType.WARNING;
-
-import androidx.annotation.Nullable;
-
-import org.springframework.core.env.SystemEnvironmentPropertySource;
 
 public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormData> {
 
@@ -101,9 +97,9 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
         //true is returned when the form is yet to be synchronized with the server, so we only increment teh record version when
         //this form has been subimmted and synchronized with server
         //in return none synced changes wouldn't increment record version
-        if(!campaignFormDataToSave.isModifiedOrChildModified()){
-            campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion() + 1L);
-        }
+//        if(!campaignFormDataToSave.isModifiedOrChildModified()){
+//            campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion() + 1L);
+//        }
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
 
         try {
@@ -116,7 +112,18 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
         final List<CampaignFormDataEntry> formValues = campaignFormDataToSave.getFormValues();
         final List<CampaignFormDataEntry> filledFormValues = new ArrayList<>();
 
-//        formValues.forEach(campaignFormDataEntry ->
+
+        for (CampaignFormElement campaignFormElement : campaignFormMeta.getCampaignFormElements()) {
+            if (CampaignFormElementType.fromString(campaignFormElement.getType()) == CampaignFormElementType.DATE) {
+                String idtoBeUpdated = campaignFormElement.getId();
+                for(CampaignFormDataEntry campaignFormDataEntry : formValues) {
+                    if (idtoBeUpdated.equalsIgnoreCase(campaignFormDataEntry.getId())) {
+                        campaignFormDataEntry.setValue(dateFormatterLongAndMobile(campaignFormDataEntry.getValue()));;
+                    }
+                }
+
+            }
+        }
         for(CampaignFormDataEntry campaignFormDataEntry : formValues) {
             if (campaignFormDataEntry.getId() != null && campaignFormDataEntry.getValue() != null) {
                 filledFormValues.add(campaignFormDataEntry);
@@ -130,6 +137,13 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
 
             @Override
             public void doInBackground(TaskResultHolder resultHolder) throws DaoException {
+
+                if(!campaignFormDataToSave.isModifiedOrChildModified()){
+                    campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion()== null ? 1l  : campaignFormDataToSave.getRecordversion() + 1L);
+                }
+
+//                campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion() == null ? 1L : campaignFormDataToSave.getRecordversion());
+
                 DatabaseHelper.getCampaignFormDataDao().saveAndSnapshot(campaignFormDataToSave);
             }
 
@@ -138,6 +152,10 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
                 super.onPostExecute(taskResult);
 
                 if (taskResult.getResultStatus().isSuccess()) {
+                    Intent intent = new Intent();
+                    intent.setAction("REFRESH_ROW_COUNT");
+                    sendBroadcast(intent);
+
                     finish();
                 } else {
                  //   onResume(); // reload data
@@ -145,6 +163,40 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
                 saveTask = null;
             }
         }.executeOnThreadPool();
+    }
+    void setSetSubHeadingRowCountForCampaign(){
+
+    };
+
+    public String dateFormatterLongAndMobile(Object value) {
+        String dateStr = String.valueOf(value);
+        System.out.println("Date in question: " + dateStr);
+
+        String[] inputFormats = {
+                "yyyy-MM-dd",                   // e.g., 2025-06-25
+                "MMM dd, yyyy HH:mm:ss a",      // e.g., Jun 25, 2025 10:30:00 AM
+                "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
+                "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
+                "dd/MM/yyyy",                   // e.g., 25/06/2025
+                "EEE MMM dd HH:mm:ss z yyyy"    // e.g., Wed Jun 25 10:30:00 GMT 2025
+        };
+
+        // The desired output format (date only)
+        DateFormat outputFormatter = new SimpleDateFormat("dd-MM-yyyy");
+
+        for (String formatString : inputFormats) {
+            try {
+                DateFormat inputFormatter = new SimpleDateFormat(formatString);
+                Date parsedDate = inputFormatter.parse(dateStr);
+                String formattedDate = outputFormatter.format(parsedDate);
+
+                return formattedDate; // Return date in yyyy-MM-dd format
+            } catch (ParseException e) {
+                System.out.println("Failed to parse with format '" + formatString + "': " + e.getMessage());
+            }
+        }
+        System.out.println("Could not parse date----: " + dateStr);
+        return value.toString();
     }
 
     @Override

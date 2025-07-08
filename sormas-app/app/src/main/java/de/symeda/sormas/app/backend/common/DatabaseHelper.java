@@ -3273,6 +3273,18 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 					}
 
 
+					GenericRawResults<String[]> tableColumnsxx = getDao(User.class).queryRaw("pragma table_info(users)");
+					int nameColumnIndexxx = Arrays.asList(tableColumnsxx.getColumnNames()).indexOf("name");
+					boolean columnUserFormAccessNotExistsx =
+							tableColumnsxx.getResults().stream().noneMatch(columnRowData -> "recordversion".equals(columnRowData[nameColumnIndexxx]));
+
+					if (columnUserFormAccessNotExistsx) {
+						getDao(CampaignFormData.class).executeRaw(
+								"ALTER TABLE campaignformdata ADD COLUMN recordversion BIGINT DEFAULT 1;"
+						);
+					}
+
+
 				case 349:
 					currentVersion = 349;
 					getDao(PopulationData.class).executeRaw("DROP TABLE IF EXISTS populationdata;");

@@ -38,6 +38,7 @@ import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -1146,7 +1147,9 @@ public class FormGridComponent extends VerticalLayout {
 		VerticalLayout expressionLayout = new VerticalLayout();
 		ComboBox<String> ids = new ComboBox<String>("Form Ids");
 		ids.setWidthFull();
-		TextField expressionEdit = new TextField("Expression Editor");
+		
+//		TextArea
+		TextArea expressionEdit = new TextArea("Expression Editor");
 		expressionEdit.setWidthFull();
 		expressionEdit.setValue(expressions);
 		expressionEdit.setClassName("expressionEdit");

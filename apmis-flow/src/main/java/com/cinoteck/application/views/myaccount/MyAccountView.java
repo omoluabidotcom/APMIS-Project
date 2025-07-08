@@ -49,6 +49,7 @@ import de.symeda.sormas.api.Language;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Strings;
+import de.symeda.sormas.api.infrastructure.area.AreaDto;
 import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
@@ -59,15 +60,18 @@ import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
-
+import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserDto;
 //import de.symeda.sormas.ui.utils.InternalPasswordChangeComponent;
 //import de.symeda.sormas.ui.utils.VaadinUiUtil;
+import de.symeda.sormas.api.user.UserRole;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 @PageTitle("APMIS-My Account")
 @Route(value = "useraccount", layout = MainLayout.class)
@@ -181,63 +185,15 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		dataVieww.getStyle().set("margin-right", "20px");
 
 		Div fieldInfoo = new Div();
-		H3 infodataa = new H3(I18nProperties.getCaption(Captions.fieldInformation));
+		
+		
+		H3 infodataa = new H3(I18nProperties.getCaption("Geographical Attachments"));
 		infodataa.getStyle().set("color", "green");
 		infodataa.getStyle().set("font-size", "20px");
 		infodataa.getStyle().set("font-weight", "600");
 		infodataa.getStyle().set("margin-left", "20px");
 		infodataa.getStyle().set("margin-bottom", "0px");
-
-		// Select<String> regionn = new Select<>();
-		ComboBox<AreaReferenceDto> regionn = new ComboBox<>(I18nProperties.getCaption(Captions.area));
-		// regionn.setLabel("Region");
-
-		binder.forField(regionn).bind(UserDto::getArea, UserDto::setArea);
-		regionss = FacadeProvider.getAreaFacade().getAllActiveAsReference();
-		regionn.setItems(regionss);
-		regionn.setItemLabelGenerator(AreaReferenceDto::getCaption);
-
 		
-		ComboBox<RegionReferenceDto> provincee = new ComboBox<>(I18nProperties.getCaption(Captions.region));
-		binder.forField(provincee).bind(UserDto::getRegion, UserDto::setRegion);
-		provincee.setItemLabelGenerator(RegionReferenceDto::getCaption);
-		
-
-		ComboBox<DistrictReferenceDto> districtt = new ComboBox<>(I18nProperties.getCaption(Captions.district));
-
-		binder.forField(districtt).bind(UserDto::getDistrict, UserDto::setDistrict);
-		districtt.setItemLabelGenerator(DistrictReferenceDto::getCaption);
-
-
-		MultiSelectComboBox<CommunityReferenceDto> cluster = new MultiSelectComboBox<>(
-				I18nProperties.getCaption(Captions.community));
-		cluster.setLabel(I18nProperties.getCaption(Captions.community));
-		binder.forField(cluster).bind(UserDto::getCommunity, UserDto::setCommunity);
-
-
-		TextField streett = new TextField();
-		streett.setLabel(I18nProperties.getCaption(Captions.Location_street));
-
-		TextField houseNumm = new TextField();
-		houseNumm.setLabel(I18nProperties.getCaption(Captions.Location_houseNumber));
-
-		TextField addInfoo = new TextField();
-		addInfoo.setLabel(I18nProperties.getCaption(Captions.Location_additionalInformation));
-
-		TextField postalCodee = new TextField();
-		postalCodee.setLabel(I18nProperties.getCaption(Captions.Location_postalCode));
-
-		TextField cityy = new TextField();
-		cityy.setLabel(I18nProperties.getCaption(Captions.city));
-
-		Select<String> areaTypee = new Select<>();
-		areaTypee.setLabel(I18nProperties.getCaption(Captions.Location_areaType));
-		areaTypee.setItems("", "Urban", "Rural");
-		areaTypee.setValue("");
-
-//		TextField contacPersonn = new TextField();
-//		contacPersonn.setLabel(I18nProperties.getCaption(Captions.Location_details));
-
 		FormLayout fielddataVieww = new FormLayout();
 		fielddataVieww.setResponsiveSteps(
 				// Use one column by default
@@ -246,10 +202,119 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 				new ResponsiveStep("320px", 2),
 				// Use three columns, if the layout's width exceeds 500px
 				new ResponsiveStep("500px", 3));
-		fielddataVieww.add(regionn, provincee, districtt, cluster, streett, houseNumm, addInfoo, postalCodee, cityy,
-				areaTypee);
+
+
+		// Select<String> regionn = new Select<>();
+		ComboBox<String> regionn = new ComboBox<>(I18nProperties.getCaption(Captions.area));
+		regionn.setLabel(I18nProperties.getCaption(Captions.area));
+		// regionn.setLabel("Region");
+		if (userProvider.getUser().getArea() !=  null) {
+//			AreaDto regionssx =	FacadeProvider.getAreaFacade().getByUuid(userProvider.getUser().getArea().getCaption() .getUuid());
+			regionn.setItems(userProvider.getUser().getArea().getCaption());
+			regionn.setValue(userProvider.getUser().getArea().getCaption());
+			fielddataVieww.add(regionn);
+		}else {
+			regionn.setVisible(false);
+			infodataa.setVisible(false);
+		}
+
+		
+		ComboBox<String> provincee = new ComboBox<>(I18nProperties.getCaption(Captions.region));
+		provincee.setLabel(I18nProperties.getCaption(Captions.region));
+		// regionn.setLabel("Region");
+		if (userProvider.getUser().getRegion() !=  null) {
+//			AreaDto regionssx =	FacadeProvider.getRegionFacade().get ().getByUuid(userProvider.getUser().getArea().getUuid());
+			provincee.setItems(userProvider.getUser().getRegion().getCaption());
+			provincee.setValue(userProvider.getUser().getRegion().getCaption());
+			fielddataVieww.add(provincee);
+		}else {
+
+		}
+		
+
+		MultiSelectComboBox<String> districtt = new MultiSelectComboBox<>(I18nProperties.getCaption(Captions.district));
+		if (userProvider.getUser().getDistrict() !=  null || userProvider.getUser().getDistricts().size() > 0 ) {
+			List<String> districts = new ArrayList<>();
+			if(userProvider.getUser().getDistricts().size() > 0) {
+				for(DistrictReferenceDto caption :  userProvider.getUser().getDistricts()) {
+					districts.add(caption.getCaption());
+				}
+				districtt.setItems(districts);
+				districtt.setValue(districts);
+			}else {
+				districtt.setItems(userProvider.getUser().getDistrict().getCaption());
+				districtt.setValue(userProvider.getUser().getDistrict().getCaption());
+			}
+			fielddataVieww.add(districtt);
+		}else {
+		}
+
+		MultiSelectComboBox<String> cluster = new MultiSelectComboBox<>(I18nProperties.getCaption(Captions.community));
+		if (userProvider.getUser().getCommunity().size() > 0 ) {
+			List<String> clusters = new ArrayList<>();
+				for(CommunityReferenceDto caption :  userProvider.getUser().getCommunity()) {
+					clusters.add(caption.getCaption());
+				}
+				cluster.setItems(clusters);
+				cluster.setValue(clusters);
+
+			fielddataVieww.add(cluster);
+		}else {
+			
+		}
+ 
 		fielddataVieww.getStyle().set("margin-left", "20px");
 		fielddataVieww.getStyle().set("margin-right", "20px");
+ 	
+		TextField userFormAccesses =  new TextField();
+		userFormAccesses.setLabel("User Form Accesses");
+//		MultiSelectComboBox<FormAccess> userFormAccesses = new MultiSelectComboBox<>(I18nProperties.getCaption("Form Acceses"));
+		// regionn.setLabel("Region");
+		userFormAccesses.setWidthFull();
+		userFormAccesses.setReadOnly(true);
+
+		Set<FormAccess> userFormAccessesx = FacadeProvider.getUserFacade().getCurrentUser().getFormAccess();// .getAreaFacade().getAllActiveAsReference();
+//		userFormAccesses.setItems(userFormAccessesx);
+		if(userFormAccessesx.size() < 1) {
+			
+		}else {
+//			userFormAccesses.setValue(userFormAccessesx);
+			userFormAccesses.setValue(userFormAccessesx.toString().replace("[", "").replace("]", ""));
+		}
+
+		TextField userUsersRoles =  new TextField();
+
+//		MultiSelectComboBox<UserRole> userUsersRoles = new MultiSelectComboBox<>(I18nProperties.getCaption("User Roles"));
+		// regionn.setLabel("Region");
+		userUsersRoles.setWidthFull();
+		userUsersRoles.setEnabled(false);
+
+		Set<UserRole> userRoles = FacadeProvider.getUserFacade().getCurrentUser().getUserRoles();// .getAreaFacade().getAllActiveAsReference();
+//		userUsersRoles.setItems(userRoles);
+		if(userRoles.size() < 1) {
+			
+		}else {
+			userUsersRoles.setValue(userRoles.toString().replace("[", "").replace("]", ""));
+		}
+		
+
+
+		
+		FormLayout userAssignmentVieww = new FormLayout();
+		userAssignmentVieww.setResponsiveSteps(
+				// Use one column by default
+				new ResponsiveStep("0", 1),
+				// Use two columns, if the layout's width exceeds 320px
+				new ResponsiveStep("320px", 1),
+				// Use three columns, if the layout's width exceeds 500px
+				new ResponsiveStep("500px", 2));
+		userAssignmentVieww.add(userFormAccesses, userUsersRoles);
+		userAssignmentVieww.getStyle().set("margin-left", "20px");
+		userAssignmentVieww.getStyle().set("margin-right", "20px");
+		
+		
+
+
 
 		H3 security = new H3(I18nProperties.getString(Strings.passwordAccessibility));
 
@@ -351,7 +416,7 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		});
 		actionss.getStyle().set("margin", "20px");
 		actionss.add(discard, savee);
-		userentry.add(infooo, infoood, infoo, dataVieww, infodataa, fieldInfoo, fielddataVieww, security, pwdSecc,
+		userentry.add(infooo, infoood, infoo, dataVieww, infodataa, fieldInfoo, fielddataVieww,userAssignmentVieww, security, pwdSecc,
 				actionss);
 
 		add(userentry);
