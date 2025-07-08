@@ -55,7 +55,8 @@ public class PopulationData extends AbstractDomainObject implements Serializable
 	@Column(name = "district_id")
 	private String district_id;  // Change to Long to match server
 
-	@Column	private String selected;
+	@Column(name = "selected")
+	private String selected;
 
 
 	public String getCampaign_id() {

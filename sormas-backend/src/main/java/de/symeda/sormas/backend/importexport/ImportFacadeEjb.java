@@ -578,6 +578,8 @@ System.out.println("YESSSS");
 		importColumns.add(ImportColumn.from(CommunityDto.class, "Cluster_Name", String.class, separator));
 		importColumns.add(ImportColumn.from(CommunityDto.class, "CCode", Integer.class, separator));
 		importColumns.add(ImportColumn.from(CommunityDto.class, "ClusterNo", Integer.class, separator));
+		importColumns.add(ImportColumn.from(CommunityDto.class, "Float_Status",String.class, separator));
+//		importColumns.add(ImportColumn.from(CommunityDto.class, "Active",String.class, separator));
 		
 		writeTemplate(Paths.get(getCommunityImportTemplateFilePath()), importColumns, false);
 	}

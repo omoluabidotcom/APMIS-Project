@@ -26,12 +26,20 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
+import de.symeda.sormas.api.campaign.form.CampaignFormElement;
+import de.symeda.sormas.api.campaign.form.CampaignFormElementType;
 import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.api.utils.ValidationException;
 import de.symeda.sormas.app.BaseEditActivity;
@@ -95,6 +103,8 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         activityRootData.setCampaign(campaign);
         activityRootData.setCampaignFormMeta(campaignFormMeta);
 
+
+
         BaseEditFragment campaignFormDataNewFragment = CampaignFormDataNewFragment.newInstance(activityRootData);
         campaignFormDataNewFragment.setLiveValidationDisabled(true);
         return campaignFormDataNewFragment;
@@ -113,6 +123,8 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         criteria.setCampaignFormMeta(campaignFormMeta);
 
 
+
+
         if(!ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) { // District Officer
             criteria.setCommunity(campaignFormDataToSave.getCommunity());
 //            criteria.setCommunity(null);
@@ -122,7 +134,7 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
         List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteria(criteria, 0, 100);
 
-        campaignFormDataToSave.setRecordversion(1L);
+//        campaignFormDataToSave.setRecordversion(1L);
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
 
 
@@ -141,8 +153,13 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
 //        formValues.forEach(campaignFormDataEntry ->
         for(CampaignFormDataEntry campaignFormDataEntry : formValues) {
+
             if (campaignFormDataEntry.getId() != null && campaignFormDataEntry.getValue() != null) {
-//                campaignFormDataEntry.getValue().toString().replaceAll(".0","");
+                String value = campaignFormDataEntry.getValue().toString();
+                if (value.endsWith(".0")) {
+                    value = value.replaceAll(".0", "");// .replaceALl(".0", "");
+                    campaignFormDataEntry.setValue(value);
+                }
                 filledFormValues.add(campaignFormDataEntry);
                 if (campaignFormDataEntry.getId().equalsIgnoreCase("LotNo")) {
                     lotNo = campaignFormDataEntry;
@@ -152,7 +169,20 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
                 }
             }
         };
-//        );
+
+        for (CampaignFormElement campaignFormElement : campaignFormMeta.getCampaignFormElements()) {
+                if (CampaignFormElementType.fromString(campaignFormElement.getType()) == CampaignFormElementType.DATE) {
+                    String idtoBeUpdated = campaignFormElement.getId();
+                    for(CampaignFormDataEntry campaignFormDataEntry : formValues) {
+                        if (idtoBeUpdated.equalsIgnoreCase(campaignFormDataEntry.getId())) {
+                            campaignFormDataEntry.setValue(dateFormatterLongAndMobile(campaignFormDataEntry.getValue()));;
+                        }
+                    }
+
+                }
+        }
+
+
 
         List<String> listLotNo = new ArrayList();
         List<String> listLotClusterNo = new ArrayList();
@@ -183,6 +213,7 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         }
         campaignFormDataToSave.setFormValues(filledFormValues);
 
+
         CampaignFormDataNewFragment activeFragment = (CampaignFormDataNewFragment) getActiveFragment();
         activeFragment.setLiveValidationDisabled(false);
 
@@ -191,7 +222,8 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
                 @Override
                 public void doInBackground(TaskResultHolder resultHolder) throws DaoException {
-
+                	campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion() == null ? 1L : campaignFormDataToSave.getRecordversion());
+//
                     DatabaseHelper.getCampaignFormDataDao().saveAndSnapshot(campaignFormDataToSave);
                 }
 
@@ -211,6 +243,43 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
             return;
         }
     }
+
+    public String dateFormatterLongAndMobile(Object value) {
+        String dateStr = String.valueOf(value);
+        System.out.println("Date in question: " + dateStr);
+
+        // List of possible input date formats (ordered by likelihood)
+        String[] inputFormats = {
+                "yyyy-MM-dd",                   // e.g., 2025-06-25
+                "MMM dd, yyyy HH:mm:ss a",      // e.g., Jun 25, 2025 10:30:00 AM
+                "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
+                "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
+                "dd/MM/yyyy",                   // e.g., 25/06/2025
+                "EEE MMM dd HH:mm:ss z yyyy"    // e.g., Wed Jun 25 10:30:00 GMT 2025
+        };
+
+        // The desired output format (date only)
+        DateFormat outputFormatter = new SimpleDateFormat("dd-MM-yyyy");
+
+        for (String formatString : inputFormats) {
+            try {
+                DateFormat inputFormatter = new SimpleDateFormat(formatString);
+                Date parsedDate = inputFormatter.parse(dateStr);
+
+                // Format the parsed date into the desired output format
+                String formattedDate = outputFormatter.format(parsedDate);
+                System.out.println("Successfully parsed. Formatted date: " + formattedDate);
+
+                return formattedDate; // Return date in yyyy-MM-dd format
+            } catch (ParseException e) {
+                System.out.println("Failed to parse with format '" + formatString + "': " + e.getMessage());
+            }
+        }
+
+        System.out.println("Could not parse date----: " + dateStr);
+        return null; // or throw an exception
+    }
+
 
     @Override
     public Enum getPageStatus() {
