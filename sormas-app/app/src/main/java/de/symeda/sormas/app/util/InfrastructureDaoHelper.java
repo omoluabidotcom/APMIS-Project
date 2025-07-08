@@ -251,21 +251,21 @@ public final class InfrastructureDaoHelper {
 
 					if(ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)){ // District Officer
 						districtField.addValueChangedListener(e -> {
-							if (e.getValue() != null){
-								List<Item> newCommunities_ = loadCommunities((District) e.getValue());
-								if (newCommunities_.get(0) != null){
-									communityField.setValue(newCommunities_.get(0));
-								} else {
-									System.err.println("District without community has been detected from the system.");
-								}
-							}
+//							if (e.getValue() != null){
+//								List<Item> newCommunities_ = loadCommunities((District) e.getValue());
+//								if (newCommunities_.get(0) != null){
+//									communityField.setValue(newCommunities_.get(0));
+//								} else {
+//									System.err.println("District without community has been detected from the system.");
+//								}
+//							}
 						});
 						// Set the value of communityField before hiding it
 						if (districtField.getValue() != null){
-							List<Item> newCommunities_ = loadCommunities((District) districtField.getValue());
-							if (newCommunities_.get(0) != null){
-								communityField.setValue(newCommunities_.get(0));
-							}
+//							List<Item> newCommunities_ = loadCommunities((District) districtField.getValue());
+//							if (newCommunities_.get(0) != null){
+//								communityField.setValue(newCommunities_.get(0));
+//							}
 						}
 						// Hide the communityField
 						communityField.setVisibility(GONE);
@@ -299,23 +299,23 @@ public final class InfrastructureDaoHelper {
 		//temp fix
 
 		if(ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)){ // District Officer
-			districtField.addValueChangedListener(e -> {
-				if (e.getValue() != null){
-					List<Item> newCommunities_ = loadCommunities((District) e.getValue());
-					if (newCommunities_.get(0) != null){
-						communityField.setValue(newCommunities_.get(0));
-					} else {
-						System.err.println("District without community has been detected from the system.");
-					}
-				}
-			});
+//			districtField.addValueChangedListener(e -> {
+//				if (e.getValue() != null){
+//					List<Item> newCommunities_ = loadCommunities((District) e.getValue());
+//					if (newCommunities_.get(0) != null){
+//						communityField.setValue(newCommunities_.get(0));
+//					} else {
+//						System.err.println("District without community has been detected from the system.");
+//					}
+//				}
+//			});
 			// Set the value of communityField before hiding it
-			if (districtField.getValue() != null){
-				List<Item> newCommunities_ = loadCommunities((District) districtField.getValue());
-				if (newCommunities_.get(0) != null){
-					communityField.setValue(newCommunities_.get(0));
-				}
-			}
+//			if (districtField.getValue() != null){
+//				List<Item> newCommunities_ = loadCommunities((District) districtField.getValue());
+//				if (newCommunities_.get(0) != null){
+//					communityField.setValue(newCommunities_.get(0));
+//				}
+//			}
 			// Hide the communityField
 			communityField.setVisibility(GONE);
 		}else{

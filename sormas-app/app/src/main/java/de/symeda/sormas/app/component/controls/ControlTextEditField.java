@@ -334,6 +334,7 @@ public class ControlTextEditField extends ControlPropertyEditField<String> {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 onChangeData = charSequence+"";
+                System.out.println("z11111111111-===================================================== "+ onChangeData);
 
                 /*if (isRange && isExpression && isRequired){
                     System.out.println((onChangeData.length() == 0) +" =XXXXXXXXXXX ENTERSSSSS XXXXXXXX =" +(beforeData.length() > 0));
@@ -415,12 +416,36 @@ public class ControlTextEditField extends ControlPropertyEditField<String> {
                 }
 
                 if (isRange && isExpression && isRequired){
-                     if(beforeData.length() > 0 && onChangeData.length() == 0) {
-                        enableErrorState("Number not in provided range!");
-
+//                     if(beforeData.length() > 0 && onChangeData.length() == 0) {
+//                        enableErrorState("Number not in provided range!");
+//                    }
+                    System.out.println("111111111111111111111111111111111-==================");
+                    try {
+                        if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
+                            int beforeDatavalxx = Integer.parseInt(beforeData.toString());
+                            int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
+                            System.out.println(beforeDatavalxx + "valxx111111111111111111111111111111111-==================" + onChangeDatavalxx);
+                            if (beforeData.length() > 0 && onChangeData.length() == 0) {
+                                enableErrorState("Number not in provided range!");
+                            }
+                        }
+                    }catch (NumberFormatException e){
+                        input.setError("Please enter a valid number");
+                        enableErrorState("1111111111111111111111-=====Number not in provided range! i.e min:------------------");
                     }
-
-
+                    System.out.println("111111111111111111111111111111111-==================cccccc");
+                }else if(isRange && isExpression && !isRequired){
+                    System.out.println("elselrange but not expressiom alxx111111111111111111111111111111111-==================" );
+                    try {
+                        if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
+                            int beforeDatavalxx = Integer.parseInt(beforeData.toString());
+                            int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
+                            System.out.println(beforeDatavalxx +  "elsevalxx111111111111111111111111111111111-==================" + onChangeDatavalxx);
+                        }
+                    }catch (NumberFormatException e){
+                        input.setError("Please enter a valid number");
+                        enableErrorState("else1111111111111111111111-=====Number not in provided range! i.e min:------------------");
+                    }
                 }
             }
         });
