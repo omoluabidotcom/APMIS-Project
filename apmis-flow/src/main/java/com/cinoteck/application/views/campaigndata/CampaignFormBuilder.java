@@ -1392,6 +1392,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 //					bigDecimalField.setValue(new BigDecimal("948205817.472950487"));
 					numberField.setId(formElement.getId());
 					numberField.setSizeFull();
+					numberField.setReadOnly(false);
 					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 					vertical.add(numberField);
 					fields.put(formElement.getId(), numberField);

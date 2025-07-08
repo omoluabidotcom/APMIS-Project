@@ -1080,7 +1080,8 @@ public class FormGridComponent extends VerticalLayout {
 				comment.setVisible(false);
 				defaultValues.setVisible(false);
 			} else if (e.getValue().toString().toLowerCase().equals("number")
-					|| e.getValue().toString().toLowerCase().equals("range")) {
+					|| e.getValue().toString().toLowerCase().equals("range")
+					|| e.getValue().toString().toLowerCase().equals("decimal")) {
 
 				constraints.setVisible(true);
 				expression.setVisible(true);

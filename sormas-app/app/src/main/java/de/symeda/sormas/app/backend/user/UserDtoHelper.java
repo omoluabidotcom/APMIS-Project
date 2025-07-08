@@ -46,7 +46,9 @@ public class UserDtoHelper extends AdoDtoHelper<User, UserDto> {
 	}
 
 	@Override
-	protected Class<UserDto> getDtoClass() {return UserDto.class;}
+	protected Class<UserDto> getDtoClass() {
+		throw new UnsupportedOperationException();
+	}
 
 	@Override
 	protected Call<List<UserDto>> pullAllSince(long since) throws NoConnectionException {
@@ -85,8 +87,11 @@ public class UserDtoHelper extends AdoDtoHelper<User, UserDto> {
 
 	@Override
 	protected void fillInnerFromDto(User target, UserDto source) {
+		System.out.println("fillInnerFromDtostarttttttttttttttttttttttttttttttttttttttttttttttttt");
 		target.setActive(source.isActive());
+//		System.out.println(target.getUserName().toLowerCase() + " username before to sqlite database " + source.getUserName().toLowerCase());
 		target.setUserName(source.getUserName().toLowerCase());
+//		System.out.println(target.getUserName().toLowerCase() + " username after to sqlite database " + source.getUserName().toLowerCase());
 		target.setFirstName(source.getFirstName());
 		target.setLastName(source.getLastName());
 		target.setUserEmail(source.getUserEmail());
@@ -104,45 +109,50 @@ public class UserDtoHelper extends AdoDtoHelper<User, UserDto> {
 		//target.setCommunity(DatabaseHelper.getCommunityDao().getByReferenceDto(source.getCommunity()));
 		target.setHealthFacility(DatabaseHelper.getFacilityDao().getByReferenceDto(source.getHealthFacility()));
 		target.setPointOfEntry(DatabaseHelper.getPointOfEntryDao().getByReferenceDto(source.getPointOfEntry()));
-
 		target.setAssociatedOfficer(DatabaseHelper.getUserDao().getByReferenceDto(source.getAssociatedOfficer()));
 		target.setLimitedDisease(source.getLimitedDisease());
-		target.setToken(source.getToken());
-
+//		target.setToken(source.getToken());
+//		System.out.println(source.getToken() + " seems insert into local sqllite database " + target.getToken());
 		target.setAddress(locationHelper.fillOrCreateFromDto(target.getAddress(), source.getAddress()));
 		target.setPhone(source.getPhone());
 		//target.setLanguage(source.getLanguage());
+		System.out.println("fillInnerFromDtoenddddddddddddddddddddddddddddddddddddddddddddddddddd");
 	}
 
 	@Override
 	protected void fillInnerFromAdo(UserDto target, User source) {
+//		System.out.println("fillInnerFromAdocalledssssssssssssssssssssssssssssssssssssssssssssssss");
 		// TODO
-//		throw new UnsupportedOperationException("Can't change users in app");
-		target.setActive(source.isActive());
-		target.setUserName(source.getUserName().toLowerCase());
-		target.setFirstName(source.getFirstName());
-		target.setLastName(source.getLastName());
-		target.setUserEmail(source.getUserEmail());
-
-		if (source.getUserRoles().size() > 0) {
-			target.setUserRoles(source.getUserRoles());
-		}
-
-		if (source.getUserFormAccess().size() > 0) {
-			target.setFormAccess(source.getUserFormAccess());
-		}
-
-		target.setRegion(RegionDtoHelper.toReferenceDto(source.getRegion()));
-		target.setDistrict(DistrictDtoHelper.toReferenceDto(source.getDistrict()));
-		//target.setCommunity(DatabaseHelper.getCommunityDao().getByReferenceDto(source.getCommunity()));
-		target.setHealthFacility(FacilityDtoHelper.toReferenceDto(source.getHealthFacility()));
-		target.setPointOfEntry(PointOfEntryDtoHelper.toReferenceDto(source.getPointOfEntry()));
-
-		target.setAssociatedOfficer(UserDtoHelper.toReferenceDto(source));
-		target.setLimitedDisease(source.getLimitedDisease());
-		target.setToken(source.getToken());
-		target.setAddress(locationHelper.adoToDto(source.getAddress()));
-		target.setPhone(source.getPhone());
+		throw new UnsupportedOperationException("Can't change users in app");
+//		target.setActive(source.isActive());
+//		System.out.println(target.getUserName().toLowerCase() + " username before for live database " + source.getUserName().toLowerCase());
+//		target.setUserName(source.getUserName().toLowerCase());
+//		System.out.println(target.getUserName().toLowerCase() + " username after for live database " + source.getUserName().toLowerCase());
+//		target.setFirstName(source.getFirstName());
+//		target.setLastName(source.getLastName());
+//		target.setUserEmail(source.getUserEmail());
+//
+//		if (source.getUserRoles().size() > 0) {
+//			target.setUserRoles(source.getUserRoles());
+//		}
+//
+//		if (source.getUserFormAccess().size() > 0) {
+//			target.setFormAccess(source.getUserFormAccess());
+//		}
+//
+//		target.setRegion(RegionDtoHelper.toReferenceDto(source.getRegion()));
+//		target.setDistrict(DistrictDtoHelper.toReferenceDto(source.getDistrict()));
+//		//target.setCommunity(DatabaseHelper.getCommunityDao().getByReferenceDto(source.getCommunity()));
+//		target.setHealthFacility(FacilityDtoHelper.toReferenceDto(source.getHealthFacility()));
+//		target.setPointOfEntry(PointOfEntryDtoHelper.toReferenceDto(source.getPointOfEntry()));
+//
+//		target.setAssociatedOfficer(UserDtoHelper.toReferenceDto(source));
+//		target.setLimitedDisease(source.getLimitedDisease());
+//		target.setToken(source.getToken());
+//		System.out.println(source.getToken() + " token from dto about to be sent to live database " + target.getToken());
+//		target.setAddress(locationHelper.adoToDto(source.getAddress()));
+//		target.setPhone(source.getPhone());
+//		System.out.println("fillInnerFromAdoenddddddddddddddddddddddddddddddddddddddddddddddddddddd");
 	}
 
 	public static UserReferenceDto toReferenceDto(User ado) {
