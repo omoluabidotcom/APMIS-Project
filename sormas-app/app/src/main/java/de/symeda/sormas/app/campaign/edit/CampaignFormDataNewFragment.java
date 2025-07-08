@@ -110,7 +110,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
     private int min = 9;
     private int max = 9;
     private String country = "Afghanistan";
-    private Map<String, CountryDetails> mapvalue = new HashMap<>();
+    private final Map<String, CountryDetails> mapvalue = new HashMap<>();
 
     public void addMapValue() {
 
@@ -1449,6 +1449,18 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                     if (campaignFormElement.getDependingOn() == null) {
                         TextView textView = new TextView(requireContext());
                         TextViewBindingAdapters.setHtmlValue(textView, "");
+                        dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                    }
+                }
+                else if (type == CampaignFormElementType.SECTION) {
+                    if (campaignFormElement.getDependingOn() == null) {
+                        ControlPropertyField dynamicField;
+                        dynamicLayout.addView(new ImageView(requireContext(), null, R.style.FullHorizontalDividerStyle));
+                    }
+                } else if (type == CampaignFormElementType.LABEL) {
+                    if (campaignFormElement.getDependingOn() == null) {
+                        TextView textView = new TextView(requireContext());
+                        TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
                         dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                     }
                 }

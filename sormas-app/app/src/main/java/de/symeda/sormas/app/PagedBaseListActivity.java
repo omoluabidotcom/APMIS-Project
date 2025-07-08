@@ -36,6 +36,7 @@ public abstract class PagedBaseListActivity<T extends AbstractDomainObject> exte
 	implements IUpdateSubHeadingTitle, PageMenuControl.NotificationCountChangingListener {
 
 	private TextView subHeadingListActivityTitle;
+	private TextView subHeadingActivityRowCount;
 	private MenuItem newMenu = null;
 	private PagedBaseListFragment activeFragment = null;
 	private Consumer<PageMenuItem> openPageCallback;
@@ -59,6 +60,7 @@ public abstract class PagedBaseListActivity<T extends AbstractDomainObject> exte
 	protected void onCreateInner(Bundle savedInstanceState) {
 		subHeadingListActivityTitle = (TextView) findViewById(R.id.subHeadingActivityTitle);
 
+		subHeadingActivityRowCount = (TextView) findViewById(R.id.subHeadingActivityRowCount);
 		if (pageMenu != null) {
 			addFiltersToPageMenu();
 		}
@@ -123,6 +125,12 @@ public abstract class PagedBaseListActivity<T extends AbstractDomainObject> exte
 			subHeadingListActivityTitle.setText(t);
 	}
 
+	public void setRowCount(Integer count) {
+		String rowCount = (count == null) ? "" : count + "";
+		if (subHeadingActivityRowCount != null)
+			subHeadingActivityRowCount.setText("Rows: " + rowCount);
+	}
+
 	public void setOpenPageCallback(Consumer<PageMenuItem> callback) {
 		this.openPageCallback = callback;
 	}
@@ -132,11 +140,14 @@ public abstract class PagedBaseListActivity<T extends AbstractDomainObject> exte
 		if (getActiveFragment() != null) {
 			if (getActiveFragment().getListFilter() != null) {
 				setSubHeadingTitle(getActiveFragment().getListFilter().toString());
+				setRowCount(getActiveFragment().getListAdapter().getItemCount());
 			} else {
 				setSubHeadingTitle(getResources().getString(R.string.all));
+				setRowCount(getActiveFragment().getListAdapter().getItemCount());
 			}
 		} else {
 			setSubHeadingTitle("");
+			setRowCount(getActiveFragment().getListAdapter().getItemCount());
 		}
 	}
 

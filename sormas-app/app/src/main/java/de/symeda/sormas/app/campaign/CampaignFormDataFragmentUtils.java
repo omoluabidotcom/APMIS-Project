@@ -52,6 +52,7 @@ import androidx.fragment.app.FragmentManager;
 
 import com.google.api.Distribution;
 
+import de.symeda.sormas.api.MapperUtil;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormElementType;
@@ -206,11 +207,11 @@ public class CampaignFormDataFragmentUtils {
                             String valudex = valuex.equals("0") ? null : valuex.endsWith(".0") ? valuex.replace(".0", "") : valuex;
                             if (valudex != null) {
                                 if (!valudex.isEmpty()) {
-                                    ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex.replace(".0",""));
+                                    ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex.endsWith(".0") ? valudex.replace(".0","") : valudex);
                                 }
                             }
                         } else if (type == CampaignFormElementType.NUMBER) {
-                            ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? "0" : (expressionValue.toString().contains(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString()));
+                            ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? "0" : (expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString()));
 
                         } else if (type == CampaignFormElementType.DECIMAL) {
                             ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, expressionValue.toString().equals("0") ? "0" : (expressionValue.toString().contains(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString()));
