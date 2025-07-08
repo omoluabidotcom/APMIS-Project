@@ -281,9 +281,17 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
                         } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.NUMBER) {
 
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
                         }  else if (type == CampaignFormElementType.EMAIL) {
 
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
@@ -418,8 +426,16 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
                         } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+                        }else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
                         } else if (type == CampaignFormElementType.EMAIL) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.RANGE) {
@@ -519,8 +535,16 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
                         } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
                         } else if (type == CampaignFormElementType.EMAIL) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.RANGE) {
@@ -719,8 +743,16 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
                         } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
                         }  else if (type == CampaignFormElementType.EMAIL) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.RANGE) {
@@ -818,9 +850,17 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
                         } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
-                        }  else if (type == CampaignFormElementType.EMAIL) {
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
+                        } else if (type == CampaignFormElementType.EMAIL) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
@@ -918,9 +958,17 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
                         } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
-                        }  else if (type == CampaignFormElementType.EMAIL) {
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
+                        } else if (type == CampaignFormElementType.EMAIL) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
@@ -1018,8 +1066,16 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
                         } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
                         }  else if (type == CampaignFormElementType.EMAIL) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.RANGE) {
@@ -1123,9 +1179,17 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
                     } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                    } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                    } else if (type == CampaignFormElementType.NUMBER) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
-                    }else if (type == CampaignFormElementType.EMAIL) {
+                    } else if (type == CampaignFormElementType.DECIMAL) {
+                        final boolean exprx = expressionx;
+                        if (!exprx) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                        } else {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                            isRangeandExpression = true;
+                        }
+                    } else if (type == CampaignFormElementType.EMAIL) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(
                                 campaignFormElement,
                                 requireContext(),
