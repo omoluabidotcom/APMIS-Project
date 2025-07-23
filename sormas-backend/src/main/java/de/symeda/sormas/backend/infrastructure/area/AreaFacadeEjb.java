@@ -102,13 +102,52 @@ public class AreaFacadeEjb extends AbstractInfrastructureEjb<Area, AreaService> 
 		// return service.getAllActive(Area.NAME,
 		// true).stream().map(AreaFacadeEjb::toReferenceDto).collect(Collectors.toList());
 	}
+	
+	
+	@Override
+	public List<AreaReferenceDto> getAllSelectedAreasByFormUuidAndLocale(String campaignFormUuid, String userLanguage) {
+		String selectBuilder  = "";
+		
+		if (userLanguage.equalsIgnoreCase("Pashto")) {
+		selectBuilder = "select a.uuid, a.\"ps_af\", a.externalid\r\n" + "from areas a\r\n"
+				+ "inner join campaignformmeta_areas ca on a.id = ca.area_id\r\n"
+				+ "inner join campaignformmeta c on ca.campaignformmeta_id = c.id\r\n"
+				+ "where c.uuid = '" + campaignFormUuid	+ "';";
+		}else if (userLanguage.equalsIgnoreCase("Dari")) {
+		selectBuilder = "select a.uuid, a.\"fa_af\", a.externalid\r\n" + "from areas a\r\n"
+					+ "inner join campaignformmeta_areas ca on a.id = ca.area_id\r\n"
+					+ "inner join campaignformmeta c on ca.campaignformmeta_id = c.id\r\n"
+					+ "where c.uuid = '" + campaignFormUuid	+ "';";
+		}else {
+		selectBuilder = "select a.uuid, a.\"name\", a.externalid\r\n" + "from areas a\r\n"
+					+ "inner join campaignformmeta_areas ca on a.id = ca.area_id\r\n"
+					+ "inner join campaignformmeta c on ca.campaignformmeta_id = c.id\r\n"
+					+ "where c.uuid = '" + campaignFormUuid	+ "';";
+			}
+		Query seriesDataQuery = em.createNativeQuery(selectBuilder);
+
+		@SuppressWarnings("unchecked")
+		List<Object[]> resultList = seriesDataQuery.getResultList();
+
+		List<AreaReferenceDto> resultData = new ArrayList<>();
+		resultData.addAll(resultList.stream().map((result) -> new AreaReferenceDto((String) result[0],
+				(String) result[1], ((BigInteger) result[2]).longValue()
+
+		)).collect(Collectors.toList()));
+
+		return resultData;
+		//
+
+		// return service.getAllActive(Area.NAME,
+		// true).stream().map(AreaFacadeEjb::toReferenceDto).collect(Collectors.toList());
+	}
 
 	@Override
 	public List<AreaReferenceDto> getAllActiveAsReference() {
 		return service.getAllActive(Area.NAME, true).stream().map(AreaFacadeEjb::toReferenceDto)
 				.collect(Collectors.toList());
 	}
-
+	
 	@Override
 	public List<AreaReferenceDto> getAllActiveAsReferencePashto() {
 		return service.getAllActive(Area.PS_AF, true).stream().filter(area -> area.getPs_af() != null)

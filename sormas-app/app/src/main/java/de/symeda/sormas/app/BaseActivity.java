@@ -240,7 +240,7 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 					public void onComplete(@NonNull Task<String> task) {
 						if (task.isSuccessful() && task.getResult() != null) {
 							String token = task.getResult();
-							Log.i("FCM Token", token);
+							Log.i("FCM Token========", token);
 							if(token != null && !token.isEmpty()) {
 								User user = ConfigProvider.getUser();
 								if(user != null) {
@@ -518,8 +518,11 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 //			String capitalizedUserName =  usingCharacterToUpperCaseMethod(user.getUserName());
 //			userUserName.setText("Username : " + capitalizedUserName.toString());
 			userUserName.setText("Username : " +user.getUserName());
-			userRegion.setText("Region : " +user.getRegion().getArea());
-			userProvince.setText("Province : " +user.getRegion());
+			if(user.getRegion().getArea() != null){
+				userRegion.setText("Region : " +user.getRegion().getArea());
+				userProvince.setText("Province : " +user.getRegion());
+
+			}
 
 			initialCommunities = InfrastructureDaoHelper.loadCommunities(user.getDistrict());
 

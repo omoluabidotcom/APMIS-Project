@@ -56,6 +56,7 @@ public class CampaignFormDataDtoHelper extends AdoDtoHelper<CampaignFormData, Ca
 
 	@Override
 	protected Call<List<PushResult>> pushAll(List<CampaignFormDataDto> campaignFormMetaDtos) throws NoConnectionException {
+
 		return RetroProvider.getCampaignFormDataFacade().pushAll(campaignFormMetaDtos);
 	}
 

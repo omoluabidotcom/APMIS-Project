@@ -348,15 +348,19 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 		activeFilter.setPlaceholder(I18nProperties.getCaption(Captions.User_active));
 		activeFilter.getStyle().set("margin-left", "12px");
 		activeFilter.getStyle().set("margin-top", "12px");
-		activeFilter.setItems("Active", "Inactive");
+		activeFilter.setItems("Active", "Inactive", "All");
+		criteria.active(true);
 		activeFilter.addValueChangeListener(e -> {
 
 			if (e.getValue().equals("Active")) {
 				criteria.active(true);
 			} else if (e.getValue().equals("Inactive")) {
 				criteria.active(false);
-			} else {
+			} else if (e.getValue().equals("All")){
 				criteria.active(null);
+			}else{
+				
+				criteria.active(null);	
 			}
 			filterDataProvider.setFilter(criteria);
 			filterDataProvider.refreshAll();

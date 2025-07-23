@@ -38,10 +38,14 @@ public class ReportView extends VerticalLayout implements RouterLayout{
 
 
 	private Tabs createTabs() {
+		System.out.println("creating tabs" );
 		tabComponentMap.put(new Tab(I18nProperties.getCaption(Captions.aggregateReport)),new AggregateReportView());
 		tabComponentMap.put(new Tab("Data Completness Reports"), new CompletionAnalysisTabsheet());
 		tabComponentMap.put(new Tab(I18nProperties.getCaption(Captions.mobileUsers)), new UserAnalysisView());
 //		tabComponentMap.put(new Tab(I18nProperties.getCaption(Captions.dataTimeliness)), new DataTimelinessReportTab());
+		
+		System.out.println("creating tabs created " );
+
 		
 		return new Tabs(tabComponentMap.keySet().toArray(new Tab[] {}));
 
