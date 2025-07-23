@@ -51,6 +51,7 @@ import de.symeda.sormas.api.i18n.Validations;
 import de.symeda.sormas.api.utils.DateHelper;
 import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
+import de.symeda.sormas.app.component.Item;
 import de.symeda.sormas.app.component.VisualState;
 import de.symeda.sormas.app.component.VisualStateControlType;
 import de.symeda.sormas.app.util.DateFormatHelper;
@@ -128,41 +129,6 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 		}
 
 		ControlDatePickerFragment fragment = new ControlDatePickerFragment();
-//		fragment.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
-//			@Override
-//			public void onDateSet(DatePicker view, int yy, int mm, int dd) {
-//				// Create calendar in device's local timezone
-//				Calendar cal = Calendar.getInstance();
-//
-//				// Set the exact date selected (mm is 0-based in DatePicker)
-//				cal.set(Calendar.YEAR, yy);
-//				cal.set(Calendar.MONTH, mm);
-//				cal.set(Calendar.DAY_OF_MONTH, dd);
-//
-//				// If you want to preserve existing time from cachedTime
-////				if (cachedTime != null) {
-////					Calendar cachedCal = Calendar.getInstance();
-////					cachedCal.setTime(cachedTime);
-////
-////					cal.set(Calendar.HOUR_OF_DAY, cachedCal.get(Calendar.HOUR_OF_DAY));
-////					cal.set(Calendar.MINUTE, cachedCal.get(Calendar.MINUTE));
-////					cal.set(Calendar.SECOND, cachedCal.get(Calendar.SECOND));
-////					cal.set(Calendar.MILLISECOND, cachedCal.get(Calendar.MILLISECOND));
-////				} else {
-//					// Set to current time if no cached time
-//					Calendar now = Calendar.getInstance();
-//					cal.set(Calendar.HOUR_OF_DAY, now.get(Calendar.HOUR_OF_DAY));
-//					cal.set(Calendar.MINUTE, now.get(Calendar.MINUTE));
-//					cal.set(Calendar.SECOND, now.get(Calendar.SECOND));
-//					cal.set(Calendar.MILLISECOND, now.get(Calendar.MILLISECOND));
-////				}
-//
-//				cachedTime = cal.getTime();
-//
-//				// Display only the date part in DD-MM-YYYY format
-//				input.setText(dateFormat.format(cachedTime));
-//			}
-
 		fragment.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
 			@Override
 			public void onDateSet(DatePicker view, int yy, int mm, int dd) {
@@ -213,6 +179,11 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 		this.fragmentManager = fm;
 	}
 
+	public void initializeDateField(final FragmentManager fm, Date initialValue) {
+		this.fragmentManager = fm;
+		setFieldValue(initialValue);
+	}
+
 	// Overrides
 
 	@Override
@@ -242,9 +213,6 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(dateOnly);
 				Calendar now = Calendar.getInstance();
-//				cal.set(Calendar.HOUR_OF_DAY, now.get(Calendar.HOUR_OF_DAY));
-//				cal.set(Calendar.MINUTE, now.get(Calendar.MINUTE));
-//				cal.set(Calendar.SECOND, now.get(Calendar.SECOND));
 
 				return cal.getTime();
 			} catch (ParseException e2) {
@@ -255,7 +223,7 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 	}
 
 	@Override
-	protected void setFieldValue(Date value) {
+	public void setFieldValue(Date value) {
 		cachedTime = value;
 		if (value == null) {
 			input.setText(null);
@@ -265,6 +233,8 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 
 //			input.setText(dateFormat.format(value));
 		}
+//		super.setFieldValue(value);
+
 	}
 
 	@Override

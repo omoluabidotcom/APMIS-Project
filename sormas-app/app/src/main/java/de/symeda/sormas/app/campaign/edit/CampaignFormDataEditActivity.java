@@ -88,6 +88,8 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
             return; // don't save multiple times
         }
 
+        boolean saveChecker = true;
+
         final CampaignFormData campaignFormDataToSave = getStoredRootEntity();
 
         campaign = DatabaseHelper.getCampaignDao().queryUuid(campaignFormDataToSave.getCampaign().getUuid());
@@ -133,37 +135,50 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
         campaignFormDataToSave.setFormValues(filledFormValues);
         campaignFormDataToSave.setSoruce(PlatformEnum.MOBILE);
 
-        saveTask = new SavingAsyncTask(getRootView(), campaignFormDataToSave) {
+        if(campaignFormDataToSave.getFormDate() == null){
+            saveChecker = false;
+        }
+        if (saveChecker) {
+            saveTask = new SavingAsyncTask(getRootView(), campaignFormDataToSave) {
 
-            @Override
-            public void doInBackground(TaskResultHolder resultHolder) throws DaoException {
+                @Override
+                public void doInBackground(TaskResultHolder resultHolder) throws DaoException {
 
-                if(!campaignFormDataToSave.isModifiedOrChildModified()){
-                    campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion()== null ? 1l  : campaignFormDataToSave.getRecordversion() + 1L);
-                }
+                    if(!campaignFormDataToSave.isModifiedOrChildModified()){
+                        campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion()== null ? 1l  : campaignFormDataToSave.getRecordversion() + 1L);
+                    }
 
 //                campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion() == null ? 1L : campaignFormDataToSave.getRecordversion());
 
-                DatabaseHelper.getCampaignFormDataDao().saveAndSnapshot(campaignFormDataToSave);
-            }
-
-            @Override
-            protected void onPostExecute(AsyncTaskResult<TaskResultHolder> taskResult) {
-                super.onPostExecute(taskResult);
-
-                if (taskResult.getResultStatus().isSuccess()) {
-                    Intent intent = new Intent();
-                    intent.setAction("REFRESH_ROW_COUNT");
-                    sendBroadcast(intent);
-
-                    finish();
-                } else {
-                 //   onResume(); // reload data
+                    DatabaseHelper.getCampaignFormDataDao().saveAndSnapshot(campaignFormDataToSave);
                 }
-                saveTask = null;
+
+                @Override
+                protected void onPostExecute(AsyncTaskResult<TaskResultHolder> taskResult) {
+                    super.onPostExecute(taskResult);
+
+                    if (taskResult.getResultStatus().isSuccess()) {
+                        Intent intent = new Intent();
+                        intent.setAction("REFRESH_ROW_COUNT");
+                        sendBroadcast(intent);
+
+                        finish();
+                    } else {
+                        //   onResume(); // reload data
+                    }
+                    saveTask = null;
+                }
+            }.executeOnThreadPool();
+
+        }else {
+            if(campaignFormDataToSave.getFormDate() == null){
+NotificationHelper.showNotification(this, ERROR, "Please selecte a valid Form Date ");
+
             }
-        }.executeOnThreadPool();
+
+            }
     }
+
     void setSetSubHeadingRowCountForCampaign(){
 
     };
