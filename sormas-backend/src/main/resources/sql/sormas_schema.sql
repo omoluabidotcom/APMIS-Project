@@ -11236,6 +11236,110 @@ INSERT INTO schema_version (version_number, comment) VALUES (485, 'Implementing 
 
 
 
+CREATE OR REPLACE FUNCTION public.get_flw_duplicate_error_analysis_dynamic(campaign_uuid text, area_uuid text, region_uuid text, district_uuid text, error_status_filter text, sort_by text, sort_asc boolean, limit_rows integer, offset_rows integer)
+ RETURNS TABLE(area text, region text, district text, firstname text, title text, tazkiranumber text, error_status text)
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+    base_query TEXT := $sql$
+    WITH duplicate_tazkiras AS (
+        SELECT (elem.value ->> 'value') AS tazkira_value
+        FROM campaignformdata cfd
+        CROSS JOIN LATERAL json_array_elements(cfd.formvalues) elem(value)
+        WHERE elem.value ->> 'id' = 'TazkiraNo'
+        GROUP BY (elem.value ->> 'value')
+        HAVING COUNT(*) > 1
+    ),
+    filtered_campaign_ids AS (
+        SELECT CAST(unnest(string_to_array(array_to_string(array_agg(id), ','), ',')) AS bigint) AS campaign_id
+        FROM flwduplicateerrorreport
+        GROUP BY value
+        HAVING COUNT(*) > 1
+    )
+    
+    SELECT 
+    a.name::TEXT AS area,
+    r.name::TEXT AS region,
+    d.name::TEXT AS district,
+--    c.clusternumber,
+--    c.externalid::BIGINT AS ccode,
+    (f1.value ->> 'value')::TEXT AS firstname,
+    (f2.value ->> 'value')::TEXT AS title,
+    (f3.value ->> 'value')::TEXT AS tazkiraNumber,
+    (CASE 
+        WHEN dt.tazkira_value IS NOT NULL THEN 'Error: Duplicate Tazkira number'
+        ELSE 'No Error'
+    END)::TEXT AS error_status
+
+    FROM campaignformdata cfd
+    INNER JOIN filtered_campaign_ids fci ON cfd.id = fci.campaign_id
+    LEFT JOIN campaignformmeta cfm ON cfd.campaignformmeta_id = cfm.id
+    LEFT JOIN region r ON cfd.region_id = r.id
+    LEFT JOIN areas a ON cfd.area_id = a.id
+    LEFT JOIN district d ON cfd.district_id = d.id
+--    LEFT JOIN community c ON cfd.community_id = c.id
+    LEFT JOIN campaigns camp ON cfd.campaign_id = camp.id
+    CROSS JOIN LATERAL json_array_elements(cfd.formvalues) f3(value)
+    LEFT JOIN LATERAL (
+        SELECT elem.value FROM json_array_elements(cfd.formvalues) elem(value)
+        WHERE elem.value ->> 'id' = 'FirstName' LIMIT 1
+    ) f1 ON TRUE
+    LEFT JOIN LATERAL (
+        SELECT elem.value FROM json_array_elements(cfd.formvalues) elem(value)
+        WHERE elem.value ->> 'id' = 'Title' LIMIT 1
+    ) f2 ON TRUE
+    LEFT JOIN LATERAL json_array_elements(cfm.campaignformelements) meta(value) ON TRUE
+    LEFT JOIN duplicate_tazkiras dt ON (f3.value ->> 'value') = dt.tazkira_value
+    WHERE (f3.value ->> 'id') = 'TazkiraNo'
+      AND (f3.value ->> 'id') = (meta.value ->> 'id') 
+$sql$;
+    
+    dynamic_query TEXT := base_query;
+    order_direction TEXT := CASE WHEN sort_asc THEN 'ASC' ELSE 'DESC' END;
+BEGIN
+    -- Add WHERE filters
+    IF campaign_uuid IS NOT NULL THEN
+        dynamic_query := dynamic_query || ' AND camp.uuid = ' || quote_literal(campaign_uuid);
+    END IF;
+
+    IF area_uuid IS NOT NULL THEN
+        dynamic_query := dynamic_query || ' AND a.uuid = ' || quote_literal(area_uuid);
+    END IF;
+
+    IF region_uuid IS NOT NULL THEN
+        dynamic_query := dynamic_query || ' AND r.uuid = ' || quote_literal(region_uuid);
+    END IF;
+
+    IF district_uuid IS NOT NULL THEN
+    
+        dynamic_query := dynamic_query || ' AND d.uuid = ' || quote_literal(district_uuid);
+    END IF;
+
+    IF error_status_filter IS NOT NULL THEN
+        dynamic_query := dynamic_query || ' AND (CASE WHEN dt.tazkira_value IS NOT NULL THEN ''Error: Duplicate Tazkira number'' ELSE ''No Error'' END) = ' || quote_literal(error_status_filter);
+    END IF;
+
+    -- ORDER BY
+    IF sort_by IS NOT NULL THEN
+        dynamic_query := dynamic_query || ' ORDER BY ' || quote_ident(sort_by) || ' ' || order_direction;
+    END IF;
+
+    -- Pagination
+    dynamic_query := dynamic_query || ' LIMIT ' || limit_rows || ' OFFSET ' || offset_rows;
+
+    -- Execute dynamic SQL
+    RETURN QUERY EXECUTE dynamic_query;
+
+END;
+$function$
+;
+
+
+INSERT INTO schema_version (version_number, comment) VALUES (486, 'Updating FLW Analysis Query');
+
+
+
+
 
 
 

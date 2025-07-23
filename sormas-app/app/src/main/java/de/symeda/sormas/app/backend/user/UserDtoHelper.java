@@ -107,7 +107,9 @@ public class UserDtoHelper extends AdoDtoHelper<User, UserDto> {
 
 		target.setAssociatedOfficer(DatabaseHelper.getUserDao().getByReferenceDto(source.getAssociatedOfficer()));
 		target.setLimitedDisease(source.getLimitedDisease());
-		target.setToken(source.getToken());
+
+		System.out.println("------source.getToken()source.getToken()source.getToken()source.getToken()source.getToken()" + source.getToken());
+//		target.setToken(source.getToken());
 
 		target.setAddress(locationHelper.fillOrCreateFromDto(target.getAddress(), source.getAddress()));
 		target.setPhone(source.getPhone());
@@ -118,31 +120,9 @@ public class UserDtoHelper extends AdoDtoHelper<User, UserDto> {
 	protected void fillInnerFromAdo(UserDto target, User source) {
 		// TODO
 //		throw new UnsupportedOperationException("Can't change users in app");
-		target.setActive(source.isActive());
-		target.setUserName(source.getUserName().toLowerCase());
-		target.setFirstName(source.getFirstName());
-		target.setLastName(source.getLastName());
-		target.setUserEmail(source.getUserEmail());
-
-		if (source.getUserRoles().size() > 0) {
-			target.setUserRoles(source.getUserRoles());
-		}
-
-		if (source.getUserFormAccess().size() > 0) {
-			target.setFormAccess(source.getUserFormAccess());
-		}
-
-		target.setRegion(RegionDtoHelper.toReferenceDto(source.getRegion()));
-		target.setDistrict(DistrictDtoHelper.toReferenceDto(source.getDistrict()));
-		//target.setCommunity(DatabaseHelper.getCommunityDao().getByReferenceDto(source.getCommunity()));
-		target.setHealthFacility(FacilityDtoHelper.toReferenceDto(source.getHealthFacility()));
-		target.setPointOfEntry(PointOfEntryDtoHelper.toReferenceDto(source.getPointOfEntry()));
-
-		target.setAssociatedOfficer(UserDtoHelper.toReferenceDto(source));
-		target.setLimitedDisease(source.getLimitedDisease());
+		System.out.println("source.getToken()source.getToken()source.getToken()source.getToken()source.getToken()" + source.getToken());
 		target.setToken(source.getToken());
-		target.setAddress(locationHelper.adoToDto(source.getAddress()));
-		target.setPhone(source.getPhone());
+
 	}
 
 	public static UserReferenceDto toReferenceDto(User ado) {

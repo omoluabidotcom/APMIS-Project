@@ -11,6 +11,8 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -181,7 +183,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 	Button updateFormDataUnitAssignment = new Button("Update Form Data Unit");
 	Button cancelFormDataUnitAssignment = new Button("Cancel");
 
-	DatePicker formDate = new DatePicker();
+	TextField formDate = new TextField();
 	private boolean openData = false;
 	private String uuidForm;
 	private boolean checkDistrictEntry = false;
@@ -246,10 +248,16 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		formDate.setLabel(I18nProperties.getCaption(Captions.CampaignFormData_formDate));
 		LocalDate today = LocalDate.now();
-		formDate.setValue(today);
+		
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+		String formattedDate = today.format(formatter);
+
+		
+		formDate.setValue(formattedDate);
 		formDate.setRequired(true);
 		formDate.setId("my-disabled-textfield");
 		formDate.getStyle().set("-webkit-text-fill-color", "green !important");
+
 
 		//
 
@@ -259,15 +267,34 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		cbArea = new ComboBox<>(I18nProperties.getCaption(Captions.area));
 		cbArea.setRequired(true);
+ArrayList<String> areaNasmesExtract = new ArrayList<String>();
 
+System.out.println("222dtodtodtodtodtodtodtodtodtodtodtodtodtodto------------------------" + FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), userProvider.getUser().getLanguage().toString()).size());
+
+		if(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), userProvider.getUser().getLanguage().toString()).size() > 0) {
 		if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-			cbArea.setItems(FacadeProvider.getAreaFacade().getAllActiveAsReferencePashto());
+			cbArea.setItems(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Pashto"));
+//			cbArea.setItems(FacadeProvider.getAreaFacade().getAllActiveAsReferencePashto());
 		} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-			cbArea.setItems(FacadeProvider.getAreaFacade().getAllActiveAsReferenceDari());
+			cbArea.setItems(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Dari"));
+//			cbArea.setItems(FacadeProvider.getAreaFacade().getAllActiveAsReferenceDari());
 		} else {
-
-			cbArea.setItems(FacadeProvider.getAreaFacade().getAllActiveAsReference());
-
+			for(AreaReferenceDto dto : FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "English")) {
+				System.out.println("dtodtodtodtodtodtodtodtodtodtodtodtodtodto------------------------");
+				areaNasmesExtract.add(dto.getCaption());
+			}
+			
+			for (String nameInQuestion : areaNasmesExtract) {
+				cbArea.setItems(FacadeProvider.getAreaFacade().getByName(nameInQuestion, false));
+			}
+		}
+		
+		
+		
+		
+		}else {
+			cbArea.setItems(new ArrayList<AreaReferenceDto>());
+	
 		}
 		cbArea.setId("my-disabled-textfield");
 		cbArea.getStyle().set("-webkit-text-fill-color", "green !important");
@@ -734,7 +761,10 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 			System.out.println(localDate + "checking if localDate is null fom form builder" + formData.getFormDate());
 
-			formDate.setValue(localDate);
+			DateTimeFormatter formatterx = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+			String formattedDatex = localDate.format(formatterx);
+
+			formDate.setValue(formattedDatex);
 			cbArea.clear();
 			cbArea.setValue(formData.getArea());
 			cbRegion.clear();
@@ -1696,6 +1726,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					TimePicker timePicker = new TimePicker();
 					timePicker.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
 					timePicker.setStep(Duration.ofMinutes(30));
+					timePicker.setLocale(Locale.forLanguageTag("fi"));
 //				timePickear.setValue(LocalTime.of(5, 30));
 					timePicker.setAutoOpen(true);
 
@@ -1745,40 +1776,71 @@ public class CampaignFormBuilder extends VerticalLayout {
 		return orderValue;
 	}
 	
-	private Date parseDateFromString(Object value) throws ParseException {
-	    if (value == null) return null;
-	    
-	    String dateStr = value.toString().trim();
-	    if (dateStr.isEmpty()) return null;
+	private static Date parseDateFromString(Object value) throws Exception {
+	    if (value instanceof Date) {
+	        return (Date) value;
+	    } else if (value instanceof LocalDate) {
+	        return Date.from(((LocalDate) value).atStartOfDay(ZoneId.systemDefault()).toInstant());
+	    } else if (value instanceof String) {
+	        String stringValue = ((String) value).trim();
 
-	    try {
-	        return new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").parse(dateStr);
-	    } catch (ParseException e) {
-	    	
-	    	try {
-		        return new SimpleDateFormat("dd-MM-yyyy").parse(dateStr);
+	        if (stringValue.isEmpty()) {
+	            return null;
+	        }
 
-	    	}catch(ParseException ex) {
-	            // Fallback to other likely formats
-		        String[] possibleFormats = {
-		            "yyyy-MM-dd",          // ISO format
-		            "MM/dd/yyyy",         // US format
-		            "EEE MMM dd HH:mm:ss z yyyy"  // Default toString() format
-		        };
-		        
-		        for (String format : possibleFormats) {
-		            try {
-		                return new SimpleDateFormat(format).parse(dateStr);
-		            } catch (ParseException ignored) {
-		                // Try next format
-		            }
-		        }
-	    	}
-	
+	        // Try known formats in order
+	        List<String> formats = Arrays.asList("dd-MM-yyyy", "yyyy-MM-dd", "MM/dd/yyyy");
+
+	        for (String format : formats) {
+	            try {
+	                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+	                LocalDate localDate = LocalDate.parse(stringValue, formatter);
+	                return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+	            } catch (DateTimeParseException e) {
+	            	
+	            }
+	        }
+	        throw new IllegalArgumentException("Unrecognized date format: " + stringValue);
+	    } else {
+	        throw new IllegalArgumentException("Unsupported date value type: " + value.getClass());
 	    }
-	    
-	    throw new ParseException("Could not parse date: " + dateStr, 0);
 	}
+
+//	
+//	private Date parseDateFromString(Object value) throws ParseException {
+//	    if (value == null) return null;
+//	    
+//	    String dateStr = value.toString().trim();
+//	    if (dateStr.isEmpty()) return null;
+//
+//	    try {
+//	        return new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").parse(dateStr);
+//	    } catch (ParseException e) {
+//	    	
+//	    	try {
+//		        return new SimpleDateFormat("dd-MM-yyyy").parse(dateStr);
+//
+//	    	}catch(ParseException ex) {
+//	            // Fallback to other likely formats
+//		        String[] possibleFormats = {
+//		            "yyyy-MM-dd",          // ISO format
+//		            "MM/dd/yyyy",         // US format
+//		            "EEE MMM dd HH:mm:ss z yyyy"  // Default toString() format
+//		        };
+//		        
+//		        for (String format : possibleFormats) {
+//		            try {
+//		                return new SimpleDateFormat(format).parse(dateStr);
+//		            } catch (ParseException ignored) {
+//		                // Try next format
+//		            }
+//		        }
+//	    	}
+//	
+//	    }
+//	    
+//	    throw new ParseException("Could not parse date: " + dateStr, 0);
+//	}
 
 	public <T extends Component> void setFieldValue(T field, CampaignFormElementType type, Object value,
 			Map<String, String> options, String defaultvalue, Boolean isErrored, Object defaultErrorMsgr) {
@@ -2093,16 +2155,14 @@ public class CampaignFormBuilder extends VerticalLayout {
 		case DATE:
 		    if (value != null) {
 		        try {
-		            String stringValue = value.toString().trim();
-		            if (!stringValue.isEmpty()) {
-		                Date date = parseDateFromString(value);
-		                LocalDate localDate = date.toInstant()
-		                    .atZone(ZoneId.systemDefault())
-		                    .toLocalDate();		                    
-		                ((DatePicker) field).setValue(localDate);
-		            } else {
-		                ((DatePicker) field).setValue(null);
-		            }
+		            Date date = parseDateFromString(value);
+		            LocalDate localDate = date.toInstant()
+		                .atZone(ZoneId.systemDefault())
+		                .toLocalDate();
+
+		            DatePicker datePicker = (DatePicker) field;
+		            datePicker.setLocale(Locale.UK);
+		            datePicker.setValue(localDate);
 		        } catch (Exception e) {
 		            logger.error("Error parsing date value: " + value, e);
 		            ((DatePicker) field).setValue(null);
@@ -2111,6 +2171,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 		        ((DatePicker) field).setValue(null);
 		    }
 		    break;
+
 		case RADIO:
 			((RadioButtonGroup) field).setValue(Sets.newHashSet(value).toString().replace("[", "").replace("]", ""));
 			break;
@@ -2514,9 +2575,17 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 			if (field instanceof DatePicker) {
 //				logger.debug(((DatePicker) field).getValue() + "______________________))");
+//
+//				String valc = ((DatePicker) field).getValue() != null ? ((DatePicker) field).getValue().toString()
+//						: null;
+//
+//				return new CampaignFormDataEntry(id, valc);
+				
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-				String valc = ((DatePicker) field).getValue() != null ? ((DatePicker) field).getValue().toString()
-						: null;
+				String valc = ((DatePicker) field).getValue() != null
+				        ? ((DatePicker) field).getValue().format(formatter)
+				        : null;
 
 				return new CampaignFormDataEntry(id, valc);
 			} else if (field instanceof TimePicker) {
@@ -2753,6 +2822,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 				boolean ccodeChecker = true;
 				UserProvider userProvider = new UserProvider();
 				List<CampaignFormDataEntry> entries = getFormValues();
+				
+				
 
 				System.out.println(isDistrictEntry + " gdgdgdtdgststsggtegstsgsgsfs");
 				if (!isDistrictEntry) {
@@ -2768,6 +2839,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 						if (sdxc.getId().equalsIgnoreCase("LotClusterNo")) {
 							lotClusterNo = sdxc;
 						}
+						
+				
 					}
 
 					List<CampaignFormDataIndexDto> lotchecker = FacadeProvider.getCampaignFormDataFacade()
@@ -2806,8 +2879,13 @@ public class CampaignFormBuilder extends VerticalLayout {
 				}
 
 				if (saveChecker) {
-					Date dateData = Date.from(formDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant());
+//					Date dateData = Date.from(formDate.getValue());
 
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+					LocalDate localDate = LocalDate.parse(formDate.getValue(), formatter);
+
+					// Convert LocalDate to java.util.Date
+					Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 //					CampaignFormDataDto dataDto = CampaignFormDataDto.build(campaignReferenceDto, campaignFormMeta,
 //							cbArea.getValue(), cbRegion.getValue(), cbDistrict.getValue(), cbCommunity.getValue());
 
@@ -2818,7 +2896,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 								campaignFormMeta, cbArea.getValue(), cbRegion.getValue(), cbDistrict.getValue());
 
 //						dataDto.setDistrictEntryForm(isDistrictEntry);
-						dataDto.setFormDate(dateData);
+						dataDto.setFormDate(date);
 						dataDto.setCreatingUser(userProvider.getUserReference());
 						dataDto.setFormValues(entries);
 						dataDto.setSource("WEB");
@@ -2837,7 +2915,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 								cbArea.getValue(), cbRegion.getValue(), cbDistrict.getValue(), cbCommunity.getValue());
 
 //						dataDto.setDistrictEntryForm(!isDistrictEntry);
-						dataDto.setFormDate(dateData);
+						dataDto.setFormDate(date);
 						dataDto.setCreatingUser(userProvider.getUserReference());
 						dataDto.setFormValues(entries);
 						dataDto.setSource("WEB");
