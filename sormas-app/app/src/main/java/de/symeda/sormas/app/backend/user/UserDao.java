@@ -16,6 +16,7 @@
 package de.symeda.sormas.app.backend.user;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 import com.j256.ormlite.dao.Dao;
@@ -178,6 +179,7 @@ public class UserDao extends AbstractAdoDao<User> {
 
 			if (user != null) {
 				user.setToken(token);
+//				user.setChangeDate(new Date());
 //				user.setModified(true);
 				dao.update(user);
 			} else {

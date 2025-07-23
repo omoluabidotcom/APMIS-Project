@@ -63,6 +63,7 @@ import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.component.controls.ControlCheckBoxField;
 import de.symeda.sormas.app.component.controls.ControlDateField;
+import de.symeda.sormas.app.component.controls.ControlDecimalEditField;
 import de.symeda.sormas.app.component.controls.ControlPhoneField;
 import de.symeda.sormas.app.component.controls.ControlPropertyField;
 import de.symeda.sormas.app.component.controls.ControlSpinnerField;
@@ -123,10 +124,31 @@ public class CampaignFormDataFragmentUtils {
                                         ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? null : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
                                         // }
                                     }
-
-
                                 }
-
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            if (dynamicField instanceof ControlDecimalEditField) {
+                                String formattedValue;
+                                if (valuex != null) {
+                                    double numValue;
+                                    try {
+                                        numValue = Double.parseDouble(valuex);
+                                        if (numValue == Math.floor(numValue)) {
+                                            // It's a whole number, remove decimal part
+                                            formattedValue = String.format("%.0f", numValue);
+                                        } else {
+                                            // It has decimals, format to one decimal place
+                                            formattedValue = String.format("%.1f", numValue);
+                                        }
+                                        // Handle zero case
+                                        if (numValue == 0) {
+                                            formattedValue = "0";
+                                        }
+                                    } catch (NumberFormatException e) {
+                                        formattedValue = valuex;
+                                    }
+                                    ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, formattedValue);
+                                }
+                            }
                         } else if (type == CampaignFormElementType.NUMBER) {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? "0" : (expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString()));
 
@@ -212,6 +234,31 @@ public class CampaignFormDataFragmentUtils {
                         } else if (type == CampaignFormElementType.NUMBER) {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? "0" : (expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString()));
 
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+
+                            if (dynamicField instanceof ControlDecimalEditField) {
+                                String formattedValue;
+                                if (valuex != null) {
+                                    double numValue;
+                                    try {
+                                        numValue = Double.parseDouble(valuex);
+                                        if (numValue == Math.floor(numValue)) {
+                                            // It's a whole number, remove decimal part
+                                            formattedValue = String.format("%.0f", numValue);
+                                        } else {
+                                            // It has decimals, format to one decimal place
+                                            formattedValue = String.format("%.1f", numValue);
+                                        }
+                                        // Handle zero case
+                                        if (numValue == 0) {
+                                            formattedValue = "0";
+                                        }
+                                    } catch (NumberFormatException e) {
+                                        formattedValue = valuex;
+                                    }
+                                    ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, formattedValue);
+                                }
+                            }
                         } else if (expressionValue.getClass().isAssignableFrom(Boolean.class)) {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, (Double) (!Double.isFinite((double) expressionValue) ? 0 : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : df.format((double) expressionValue)));
                         } else {
@@ -735,6 +782,124 @@ public class CampaignFormDataFragmentUtils {
             }
 
 
+        };
+    }
+
+
+    public static ControlDecimalEditField createControlTextEditFieldDecimal(
+            CampaignFormElement campaignFormElement,
+            Context context,
+            Map<String, String> userTranslations,
+            Boolean isDecimalField,
+            Boolean isRequired,
+            Integer minVal,
+            Integer maxVal,
+            Boolean isExpression,
+            Boolean warnOnError) {
+
+        System.out.println(context+" --------------------- running range stage 1 : "+isExpression);
+        final boolean isExpressionx = isExpression;
+        return new ControlDecimalEditField(context) {
+
+
+
+            @Override
+            protected String getPrefixDescription() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getPrefixCaption() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            public int getTextAlignment() {
+                return View.TEXT_ALIGNMENT_VIEW_START;
+            }
+
+            @Override
+            public int getGravity() {
+                return Gravity.CENTER_VERTICAL;
+            }
+
+            @Override
+            public int getMaxLines() {
+                return 1;
+            }
+
+            @Override
+            public int getMaxLength() {
+                return 8;
+            }
+
+            @Override
+            public int getMinLength() {
+                return 1;
+            }
+
+
+            @Override
+            protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
+                super.inflateView(context, attrs, defStyle);
+                initLabel();
+                initLabelAndValidationListeners();
+                setLiveValidationDisabled(true);
+                initInput(isDecimalField, isRequired, true, minVal, maxVal, isExpressionx, warnOnError);
+//                setVisibility(GONE);
+            }
+
+
+        };
+    }
+
+    public static ControlDecimalEditField createControlTextEditFieldDecimalExpression(
+            CampaignFormElement campaignFormElement,
+            Context context,
+            Map<String, String> userTranslations,
+            Boolean isDecimalField,
+            Boolean isRequired,
+            String errorMsg) {
+        return new ControlDecimalEditField(context) {
+
+            @Override
+            protected String getPrefixDescription() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getPrefixCaption() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            public int getTextAlignment() {
+                return View.TEXT_ALIGNMENT_VIEW_START;
+            }
+
+            @Override
+            public int getGravity() {
+                return Gravity.CENTER_VERTICAL;
+            }
+
+            @Override
+            public int getMaxLines() {
+                return 1;
+            }
+
+            @Override
+            public int getMaxLength() {
+                return CHARACTER_LIMIT_DEFAULT;
+            }
+
+            @Override
+            protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
+                super.inflateView(context, attrs, defStyle);
+                initLabel();
+                initLabelAndValidationListenersErrorMsg(errorMsg);
+                setLiveValidationDisabled(true);
+                initInput(isDecimalField, isRequired, true, null, null, true, false);
+            }
         };
     }
 

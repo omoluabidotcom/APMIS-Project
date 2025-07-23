@@ -295,7 +295,7 @@ public class MessagingLayout extends VerticalLayout {
 			messageDto.setCreatingUser(userProvider.getUser().getUserName());
 			fireEvent(new SaveEvent(this, messageDto));
 
-			Notification notification = new Notification("New Message Created", 3000, Position.MIDDLE);
+			Notification notification = new Notification("Message Sent", 3000, Position.MIDDLE);
 			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 			notification.open();
 			UI.getCurrent().getPage().reload();

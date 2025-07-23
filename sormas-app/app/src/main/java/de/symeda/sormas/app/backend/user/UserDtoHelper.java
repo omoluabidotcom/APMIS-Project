@@ -46,7 +46,9 @@ public class UserDtoHelper extends AdoDtoHelper<User, UserDto> {
 	}
 
 	@Override
-	protected Class<UserDto> getDtoClass() {return UserDto.class;}
+	protected Class<UserDto> getDtoClass() {
+		throw new UnsupportedOperationException();
+	}
 
 	@Override
 	protected Call<List<UserDto>> pullAllSince(long since) throws NoConnectionException {
@@ -85,8 +87,11 @@ public class UserDtoHelper extends AdoDtoHelper<User, UserDto> {
 
 	@Override
 	protected void fillInnerFromDto(User target, UserDto source) {
+		System.out.println("fillInnerFromDtostarttttttttttttttttttttttttttttttttttttttttttttttttt");
 		target.setActive(source.isActive());
+//		System.out.println(target.getUserName().toLowerCase() + " username before to sqlite database " + source.getUserName().toLowerCase());
 		target.setUserName(source.getUserName().toLowerCase());
+//		System.out.println(target.getUserName().toLowerCase() + " username after to sqlite database " + source.getUserName().toLowerCase());
 		target.setFirstName(source.getFirstName());
 		target.setLastName(source.getLastName());
 		target.setUserEmail(source.getUserEmail());
@@ -104,13 +109,8 @@ public class UserDtoHelper extends AdoDtoHelper<User, UserDto> {
 		//target.setCommunity(DatabaseHelper.getCommunityDao().getByReferenceDto(source.getCommunity()));
 		target.setHealthFacility(DatabaseHelper.getFacilityDao().getByReferenceDto(source.getHealthFacility()));
 		target.setPointOfEntry(DatabaseHelper.getPointOfEntryDao().getByReferenceDto(source.getPointOfEntry()));
-
 		target.setAssociatedOfficer(DatabaseHelper.getUserDao().getByReferenceDto(source.getAssociatedOfficer()));
 		target.setLimitedDisease(source.getLimitedDisease());
-
-		System.out.println("------source.getToken()source.getToken()source.getToken()source.getToken()source.getToken()" + source.getToken());
-//		target.setToken(source.getToken());
-
 		target.setAddress(locationHelper.fillOrCreateFromDto(target.getAddress(), source.getAddress()));
 		target.setPhone(source.getPhone());
 		//target.setLanguage(source.getLanguage());
@@ -118,9 +118,6 @@ public class UserDtoHelper extends AdoDtoHelper<User, UserDto> {
 
 	@Override
 	protected void fillInnerFromAdo(UserDto target, User source) {
-		// TODO
-//		throw new UnsupportedOperationException("Can't change users in app");
-		System.out.println("source.getToken()source.getToken()source.getToken()source.getToken()source.getToken()" + source.getToken());
 		target.setToken(source.getToken());
 
 	}

@@ -17,6 +17,9 @@ package de.symeda.sormas.app.component.controls;
 
 import static de.symeda.sormas.app.core.notification.NotificationType.WARNING;
 
+import android.app.ActivityManager;
+import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
@@ -32,24 +35,25 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.databinding.BindingAdapter;
 import androidx.databinding.InverseBindingAdapter;
 import androidx.databinding.InverseBindingListener;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.core.env.SystemEnvironmentPropertySource;
+
+import java.math.BigDecimal;
 
 import de.symeda.sormas.api.utils.FieldConstraints;
 import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
-import de.symeda.sormas.app.campaign.edit.CountryDetails;
 import de.symeda.sormas.app.component.VisualState;
 import de.symeda.sormas.app.component.VisualStateControlType;
 import de.symeda.sormas.app.core.NotificationContext;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
 
-public class ControlPhoneField extends ControlPropertyEditField<String> {
+public class ControlDecimalEditField extends ControlPropertyEditField<Double> {
 
     // Views
     protected EditText input;
@@ -67,23 +71,18 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
     protected InverseBindingListener inverseBindingListener;
     private OnClickListener onClickListener;
 
-    private Map<String, CountryDetails> mapvalue = new HashMap<>();
-
     // Constructors
 
-    public ControlPhoneField(Context context) {
+    public ControlDecimalEditField(Context context) {
         super(context);
-        addMapValue();
     }
 
-    public ControlPhoneField(Context context, AttributeSet attrs) {
+    public ControlDecimalEditField(Context context, AttributeSet attrs) {
         super(context, attrs);
-        addMapValue();
     }
 
-    public ControlPhoneField(Context context, AttributeSet attrs, int defStyle) {
+    public ControlDecimalEditField(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        addMapValue();
     }
 
     // Instance methods
@@ -110,7 +109,7 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
                     if (id != NO_ID) {
                         View nextView = v.getRootView().findViewById(id);
                         if (nextView != null && nextView.getVisibility() == VISIBLE) {
-                            if (nextView instanceof ControlPhoneField) {
+                            if (nextView instanceof ControlDecimalEditField) {
                                 requestFocusForContentView(nextView);
                             } else if (nextView instanceof ControlPropertyField) {
                                 ((ControlPropertyField) nextView).requestFocusForContentView(nextView);
@@ -197,21 +196,25 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
     // Overrides
 
     @Override
-    public String getValue() {
-        return (String) super.getValue();
+    public Double getValue() {
+        return (Double) super.getValue();
     }
 
     @Override
-    protected String getFieldValue() {
-        if (input.getText() == null) {
-            return null;
+    protected Double getFieldValue() {
+        if (input.getText().toString() != null && !input.getText().toString().isEmpty()) {
+        return Double.parseDouble(input.getText().toString());
         }
-        return input.getText().toString();
+        return null;
     }
 
     @Override
-    protected void setFieldValue(String value) {
-        input.setText(value);
+    protected void setFieldValue(Double value) {
+        if(value != null) {
+        input.setText(value.toString());
+        } else {
+            input.setText(null);
+        }
     }
 
     @Override
@@ -243,7 +246,7 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
                 minLength = a.getInt(
                         R.styleable.ControlTextEditField_minLength,
                         textArea ? FieldConstraints.CHARACTER_LIMIT_BIG : FieldConstraints.CHARACTER_LIMIT_DEFAULT);
-                inputType = a.getInt(R.styleable.ControlTextEditField_inputType, InputType.TYPE_CLASS_TEXT);
+                inputType = a.getInt(R.styleable.ControlTextEditField_inputType, InputType.TYPE_CLASS_NUMBER);
             } finally {
                 a.recycle();
             }
@@ -274,9 +277,14 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
         initInput(false, false, false, null, null, false, false);
     }
 
-    protected void initInput(boolean isIntegerFlag, boolean isRequired, boolean isRange, Integer minValue, Integer maxValue, Boolean isExpression, Boolean warnOnError) {
+    protected void initInput(boolean isIntegerFlag, boolean isRequired, boolean isDecimal, Integer minValue, Integer maxValue, Boolean isExpression, Boolean warnOnError) {
 
         input = (EditText) this.findViewById(R.id.text_input);
+        //if (getImeOptions() == EditorInfo.IME_NULL) {
+        //	setImeOptions(EditorInfo.IME_ACTION_DONE);
+        //}
+        //	input.setImeOptions(getImeOptions());
+        //input.setImeActionLabel(null, getImeOptions());
         input.setTextAlignment(getTextAlignment());
         if (getTextAlignment() == View.TEXT_ALIGNMENT_GRAVITY) {
             input.setGravity(getGravity());
@@ -298,15 +306,21 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
         }
 
         required = isRequired;
+/*
+		if (getMinLength() >= 0) {
+			input.setFilters(
+					new InputFilter[] {
+							new InputFilter.LengthFilter(getMinLength()) });
+		}
+*/
 
         CharSequence valx = input.getText();
         if (valx == null && required) {
-            //  setSoftRequired(true);
+              setSoftRequired(true);
 
             //   input.setError("!");
             return;
         }
-
 
         input.addTextChangedListener(new TextWatcher() {
 
@@ -321,49 +335,73 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 onChangeData = charSequence+"";
-
-                /*if (isRange && isExpression && isRequired){
-                    System.out.println((onChangeData.length() == 0) +" =XXXXXXXXXXX ENTERSSSSS XXXXXXXX =" +(beforeData.length() > 0));
-                    if(beforeData.length() > 0 && onChangeData.length() == 0) {
-                        enableErrorState("Number not in provided range!");
-                        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx");
-
-                    }*/
-                //  }
             }
 
             @Override
             public void afterTextChanged(Editable editablex) {
 
-                System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx "+editablex.toString());
+                System.out.println("===================================================== "+editablex.toString());
+                System.out.println("===================================================== "+input.getId());
 
                 if (inverseBindingListener != null) {
                     inverseBindingListener.onChange();
                 }
                 onValueChanged();
-                String valuesHolder = "";
-                String validatingHolder = "";
-                int max = 0;
-                int min = 0;
-//                Integer validatingHolderInt = 0;
 
-                for (Map.Entry<String, CountryDetails> mapEachValues: mapvalue.entrySet()) {
-                    if(editablex.toString().startsWith(mapEachValues.getValue().getDialCode())) {
-                        max = mapEachValues.getValue().getMaxLength();
-                        min = mapEachValues.getValue().getMinLength();
-                        valuesHolder = mapEachValues.getValue().getDialCode();
-                        validatingHolder = editablex.toString().replace(mapEachValues.getValue().getDialCode(), "");
-                        System.out.println("valuesHoldervaluesHoldervaluesHolder " + valuesHolder + " replacersss " + editablex.toString().replace(mapEachValues.getValue().getDialCode(), ""));
-                        break;
+                if (isDecimal && minValue != null && maxValue != null) {
+                    if (minValue != null && maxValue != null && input.getText() != null) {
+                        if (!input.getText().toString().equals("") && !input.getText().toString().isEmpty()) {
+                            try {
+                                double valxx = Double.parseDouble(input.getText().toString());
+                                if (valxx >= minValue && valxx <= maxValue) {
+                                    // Valid value
+                                } else if (warnOnError) {
+                                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING,
+                                            "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                } else {
+                                    input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+//                                    setErrorIfEmptyRange();
+                                    enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                }
+                            } catch (NumberFormatException e) {
+                                // Handle case where text doesn't parse as a number
+                                if (warnOnError) {
+                                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING,
+                                            "Please enter a valid number");
+                                } else {
+                                    input.setError("Please enter a valid number");
+                                    enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                }
+                            }
+                        }
                     }
                 }
 
-                if(validatingHolder.length() > max || validatingHolder.length() < min) {
-                    setErrorIfEmptyRange();
-                    enableErrorState("Mobile Number cannot be less than " + min + " or greater than " + max);
-                    input.setError("Mobile Number cannot be less than " + min + " or greater than " + max);
-                } else {
-                    input.setError(null);
+                input.setError(null);
+                if (isDecimal && isExpression && isRequired){
+                    try {
+                        if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
+                            int beforeDatavalxx = Integer.parseInt(beforeData.toString());
+                            int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
+                            if (beforeData.length() > 0 && onChangeData.length() == 0) {
+                                input.setError("Please enter a valid Decimal");
+                                enableErrorState("Decimal not Valid!");
+                            }
+                        }
+                    }catch (NumberFormatException e){
+                        input.setError("Please enter a valid Decimal");
+                        enableErrorState("Decimal not Valid!");
+                    }
+                } else if(isDecimal && isExpression && !isRequired){
+                    try {
+                        if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
+                            int beforeDatavalxx = Integer.parseInt(beforeData.toString());
+                            int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
+                        }
+                    }catch (NumberFormatException e){
+                        input.setError("Please enter a valid Decimal");
+                        enableErrorState("Decimal not Valid!");
+                    }
                 }
             }
         });
@@ -371,6 +409,8 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
         setUpOnEditorActionListener();
         setUpOnFocusChangeListener();
         initializeOnClickListener();
+
+
     }
 
     private void NumberNumericValueValidator(String errorMessage, String minValue, String maxValue) {
@@ -394,13 +434,14 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
     @Override
     protected void requestFocusForContentView(View nextView) {
         if (nextView != null) {
-            ((ControlPhoneField) nextView).input.requestFocus();
-            ((ControlPhoneField) nextView).setCursorToRight();
+            ((ControlDecimalEditField) nextView).input.requestFocus();
+            ((ControlDecimalEditField) nextView).setCursorToRight();
         }
     }
 
     @Override
     protected void changeVisualState(VisualState state) {
+        System.out.println("VisualStateVisualStateVisualState " + state.toString());
         if (getUserEditRight() != null && !ConfigProvider.hasUserRight(getUserEditRight())) {
             state = VisualState.DISABLED;
         }
@@ -444,79 +485,20 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
     // Data binding, getters & setters
 
     @BindingAdapter("value")
-    public static void setValue(ControlPhoneField view, String text) {
-        view.setFieldValue(text);
-    }
-
-    @BindingAdapter("value")
-    public static void setValue(ControlPhoneField view, Integer integerValue) {
-        if (integerValue != null) {
-            view.setFieldValue(String.valueOf(integerValue));
-        } else {
-            view.setFieldValue(null);
+    public static void setValue(ControlDecimalEditField view, String text) {
+        System.out.println("texttexttexttexttextccccccccccccccccccc " + text);
+        if(text != null && !text.isEmpty()) {
+            view.setFieldValue(Double.parseDouble(text));
         }
-    }
-
-    @BindingAdapter("value")
-    public static void setValue(ControlPhoneField view, Float floatValue) {
-        if (floatValue != null) {
-            view.setFieldValue(String.valueOf(floatValue));
-        } else {
-            view.setFieldValue(null);
-        }
-    }
-
-    @BindingAdapter("value")
-    public static void setValue(ControlPhoneField view, Double doubleValue) {
-        if (doubleValue != null) {
-            view.setFieldValue(String.valueOf(doubleValue));
-        } else {
-            view.setFieldValue(null);
-        }
-    }
-
-    public void setDoubleValue(Double doubleValue) {
-        setValue(this, doubleValue);
-    }
-
-    public void setFloatValue(Float floatValue) {
-        setValue(this, floatValue);
     }
 
     @InverseBindingAdapter(attribute = "value", event = "valueAttrChanged")
-    public static String getValue(ControlPhoneField view) {
+    public static Double getValue(ControlDecimalEditField view) {
         return view.getFieldValue();
     }
 
-    @InverseBindingAdapter(attribute = "value", event = "valueAttrChanged")
-    public static Integer getIntegerValue(ControlPhoneField view) {
-        if (view.getFieldValue() != null && !view.getFieldValue().isEmpty()) {
-            return Integer.valueOf(view.getFieldValue());
-        } else {
-            return null;
-        }
-    }
-
-    @InverseBindingAdapter(attribute = "value", event = "valueAttrChanged")
-    public static Float getFloatValue(ControlPhoneField view) {
-        if (view.getFieldValue() != null && !view.getFieldValue().isEmpty()) {
-            return Float.valueOf(view.getFieldValue());
-        } else {
-            return null;
-        }
-    }
-
-    @InverseBindingAdapter(attribute = "value", event = "valueAttrChanged")
-    public static Double getDoubleValue(ControlPhoneField view) {
-        if (view.getFieldValue() != null && !view.getFieldValue().isEmpty()) {
-            return Double.valueOf(view.getFieldValue());
-        } else {
-            return null;
-        }
-    }
-
     @BindingAdapter("valueAttrChanged")
-    public static void setListener(ControlPhoneField view, InverseBindingListener listener) {
+    public static void setListener(ControlDecimalEditField view, InverseBindingListener listener) {
         view.inverseBindingListener = listener;
     }
 
@@ -579,60 +561,5 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
 
     public void setMinLength(int minLength) {
         this.minLength = minLength;
-    }
-
-    public void addMapValue() {
-
-        mapvalue.put("Afghanistan", new CountryDetails("+93", 9, 9));
-        mapvalue.put("Albania", new CountryDetails("+355", 8, 9));
-        mapvalue.put("Algeria", new CountryDetails("+213", 9, 9));
-        mapvalue.put("Andorra", new CountryDetails("+376", 6, 6));
-        mapvalue.put("Angola", new CountryDetails("+244", 9, 9));
-        mapvalue.put("Argentina", new CountryDetails("+54", 10, 10));
-        mapvalue.put("Armenia", new CountryDetails("+374", 8, 8));
-        mapvalue.put("Australia", new CountryDetails("+61", 9, 9));
-        mapvalue.put("Austria", new CountryDetails("+43", 10, 13));
-        mapvalue.put("Azerbaijan", new CountryDetails("+994", 9, 9));
-        mapvalue.put("Bahrain", new CountryDetails("+973", 8, 8));
-        mapvalue.put("Bangladesh", new CountryDetails("+880", 10, 10));
-        mapvalue.put("Belarus", new CountryDetails("+375", 9, 9));
-        mapvalue.put("Belgium", new CountryDetails("+32", 8, 9));
-        mapvalue.put("Bolivia", new CountryDetails("+591", 8, 8));
-        mapvalue.put("Brazil", new CountryDetails("+55", 10, 11));
-        mapvalue.put("Canada", new CountryDetails("+1", 10, 10));
-        mapvalue.put("China", new CountryDetails("+86", 11, 11));
-        mapvalue.put("Colombia", new CountryDetails("+57", 10, 10));
-        mapvalue.put("Denmark", new CountryDetails("+45", 8, 8));
-        mapvalue.put("Egypt", new CountryDetails("+20", 10, 10));
-        mapvalue.put("France", new CountryDetails("+33", 9, 9));
-        mapvalue.put("Germany", new CountryDetails("+49", 10, 11));
-        mapvalue.put("India", new CountryDetails("+91", 10, 10));
-        mapvalue.put("Indonesia", new CountryDetails("+62", 9, 11));
-        mapvalue.put("Iran", new CountryDetails("+98", 10, 10));
-        mapvalue.put("Iraq", new CountryDetails("+964", 10, 10));
-        mapvalue.put("Italy", new CountryDetails("+39", 9, 10));
-        mapvalue.put("Japan", new CountryDetails("+81", 10, 10));
-        mapvalue.put("Kenya", new CountryDetails("+254", 9, 9));
-        mapvalue.put("Mexico", new CountryDetails("+52", 10, 10));
-        mapvalue.put("Netherlands", new CountryDetails("+31", 9, 9));
-        mapvalue.put("Nigeria", new CountryDetails("+234", 7, 10));
-        mapvalue.put("Pakistan", new CountryDetails("+92", 10, 10));
-        mapvalue.put("Philippines", new CountryDetails("+63", 10, 10));
-        mapvalue.put("Poland", new CountryDetails("+48", 9, 9));
-        mapvalue.put("Portugal", new CountryDetails("+351", 9, 9));
-        mapvalue.put("Russia", new CountryDetails("+7", 10, 10));
-        mapvalue.put("Saudi Arabia", new CountryDetails("+966", 9, 9));
-        mapvalue.put("South Africa", new CountryDetails("+27", 9, 9));
-        mapvalue.put("South Korea", new CountryDetails("+82", 9, 10));
-        mapvalue.put("Spain", new CountryDetails("+34", 9, 9));
-        mapvalue.put("Sweden", new CountryDetails("+46", 7, 9));
-        mapvalue.put("Switzerland", new CountryDetails("+41", 9, 9));
-        mapvalue.put("Thailand", new CountryDetails("+66", 9, 9));
-        mapvalue.put("Turkey", new CountryDetails("+90", 10, 10));
-        mapvalue.put("Ukraine", new CountryDetails("+380", 9, 9));
-        mapvalue.put("United Arab Emirates", new CountryDetails("+971", 9, 9));
-        mapvalue.put("United Kingdom", new CountryDetails("+44", 9, 10));
-        mapvalue.put("United States", new CountryDetails("+1", 10, 10));
-        mapvalue.put("Vietnam", new CountryDetails("+84", 9, 10));
     }
 }
