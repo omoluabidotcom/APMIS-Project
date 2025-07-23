@@ -1422,6 +1422,7 @@ System.out.println("222dtodtodtodtodtodtodtodtodtodtodtodtodtodto---------------
 //					bigDecimalField.setValue(new BigDecimal("948205817.472950487"));
 					numberField.setId(formElement.getId());
 					numberField.setSizeFull();
+					numberField.setReadOnly(false);
 					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 					vertical.add(numberField);
 					fields.put(formElement.getId(), numberField);
@@ -2088,24 +2089,19 @@ System.out.println("222dtodtodtodtodtodtodtodtodtodtodtodtodtodto---------------
 				field.getElement().setProperty("invalid", true);
 				field.getElement().setProperty("label", lb == null ? "" : lb);
 				field.getElement().setProperty("errorMessage", defaultErrorMsgr != null ? defaultErrorMsgr.toString()
-						: "Data entered not a decimal or calculated decimal!");				
+						: "Decimal Error!");				
 			}
 
 			if (value != null) {
 				if (value.toString().equals("")) {
-					((NumberField) field).setValue(0.0);
-					System.out.println("emptyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
+					((NumberField) field).setValue(0.0);	
 				} else {
-					System.out.println("not null but hereeeeeeeeeeeeeeeeeeeeee before " + value.toString());
 					((NumberField) field).setValue(Double.parseDouble(value.toString()));
-					System.out.println("not null but hereeeeeeeeeeeeeeeeeeeeee");
 				}
 			} else if (defaultvalue != null) {
 				((NumberField) field).setValue(Double.parseDouble(value.toString()));
-				System.out.println(defaultvalue + " default valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee " + value.toString());
 			} else {
 				((NumberField) field).setValue(null);
-				System.out.println("setting to 0.000000000000000000000000000000000");
 			}
 			break;
 		case TEXTBOX:
@@ -3002,7 +2998,6 @@ System.out.println("222dtodtodtodtodtodtodtodtodtodtodtodtodtodto---------------
 				final Object value = expression.getValue(context, valueType);
 				String valuex = value + "";
 
-				System.out.println(valuex + " valuexvaluexvaluexvaluexvaluexvaluexvaluexvaluex " + value.toString());
 				if (!valuex.isBlank() && value != null) {					
 					if (e.getType().toString().equals("range")) {
 
@@ -3025,30 +3020,18 @@ System.out.println("222dtodtodtodtodtodtodtodtodtodtodtodtodtodto---------------
 						}
 
 					} 
-//					else if(e.getType().toString().equals("decimal")) {
-//						
-//						if (value.toString().equals("0")) {
-//							setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
-//									null, null, null, false,
-//									e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() + ".."
-//											: "..");
-//							// return;
-//						} else {
-//
-//							Boolean isErrored = value.toString().endsWith(".0");
-//
-//							setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
-//									value.toString().endsWith(".0") ? value.toString().replace(".0", "") : value, null,
-//									null, isErrored,
-//									e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() + ".."
-//											: "..");
-//							// return;
-//						}
-//					} 
+					else if(e.getType().toString().equals("decimal")) {
+						setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
+//								!Double.isFinite((double) value) ? 0
+//										: value.toString().endsWith(".0") ? value.toString().replace(".0", "")
+//												: Precision.round((double) value, 2),
+								Double.valueOf(String.format("%.1f", Double.valueOf(value.toString()))),
+								null, null, false,
+								e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() : null);
+					} 
 					else if (valueType.isAssignableFrom(Double.class)) {
 						// logger.debug("yes double detected "+Double.isFinite((double) value) +"
 						// = "+ value);
-						System.out.println("yebo yebo eyeboooooooooooooooooooooooooooooooooooooooooooo");
 						setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
 								!Double.isFinite((double) value) ? 0
 										: value.toString().endsWith(".0") ? value.toString().replace(".0", "")
@@ -3064,13 +3047,11 @@ System.out.println("222dtodtodtodtodtodtodtodtodtodtodtodtodtodto---------------
 						// return;
 						//
 					} else {
-						System.out.println("ehnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
 						setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
 								value, null, null, false,
 								e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() : null);
 					}
-				} else if (e.getType().toString().equals("range") && valuex == null && e.getDefaultvalue() != null) {
-					System.out.println("Entered hereeeeeeeeeeeeeeeeeeeeeeeeeee");
+				} else if (e.getType().toString().equals("range") && valuex == null && e.getDefaultvalue() != null) {	
 				}
 			} catch (SpelEvaluationException evaluationException) {
 				// LOG.error("Error evaluating expression: {} / {}",
