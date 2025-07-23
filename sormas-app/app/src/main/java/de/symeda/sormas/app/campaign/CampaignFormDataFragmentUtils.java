@@ -124,10 +124,31 @@ public class CampaignFormDataFragmentUtils {
                                         ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? null : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
                                         // }
                                     }
-
-
                                 }
-
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            if (dynamicField instanceof ControlDecimalEditField) {
+                                String formattedValue;
+                                if (valuex != null) {
+                                    double numValue;
+                                    try {
+                                        numValue = Double.parseDouble(valuex);
+                                        if (numValue == Math.floor(numValue)) {
+                                            // It's a whole number, remove decimal part
+                                            formattedValue = String.format("%.0f", numValue);
+                                        } else {
+                                            // It has decimals, format to one decimal place
+                                            formattedValue = String.format("%.1f", numValue);
+                                        }
+                                        // Handle zero case
+                                        if (numValue == 0) {
+                                            formattedValue = "0";
+                                        }
+                                    } catch (NumberFormatException e) {
+                                        formattedValue = valuex;
+                                    }
+                                    ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, formattedValue);
+                                }
+                            }
                         } else if (type == CampaignFormElementType.NUMBER) {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? "0" : (expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString()));
 
@@ -214,8 +235,30 @@ public class CampaignFormDataFragmentUtils {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? "0" : (expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString()));
 
                         } else if (type == CampaignFormElementType.DECIMAL) {
-                            ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, expressionValue.toString().equals("0") ? "0" : (expressionValue.toString().contains(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString()));
 
+                            if (dynamicField instanceof ControlDecimalEditField) {
+                                String formattedValue;
+                                if (valuex != null) {
+                                    double numValue;
+                                    try {
+                                        numValue = Double.parseDouble(valuex);
+                                        if (numValue == Math.floor(numValue)) {
+                                            // It's a whole number, remove decimal part
+                                            formattedValue = String.format("%.0f", numValue);
+                                        } else {
+                                            // It has decimals, format to one decimal place
+                                            formattedValue = String.format("%.1f", numValue);
+                                        }
+                                        // Handle zero case
+                                        if (numValue == 0) {
+                                            formattedValue = "0";
+                                        }
+                                    } catch (NumberFormatException e) {
+                                        formattedValue = valuex;
+                                    }
+                                    ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, formattedValue);
+                                }
+                            }
                         } else if (expressionValue.getClass().isAssignableFrom(Boolean.class)) {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, (Double) (!Double.isFinite((double) expressionValue) ? 0 : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : df.format((double) expressionValue)));
                         } else {
@@ -749,8 +792,8 @@ public class CampaignFormDataFragmentUtils {
             Map<String, String> userTranslations,
             Boolean isDecimalField,
             Boolean isRequired,
-            Double minVal,
-            Double maxVal,
+            Integer minVal,
+            Integer maxVal,
             Boolean isExpression,
             Boolean warnOnError) {
 
@@ -795,7 +838,7 @@ public class CampaignFormDataFragmentUtils {
                 return 1;
             }
 
-            //
+
             @Override
             protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
                 super.inflateView(context, attrs, defStyle);
@@ -849,11 +892,6 @@ public class CampaignFormDataFragmentUtils {
                 return CHARACTER_LIMIT_DEFAULT;
             }
 
-            //	@Override
-            //	public int getMinLength() {
-            //		return DEFAULT_MIN_LENGTH;
-            //	}
-//
             @Override
             protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
                 super.inflateView(context, attrs, defStyle);
