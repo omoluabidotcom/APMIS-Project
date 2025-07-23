@@ -1784,11 +1784,6 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
             // Clear time components
             Calendar cal = Calendar.getInstance();
             cal.setTime(parsedDate);
-//            cal.set(Calendar.HOUR_OF_DAY, 0);
-//            cal.set(Calendar.MINUTE, 0);
-//            cal.set(Calendar.SECOND, 0);
-//            cal.set(Calendar.MILLISECOND, 0);
-
             return cal.getTime();
         } catch (ParseException e) {
             Log.e(getClass().getName(), "Error parsing date: " + input, e);

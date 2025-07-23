@@ -24,6 +24,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +42,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -65,6 +71,7 @@ import de.symeda.sormas.app.backend.config.ConfigProvider;
 import de.symeda.sormas.app.backend.region.Community;
 import de.symeda.sormas.app.backend.user.User;
 import de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils;
+import de.symeda.sormas.app.component.controls.ControlDateField;
 import de.symeda.sormas.app.component.controls.ControlPhoneField;
 import de.symeda.sormas.app.component.controls.ControlPropertyEditField;
 import de.symeda.sormas.app.component.controls.ControlPropertyField;
@@ -94,6 +101,9 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
     private List<Item> initialRegions;
     private List<Item> initialDistricts;
     private List<Item> initialCommunities;
+
+    private Date presentDate;
+
     private Map<String, String> optionsValues;
     private List<String> constraints;
 
@@ -1657,6 +1667,11 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
         initialRegions = InfrastructureDaoHelper.loadRegionsByServerCountry();
         initialDistricts = InfrastructureDaoHelper.loadAllDistricts();
         initialCommunities = InfrastructureDaoHelper.loadAllCommunities();
+
+        Calendar cal = Calendar.getInstance();
+        Date date = cal.getTime();
+        System.out.println(date + "Issues generating/ Parsing Datvvve ------------------");
+        presentDate =  date;
     }
 
     @Override
@@ -1672,7 +1687,42 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
         contentBinding.campaignFormDataCampaign.initializeSpinner(initialCampaigns, record.getCampaign());
         contentBinding.campaignFormDataCampaign.setEnabled(false);
 
-        contentBinding.campaignFormDataFormDate.initializeDateField(getFragmentManager());
+
+        Calendar cal = Calendar.getInstance();
+        Date date = cal.getTime();
+
+        System.out.println("Initializing date field with: " + date);
+
+        try {
+            // Initialize the date field with fragment manager and initial date
+            contentBinding.campaignFormDataFormDate.initializeDateField(getFragmentManager(), getDateValue(date.toString()));
+
+
+            contentBinding.campaignFormDataFormDate.setValue(getDateValue(date.toString()));
+            // Verify the value was set correctly
+            Date retrievedValue = contentBinding.campaignFormDataFormDate.getValue();
+            System.out.println("Date field value after initialization: " + retrievedValue);
+
+            // Only disable after successful initialization
+            contentBinding.campaignFormDataFormDate.setFieldValue(getDateValue(date.toString()));
+//            contentBinding.campaignFormDataFormDate.setEnabled(false);
+
+            System.out.println("Date field initialization completed successfully" +  contentBinding.campaignFormDataFormDate.getValue());
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            System.out.println("Date field Error during date field initialization: " + exception.getMessage());
+
+            // Fallback: try basic initialization
+            try {
+                contentBinding.campaignFormDataFormDate.initializeDateField(getFragmentManager());
+                contentBinding.campaignFormDataFormDate.setFieldValue(date);
+                contentBinding.campaignFormDataFormDate.setEnabled(false);
+                System.out.println("Date field Fallback initialization completed");
+            } catch (Exception fallbackException) {
+                System.out.println("Date field Fallback initialization also failed: " + fallbackException.getMessage());
+            }
+        }
 
         InfrastructureDaoHelper.initializeRegionAreaFields(
                 contentBinding.campaignFormDataArea,
@@ -1687,6 +1737,25 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                 contentBinding.campaignFormDataCommunity,
                 initialCommunities,
                 record.getCommunity(), false);
+    }
+
+    protected Date getDateValue(String input) {
+        if (StringUtils.isEmpty(input)) {
+            return null;
+        }
+
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+            Date parsedDate = dateFormat.parse(input);
+
+            // Clear time components
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(parsedDate);
+            return cal.getTime();
+        } catch (ParseException e) {
+            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+            return null;
+        }
     }
 
     @Override

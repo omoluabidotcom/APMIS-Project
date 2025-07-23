@@ -217,6 +217,12 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         CampaignFormDataNewFragment activeFragment = (CampaignFormDataNewFragment) getActiveFragment();
         activeFragment.setLiveValidationDisabled(false);
 
+        if(campaignFormDataToSave.getFormDate() == null){
+            saveChecker = false;
+//            NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number");
+
+        }
+
         if (saveChecker) {
             saveTask = new SavingAsyncTask(getRootView(), campaignFormDataToSave) {
 
@@ -239,7 +245,13 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
                 }
             }.executeOnThreadPool();
         } else {
-            NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number");
+            if(campaignFormDataToSave.getFormDate() == null){
+                NotificationHelper.showNotification(this, ERROR, "Form Date cannot be left Empty.");
+
+            }else{
+                NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number");
+
+            }
             return;
         }
     }
