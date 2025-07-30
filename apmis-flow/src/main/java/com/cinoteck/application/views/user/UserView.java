@@ -351,17 +351,24 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 		activeFilter.setItems("Active", "Inactive", "All");
 		criteria.active(true);
 		activeFilter.addValueChangeListener(e -> {
+			System.out.println(activeFilter.getValue() + "Active filter value ");
 
-			if (e.getValue().equals("Active")) {
-				criteria.active(true);
-			} else if (e.getValue().equals("Inactive")) {
-				criteria.active(false);
-			} else if (e.getValue().equals("All")){
-				criteria.active(null);
-			}else{
-				
+			if(e.getValue() == null) {
 				criteria.active(null);	
+
+			}else {
+				if (e.getValue().equals("Active")) {
+					criteria.active(true);
+				} else if (e.getValue().equals("Inactive")) {
+					criteria.active(false);
+				} else if (e.getValue().equals("All")){
+					criteria.active(null);
+				}else{
+//					activeFilter.setValue(null);
+					criteria.active(null);	
+				}
 			}
+
 			filterDataProvider.setFilter(criteria);
 			filterDataProvider.refreshAll();
 			updateRowCount();

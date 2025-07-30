@@ -75,7 +75,7 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 
 
 	private static final String STANDARD_DATE_TIME_FORMAT = "dd-MM-yyyy";
-	private SimpleDateFormat standardDateFormat = new SimpleDateFormat(STANDARD_DATE_TIME_FORMAT, Locale.US);
+	private SimpleDateFormat standardDateFormat = new SimpleDateFormat(STANDARD_DATE_TIME_FORMAT, Locale.getDefault());
 
 
 

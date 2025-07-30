@@ -267,28 +267,60 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		cbArea = new ComboBox<>(I18nProperties.getCaption(Captions.area));
 		cbArea.setRequired(true);
-ArrayList<String> areaNasmesExtract = new ArrayList<String>();
+ArrayList<String> areaNamesExtract = new ArrayList<String>();
+List<AreaReferenceDto> areaNamesExtractFinal = new ArrayList<>();
+List<AreaReferenceDto> selectedAreas = FacadeProvider.getAreaFacade()
+.getAllSelectedAreasByFormUuidAndLocale(
+    campaignFormMetaUUID.getUuid(), 
+    userProvider.getUser().getLanguage().toString()
+);
+
+
 
 System.out.println("222dtodtodtodtodtodtodtodtodtodtodtodtodtodto------------------------" + FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), userProvider.getUser().getLanguage().toString()).size());
 
 		if(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), userProvider.getUser().getLanguage().toString()).size() > 0) {
-		if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-			cbArea.setItems(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Pashto"));
-//			cbArea.setItems(FacadeProvider.getAreaFacade().getAllActiveAsReferencePashto());
-		} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-			cbArea.setItems(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Dari"));
-//			cbArea.setItems(FacadeProvider.getAreaFacade().getAllActiveAsReferenceDari());
-		} else {
-			for(AreaReferenceDto dto : FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "English")) {
-				System.out.println("dtodtodtodtodtodtodtodtodtodtodtodtodtodto------------------------");
-				areaNasmesExtract.add(dto.getCaption());
-			}
-			
-			for (String nameInQuestion : areaNasmesExtract) {
-				cbArea.setItems(FacadeProvider.getAreaFacade().getByName(nameInQuestion, false));
-			}
-		}
+//		if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
+//			cbArea.setItems(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Pashto"));
+////			cbArea.setItems(FacadeProvider.getAreaFacade().getAllActiveAsReferencePashto());
+//		} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
+//			cbArea.setItems(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Dari"));
+////			cbArea.setItems(FacadeProvider.getAreaFacade().getAllActiveAsReferenceDari());
+//		} else {
+//			for(AreaReferenceDto dto : FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "English")) {
+//				System.out.println("dtodtodtodtodtodtodtodtodtodtodtodtodtodto------------------------");
+//				areaNasmesExtract.add(dto.getCaption());
+//			}
+//			
+//			for (String nameInQuestion : areaNasmesExtract) {
+//				cbArea.setItems(FacadeProvider.getAreaFacade().getByName(nameInQuestion, false));
+//			}
+//		}
 		
+
+if (!selectedAreas.isEmpty()) {
+    String lang = userProvider.getUser().getLanguage().toString();
+
+    if (lang.equals("Pashto")) {
+        cbArea.setItems(FacadeProvider.getAreaFacade()
+            .getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Pashto"));
+    } else if (lang.equals("Dari")) {
+        cbArea.setItems(FacadeProvider.getAreaFacade()
+            .getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Dari"));
+    } else {
+        // English or default
+        for (AreaReferenceDto dto : FacadeProvider.getAreaFacade()
+                .getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "English")) {
+            areaNamesExtract.add(dto.getCaption());
+        }
+
+        for (String name : areaNamesExtract) {
+            areaNamesExtractFinal.addAll(FacadeProvider.getAreaFacade().getByName(name, false));
+        }
+
+        cbArea.setItems(areaNamesExtractFinal);
+    }
+}
 		
 		
 		

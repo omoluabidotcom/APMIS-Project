@@ -1161,6 +1161,8 @@ public class CampaignDataView extends VerticalLayout
 			configureGridMultiSelect();
 			enterBulkEdit.setVisible(false);
 			leaveBulkEdit.setVisible(true);
+			bulkActionsItem.setVisible(true);
+
 		});
 
 		selectAllButtonpLACEHOLDER.addClickListener(e -> {
