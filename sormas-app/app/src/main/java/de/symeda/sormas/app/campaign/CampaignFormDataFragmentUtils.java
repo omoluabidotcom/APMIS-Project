@@ -361,7 +361,7 @@ public class CampaignFormDataFragmentUtils {
         if (dependingOnValues != null) {
             constraints = (List) Arrays.stream(dependingOnValues).collect(Collectors.toList());
             ListIterator<String> lstItemsx = constraints.listIterator();
-            if (lstItemsx.hasNext()) {
+            while (lstItemsx.hasNext()) {
                 System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@1111>>>>>>>> "+lstItemsx);
 
                 depenValuexd = lstItemsx.next().toString();
@@ -374,18 +374,65 @@ public class CampaignFormDataFragmentUtils {
 
         if (dependingOn != null && depenValuex != null) {
             ControlPropertyField controlPropertyField = fieldMap.get(dependingOn);
-            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue());
+
+            System.out.println( controlPropertyField.getValue() + "controlPropertyFieldcontrolPropertyFieldcontrolPropertyField");
+            for(ControlPropertyField values : fieldMap.values()){
+                System.out.println( values.getValue() +  "Fields map vales ") ;
+            }
+            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue(),fieldMap );
             final ControlPropertyField finalDynamicField = dynamicField;
             controlPropertyField.addValueChangedListener(field -> {
-                final String manVal = depenValuex;
-                setVisibilityDependency(finalDynamicField, manVal, field.getValue());
+//                final String manVal = depenValuex;
+                setVisibilityDependency(dynamicField, depenValuex, field.getValue(),fieldMap);
             });
             };
         }
 
+    public static void setVisibilityDependency(ControlPropertyField field, String dependingOnValues, Object dependingOnFieldValue, Map<String, ControlPropertyField> fieldMap) {
+//        System.out.println(dependingOnValues+ " = static   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> dynamic = "+dependingOnFieldValue + "BBBTT" +  field.getValue());
+
+        String parsedDependingOnFieldValue = dependingOnFieldValue == null
+                ? ""
+                : dependingOnFieldValue instanceof Boolean
+                ? YesNoUnknown.valueOf(((Boolean) dependingOnFieldValue).booleanValue()).name()
+                : dependingOnFieldValue.toString().equalsIgnoreCase("Yes") ? "true" : dependingOnFieldValue.toString().equalsIgnoreCase("No") ? "false" : dependingOnFieldValue.toString();
+
+        if (dependingOnValues.contains("!")) {
+            dependingOnValues = dependingOnValues.replace("!", "");
+            if (dependingOnValues.contains(parsedDependingOnFieldValue)) {
+
+                if(field.getValue() != null){
+                    forceClear(field, fieldMap);;
+                }
+                field.setVisibility(View.GONE);
+
+            } else {
+                field.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (dependingOnValues.equalsIgnoreCase(parsedDependingOnFieldValue)) {
+//                System.out.println(parsedDependingOnFieldValue+ " VISIBLE   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> "+dependingOnFieldValue + "BBB" +  field.getValue());
+
+                field.setVisibility(View.VISIBLE);
+
+            } else {
+//                System.out.println(parsedDependingOnFieldValue+ " GONE   "+field.getCaption()+"   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> "+dependingOnFieldValue + "BBB" +  field.getValue());
+
+                if(field.getValue() != null){
+                    forceClear(field, fieldMap);;
+                }
+                field.setVisibility(View.GONE);
+//                System.out.println("Valure resert  again to ---------"+  field.getValue());
+
+
+            }
+        }
+    }
+
+
 
     public static void setVisibilityDependencyForSectionAndLabel(LinearLayout field, String dependingOnValues, Object dependingOnFieldValue) {
-        System.out.println(dependingOnValues+ " = static   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> dynamic = "+dependingOnFieldValue);
+        System.out.println(dependingOnValues+ " = static --  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> dynamic = "+dependingOnFieldValue);
 
         String parsedDependingOnFieldValue = dependingOnFieldValue == null
                 ? ""
@@ -403,51 +450,74 @@ public class CampaignFormDataFragmentUtils {
             }
         } else {
             if (dependingOnValues.equalsIgnoreCase(parsedDependingOnFieldValue)) {
-                System.out.println(parsedDependingOnFieldValue+ " VISIBLE   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> "+dependingOnFieldValue);
+//                System.out.println(parsedDependingOnFieldValue+ " VISIBLE   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> "+dependingOnFieldValue);
                 field.setVisibility(View.VISIBLE);
             } else {
-                System.out.println(parsedDependingOnFieldValue+ " GONE   "+"   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> "+dependingOnFieldValue);
+//                System.out.println(parsedDependingOnFieldValue+ " GONE   "+"   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> "+dependingOnFieldValue);
                 field.setVisibility(View.GONE);
             }
         }
     }
 
-    public static void setVisibilityDependency(ControlPropertyField field, String dependingOnValues, Object dependingOnFieldValue) {
-        System.out.println(dependingOnValues+ " = static   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> dynamic = "+dependingOnFieldValue);
+//    public static void setVisibilityDependency(ControlPropertyField field, String dependingOnValues, Object dependingOnFieldValue) {
+//        System.out.println(dependingOnValues+ " = static   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> dynamic = "+dependingOnFieldValue + "BBBTT" +  field.getValue());
+//
+//        String parsedDependingOnFieldValue = dependingOnFieldValue == null
+//                ? ""
+//                : dependingOnFieldValue instanceof Boolean
+//                ? YesNoUnknown.valueOf(((Boolean) dependingOnFieldValue).booleanValue()).name()
+//                : dependingOnFieldValue.toString().equalsIgnoreCase("Yes") ? "true" : dependingOnFieldValue.toString().equalsIgnoreCase("No") ? "false" : dependingOnFieldValue.toString();
+//
+//        if (dependingOnValues.contains("!")) {
+//            dependingOnValues = dependingOnValues.replace("!", "");
+//            if (dependingOnValues.contains(parsedDependingOnFieldValue)) {
+//
+//                if(field.getValue() != null){
+//                    forceClear(field);
+//                }
+//                field.setVisibility(View.GONE);
+//
+//            } else {
+//                field.setVisibility(View.VISIBLE);
+//            }
+//        } else {
+//             if (dependingOnValues.equalsIgnoreCase(parsedDependingOnFieldValue)) {
+//                System.out.println(parsedDependingOnFieldValue+ " VISIBLE   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> "+dependingOnFieldValue + "BBB" +  field.getValue());
+//
+//                 field.setVisibility(View.VISIBLE);
+//
+//            } else {
+//                System.out.println(parsedDependingOnFieldValue+ " GONE   "+field.getCaption()+"   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> "+dependingOnFieldValue + "BBB" +  field.getValue());
+//
+//                 if(field.getValue() != null){
+//                     forceClear(field);
+//                 }
+//                 field.setVisibility(View.GONE);
+//                 System.out.println("Valure resert  again to ---------"+  field.getValue());
+//
+//
+//             }
+//        }
+//    }
 
-        String parsedDependingOnFieldValue = dependingOnFieldValue == null
-                ? ""
-                : dependingOnFieldValue instanceof Boolean
-                ? YesNoUnknown.valueOf(((Boolean) dependingOnFieldValue).booleanValue()).name()
-                : dependingOnFieldValue.toString().equalsIgnoreCase("Yes") ? "true" : dependingOnFieldValue.toString().equalsIgnoreCase("No") ? "false" : dependingOnFieldValue.toString();
 
-        System.out.println(" = dddddddddddddddddddddddddddddddd   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> dynamic = " + parsedDependingOnFieldValue);
-        if (dependingOnValues.contains("!")) {
+    public static void forceClear(ControlPropertyField field, Map<String, ControlPropertyField> fieldMap) {
 
-
-            dependingOnValues = dependingOnValues.replace("!", "");
-            if (dependingOnValues.contains(parsedDependingOnFieldValue)) {
-                field.setVisibility(View.GONE);
-                if(field.getValue() != null){
-                    field.setValue(null);
-                }
-            } else {
-
-                field.setVisibility(View.VISIBLE);
-            }
-        } else {
-             if (dependingOnValues.equalsIgnoreCase(parsedDependingOnFieldValue)) {
-                System.out.println(parsedDependingOnFieldValue+ " VISIBLE   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> "+dependingOnFieldValue);
-
-                 field.setVisibility(View.VISIBLE);
-
-            } else {
-                System.out.println(parsedDependingOnFieldValue+ " GONE   "+field.getCaption()+"   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> "+dependingOnFieldValue);
-
-                 field.setVisibility(View.GONE);
-                 if(field.getValue() != null){
-                     field.setValue(null);
-                 }
+        String fieldValue = field.getValue() != null ? field.getValue().toString() : "" ;
+        try {
+            field.setValue(null);
+            fieldMap.put(fieldValue, field);
+//            System.out.println("Value reset to null in forceClea----------r");
+        } catch (Exception e) {
+            try {
+                field.setValue(null);
+                fieldMap.put(fieldValue, field);
+//                System.out.println("Value reset to null (fallback)------------r");
+            } catch (Exception ex) {
+                field.setValue("");
+//                fieldMap.put(field.getCaption(), field);
+                fieldMap.put(fieldValue, field);
+//                System.out.println("Value reset to empty string (worst case)----------r");
             }
         }
     }

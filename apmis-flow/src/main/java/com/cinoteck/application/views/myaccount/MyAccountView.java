@@ -47,6 +47,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.Language;
+import de.symeda.sormas.api.campaign.form.DialingCodeDto;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Strings;
@@ -81,6 +82,11 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 	private Map<Tab, Component> tabComponentMap = new LinkedHashMap<>();
 
 	UserProvider userProvider = new UserProvider();
+
+	private int min = 0;
+	private int max = 0;
+	DialingCodeDto dialingCodeDto = new DialingCodeDto();
+	String userDefaultEmail = userProvider.getUser().getUserEmail();
 
 	public MyAccountView() {
 
@@ -148,7 +154,18 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		}
 		emailAddresss.setReadOnly(true);
 		binder.forField(emailAddresss).asRequired(I18nProperties.getString(Strings.emailAddressRequired))
-				.bind(UserDto::getUserEmail, UserDto::setUserEmail);
+//				.bind(UserDto::getUserEmail, UserDto::setUserEmail);
+				.bind(userx -> userx.getUserEmail(), (userx, userEmail) -> userx.setUserEmail(userEmail));
+
+		HorizontalLayout phoneFieldsLayout = new HorizontalLayout();
+		ComboBox<String> countryCodeCombo = new ComboBox<String>();
+		countryCodeCombo.setLabel("Country");
+		List<String> namesListx = new ArrayList<String>();
+		for (DialingCodeDto dialingCodeDto : FacadeProvider.getDialingCodeFacade().getAllCountriesDto()) {
+			namesListx.add(dialingCodeDto.getCountry());
+		}
+		countryCodeCombo.setItems(namesListx);
+		countryCodeCombo.setVisible(false);
 
 		TextField phoneNumberr = new TextField();
 		phoneNumberr.setLabel(I18nProperties.getCaption(Captions.phoneNumber));
@@ -158,6 +175,7 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 			phoneNumberr.setValue(currentUser.getPhone());
 		}
 		phoneNumberr.setReadOnly(true);
+		phoneNumberr.setWidthFull();
 
 		TextField positionn = new TextField();
 		positionn.setLabel(I18nProperties.getCaption(Captions.User_userPosition));
@@ -177,39 +195,72 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		} else {
 			organisation.setValue(currentUser.getUserOrganisation());
 		}
-		
 
+		phoneFieldsLayout.add(countryCodeCombo, phoneNumberr);
 		FormLayout dataVieww = new FormLayout();
-		dataVieww.add(firstnamee, lastnamee, emailAddresss, phoneNumberr, positionn, organisation);
+		dataVieww.add(firstnamee, lastnamee, emailAddresss, phoneFieldsLayout, positionn, organisation);
 		dataVieww.getStyle().set("margin-left", "20px");
 		dataVieww.getStyle().set("margin-right", "20px");
-		
-		
+
 		Button editPersonalInfo = new Button();
 		Button cancelUpdatePersonalInfo = new Button();
 		Button updatePersonalInfo = new Button();
 		ComboBox<Language> languagee = new ComboBox<>(I18nProperties.getCaption(Captions.language));
 
-
-
 		editPersonalInfo.setText("Edit Personal Information");
-		editPersonalInfo.addClickListener(e->{
+		editPersonalInfo.addClickListener(e -> {
 			firstnamee.setReadOnly(false);
 			lastnamee.setReadOnly(false);
 			emailAddresss.setReadOnly(false);
 			phoneNumberr.setReadOnly(false);
-
-
+			countryCodeCombo.setVisible(true);
 
 			editPersonalInfo.setVisible(false);
 			cancelUpdatePersonalInfo.setVisible(true);
 			updatePersonalInfo.setVisible(true);
 
-		});
+			for (DialingCodeDto dialingCodeDto : FacadeProvider.getDialingCodeFacade().getAllCountriesDto()) {
+				if (phoneNumberr.getValue().toString().startsWith(dialingCodeDto.getCode())) {
+					countryCodeCombo.setValue(dialingCodeDto.getCountry());
+					dialingCodeDto = FacadeProvider.getDialingCodeFacade()
+							.getCountryByCode(countryCodeCombo.getValue());
+					break;
+				}
+			}
+			
+			
+			phoneNumberr.addValueChangeListener(ex->{
+				if (!validatePhone(phoneNumberr.getValue())) {
+					Notification.show("Phone Number is Invalid.");
+					return;
+				}
+
+			});
 		
+			countryCodeCombo.addValueChangeListener(listener -> {
+				if (phoneNumberr.getValue() != null) {
+					phoneNumberr.clear();
+				}
+				dialingCodeDto = FacadeProvider.getDialingCodeFacade().getCountryByCode(listener.getValue());
+				int addition = dialingCodeDto.getCode().length() - 1;
+				min = FacadeProvider.getDialingCodeFacade().getCountryByCode(listener.getValue()).getMin_length()
+						+ addition;
+				max = FacadeProvider.getDialingCodeFacade().getCountryByCode(listener.getValue()).getMax_length()
+						+ addition;
+
+				phoneNumberr.setValue(
+						FacadeProvider.getDialingCodeFacade().getCountryByCode(listener.getValue()).getCode());
+				phoneNumberr.setHelperText("Mobile number for " + dialingCodeDto.getCountry() + " must be between "
+						+ min + " and " + max + " digits with the country code");
+				phoneNumberr.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
+				phoneNumberr.setErrorMessage("Invalid");
+			});
+
+		});
+
 		cancelUpdatePersonalInfo.setText("Cancel");
 		cancelUpdatePersonalInfo.setVisible(false);
-		cancelUpdatePersonalInfo.addClickListener(e->{
+		cancelUpdatePersonalInfo.addClickListener(e -> {
 			firstnamee.clear();
 			firstnamee.setValue(currentUser.getFirstName());
 			lastnamee.clear();
@@ -218,54 +269,90 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 			emailAddresss.setValue(currentUser.getUserEmail());
 			phoneNumberr.clear();
 			phoneNumberr.setValue(currentUser.getPhone());
-			
-			
+			countryCodeCombo.setVisible(false);
 
 			editPersonalInfo.setVisible(true);
 			cancelUpdatePersonalInfo.setVisible(false);
 			updatePersonalInfo.setVisible(false);
-			
+
 		});
-		
+
 		updatePersonalInfo.setText("Update Personal Information");
 		updatePersonalInfo.setVisible(false);
-		updatePersonalInfo.addClickListener(e->{
-			
+		updatePersonalInfo.addClickListener(e -> {
+
 			try {
-				UserDto currentUserToSave = FacadeProvider.getUserFacade().getCurrentUser();
-				if (languagee.getValue() != null) {
-					currentUserToSave.setFirstName(firstnamee.getValue());
-					currentUserToSave.setLastName(lastnamee.getValue());
-					currentUserToSave.setUserEmail(emailAddresss.getValue());
-					currentUserToSave.setPhone(phoneNumberr.getValue());
+				String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
 
-					FacadeProvider.getUserFacade().saveUser(currentUserToSave);
-				
+				if (userDefaultEmail.equalsIgnoreCase(emailAddresss.getValue())) {
+					
+
 				} else {
+					if (emailAddresss.getValue().matches(emailRegex)) {
+						if (!validateEmail(emailAddresss.getValue())) {
+							Notification.show("Email Address Exists.");
+							return;
+						}
+					} else {
+						Notification.show("Email Address is not valid.");
+						return;
+					}
 
-					Notification.show(I18nProperties.getString(Strings.choosePreferredLanguage) + languagee.isInvalid());
+				}
+
+				if (!validatePhone(phoneNumberr.getValue())) {
+					Notification.show("Phone Number is Invalid.");
+					return;
+				}
+
+		
+
+			} catch (Exception exception) {
+
+			}finally {
+				
+				try {
+					UserDto currentUserToSave = FacadeProvider.getUserFacade().getCurrentUser();
+					if (languagee.getValue() != null) {
+						currentUserToSave.setFirstName(firstnamee.getValue());
+						currentUserToSave.setLastName(lastnamee.getValue());
+						currentUserToSave.setUserEmail(emailAddresss.getValue());
+						currentUserToSave.setPhone(phoneNumberr.getValue());
+
+						FacadeProvider.getUserFacade().saveUser(currentUserToSave);
+
+					} else {
+
+						Notification.show(
+								I18nProperties.getString(Strings.choosePreferredLanguage) + languagee.isInvalid());
+					}
+
+				} catch (Exception exception) {
+					Notification.show(I18nProperties
+							.getString("Error Updating Personal Information, Please contact Administrator"));
+
+				} finally {
+					
+					UserDto currentUserx = FacadeProvider.getUserFacade().getCurrentUser();
+
+					firstnamee.clear();
+					firstnamee.setValue(currentUserx.getFirstName());
+					lastnamee.clear();
+					lastnamee.setValue(currentUserx.getLastName());
+					emailAddresss.clear();
+					emailAddresss.setValue(currentUserx.getUserEmail());
+					phoneNumberr.clear();
+					phoneNumberr.setValue(currentUserx.getPhone());
+					countryCodeCombo.setVisible(false);
+
+					editPersonalInfo.setVisible(true);
+					cancelUpdatePersonalInfo.setVisible(false);
+					updatePersonalInfo.setVisible(false);
 				}
 				
-			}catch(Exception exception) {
-				Notification.show(I18nProperties.getString("Error Updating Personal Information, Please contact Administrator"));
 				
-			}finally {
-				firstnamee.clear();
-				firstnamee.setValue(currentUser.getFirstName());
-				lastnamee.clear();
-				lastnamee.setValue(currentUser.getLastName());
-				emailAddresss.clear();
-				emailAddresss.setValue(currentUser.getUserEmail());
-				phoneNumberr.clear();
-				phoneNumberr.setValue(currentUser.getPhone());
-				
-				
-				editPersonalInfo.setVisible(true);
-				cancelUpdatePersonalInfo.setVisible(false);
-				updatePersonalInfo.setVisible(false);
 			}
-			
-			
+
 		});
 
 		Div fieldInfoo = new Div();
@@ -296,9 +383,12 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 			regionn.setVisible(false);
 			infodataa.setVisible(false);
 		}
+		regionn.setReadOnly(true);
 
 		ComboBox<String> provincee = new ComboBox<>(I18nProperties.getCaption(Captions.region));
 		provincee.setLabel(I18nProperties.getCaption(Captions.region));
+		provincee.setReadOnly(true);
+
 		if (userProvider.getUser().getRegion() != null) {
 			provincee.setItems(userProvider.getUser().getRegion().getCaption());
 			provincee.setValue(userProvider.getUser().getRegion().getCaption());
@@ -308,6 +398,8 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		}
 
 		MultiSelectComboBox<String> districtt = new MultiSelectComboBox<>(I18nProperties.getCaption(Captions.district));
+		districtt.setReadOnly(true);
+
 		if (userProvider.getUser().getDistrict() != null || userProvider.getUser().getDistricts().size() > 0) {
 			List<String> districts = new ArrayList<>();
 			if (userProvider.getUser().getDistricts().size() > 0) {
@@ -325,6 +417,8 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		}
 
 		MultiSelectComboBox<String> cluster = new MultiSelectComboBox<>(I18nProperties.getCaption(Captions.community));
+		cluster.setReadOnly(true);
+
 		if (userProvider.getUser().getCommunity().size() > 0) {
 			List<String> clusters = new ArrayList<>();
 			for (CommunityReferenceDto caption : userProvider.getUser().getCommunity()) {
@@ -369,7 +463,6 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		userUsersRoles.setMaxHeight("12vh !important");
 		userUsersRoles.getStyle().set("-webkit-text-fill-color", "green");
 
-		
 //		userFormAccesses.setMaxHeight("5vh !important");
 
 		Set<UserRole> userRoles = FacadeProvider.getUserFacade().getCurrentUser().getUserRoles();// .getAreaFacade().getAllActiveAsReference();
@@ -486,9 +579,12 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 
 		});
 		actionss.getStyle().set("margin", "20px");
+		HorizontalLayout personalInfoActionButtonsLayout = new HorizontalLayout();
+		personalInfoActionButtonsLayout.getStyle().set("margin", "20px");
+		personalInfoActionButtonsLayout.add(editPersonalInfo, updatePersonalInfo, cancelUpdatePersonalInfo);
 		actionss.add(discard, savee);
-		userentry.add(infooo, infoood, infoo, dataVieww,editPersonalInfo, updatePersonalInfo, cancelUpdatePersonalInfo, infodataa, fieldInfoo, fielddataVieww, userAssignmentVieww,
-				security, pwdSecc, actionss);
+		userentry.add(infooo, infoood, infoo, dataVieww, personalInfoActionButtonsLayout, infodataa, fieldInfoo,
+				fielddataVieww, userAssignmentVieww, security, pwdSecc, actionss);
 
 		add(userentry);
 
@@ -535,5 +631,111 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		formLayout.add(newPasswordField, confirmPasswordField, instructionLabel);
 
 	}
+
+	public boolean validateEmail(String email) {
+
+		UserDto anyEmailFromDb = FacadeProvider.getUserFacade().getByEmail(email);
+		if (anyEmailFromDb == null) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean validatePhone(String phoneNumber) {
+		if (phoneNumber != null && !phoneNumber.isEmpty())
+			if (phoneNumber.matches("^[+]?[0-9]{" + min + "," + max + "}$")) {
+				return true;
+			}
+		return false;
+	}
+
+//	public void phone() {
+//		
+//		ComboBox<String> availableCountries = new ComboBox<String>();
+//		availableCountries.setLabel("Country");
+//		List<String> namesListx = new ArrayList<String>();
+//		for (DialingCodeDto dialingCodeDto : FacadeProvider.getDialingCodeFacade().getAllCountriesDto()) {
+//			namesListx.add(dialingCodeDto.getCountry());
+//		}
+//		availableCountries.setItems(namesListx);
+//		availableCountries.setEnabled(false);
+//
+//		
+//		TextField phoneNumberr = new TextField();
+//		phoneNumberr.setLabel(I18nProperties.getCaption(Captions.phoneNumber));
+//		if (currentUser.getPhone() == null) {
+//			phoneNumberr.setPlaceholder(I18nProperties.getCaption(Captions.phoneNumber));
+//		} else {
+//			phoneNumberr.setValue(currentUser.getPhone());
+//		}
+//		phoneNumberr.setReadOnly(true);
+//		
+//		
+//
+//		TextField numberField = new TextField();
+//		numberField.setLabel("Phone Number");
+//		numberField.setClassName("customTextWrap");
+//
+//		numberField.setValue(currentUser.getPhone());
+//		
+//
+//	
+//
+//		if (numberField.getValue() == null || (numberField.getValue().toString().isEmpty()) {
+//
+//			availableCountries.setValue(namesListx.get(0));
+//			dialingCodeDto = FacadeProvider.getDialingCodeFacade()
+//					.getCountryByCode(availableCountries.getValue());
+//			numberField.setValue(FacadeProvider.getDialingCodeFacade()
+//					.getCountryByCode(availableCountries.getValue()).getCode());
+//		} else {
+//
+//			for (DialingCodeDto dialingCodeDto : FacadeProvider.getDialingCodeFacade()
+//					.getAllCountriesDto()) {
+//				if (value.toString().startsWith(dialingCodeDto.getCode())) {
+//					System.out.println("dialingCodeDto.getCode() " + dialingCodeDto.getCode());
+//					availableCountries.setValue(dialingCodeDto.getCountry());
+//					dialingCodeDto = FacadeProvider.getDialingCodeFacade()
+//							.getCountryByCode(availableCountries.getValue());
+//					break;
+//				}
+//			}
+//			numberField.setValue(value.toString());
+//		}
+//
+//		min = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
+//				.getMin_length() + 2;
+//		max = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
+//				.getMax_length() + 2;
+//
+//		numberField.setHelperText("Mobile number for "
+//				+ FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
+//						.getCountry()
+//				+ " must be between " + min + " and " + max + " digits with the country code");
+//
+//		numberField.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
+//		numberField.setErrorMessage("Invalid");
+//
+//		availableCountries.addValueChangeListener(e -> {
+//
+//			if (numberField.getValue() != null) {
+//				numberField.clear();
+//			}
+//			dialingCodeDto = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue());
+//			int addition = dialingCodeDto.getCode().length() - 1;
+//			min = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMin_length()
+//					+ addition;
+//			max = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMax_length()
+//					+ addition;
+//
+//			numberField.setValue(
+//					FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getCode());
+//			numberField.setHelperText("Mobile number for " + dialingCodeDto.getCountry()
+//					+ " must be between " + min + " and " + max + " digits with the country code");
+//			numberField.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
+//			numberField.setErrorMessage("Invalid");
+//		});
+//
+//	}
 
 }

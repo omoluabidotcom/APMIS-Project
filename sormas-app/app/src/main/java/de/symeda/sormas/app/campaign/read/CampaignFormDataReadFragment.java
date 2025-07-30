@@ -219,7 +219,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 
                         if (dependingOn != null && depenValuex != null) {
                             ControlPropertyField controlPropertyField = fieldMap.get(dependingOn);
-                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue());
+                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue(), fieldMap);
                         }
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
@@ -290,7 +290,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 
                         if (dependingOn != null && depenValuex != null) {
                             ControlPropertyField controlPropertyField = fieldMap.get(dependingOn);
-                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue());
+                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue(), fieldMap);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -358,7 +358,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 
                         if (dependingOn != null && depenValuex != null) {
                             ControlPropertyField controlPropertyField = fieldMap.get(dependingOn);
-                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue());
+                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue(), fieldMap);
                         }
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
@@ -425,7 +425,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 
                         if (dependingOn != null && depenValuex != null) {
                             ControlPropertyField controlPropertyField = fieldMap.get(dependingOn);
-                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue());
+                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue(), fieldMap);
                         }
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
@@ -492,7 +492,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 
                         if (dependingOn != null && depenValuex != null) {
                             ControlPropertyField controlPropertyField = fieldMap.get(dependingOn);
-                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue());
+                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue(), fieldMap);
                         }
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
@@ -559,7 +559,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 
                         if (dependingOn != null && depenValuex != null) {
                             ControlPropertyField controlPropertyField = fieldMap.get(dependingOn);
-                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue());
+                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue(), fieldMap);
                         }
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
@@ -626,7 +626,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 
                         if (dependingOn != null && depenValuex != null) {
                             ControlPropertyField controlPropertyField = fieldMap.get(dependingOn);
-                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue());
+                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue(), fieldMap);
                         }
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
@@ -693,7 +693,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 
                         if (dependingOn != null && depenValuex != null) {
                             ControlPropertyField controlPropertyField = fieldMap.get(dependingOn);
-                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue());
+                            setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue(), fieldMap);
                         }
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
@@ -785,7 +785,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 
                     if (dependingOn != null && depenValuex != null) {
                         ControlPropertyField controlPropertyField = fieldMap.get(dependingOn);
-                        setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue());
+                        setVisibilityDependency(dynamicField, depenValuex, controlPropertyField.getValue(), fieldMap);
                     }
                     final String expressionString = campaignFormElement.getExpression();
                     if (expressionString != null) {

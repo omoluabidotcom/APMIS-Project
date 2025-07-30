@@ -26,12 +26,9 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.TextView;
 
@@ -44,15 +41,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import de.symeda.sormas.api.MapperUtil;
@@ -63,7 +57,6 @@ import de.symeda.sormas.api.campaign.form.CampaignFormElementType;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.utils.DataHelper;
-import de.symeda.sormas.app.BaseEditActivity;
 import de.symeda.sormas.app.BaseEditFragment;
 import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.campaign.Campaign;
@@ -100,16 +93,8 @@ import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.getUse
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.getUserTranslations;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handleDependingOn;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handleExpression;
-import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handleExpressionSec;
-import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.setVisibilityDependency;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
-import androidx.viewpager.widget.ViewPager;
-import androidx.viewpager2.widget.ViewPager2;
-
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
 
 public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampaignDataEditLayoutBinding, CampaignFormData, CampaignFormData> {
 

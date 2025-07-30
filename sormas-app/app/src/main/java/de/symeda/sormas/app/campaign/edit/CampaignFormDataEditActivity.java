@@ -172,7 +172,7 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
 
         }else {
             if(campaignFormDataToSave.getFormDate() == null){
-NotificationHelper.showNotification(this, ERROR, "Please selecte a valid Form Date ");
+NotificationHelper.showNotification(this, ERROR, "Form Date cannot be left Empty.");
 
             }
 
