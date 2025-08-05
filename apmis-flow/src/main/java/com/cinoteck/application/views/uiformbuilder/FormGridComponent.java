@@ -26,6 +26,8 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
@@ -341,7 +343,7 @@ public class FormGridComponent extends VerticalLayout {
 //					}
 //				}
 
-				if (formBeenEdited.getConstraints() != null) {
+				if (formBeenEdited.getConstraints() != null) {									
 					if (formBeenEdited.getConstraints()[0].toLowerCase().equals("expression")) {
 						constraints.setValue("Expression");
 						constraints.setVisible(true);
@@ -350,19 +352,16 @@ public class FormGridComponent extends VerticalLayout {
 					} else {
 						constraints.setValue("Range");
 						constraints.setVisible(true);
-
-//						min.setValue(Double.parseDouble(formBeenEdited.getConstraints()[1].substring(4,
-//								formBeenEdited.getConstraints()[1].length())));
-						min.setValue(formBeenEdited.getConstraints()[0].substring(4,
-								formBeenEdited.getConstraints()[1].length()));
-						min.setVisible(true);
-						logger.debug(min.getValue() + " minnnnn value");
-//						max.setValue(Double.parseDouble(formBeenEdited.getConstraints()[0].substring(4,
-//						formBeenEdited.getConstraints()[0].length())));
-						max.setValue(formBeenEdited.getConstraints()[1].substring(4,
-								formBeenEdited.getConstraints()[0].length()));
-						max.setVisible(true);
-						logger.debug(min.getValue() + " Maxxxxxxxxxxxxxxx value");
+						
+						  for (String part : formBeenEdited.getConstraints()) {
+					            if (part.startsWith("max=")) {
+					                max.setValue(part.substring(4));
+					            } else if (part.startsWith("min=")) {
+					            	min.setValue(part.substring(4));
+					            }
+					        }
+						  max.setVisible(true);
+						  min.setVisible(true);						
 					}
 				}
 
@@ -943,10 +942,10 @@ public class FormGridComponent extends VerticalLayout {
 
 	void configureGrid() {
 
-//		grid.setSelectionMode(SelectionMode.SINGLE);
-//		grid.setMultiSort(true, MultiSortPriority.APPEND);
-//		grid.setSizeFull();
-//		grid.setColumnReorderingAllowed(true);
+		grid.setSelectionMode(SelectionMode.SINGLE);
+		grid.setMultiSort(true, MultiSortPriority.APPEND);
+		grid.setSizeFull();
+		grid.setColumnReorderingAllowed(true);
 
 		ComponentRenderer<Span, CampaignFormElement> constraintRenderer = new ComponentRenderer<>(input -> {
 			String value = Arrays.toString(input.getConstraints());

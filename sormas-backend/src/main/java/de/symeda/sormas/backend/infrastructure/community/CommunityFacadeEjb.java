@@ -379,15 +379,15 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		if (sortProperties != null && sortProperties.size() > 0) {
 			for (SortProperty sortProperty : sortProperties) {
 				switch (sortProperty.propertyName) {
-				case "region":
+				case "region":					
 					orderby = orderby.isEmpty() ? " order by area " + (sortProperty.ascending ? "asc" : "desc") : orderby+", area" + (sortProperty.ascending ? "asc" : "desc");
 				break;
 				
-				case "province":
-					orderby = orderby.isEmpty() ? " order by region" + (sortProperty.ascending ? "asc" : "desc") : orderby+", region" + (sortProperty.ascending ? "asc" : "desc");
+				case "province":					
+					orderby = orderby.isEmpty() ? " order by region " + (sortProperty.ascending ? "asc" : "desc") : orderby+", region" + (sortProperty.ascending ? "asc" : "desc");
 				break;
 					
-				case "district":
+				case "district":					
 					orderby = orderby.isEmpty() ? " order by district " + (sortProperty.ascending ? "asc" : "desc") : orderby+", district " + (sortProperty.ascending ? "asc" : "desc");
 				break;	
 				
@@ -395,14 +395,17 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 //					orderby = orderby.isEmpty() ? " order by uf.formaccess " + (sortProperty.ascending ? "asc" : "desc") : orderby+", uf.formaccess " + (sortProperty.ascending ? "asc" : "desc");
 //				break;
 				
-				case "clusterNumberr":
+				case "clusterNumberr":					
 					orderby = orderby.isEmpty() ? " order by clusternumber " + (sortProperty.ascending ? "asc" : "desc") : orderby+", clusternumber " + (sortProperty.ascending ? "asc" : "desc");
 				break;
 				
-				case "ccode":
+				case "ccode":					
 					orderby = orderby.isEmpty() ? " order by externalid " + (sortProperty.ascending ? "asc" : "desc") : orderby+", externalid " + (sortProperty.ascending ? "asc" : "desc");
 				break;
 				
+				case "username":					
+					orderby = orderby.isEmpty() ? " order by users_attached " + (sortProperty.ascending ? "asc" : "desc") : orderby+", users_attached " + (sortProperty.ascending ? "asc" : "desc");
+				break;
 //				case "message":
 //					orderby = orderby.isEmpty() ? " order by district5_x.\"name\" " + (sortProperty.ascending ? "asc" : "desc") : orderby+", district5_x.\"name\" " + (sortProperty.ascending ? "asc" : "desc");
 //				break;
