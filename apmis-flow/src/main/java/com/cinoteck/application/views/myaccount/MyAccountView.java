@@ -228,14 +228,8 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 				}
 			}
 			
-			
-			phoneNumberr.addValueChangeListener(ex->{
-				if (!validatePhone(phoneNumberr.getValue())) {
-					Notification.show("Phone Number is Invalid.");
-					return;
-				}
-
-			});
+//			
+	
 		
 			countryCodeCombo.addValueChangeListener(listener -> {
 				if (phoneNumberr.getValue() != null) {
@@ -255,6 +249,19 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 				phoneNumberr.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
 				phoneNumberr.setErrorMessage("Invalid");
 			});
+			
+			phoneNumberr.addValueChangeListener(ex->{
+				dialingCodeDto = FacadeProvider.getDialingCodeFacade().getCountryByCode(countryCodeCombo.getValue());
+				int addition = dialingCodeDto.getCode().length() - 1;
+				min = FacadeProvider.getDialingCodeFacade().getCountryByCode(countryCodeCombo.getValue()).getMin_length()
+						+ addition;
+				max = FacadeProvider.getDialingCodeFacade().getCountryByCode(countryCodeCombo.getValue()).getMax_length()
+						+ addition;
+
+				
+				phoneNumberr.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
+//				phoneNumberr.setErrorMessage("Invalid");
+			});
 
 		});
 
@@ -270,6 +277,10 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 			phoneNumberr.clear();
 			phoneNumberr.setValue(currentUser.getPhone());
 			countryCodeCombo.setVisible(false);
+			
+			emailAddresss.setReadOnly(true);
+			phoneNumberr.setReadOnly(true);
+
 
 			editPersonalInfo.setVisible(true);
 			cancelUpdatePersonalInfo.setVisible(false);
@@ -282,9 +293,13 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		updatePersonalInfo.addClickListener(e -> {
 
 			try {
+				String userDefaultEmail = userProvider.getUser().getUserEmail();
+				String userDefaultPhone= userProvider.getUser().getPhone();
+
+
 				String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
 
-				if (userDefaultEmail.equalsIgnoreCase(emailAddresss.getValue())) {
+				if (userDefaultEmail.equalsIgnoreCase(emailAddresss.getValue())) {	
 					
 
 				} else {
@@ -299,18 +314,19 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 					}
 
 				}
-
-				if (!validatePhone(phoneNumberr.getValue())) {
-					Notification.show("Phone Number is Invalid.");
-					return;
+				
+				if(userDefaultPhone.equalsIgnoreCase(phoneNumberr.getValue())) {
+					
+				}else {
+					if (!validatePhone(phoneNumberr.getValue())) {
+						Notification.show("Phone Number is Invalid.");
+						return;
+					}
 				}
 
+
+
 		
-
-			} catch (Exception exception) {
-
-			}finally {
-				
 				try {
 					UserDto currentUserToSave = FacadeProvider.getUserFacade().getCurrentUser();
 					if (languagee.getValue() != null) {
@@ -344,6 +360,9 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 					phoneNumberr.clear();
 					phoneNumberr.setValue(currentUserx.getPhone());
 					countryCodeCombo.setVisible(false);
+					
+					emailAddresss.setReadOnly(true);
+					phoneNumberr.setReadOnly(true);
 
 					editPersonalInfo.setVisible(true);
 					cancelUpdatePersonalInfo.setVisible(false);
@@ -351,8 +370,11 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 				}
 				
 				
-			}
 
+			} catch (Exception exception) {
+
+			}
+			
 		});
 
 		Div fieldInfoo = new Div();
@@ -373,10 +395,19 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 				// Use three columns, if the layout's width exceeds 500px
 				new ResponsiveStep("500px", 3));
 
-		ComboBox<String> regionn = new ComboBox<>(I18nProperties.getCaption(Captions.area));
+		
+		TextArea regionn = new TextArea();
 		regionn.setLabel(I18nProperties.getCaption(Captions.area));
+		regionn.setWidthFull();
+		regionn.setClassName("formAccessTextField");
+		regionn.setId("formAccessTextFieldID");
+		regionn.setId("my-disabled-textfield");
+		regionn.getStyle().set("-webkit-text-fill-color", "green");
+		regionn.setReadOnly(true);
+//		ComboBox<String> regionn = new ComboBox<>(I18nProperties.getCaption(Captions.area));
+//		regionn.setLabel(I18nProperties.getCaption(Captions.area));
 		if (userProvider.getUser().getArea() != null) {
-			regionn.setItems(userProvider.getUser().getArea().getCaption());
+//			regionn.setItems(userProvider.getUser().getArea().getCaption());
 			regionn.setValue(userProvider.getUser().getArea().getCaption());
 			fielddataVieww.add(regionn);
 		} else {
@@ -384,21 +415,41 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 			infodataa.setVisible(false);
 		}
 		regionn.setReadOnly(true);
-
-		ComboBox<String> provincee = new ComboBox<>(I18nProperties.getCaption(Captions.region));
-		provincee.setLabel(I18nProperties.getCaption(Captions.region));
+		
+		
+		TextArea provincee = new TextArea();
+//		regionn.setLabel("Region");
+		provincee.setWidthFull();
+		provincee.setClassName("formAccessTextField");
+		provincee.setId("formAccessTextFieldID");
+		provincee.setId("my-disabled-textfield");
+		provincee.getStyle().set("-webkit-text-fill-color", "green");
 		provincee.setReadOnly(true);
 
+//		ComboBox<String> provincee = new ComboBox<>(I18nProperties.getCaption(Captions.region));
+		provincee.setLabel(I18nProperties.getCaption(Captions.region));
+//		provincee.setReadOnly(true);
+
 		if (userProvider.getUser().getRegion() != null) {
-			provincee.setItems(userProvider.getUser().getRegion().getCaption());
+//			provincee.setItems(userProvider.getUser().getRegion().getCaption());
 			provincee.setValue(userProvider.getUser().getRegion().getCaption());
 			fielddataVieww.add(provincee);
 		} else {
 
 		}
 
-		MultiSelectComboBox<String> districtt = new MultiSelectComboBox<>(I18nProperties.getCaption(Captions.district));
+		
+		TextArea districtt = new TextArea();
+		districtt.setLabel(I18nProperties.getCaption(Captions.district));
+		districtt.setWidthFull();
+		districtt.setClassName("formAccessTextField");
+		districtt.setId("formAccessTextFieldID");
+		districtt.setId("my-disabled-textfield");
+		districtt.getStyle().set("-webkit-text-fill-color", "green");
 		districtt.setReadOnly(true);
+
+//		MultiSelectComboBox<String> districtt = new MultiSelectComboBox<>(I18nProperties.getCaption(Captions.district));
+//		districtt.setReadOnly(true);
 
 		if (userProvider.getUser().getDistrict() != null || userProvider.getUser().getDistricts().size() > 0) {
 			List<String> districts = new ArrayList<>();
@@ -406,26 +457,31 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 				for (DistrictReferenceDto caption : userProvider.getUser().getDistricts()) {
 					districts.add(caption.getCaption());
 				}
-				districtt.setItems(districts);
-				districtt.setValue(districts);
+//				districtt.setItems(districts);
+				districtt.setValue(districts.toString().replace("[", "").replace("]", ""));
 			} else {
-				districtt.setItems(userProvider.getUser().getDistrict().getCaption());
+//				districtt.setItems(userProvider.getUser().getDistrict().getCaption());
 				districtt.setValue(userProvider.getUser().getDistrict().getCaption());
 			}
 			fielddataVieww.add(districtt);
 		} else {
 		}
 
-		MultiSelectComboBox<String> cluster = new MultiSelectComboBox<>(I18nProperties.getCaption(Captions.community));
+		
+		TextArea cluster = new TextArea();
+		cluster.setLabel(I18nProperties.getCaption("Clusters"));
+		cluster.setWidthFull();
+		cluster.setClassName("formAccessTextField");
+		cluster.setId("formAccessTextFieldID");
+		cluster.setId("my-disabled-textfield");
+		cluster.getStyle().set("-webkit-text-fill-color", "green");
 		cluster.setReadOnly(true);
-
 		if (userProvider.getUser().getCommunity().size() > 0) {
 			List<String> clusters = new ArrayList<>();
 			for (CommunityReferenceDto caption : userProvider.getUser().getCommunity()) {
 				clusters.add(caption.getCaption());
 			}
-			cluster.setItems(clusters);
-			cluster.setValue(clusters);
+			cluster.setValue(clusters.toString().replace("[", "").replace("]", ""));
 
 			fielddataVieww.add(cluster);
 		} else {
@@ -463,10 +519,8 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		userUsersRoles.setMaxHeight("12vh !important");
 		userUsersRoles.getStyle().set("-webkit-text-fill-color", "green");
 
-//		userFormAccesses.setMaxHeight("5vh !important");
 
 		Set<UserRole> userRoles = FacadeProvider.getUserFacade().getCurrentUser().getUserRoles();// .getAreaFacade().getAllActiveAsReference();
-//		userUsersRoles.setItems(userRoles);
 		if (userRoles.size() < 1) {
 
 		} else {
@@ -648,94 +702,5 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 			}
 		return false;
 	}
-
-//	public void phone() {
-//		
-//		ComboBox<String> availableCountries = new ComboBox<String>();
-//		availableCountries.setLabel("Country");
-//		List<String> namesListx = new ArrayList<String>();
-//		for (DialingCodeDto dialingCodeDto : FacadeProvider.getDialingCodeFacade().getAllCountriesDto()) {
-//			namesListx.add(dialingCodeDto.getCountry());
-//		}
-//		availableCountries.setItems(namesListx);
-//		availableCountries.setEnabled(false);
-//
-//		
-//		TextField phoneNumberr = new TextField();
-//		phoneNumberr.setLabel(I18nProperties.getCaption(Captions.phoneNumber));
-//		if (currentUser.getPhone() == null) {
-//			phoneNumberr.setPlaceholder(I18nProperties.getCaption(Captions.phoneNumber));
-//		} else {
-//			phoneNumberr.setValue(currentUser.getPhone());
-//		}
-//		phoneNumberr.setReadOnly(true);
-//		
-//		
-//
-//		TextField numberField = new TextField();
-//		numberField.setLabel("Phone Number");
-//		numberField.setClassName("customTextWrap");
-//
-//		numberField.setValue(currentUser.getPhone());
-//		
-//
-//	
-//
-//		if (numberField.getValue() == null || (numberField.getValue().toString().isEmpty()) {
-//
-//			availableCountries.setValue(namesListx.get(0));
-//			dialingCodeDto = FacadeProvider.getDialingCodeFacade()
-//					.getCountryByCode(availableCountries.getValue());
-//			numberField.setValue(FacadeProvider.getDialingCodeFacade()
-//					.getCountryByCode(availableCountries.getValue()).getCode());
-//		} else {
-//
-//			for (DialingCodeDto dialingCodeDto : FacadeProvider.getDialingCodeFacade()
-//					.getAllCountriesDto()) {
-//				if (value.toString().startsWith(dialingCodeDto.getCode())) {
-//					System.out.println("dialingCodeDto.getCode() " + dialingCodeDto.getCode());
-//					availableCountries.setValue(dialingCodeDto.getCountry());
-//					dialingCodeDto = FacadeProvider.getDialingCodeFacade()
-//							.getCountryByCode(availableCountries.getValue());
-//					break;
-//				}
-//			}
-//			numberField.setValue(value.toString());
-//		}
-//
-//		min = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
-//				.getMin_length() + 2;
-//		max = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
-//				.getMax_length() + 2;
-//
-//		numberField.setHelperText("Mobile number for "
-//				+ FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
-//						.getCountry()
-//				+ " must be between " + min + " and " + max + " digits with the country code");
-//
-//		numberField.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
-//		numberField.setErrorMessage("Invalid");
-//
-//		availableCountries.addValueChangeListener(e -> {
-//
-//			if (numberField.getValue() != null) {
-//				numberField.clear();
-//			}
-//			dialingCodeDto = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue());
-//			int addition = dialingCodeDto.getCode().length() - 1;
-//			min = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMin_length()
-//					+ addition;
-//			max = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMax_length()
-//					+ addition;
-//
-//			numberField.setValue(
-//					FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getCode());
-//			numberField.setHelperText("Mobile number for " + dialingCodeDto.getCountry()
-//					+ " must be between " + min + " and " + max + " digits with the country code");
-//			numberField.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
-//			numberField.setErrorMessage("Invalid");
-//		});
-//
-//	}
 
 }

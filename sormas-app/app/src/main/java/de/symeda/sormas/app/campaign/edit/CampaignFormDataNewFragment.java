@@ -387,7 +387,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
 
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -495,7 +495,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField.setValue(defaultValue == null ? null : defaultValue);
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -603,7 +603,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField.setValue(defaultValue == null ? null : defaultValue);
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -710,7 +710,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField.setValue(defaultValue == null ? null : defaultValue);
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -819,7 +819,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField.setValue(defaultValue == null ? null : defaultValue);
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -927,7 +927,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField.setValue(defaultValue == null ? null : defaultValue);
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -1035,7 +1035,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField.setValue(defaultValue == null ? null : defaultValue);
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -1144,7 +1144,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         final String dependingOn = campaignFormElement.getDependingOn();
 
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -1442,7 +1442,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                     if (dependingOn != null && finalIsRangeandExpression) {
                         dynamicField.hideFieldOnly();
                     } else if (dependingOn != null) {
-                        handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                        handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                     }
 
                     final String expressionString = campaignFormElement.getExpression();
@@ -1798,6 +1798,25 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                 record.getCommunity(), false);
     }
 
+//    protected Date getDateValue(String input) {
+//        if (StringUtils.isEmpty(input)) {
+//            return null;
+//        }
+//
+//        try {
+//            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+//            Date parsedDate = dateFormat.parse(input);
+//
+//            // Clear time components
+//            Calendar cal = Calendar.getInstance();
+//            cal.setTime(parsedDate);
+//            return cal.getTime();
+//        } catch (ParseException e) {
+//            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+//            return null;
+//        }
+//    }
+
     protected Date getDateValue(String input) {
         if (StringUtils.isEmpty(input)) {
             return null;
@@ -1812,10 +1831,42 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
             cal.setTime(parsedDate);
             return cal.getTime();
         } catch (ParseException e) {
-            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+//            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+//            return null;
+            try{
+                String normalizedDateString = normalizeRawDateString(input); // this gives "03-08-2025"
+                if (normalizedDateString != null) {
+                    SimpleDateFormat fallbackFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+                    return fallbackFormat.parse(normalizedDateString);
+                }
+            }catch(Exception ee){
+                Log.e(getClass().getName(), "Error parsing date: " + input, ee);
+                return null;
+            }
+            return null;
+
+        }
+    }
+    public static String normalizeRawDateString(String rawDateStr) {
+        try {
+            // First parse the raw string
+            SimpleDateFormat inputFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+            Date date = inputFormat.parse(rawDateStr);
+
+            // Then format it to dd-MM-yyyy
+            return formatDateToDdMMyyyy(date);
+        } catch (ParseException e) {
+            Log.e("DateParse", "Could not parse date: " + rawDateStr, e);
             return null;
         }
     }
+    public static String formatDateToDdMMyyyy(Date date) {
+        if (date == null) return null;
+
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+        return formatter.format(date);
+    }
+
 
     @Override
     protected void onAfterLayoutBinding(FragmentCampaignDataNewLayoutBinding contentBinding) {

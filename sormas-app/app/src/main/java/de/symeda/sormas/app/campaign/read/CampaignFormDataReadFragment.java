@@ -177,7 +177,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
 //                        value = value == null ? null : value.endsWith(".0") ? value.substring(0, value.length() - 2): value;
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -247,7 +247,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
 
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -317,7 +317,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet3);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                         String yes_no = "";
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -384,7 +384,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet4);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                         String yes_no = "";
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -451,7 +451,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet5);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                         String yes_no = "";
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -518,7 +518,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet6);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                         String yes_no = "";
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -585,7 +585,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet7);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                         String yes_no = "";
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -652,7 +652,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet8);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                         String yes_no = "";
                         ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         dynamicField.setShowCaption(true);
@@ -721,7 +721,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                 final LinearLayout dynamicLayout = view.findViewById(R.id.dynamicLayoutxXRd);
                 if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                     String value = formValuesMap.get(campaignFormElement.getId());
-                    value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+//                    value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
 
 
                     ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
@@ -748,7 +748,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 //value = getDateValue(value).toString();
 
 //                            ControlTextReadField.setValue((ControlTextReadField) dynamicField, getDateValue(value).toString(), null, null);
-                            ControlTextReadField.setValue((ControlTextReadField) dynamicField, getDateValueString(value), null, null);
+                            ControlTextReadField.setValue((ControlTextReadField) dynamicField, getDateValue(value), null, null);
 
                         } else if(type == CampaignFormElementType.DROPDOWN){
                             //TODO get the tranlated version
@@ -911,7 +911,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
     }
 
 
-    protected Date getDateValue(String input) {
+    protected String getDateValue(String input) {
         if (StringUtils.isEmpty(input)) {
             return null;
         }
@@ -919,73 +919,47 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
             Date parsedDate = dateFormat.parse(input);
+
             // Clear time components
             Calendar cal = Calendar.getInstance();
             cal.setTime(parsedDate);
-            return cal.getTime();
+            return cal.getTime().toString();
         } catch (ParseException e) {
-            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+//            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+//            return null;
+            try{
+                String normalizedDateString = normalizeRawDateString(input); // this gives "03-08-2025"
+                if (normalizedDateString != null) {
+                    SimpleDateFormat fallbackFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+                    return fallbackFormat.parse(normalizedDateString).toString();
+                }
+            }catch(Exception ee){
+                Log.e(getClass().getName(), "Error parsing date: " + input, ee);
+                return null;
+            }
+            return null;
+
+        }
+    }
+    public static String normalizeRawDateString(String rawDateStr) {
+        try {
+            // First parse the raw string
+            SimpleDateFormat inputFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+            Date date = inputFormat.parse(rawDateStr);
+
+            // Then format it to dd-MM-yyyy
+            return formatDateToDdMMyyyy(date);
+        } catch (ParseException e) {
+            Log.e("DateParse", "Could not parse date: " + rawDateStr, e);
             return null;
         }
     }
+    public static String formatDateToDdMMyyyy(Date date) {
+        if (date == null) return null;
 
-//    protected Date getDateValue(String input) {
-//        if (StringUtils.isEmpty(input)) {
-//            return null;
-//        }
-//
-//        try {
-//            try {
-//                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
-//                Date parsedDate = dateFormat.parse(input);
-//
-//                // Add current time to date-only input
-//                Calendar cal = Calendar.getInstance();
-//                Calendar parsedCal = Calendar.getInstance();
-//                parsedCal.setTime(parsedDate);
-//
-//                cal.set(Calendar.YEAR, parsedCal.get(Calendar.YEAR));
-//                cal.set(Calendar.MONTH, parsedCal.get(Calendar.MONTH));
-//                cal.set(Calendar.DAY_OF_MONTH, parsedCal.get(Calendar.DAY_OF_MONTH));
-//
-//                return cal.getTime();
-//            } catch (ParseException e1) {
-//                // Continue to next format
-//
-//                try {
-//                    SimpleDateFormat dateTimeFormatAmPm = new SimpleDateFormat("dd-MM-yyyy h:mm:ss a", Locale.getDefault());
-//                    return dateTimeFormatAmPm.parse(input);
-//                } catch (ParseException e3) {
-//                    // Continue to next format
-//
-//                    try {
-//                        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
-//                        return dateTimeFormat.parse(input);
-//                    } catch (ParseException e2) {
-//                        // Continue to next format
-//
-//                        try {
-//                            SimpleDateFormat monthNameFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a", Locale.US);
-//                            return monthNameFormat.parse(input);
-//                        } catch (ParseException e4) {
-//                            // Continue to next format
-//
-//                            try {
-//                                SimpleDateFormat rfc1123Format = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
-//                                return rfc1123Format.parse(input);
-//                            } catch (ParseException e5) {
-//                                Log.e(getClass().getName(), "Error parsing date: " + input, e5);
-//                                return null;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            Log.e(getClass().getName(), "Error parsing date: " + input, e);
-//            return null;
-//        }
-//    }
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+        return formatter.format(date);
+    }
 
 
 

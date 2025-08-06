@@ -156,10 +156,10 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
             if (campaignFormDataEntry.getId() != null && campaignFormDataEntry.getValue() != null) {
                 String value = campaignFormDataEntry.getValue().toString();
-                if (value.endsWith(".0")) {
-                    value = value.replaceAll(".0", "");// .replaceALl(".0", "");
-                    campaignFormDataEntry.setValue(value);
-                }
+//                if (value.endsWith(".0")) {
+//                    value = value.replaceAll(".0", "");// .replaceALl(".0", "");
+//                    campaignFormDataEntry.setValue(value);
+//                }
                 filledFormValues.add(campaignFormDataEntry);
                 if (campaignFormDataEntry.getId().equalsIgnoreCase("LotNo")) {
                     lotNo = campaignFormDataEntry;
@@ -313,7 +313,9 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
                     "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
                     "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
                     "dd/MM/yyyy",                   // e.g., 25/06/2025
-                    "EEE MMM dd HH:mm:ss z yyyy"    // e.g., Wed Jun 25 10:30:00 GMT 2025
+                    "EEE MMM dd HH:mm:ss z yyyy" ,   // e.g., Wed Jun 25 10:30:00 GMT 2025
+                    "EEE MMM dd HH:mm:ss zzz yyyy"
+
             };
 
             for (String formatString : inputFormats) {
