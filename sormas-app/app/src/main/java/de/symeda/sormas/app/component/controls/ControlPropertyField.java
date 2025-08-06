@@ -166,6 +166,11 @@ public abstract class ControlPropertyField<T> extends LinearLayout {
 		}
 	}
 
+	public String getFieldIdS() {
+		return getResources().getResourceName(getId());
+	}
+
+
 	protected String getFieldIdString() {
 		return getResources().getResourceName(getId());
 	}

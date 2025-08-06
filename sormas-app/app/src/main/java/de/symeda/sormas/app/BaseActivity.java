@@ -534,7 +534,13 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 				System.out.println(" ++++++++++++ "+user.getDistrict().getName());
 
 				userDistrict.setText("District : " +user.getDistrict());
-				userClusters.setText(Html.fromHtml("<b>Clusters : </b>" + initialCommunities));
+				String communityText = initialCommunities.stream()
+						.map(item -> item.toString())
+						.filter(name -> name != null && !name.trim().isEmpty())
+						.collect(Collectors.joining(", "));
+				userClusters.setText(Html.fromHtml("<b>Clusters : </b>" + communityText));
+
+//				userClusters.setText(Html.fromHtml("<b>Clusters : </b>" + initialCommunities)).;
 				userFormAccesses.setText(Html.fromHtml("<b>Form Access : </b>" + user.getUserFormAccessString()));
 			} else {
 				userDistrict.setText("District : " +InfrastructureDaoHelper.loadAllDistricts());
