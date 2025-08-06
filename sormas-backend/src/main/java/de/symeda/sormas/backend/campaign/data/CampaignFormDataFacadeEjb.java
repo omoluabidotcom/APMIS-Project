@@ -539,15 +539,16 @@ System.out.println("Checking Districtb Level Form Entry in Validation point at E
 
 		if (sortProperties != null && sortProperties.size() > 0) {
 			List<Order> order = new ArrayList<>(sortProperties.size());
-			for (SortProperty sortProperty : sortProperties) {
-
+			for (SortProperty sortProperty : sortProperties) {				 
 				System.out.println(sortProperty.propertyName + "sortinpropertynaem ");
 				Expression<?> expression;
 				switch (sortProperty.propertyName) {
-				case CampaignFormDataIndexDto.UUID:
-				case CampaignFormDataIndexDto.FORM_DATE:
+				case CampaignFormDataIndexDto.UUID:				
 				case CampaignFormDataIndexDto.SOURCE:
 					expression = root.get(sortProperty.propertyName);
+					break;
+				case "date":			    				
+					expression = root.get(CampaignFormData.FORM_DATE);
 					break;
 				case CampaignFormDataIndexDto.CAMPAIGN:
 					expression = campaignJoin.get(Campaign.NAME);

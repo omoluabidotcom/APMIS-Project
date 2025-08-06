@@ -89,6 +89,7 @@ import com.vaadin.flow.server.StreamResource;
 import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.Language;
 import de.symeda.sormas.api.campaign.CampaignDto;
+import de.symeda.sormas.api.campaign.CampaignIndexDto;
 import de.symeda.sormas.api.campaign.CampaignPhase;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
@@ -1891,6 +1892,7 @@ public class CampaignDataView extends VerticalLayout
 			
 			grid.addColumn(e -> e.getFormDate() != null ?  
 			e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader(I18nProperties.getCaption(Captions.date))
+			.setKey("date")
 //			createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
 			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate() != null ?  
 					e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
@@ -1951,8 +1953,9 @@ public class CampaignDataView extends VerticalLayout
 			
 			grid.addColumn(e -> e.getFormDate() != null ?  
 			e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader(I18nProperties.getCaption(Captions.date))
+			.setKey("date")
 //			createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
-			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate() != null ?  
+			.setComparator(Comparator.comparing(CampaignFormDataIndexDto::getFormDate)).setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate() != null ?  
 					e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
 			.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
 			
@@ -2013,6 +2016,7 @@ public class CampaignDataView extends VerticalLayout
 			
 			grid.addColumn(e -> e.getFormDate() != null ?  
 			e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader(I18nProperties.getCaption(Captions.date))
+			.setKey("date")
 //			createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
 			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate() != null ?  
 					e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")

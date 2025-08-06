@@ -320,8 +320,8 @@ public class UserAnalysisGridView extends VerticalLayout {
 				.setSortProperty("district").setSortable(true).setResizable(true)
 				.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.district));
 		grid.addColumn(CommunityUserReportModelDto::getFormAccess)
-				.setHeader(I18nProperties.getCaption(Captions.formAccess)).setSortProperty("formAccess")
-				.setSortable(true).setResizable(true)
+				.setHeader(I18nProperties.getCaption(Captions.formAccess))
+				.setResizable(true)
 				.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.formAccess));
 
 		if (currentUser.getUser().getLanguage().toString().equals("Pashto")) {
@@ -354,7 +354,7 @@ public class UserAnalysisGridView extends VerticalLayout {
 				.setSortable(true).setResizable(true)
 				.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.Login_username));
 		grid.addColumn(CommunityUserReportModelDto::getMessage).setHeader(I18nProperties.getCaption(Captions.message))
-				.setSortProperty("message").setSortable(true).setResizable(true)
+				.setSortProperty("message").setSortable(false).setResizable(true)
 				.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.message));
 
 		int numberOfRows = FacadeProvider.getCommunityFacade().getAllActiveCommunitytoRerenceCount(null, null, null,

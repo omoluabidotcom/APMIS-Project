@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.PlatformEnum;
@@ -60,6 +61,8 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
     private Campaign campaign;
     private CampaignFormMeta campaignFormMeta;
     private CampaignFormDataCriteria criteria = new CampaignFormDataCriteria();
+
+    private Locale currentLocale;
 
     public static void startActivity(Context context, String rootUuid) {
         BaseActivity.startActivity(context, CampaignFormDataEditActivity.class, buildBundle(rootUuid));
@@ -111,7 +114,36 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
             return;
         }
 
-        final List<CampaignFormDataEntry> formValues = campaignFormDataToSave.getFormValues();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            currentLocale = getResources().getConfiguration().getLocales().get(0);
+        } else {
+            currentLocale = getResources().getConfiguration().locale;
+        }
+        String language = currentLocale.getLanguage();
+
+        List<CampaignFormDataEntry> cleanedFormValues = new ArrayList<>(campaignFormDataToSave.getFormValues().size());
+        List<CampaignFormDataEntry> formValues = new ArrayList<>();
+        if (!language.equalsIgnoreCase("en")) {
+
+            for (CampaignFormDataEntry entry : campaignFormDataToSave.getFormValues()) {
+                if ("time".equalsIgnoreCase(entry.getId())) {
+                    String convertedTime = convertToEnglishNumbers(String.valueOf(entry.getValue()));
+                    if (!convertedTime.equals(entry.getValue())) {
+                        CampaignFormDataEntry timeEntry = new CampaignFormDataEntry();
+                        timeEntry.setId(entry.getId());
+                        timeEntry.setValue(convertedTime);
+                        cleanedFormValues.add(timeEntry);
+                    } else {
+                        cleanedFormValues.add(entry);
+                    }
+                } else {
+                    cleanedFormValues.add(entry);
+                }
+            }
+            formValues = cleanedFormValues;
+        } else {
+            formValues = campaignFormDataToSave.getFormValues();
+        }
         final List<CampaignFormDataEntry> filledFormValues = new ArrayList<>();
 
 
@@ -270,5 +302,27 @@ NotificationHelper.showNotification(this, ERROR, "Form Date cannot be left Empty
 
         if (saveTask != null && !saveTask.isCancelled())
             saveTask.cancel(true);
+    }
+
+    public static String convertToEnglishNumbers(String input) {
+        if (input == null) return null;
+        final char[] persianDigits = {'\u06F0','\u06F1','\u06F2','\u06F3','\u06F4','\u06F5','\u06F6','\u06F7','\u06F8','\u06F9'};
+        final char[] arabicDigits = {'\u0660','\u0661','\u0662','\u0663','\u0664','\u0665','\u0666','\u0667','\u0668','\u0669'};
+        StringBuilder output = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            char ch = input.charAt(i);
+            boolean found = false;
+            for (int j = 0; j < 10; j++) {
+                if (ch == persianDigits[j] || ch == arabicDigits[j]) {
+                    output.append((char) ('0' + j));
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                output.append(ch);
+            }
+        }
+        return output.toString();
     }
 }

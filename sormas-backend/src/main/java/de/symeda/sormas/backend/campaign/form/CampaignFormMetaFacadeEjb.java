@@ -122,7 +122,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 //		getByUuidAndFormVersionUuid
 		CampaignFormMeta target = DtoHelper.fillOrBuildEntity(source, service.getByUuid(source.getUuid()),
 				CampaignFormMeta::new, checkChangeDate);
-		
+
 //		CampaignFormMeta target = DtoHelper.fillOrBuildEntity(source, service.getByUuidAndFormVersionUuid(source.getUuid(), source.getFormversionuuid()),
 //				CampaignFormMeta::new, checkChangeDate);
 
@@ -145,10 +145,9 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		target.setFormversion(source.getFormversion());
 		target.setFormGroupUuid(source.getFormGroupUuid());
 
-
 		return target;
 	}
-	
+
 	//
 //	public CampaignFormMeta fromDtoDup(@NotNull CampaignFormMetaDto source, boolean checkChangeDate) {
 //		
@@ -184,7 +183,6 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 //		return target;
 //	}
 
-
 	public static CampaignFormMetaDto toDto(CampaignFormMeta source) {
 		if (source == null) {
 			return null;
@@ -218,11 +216,8 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		target.setFormversion(source.getFormversion());
 		target.setFormGroupUuid(source.getFormGroupUuid());
 
-
-
 		return target;
 	}
-	
 
 //	public static CampaignFormMetaDto toDtoDup(CampaignFormMeta source) {
 //		if (source == null) {
@@ -264,22 +259,26 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 	@Override
 	public CampaignFormMetaDto saveCampaignFormMeta(@Valid CampaignFormMetaDto campaignFormMetaDto)
 			throws ValidationRuntimeException {
-		
 		validateAndClean(campaignFormMetaDto);
-
-		CampaignFormMeta campaignFormMeta = fromDto(campaignFormMetaDto, true);	
+		for (CampaignFormElement element : campaignFormMetaDto.getCampaignFormElements()) {
+			String caption = element.getCaption();
+			if (caption != null) {
+				caption = caption.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
+				element.setCaption(caption);
+			}
+		}
+		CampaignFormMeta campaignFormMeta = fromDto(campaignFormMetaDto, true);
 		service.ensurePersisted(campaignFormMeta);
 		return toDto(campaignFormMeta);
 	}
-	
+
 	@Override
 	public CampaignFormMetaDto duplicateCampaignFormMeta(@Valid CampaignFormMetaDto campaignFormMetaDto)
 			throws ValidationRuntimeException {
-		
-		System.out.println("campaignFormMetaDtocampaignFormMetaDto" +  campaignFormMetaDto);
-		System.out.println("campaignFormMetaDtocampaignFormMetaDto" +  campaignFormMetaDto.getFormversion());
-		System.out.println("campaignFormMetaDtocampaignFormMetaDto" +  campaignFormMetaDto.getFormGroupUuid());
 
+		System.out.println("campaignFormMetaDtocampaignFormMetaDto" + campaignFormMetaDto);
+		System.out.println("campaignFormMetaDtocampaignFormMetaDto" + campaignFormMetaDto.getFormversion());
+		System.out.println("campaignFormMetaDtocampaignFormMetaDto" + campaignFormMetaDto.getFormGroupUuid());
 
 		validateAndClean(campaignFormMetaDto);
 
@@ -488,7 +487,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		}
 		return filterdList;
 	}
-	
+
 //	@Override
 //	public CampaignFormMetaDto getCampaignFormMetaByUuidAndFormVersionUuid(String campaignFormUuid, String formVersionUuid) {
 //		
@@ -503,9 +502,10 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 
 	@Override
 	public CampaignFormMetaDto getCampaignFormMetaByUuid(String campaignFormUuid) {
-		
+
 		return toDto(service.getByUuid(campaignFormUuid));
 	}
+
 //	
 	@Override
 	public CampaignFormMetaReferenceDto getCampaignFormMetaReferenceByUuid(String campaignFormUuid) {
@@ -680,7 +680,6 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		return service.getByUuids(uuids).stream().map(campaignFormMeta -> toDto(campaignFormMeta))
 				.collect(Collectors.toList());
 	}
-
 
 	@Override
 	public void validateAllFormMetas() {
@@ -896,7 +895,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		}
 
 		return new CampaignFormMetaReferenceDto(entity.getUuid(), entity.toString(), entity.getFormType(),
-				entity.getFormCategory(), entity.getDaysExpired(), entity.getFormGroupUuid(), entity.getFormversion() );
+				entity.getFormCategory(), entity.getDaysExpired(), entity.getFormGroupUuid(), entity.getFormversion());
 	}
 
 	public static CampaignFormMetaReferenceDto toReferenceDtoDari(CampaignFormMeta entity) {
