@@ -235,7 +235,8 @@ NotificationHelper.showNotification(this, ERROR, "Form Date cannot be left Empty
                     "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
                     "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
                     "dd/MM/yyyy",                   // e.g., 25/06/2025
-                    "EEE MMM dd HH:mm:ss z yyyy"    // e.g., Wed Jun 25 10:30:00 GMT 2025
+                    "EEE MMM dd HH:mm:ss z yyyy",   // e.g., Wed Jun 25 10:30:00 GMT 2025
+                    "EEE MMM dd HH:mm:ss zzz yyyy"        // slight variation
             };
 
             for (String formatString : inputFormats) {
