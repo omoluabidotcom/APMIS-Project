@@ -1920,55 +1920,29 @@ if (!selectedAreas.isEmpty()) {
 				Object tempz = defaultErrorMsgr != null ? defaultErrorMsgr
 						: "Data entered not in range or calculated rangexxx!";
 				String lb = field.getElement().getProperty("label");
-
-				// clear the input
-				// field.getElement().executeJs("this.inputElement.value = ''");
-
 				field.getElement().setProperty("invalid", true);
 				field.getElement().setProperty("label", lb == null ? "" : lb);
 				field.getElement().setProperty("errorMessage", defaultErrorMsgr != null ? defaultErrorMsgr.toString()
 						: "Data entered not in range or calculated range!");
-
-				// Notification.show("Error found", tempz.toString(),
-				// Notification.TYPE_TRAY_NOTIFICATION);
 			}
 
 			if (value != null) {
-
-//				System.out.println( value + " VALUE FROM FORMBUILDER RANGE +===============");
-
 				if (value.toString().equals("")) {
-//					System.out.println( value + " VALUE FROM FORMBUILDER RANGE +===============IFFFF-----");
-
-//					logger.debug("))))))))))))))))))))))))))):setting empty value to nulll --- not sure");
 					((IntegerField) field).setValue(null);
 				} else {
-
-//					System.out.println( value + " VALUE FROM FORMBUILDER RANGE +===============ELSE-----");
 					String cleanValue = value.toString().replace(".0", "");
 
-					System.out.println(value + " VALUE FROM FORMBUILDER RANGE +===============ELSE-----" + cleanValue);
-
-//					System.out.println( value + " VALUE FROM FORMBUILDER RANGE +===============ELSE-----");
 
 					String cleancleanvalue = value.toString(); // Assuming getValue() retrieves the value as a String
 					if (cleancleanvalue.endsWith(".0")) {
 						cleancleanvalue = cleancleanvalue.substring(0, cleancleanvalue.length() - 2); // Remove the ".0"
 					}
-
-					System.out.println(
-							value + " VALUE FROM FORMBUILDER RANGE +===============ELSE-----" + cleancleanvalue);
-
 					((IntegerField) field).setValue(Integer.parseInt(cleancleanvalue));
 				}
 
 			} else if (defaultvalue != null) {
-
-//				System.out.println( defaultvalue + " defaultvalue FROM FORMBUILDER RANGE +===============ELSE-----");
-
 				((IntegerField) field).setValue(Integer.parseInt(defaultvalue));
 			} else {
-//				System.out.println( "not nullllllll  defaultvalue FROM FORMBUILDER RANGE +===============ELSE-----");
 				((IntegerField) field).setValue(null);
 			}
 
