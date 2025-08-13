@@ -326,21 +326,21 @@ public class UserAnalysisGridView extends VerticalLayout {
 
 		if (currentUser.getUser().getLanguage().toString().equals("Pashto")) {
 			grid.addColumn(clusterNumberRenderer).setHeader(I18nProperties.getCaption(Captions.clusterNumber))
-					.setSortProperty("clusterNumberr").setSortable(true).setResizable(true)
+					.setSortProperty("clusterNumber").setSortable(true).setResizable(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.clusterNumber));
 			grid.addColumn(cCodeRenderer).setHeader(I18nProperties.getCaption(Captions.Community_externalID))
 					.setSortProperty("ccode").setSortable(true).setResizable(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.Community_externalID));
 		} else if (currentUser.getUser().getLanguage().toString().equals("Dari")) {
 			grid.addColumn(clusterNumberRenderer).setHeader(I18nProperties.getCaption(Captions.clusterNumber))
-					.setSortProperty("clusterNumberr").setSortable(true).setResizable(true)
+					.setSortProperty("clusterNumber").setSortable(true).setResizable(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.clusterNumber));
 			grid.addColumn(cCodeRenderer).setHeader(I18nProperties.getCaption(Captions.Community_externalID))
 					.setSortProperty("ccode").setSortable(true).setResizable(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.Community_externalID));
 		} else {
 			grid.addColumn(CommunityUserReportModelDto::getClusterNumberr)
-					.setHeader(I18nProperties.getCaption(Captions.clusterNumber)).setSortProperty("clusterNumberr")
+					.setHeader(I18nProperties.getCaption(Captions.clusterNumber)).setSortProperty("clusterNumber")
 					.setSortable(true).setResizable(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.clusterNumber));
 			grid.addColumn(CommunityUserReportModelDto::getcCode)

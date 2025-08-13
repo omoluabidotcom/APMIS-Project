@@ -124,18 +124,13 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         boolean saveChecker = true;
         criteria.setCampaign(campaign);
         criteria.setCampaignFormMeta(campaignFormMeta);
-
-
-
+        criteria.setCommunity(null);
+        List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteria(criteria, 0, 100);
 
         if(!ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) { // District Officer
             criteria.setCommunity(campaignFormDataToSave.getCommunity());
 //            criteria.setCommunity(null);
-        }else{
-            criteria.setCommunity(null);
         }
-
-        List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteria(criteria, 0, 100);
 
 //        campaignFormDataToSave.setRecordversion(1L);
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());

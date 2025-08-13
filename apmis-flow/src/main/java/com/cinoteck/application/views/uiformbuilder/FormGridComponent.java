@@ -260,7 +260,7 @@ public class FormGridComponent extends VerticalLayout {
 				vr3.setEnabled(isSingleSelection);
 
 				formLayout.setVisible(true);
-				vr3.setVisible(true);
+				vr3.setVisible(true);				
 				formType.setValue(generateType(formBeenEdited.getType()));
 				formType.setVisible(true);
 
@@ -343,11 +343,7 @@ public class FormGridComponent extends VerticalLayout {
 //					}
 //				}
 
-				if (formBeenEdited.getConstraints() != null) {
-					System.out.println("formBeenEdited.getConstraints()[0].toLowerCase() " + formBeenEdited.getConstraints()[0].toLowerCase());
-					for (String each : formBeenEdited.getConstraints()) {
-						System.out.println("eachhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh " + each);
-					}
+				if (formBeenEdited.getConstraints() != null) {					
 					if (formBeenEdited.getConstraints()[0].toLowerCase().equals("expression")) {
 						constraints.setValue(Constraint.EXPRESSION);
 						constraints.setVisible(true);
@@ -357,7 +353,7 @@ public class FormGridComponent extends VerticalLayout {
 						constraints.setValue(Constraint.RANGE);
 						constraints.setVisible(true);
 
-						for (String part : formBeenEdited.getConstraints()) {
+						for (String part : formBeenEdited.getConstraints()) {							
 							if (part.startsWith("max=")) {
 								max.setValue(part.substring(4));
 							} else if (part.startsWith("min=")) {
@@ -387,6 +383,13 @@ public class FormGridComponent extends VerticalLayout {
 				if (formBeenEdited.getDefaultvalue() != null) {
 					defaultValues.setValue(formBeenEdited.getDefaultvalue());
 					defaultValues.setVisible(true);
+				}
+				
+				if (!formBeenEdited.getType().equalsIgnoreCase("number") 
+						&& !formBeenEdited.getType().equalsIgnoreCase("range")
+						&& !formBeenEdited.getType().equalsIgnoreCase("decimal")) {
+					constraints.clear();
+					constraints.setVisible(false);
 				}
 
 				save.setText("Update");
@@ -555,7 +558,7 @@ public class FormGridComponent extends VerticalLayout {
 						if (min.getValue() != null && max.getValue() != null
 								&& Integer.parseInt(min.getValue()) < Integer.parseInt(max.getValue())) {
 
-							String valueOfMinMAx = "max=" + min.getValue() + " min=" + max.getValue();
+							String valueOfMinMAx = "max=" + max.getValue() + " min=" + min.getValue();
 							newForm.setConstraints(valueOfMinMAx.split(" "));
 						} else {
 
@@ -742,7 +745,7 @@ public class FormGridComponent extends VerticalLayout {
 								if (min.getValue() != null && max.getValue() != null
 										&& Integer.parseInt(min.getValue()) < Integer.parseInt(max.getValue())) {
 
-									String valueOfMinMAx = "max=" + min.getValue() + " min=" + max.getValue();
+									String valueOfMinMAx = "max=" + max.getValue() + " min=" + min.getValue();
 									newForm.setConstraints(valueOfMinMAx.split(" "));
 								} else {
 
@@ -926,8 +929,6 @@ public class FormGridComponent extends VerticalLayout {
 			return CampaignFormElementType.DECIMAL;
 		} else if (type.equalsIgnoreCase("DROPDOWN")) {
 			return CampaignFormElementType.DROPDOWN;
-		} else if (type.equalsIgnoreCase("DROPDOWN")) {
-			return CampaignFormElementType.DROPDOWN;
 		} else if (type.equalsIgnoreCase("NUMBER")) {
 			return CampaignFormElementType.NUMBER;
 		} else if (type.equalsIgnoreCase("RADIO")) {
@@ -944,8 +945,15 @@ public class FormGridComponent extends VerticalLayout {
 			return CampaignFormElementType.TEXTBOX;
 		} else if (type.equalsIgnoreCase("YES_NO")) {
 			return CampaignFormElementType.YES_NO;
-		}
-
+		} else if (type.equalsIgnoreCase("PHONE")) {
+			return CampaignFormElementType.PHONE;
+		} else if (type.equalsIgnoreCase("EMAIL")) {
+			return CampaignFormElementType.EMAIL;
+		} else if (type.equalsIgnoreCase("LINEBREAK")) {
+			return CampaignFormElementType.LINEBREAK;
+		} else if (type.equalsIgnoreCase("TIME")) {
+			return CampaignFormElementType.TIME;
+		}			
 		return CampaignFormElementType.LABEL;
 	}
 
