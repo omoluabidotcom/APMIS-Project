@@ -261,7 +261,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 	@Override
 	public CampaignFormDataDto saveCampaignFormDataMobile(@Valid CampaignFormDataDto campaignFormDataDto)
 			throws ValidationRuntimeException {
-		
+
 		System.out.println(" MObile version of save chittt ");
 		UserReferenceDto currtUsr = userServiceEBJ.getCurrentUserAsReference();
 		campaignFormDataDto.setSource("MOBILE");
@@ -291,9 +291,10 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 	}
 
 	private void validate(CampaignFormDataDto campaignFormDataDto) {
-		boolean isDistrictLevelForm  = campaignFormMetaService.getDistrictEntryStatusByUuid(campaignFormDataDto.getCampaignFormMeta().getUuid());
-System.out.println("Checking Districtb Level Form Entry in Validation point at EJB --------------------");
-		
+		boolean isDistrictLevelForm = campaignFormMetaService
+				.getDistrictEntryStatusByUuid(campaignFormDataDto.getCampaignFormMeta().getUuid());
+		System.out.println("Checking Districtb Level Form Entry in Validation point at EJB --------------------");
+
 		if (campaignFormDataDto.getCampaign() == null) {
 			throw new ValidationRuntimeException(I18nProperties.getValidationError("Campaign_id now valid!"));
 		}
@@ -306,20 +307,19 @@ System.out.println("Checking Districtb Level Form Entry in Validation point at E
 		if (campaignFormDataDto.getDistrict() == null) {
 			throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validDistrict));
 		}
-		
+
 		if (!isDistrictLevelForm) {
-			
+
 			System.out.println("Not District Entry Form Point 3333333333333333333333333333333");
 			if (campaignFormDataDto.getCommunity() == null) {
 				throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validCommunity));
 			}
-		}else {
+		} else {
 			System.out.println("District Entry Form Point 3333333333333333333333333333333 Skipping validation check ");
 
 		}
-		
+
 	}
-	
 
 	@Override
 	public List<CampaignFormDataDto> getByUuids(List<String> uuids) {
@@ -441,18 +441,19 @@ System.out.println("Checking Districtb Level Form Entry in Validation point at E
 				cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignformmetaid)
 //				cb.equal(districtJoin.get(District.NAME), district),
 //				cb.equal(communityJoin.get(Community.NAME), community)
-				));
-		
-	    List<Predicate> predicates = new ArrayList<>();
-	    predicates.add(cb.equal(campaignJoin.get(Campaign.UUID), campaignid));
-	    predicates.add(cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignformmetaid));
+		));
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.equal(campaignJoin.get(Campaign.UUID), campaignid));
+		predicates.add(cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignformmetaid));
 //	    predicates.add(cb.equal(districtJoin.get(District.NAME), district));
 
-	    if (community != null && !community.isEmpty() && !community.equalsIgnoreCase("")) {
+		if (community != null && !community.isEmpty() && !community.equalsIgnoreCase("")) {
 //	        predicates.add(cb.equal(communityJoin.get(Community.NAME), community));
-	    }		
-		
-		System.out.println("---- DEBUGGER r567ujhgty8ijyu8QuetuExtract  this query---- " + SQLExtractor.from(em.createQuery(cq)));
+		}
+
+		System.out.println(
+				"---- DEBUGGER r567ujhgty8ijyu8QuetuExtract  this query---- " + SQLExtractor.from(em.createQuery(cq)));
 		return em.createQuery(cq).getResultList();
 	}
 
@@ -527,7 +528,8 @@ System.out.println("Checking Districtb Level Form Entry in Validation point at E
 				communityJoin.get(Community.CLUSTER_NUMBER), communityJoin.get(Community.EXTERNAL_ID),
 				root.get(CampaignFormData.FORM_DATE), campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
 				root.get(CampaignFormData.SOURCE), userJoin.get(User.USER_NAME), root.get(CampaignFormData.ISVERIFIED),
-				root.get(CampaignFormData.ISPUBLISHED), root.get(CampaignFormData.RECORDVERSION));
+				root.get(CampaignFormData.ISPUBLISHED), root.get(CampaignFormData.RECORDVERSION),
+				root.get(CampaignFormData.CHANGE_DATE));
 
 		Predicate filter = CriteriaBuilderHelper.and(cb,
 				campaignFormDataService.createCriteriaFilter(criteria, cb, root),
@@ -539,15 +541,15 @@ System.out.println("Checking Districtb Level Form Entry in Validation point at E
 
 		if (sortProperties != null && sortProperties.size() > 0) {
 			List<Order> order = new ArrayList<>(sortProperties.size());
-			for (SortProperty sortProperty : sortProperties) {				 
+			for (SortProperty sortProperty : sortProperties) {
 				System.out.println(sortProperty.propertyName + "sortinpropertynaem ");
 				Expression<?> expression;
 				switch (sortProperty.propertyName) {
-				case CampaignFormDataIndexDto.UUID:				
+				case CampaignFormDataIndexDto.UUID:
 				case CampaignFormDataIndexDto.SOURCE:
 					expression = root.get(sortProperty.propertyName);
 					break;
-				case "date":			    				
+				case "date":
 					expression = root.get(CampaignFormData.FORM_DATE);
 					break;
 				case CampaignFormDataIndexDto.CAMPAIGN:
@@ -579,6 +581,9 @@ System.out.println("Checking Districtb Level Form Entry in Validation point at E
 					break;
 				case CampaignFormDataIndexDto.COMMUNITYNUMBER:
 					expression = communityJoin.get(Community.CLUSTER_NUMBER);
+					break;					
+				case "lastmodified":
+					expression = root.get(CampaignFormData.CHANGE_DATE);
 					break;
 				case CampaignFormDataIndexDto.CCODE:
 					expression = communityJoin.get(Community.EXTERNAL_ID);
@@ -3055,9 +3060,8 @@ if(criteria.getUserLanguage() != null) {
 				+ "left join campaignformmeta ff on cb.campaignformmeta_id = ff.id left join campaigns gn on cb.campaign_id = gn.id\r\n"
 				+ "where cm.uuid = '" + community.getUuid() + "' and ff.uuid = '" + campaignForm.getUuid()
 				+ "' and gn.uuid = '" + campaign.getUuid() + "'and cb.archived = false limit 1";
-		
-		
-			System.out.println(query + "queryqueryqueryqueryqueryqueryqueryqueryqueryquery");
+
+		System.out.println(query + "queryqueryqueryqueryqueryqueryqueryqueryqueryquery");
 		Query poquery = em.createNativeQuery(query);
 		try {
 			return (String) poquery.getSingleResult();
