@@ -1897,7 +1897,12 @@ public class CampaignDataView extends VerticalLayout
 					e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
 			.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
 			
-			
+			grid.addColumn(e -> e.getChangeDate() != null ?  
+					e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader("Last Modified")
+					.setKey("lastmodified")
+					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getChangeDate() != null ?  
+							e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
+					.setFooter("Last Modified");
 			
 			grid.addColumn(CampaignFormDataIndexDto.AREA).setHeader(I18nProperties.getCaption(Captions.area))
 					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getArea());
@@ -1958,6 +1963,12 @@ public class CampaignDataView extends VerticalLayout
 					e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
 			.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
 			
+			grid.addColumn(e -> e.getChangeDate() != null ?  
+					e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader("Last Modified")
+					.setKey("lastmodified")
+					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getChangeDate() != null ?  
+							e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
+					.setFooter("Last Modified");
 			
 			grid.addColumn(CampaignFormDataIndexDto.AREA).setHeader(I18nProperties.getCaption(Captions.area))
 					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getArea());
@@ -2020,7 +2031,13 @@ public class CampaignDataView extends VerticalLayout
 			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate() != null ?  
 					e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
 			.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
-			
+						
+			grid.addColumn(e -> e.getChangeDate() != null ?  
+					e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader("Last Modified")
+					.setKey("lastmodified")
+					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getChangeDate() != null ?  
+							e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
+					.setFooter("Last Modified");
 			
 			grid.addColumn(CampaignFormDataIndexDto.AREA).setHeader(I18nProperties.getCaption(Captions.area))
 //					createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
