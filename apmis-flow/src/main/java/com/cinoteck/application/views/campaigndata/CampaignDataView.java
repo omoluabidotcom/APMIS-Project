@@ -88,6 +88,7 @@ import com.vaadin.flow.server.StreamResource;
 
 import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.Language;
+import de.symeda.sormas.api.MapperUtil;
 import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignIndexDto;
 import de.symeda.sormas.api.campaign.CampaignPhase;
@@ -1062,7 +1063,10 @@ public class CampaignDataView extends VerticalLayout
 				
 
 				for (CampaignFormElement element : campaignFormElements) {
-
+					List<MapperUtil> options = new ArrayList<MapperUtil>();
+					if(element.getOptions() != null ) {
+						options = element.getOptions();
+					}
 					String fieldsType = element.getType();
 					
 					if (element.isImportant() && onlyImportantFormElements) {
@@ -1072,7 +1076,7 @@ public class CampaignDataView extends VerticalLayout
 						}
 
 						if (caption != null) {
-							addCustomColumn(element.getId(), caption, fieldsType);
+							addCustomColumn(element.getId(), caption, fieldsType, options);
 						}
 					} else if (allAndImportantFormElements) {
 						String caption = null;
@@ -1080,7 +1084,7 @@ public class CampaignDataView extends VerticalLayout
 							caption = element.getCaption();
 						}
 						if (caption != null) {
-							addCustomColumn(element.getId(), caption, fieldsType);
+							addCustomColumn(element.getId(), caption, fieldsType, options);
 						}
 					}
 				}
@@ -2314,6 +2318,66 @@ public class CampaignDataView extends VerticalLayout
 		grid.setDataProvider(dataProvider);
 	}
 
+	
+	public void addCustomColumn(String property, String caption, String fieldsType, List<MapperUtil> options) {
+		if (!property.toString().contains("readonly")) {
+			grid.addColumn(e -> {				
+	            CampaignFormDataEntry formValue = e.getFormValues().stream()
+	                    .filter(v -> v.getId().equals(property))
+	                    .findFirst()
+	                    .orElse(null);
+	                if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
+	                    if(formValue != null) {	                   
+						return   removeTrailingDecimalFromString(formValue.getValue().toString());//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+						}else {
+							return  "";
+						}
+	                }else if(fieldsType != null && (fieldsType.equalsIgnoreCase("yes_no"))) {
+	                    if(formValue != null) {	
+	                 	if(formValue.toString().equalsIgnoreCase("Yes") || formValue.toString().equalsIgnoreCase("True")) {
+							return   removeTrailingDecimalFromString("Yes");//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+                    	}else if(formValue.toString().equalsIgnoreCase("No") || formValue.toString().equalsIgnoreCase("False")) {
+							return   removeTrailingDecimalFromString("No");//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+                    	}else {
+							return   "";//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+                    	}
+	                 	}else {
+							return  "";
+						}
+	                }else if(fieldsType != null && (fieldsType.equalsIgnoreCase("dropdown"))) {
+	                	String formValueCaption = "";
+	                	for(MapperUtil valueCaption : options) {
+	                		if(formValue != null  && formValue.getValue().toString().equalsIgnoreCase(valueCaption.getKey())) {
+		                		formValueCaption = valueCaption.getCaption();	
+	                		}
+	                	}
+            		return formValueCaption;
+
+	                }else {
+	        			return removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+
+	                }
+			}).setHeader(caption).setFooter(property).setSortProperty(property).setSortable(false).setResizable(true).setAutoWidth(true)
+			.setTooltipGenerator(e->{
+					CampaignFormDataEntry formValue = e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null);
+		              String value;
+
+					if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
+		                 if(formValue != null) {
+								System.out.println(formValue.getValue().toString().toLowerCase()  + "  ----------------formValue.getValue().toString().toLowerCase() ");
+								return  value = removeTrailingDecimalFromString(formValue.getValue().toString());//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+							}else {
+								return value = "";
+							}
+			 	   }else {
+                       value = removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+			 	   }
+				   return caption + " : " + value;
+					}).setClassNameGenerator(item -> "full-width-column");
+		}
+
+	}
+	
 	public void addCustomColumn(String property, String caption, String fieldsType) {
 		if (!property.toString().contains("readonly")) {
 			grid.addColumn(e -> {				
@@ -2339,6 +2403,10 @@ public class CampaignDataView extends VerticalLayout
 	                 	}else {
 							return  "";
 						}
+	                }else if(fieldsType != null && (fieldsType.equalsIgnoreCase("dropdown"))) {
+	                	
+	                System.out.println( fieldsType+ "fieldsType" +  property + "property" +  caption);
+	                	return  "";
 	                }else {
 	        			return removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
 
