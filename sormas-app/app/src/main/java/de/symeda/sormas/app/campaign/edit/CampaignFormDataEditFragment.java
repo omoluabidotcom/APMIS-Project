@@ -364,7 +364,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 
@@ -372,7 +372,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
 
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues,campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -493,7 +493,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 
@@ -501,7 +501,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
 
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -623,13 +623,13 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -748,7 +748,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 
@@ -773,7 +773,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 //                            }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -891,12 +891,12 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -1013,12 +1013,12 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -1135,12 +1135,12 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -1257,12 +1257,12 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -1380,12 +1380,12 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                         if (!exprx) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                         } else {
-                            dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                            dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                             isRangeandExpression = true;
                         }
                         ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                     } else if (type == CampaignFormElementType.DROPDOWN) {
-                        dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                        dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                         ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                     } else if (type == CampaignFormElementType.DATE) {
                         dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());

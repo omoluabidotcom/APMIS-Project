@@ -306,14 +306,6 @@ public class ControlDecimalEditField extends ControlPropertyEditField<Double> {
         }
 
         required = isRequired;
-/*
-		if (getMinLength() >= 0) {
-			input.setFilters(
-					new InputFilter[] {
-							new InputFilter.LengthFilter(getMinLength()) });
-		}
-*/
-
         CharSequence valx = input.getText();
         if (valx == null && required) {
               setSoftRequired(true);
