@@ -2,6 +2,8 @@ package com.cinoteck.application.views.myaccount;
 
 import com.cinoteck.application.LanguageSwitcher;
 import com.cinoteck.application.UserProvider;
+import com.cinoteck.application.utils.BackDropErrorNotification;
+import com.cinoteck.application.utils.BackDropSuccessNotification;
 import com.cinoteck.application.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Direction;
@@ -20,11 +22,12 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 import com.vaadin.flow.component.notification.Notification;
-
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -305,11 +308,21 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 				} else {
 					if (emailAddresss.getValue().matches(emailRegex)) {
 						if (!validateEmail(emailAddresss.getValue())) {
-							Notification.show("Email Address Exists.");
+							
+//							createNotification("Email Address Exists.");
+//							Notification.show("Email Address Exists.");
+//							
+							BackDropErrorNotification.show("Email Address Exists.");
 							return;
+
 						}
 					} else {
-						Notification.show("Email Address is not valid.");
+						
+//						Notification  errorNotif =  new Notification();
+//						errorNotif =  createNotification("Email Address Exists.");
+//						errorNotif.show("Email Address is not valid.", 0, Notification.Position.MIDDLE);
+						BackDropErrorNotification.show("Email Address is not valid.");
+
 						return;
 					}
 
@@ -319,7 +332,10 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 					
 				}else {
 					if (!validatePhone(phoneNumberr.getValue())) {
-						Notification.show("Phone Number is Invalid.");
+						
+						BackDropErrorNotification.show("Phone Number is Invalid.");
+
+//						Notification.show("Phone Number is Invalid.");
 						return;
 					}
 				}
@@ -338,35 +354,48 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 						FacadeProvider.getUserFacade().saveUser(currentUserToSave);
 
 					} else {
+						
+						BackDropErrorNotification.show(I18nProperties.getString(Strings.choosePreferredLanguage));
 
-						Notification.show(
-								I18nProperties.getString(Strings.choosePreferredLanguage) + languagee.isInvalid());
+
+//						Notification.show(
+//								I18nProperties.getString(Strings.choosePreferredLanguage) + languagee.isInvalid());
 					}
 
 				} catch (Exception exception) {
-					Notification.show(I18nProperties
-							.getString("Error Updating Personal Information, Please contact Administrator"));
+					
+					BackDropErrorNotification.show(I18nProperties.getString("Error Updating Personal Information, Please contact Administrator"));
+
+//					Notification.show(I18nProperties
+//							.getString("Error Updating Personal Information, Please contact Administrator"));
 
 				} finally {
 					
-					UserDto currentUserx = FacadeProvider.getUserFacade().getCurrentUser();
+					try {
+						
+						BackDropSuccessNotification.show(I18nProperties.getString("Profile updated successfully."));
 
-					firstnamee.clear();
-					firstnamee.setValue(currentUserx.getFirstName());
-					lastnamee.clear();
-					lastnamee.setValue(currentUserx.getLastName());
-					emailAddresss.clear();
-					emailAddresss.setValue(currentUserx.getUserEmail());
-					phoneNumberr.clear();
-					phoneNumberr.setValue(currentUserx.getPhone());
-					countryCodeCombo.setVisible(false);
-					
-					emailAddresss.setReadOnly(true);
-					phoneNumberr.setReadOnly(true);
+					}finally {
+						
+						UserDto currentUserx = FacadeProvider.getUserFacade().getCurrentUser();
+						firstnamee.clear();
+						firstnamee.setValue(currentUserx.getFirstName());
+						lastnamee.clear();
+						lastnamee.setValue(currentUserx.getLastName());
+						emailAddresss.clear();
+						emailAddresss.setValue(currentUserx.getUserEmail());
+						phoneNumberr.clear();
+						phoneNumberr.setValue(currentUserx.getPhone());
+						countryCodeCombo.setVisible(false);
+						
+						emailAddresss.setReadOnly(true);
+						phoneNumberr.setReadOnly(true);
 
-					editPersonalInfo.setVisible(true);
-					cancelUpdatePersonalInfo.setVisible(false);
-					updatePersonalInfo.setVisible(false);
+						editPersonalInfo.setVisible(true);
+						cancelUpdatePersonalInfo.setVisible(false);
+						updatePersonalInfo.setVisible(false);
+					}
+			
 				}
 				
 				
@@ -628,7 +657,10 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 				VaadinSession.getCurrent().close();
 			} else {
 
-				Notification.show(I18nProperties.getString(Strings.choosePreferredLanguage) + languagee.isInvalid());
+				BackDropErrorNotification.show(I18nProperties.getString(Strings.choosePreferredLanguage));
+
+				
+//				Notification.show(I18nProperties.getString(Strings.choosePreferredLanguage) + languagee.isInvalid());
 			}
 
 		});
@@ -702,5 +734,29 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 			}
 		return false;
 	}
+	
+	public static Notification createNotification(String errorMessage) {
+        // Create notification with indefinite duration
+        Notification notification = new Notification();
+        notification.setDuration(0); // Stays until closed
+        notification.setPosition(Notification.Position.MIDDLE);
+        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        
+        // Error message
+        Span message = new Span(errorMessage);
+
+        // Cancel button
+        Button cancelButton = new Button("Cancel", e -> notification.close());
+
+        // Layout
+        HorizontalLayout layout = new HorizontalLayout(message, cancelButton);
+        layout.setSpacing(true);
+        layout.setAlignItems(HorizontalLayout.Alignment.CENTER);
+
+        // Add content
+        notification.add(layout);
+
+       return notification;
+    }
 
 }

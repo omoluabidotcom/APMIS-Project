@@ -125,6 +125,7 @@ import de.symeda.sormas.api.infrastructure.region.RegionDto;
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserActivitySummaryDto;
+import de.symeda.sormas.api.user.UserRight;
 import de.symeda.sormas.api.user.UserRole;
 
 public class CampaignFormBuilder extends VerticalLayout {
@@ -634,7 +635,7 @@ if (!selectedAreas.isEmpty()) {
 		System.out.println(isDistrictEntry + "campaignFormBuildercampaignFormBuildercampaignFormBuilder");
 
 		if (!isDistrictEntry) {
-			if (currentUser.getUserRoles().contains(UserRole.EDITOR_USER)) {
+			if (userProvider.hasUserRight(UserRight.REASSIGN_CAMPAIGN_FORM_DATA_CLUSTER)) {
 				reassigmentLayout.add(reassignDataConfigUnit, updateFormDataUnitAssignment,
 						cancelFormDataUnitAssignment);
 
@@ -645,8 +646,10 @@ if (!selectedAreas.isEmpty()) {
 		}
 
 		if (uuidForm != null) {
-			if (currentUser.getUserRoles().contains(UserRole.ADMIN)
-					|| currentUser.getUserRoles().contains(UserRole.COMMUNITY_INFORMANT)) {
+			
+			if (userProvider.hasUserRight(UserRight.REASSIGN_CAMPAIGN_FORM_DATA_CLUSTER)) {
+//			if (currentUser.getUserRoles().contains(UserRole.ADMIN)
+//					|| currentUser.getUserRoles().contains(UserRole.COMMUNITY_INFORMANT)) {
 				System.out.println(isDistrictEntry + "campaignFormBuildercampaignFormBuildercampaignFormBuilder");
 
 //				
@@ -1137,7 +1140,7 @@ if (!selectedAreas.isEmpty()) {
 					NumberField numberField = new NumberField();
 					numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
 					numberField.setClassName("customTextWrap");
-
+					numberField.setMin(0);
 					numberField.setId(formElement.getId());
 					numberField.setSizeFull();
 
@@ -1379,6 +1382,7 @@ if (!selectedAreas.isEmpty()) {
 					integerField.setId(formElement.getId());
 					integerField.setStepButtonsVisible(true);
 					integerField.setSizeFull();
+					integerField.setMin(0);
 
 					setFieldValue(integerField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 
@@ -1808,35 +1812,35 @@ if (!selectedAreas.isEmpty()) {
 		}
 		return orderValue;
 	}
-	
+
 	private static Date parseDateFromString(Object value) throws Exception {
-	    if (value instanceof Date) {
-	        return (Date) value;
-	    } else if (value instanceof LocalDate) {
-	        return Date.from(((LocalDate) value).atStartOfDay(ZoneId.systemDefault()).toInstant());
-	    } else if (value instanceof String) {
-	        String stringValue = ((String) value).trim();
+		if (value instanceof Date) {
+			return (Date) value;
+		} else if (value instanceof LocalDate) {
+			return Date.from(((LocalDate) value).atStartOfDay(ZoneId.systemDefault()).toInstant());
+		} else if (value instanceof String) {
+			String stringValue = ((String) value).trim();
 
-	        if (stringValue.isEmpty()) {
-	            return null;
-	        }
+			if (stringValue.isEmpty()) {
+				return null;
+			}
 
-	        // Try known formats in order
-	        List<String> formats = Arrays.asList("dd-MM-yyyy", "yyyy-MM-dd", "MM/dd/yyyy");
+			// Try known formats in order
+			List<String> formats = Arrays.asList("dd-MM-yyyy", "yyyy-MM-dd", "MM/dd/yyyy");
 
-	        for (String format : formats) {
-	            try {
-	                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-	                LocalDate localDate = LocalDate.parse(stringValue, formatter);
-	                return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-	            } catch (DateTimeParseException e) {
-	            	
-	            }
-	        }
-	        throw new IllegalArgumentException("Unrecognized date format: " + stringValue);
-	    } else {
-	        throw new IllegalArgumentException("Unsupported date value type: " + value.getClass());
-	    }
+			for (String format : formats) {
+				try {
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+					LocalDate localDate = LocalDate.parse(stringValue, formatter);
+					return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+				} catch (DateTimeParseException e) {
+
+				}
+			}
+			throw new IllegalArgumentException("Unrecognized date format: " + stringValue);
+		} else {
+			throw new IllegalArgumentException("Unsupported date value type: " + value.getClass());
+		}
 	}
 
 //	
@@ -1931,7 +1935,6 @@ if (!selectedAreas.isEmpty()) {
 					((IntegerField) field).setValue(null);
 				} else {
 					String cleanValue = value.toString().replace(".0", "");
-
 
 					String cleancleanvalue = value.toString(); // Assuming getValue() retrieves the value as a String
 					if (cleancleanvalue.endsWith(".0")) {
@@ -2079,7 +2082,7 @@ if (!selectedAreas.isEmpty()) {
 				if (defaultErrorMsgr.toString().endsWith("..")) {
 					isExxxpression = true;
 					defaultErrorMsgr = defaultErrorMsgr.toString().equals("..") ? null
-							: defaultErrorMsgr.toString().replace("..", "");					
+							: defaultErrorMsgr.toString().replace("..", "");
 				}
 			}
 
@@ -2094,13 +2097,13 @@ if (!selectedAreas.isEmpty()) {
 
 				field.getElement().setProperty("invalid", true);
 				field.getElement().setProperty("label", lb == null ? "" : lb);
-				field.getElement().setProperty("errorMessage", defaultErrorMsgr != null ? defaultErrorMsgr.toString()
-						: "Decimal Error!");				
+				field.getElement().setProperty("errorMessage",
+						defaultErrorMsgr != null ? defaultErrorMsgr.toString() : "Decimal Error!");
 			}
 
 			if (value != null) {
 				if (value.toString().equals("")) {
-					((NumberField) field).setValue(0.0);	
+					((NumberField) field).setValue(0.0);
 				} else {
 					((NumberField) field).setValue(Double.parseDouble(value.toString()));
 				}
@@ -2153,26 +2156,24 @@ if (!selectedAreas.isEmpty()) {
 //			}
 //			;
 //			break;
-			
-		case DATE:
-		    if (value != null) {
-		        try {
-		            Date date = parseDateFromString(value);
-		            LocalDate localDate = date.toInstant()
-		                .atZone(ZoneId.systemDefault())
-		                .toLocalDate();
 
-		            DatePicker datePicker = (DatePicker) field;
-		            datePicker.setLocale(Locale.UK);
-		            datePicker.setValue(localDate);
-		        } catch (Exception e) {
-		            logger.error("Error parsing date value: " + value, e);
-		            ((DatePicker) field).setValue(null);
-		        }
-		    } else {
-		        ((DatePicker) field).setValue(null);
-		    }
-		    break;
+		case DATE:
+			if (value != null) {
+				try {
+					Date date = parseDateFromString(value);
+					LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+					DatePicker datePicker = (DatePicker) field;
+					datePicker.setLocale(Locale.UK);
+					datePicker.setValue(localDate);
+				} catch (Exception e) {
+					logger.error("Error parsing date value: " + value, e);
+					((DatePicker) field).setValue(null);
+				}
+			} else {
+				((DatePicker) field).setValue(null);
+			}
+			break;
 
 		case RADIO:
 			((RadioButtonGroup) field).setValue(Sets.newHashSet(value).toString().replace("[", "").replace("]", ""));
@@ -2582,12 +2583,12 @@ if (!selectedAreas.isEmpty()) {
 //						: null;
 //
 //				return new CampaignFormDataEntry(id, valc);
-				
+
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
 				String valc = ((DatePicker) field).getValue() != null
-				        ? ((DatePicker) field).getValue().format(formatter)
-				        : null;
+						? ((DatePicker) field).getValue().format(formatter)
+						: null;
 
 				return new CampaignFormDataEntry(id, valc);
 			} else if (field instanceof TimePicker) {
@@ -2824,8 +2825,6 @@ if (!selectedAreas.isEmpty()) {
 				boolean ccodeChecker = true;
 				UserProvider userProvider = new UserProvider();
 				List<CampaignFormDataEntry> entries = getFormValues();
-				
-				
 
 				System.out.println(isDistrictEntry + " gdgdgdtdgststsggtegstsgsgsfs");
 				if (!isDistrictEntry) {
@@ -2841,8 +2840,7 @@ if (!selectedAreas.isEmpty()) {
 						if (sdxc.getId().equalsIgnoreCase("LotClusterNo")) {
 							lotClusterNo = sdxc;
 						}
-						
-				
+
 					}
 
 					List<CampaignFormDataIndexDto> lotchecker = FacadeProvider.getCampaignFormDataFacade()
@@ -3004,7 +3002,7 @@ if (!selectedAreas.isEmpty()) {
 				final Object value = expression.getValue(context, valueType);
 				String valuex = value + "";
 
-				if (!valuex.isBlank() && value != null) {					
+				if (!valuex.isBlank() && value != null) {
 					if (e.getType().toString().equals("range")) {
 
 						if (value.toString().equals("0")) {
@@ -3025,17 +3023,15 @@ if (!selectedAreas.isEmpty()) {
 							// return;
 						}
 
-					} 
-					else if(e.getType().toString().equals("decimal")) {
+					} else if (e.getType().toString().equals("decimal")) {
 						setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
 //								!Double.isFinite((double) value) ? 0
 //										: value.toString().endsWith(".0") ? value.toString().replace(".0", "")
 //												: Precision.round((double) value, 2),
-								Double.valueOf(String.format("%.1f", Double.valueOf(value.toString()))),
-								null, null, false,
+								Double.valueOf(String.format("%.1f", Double.valueOf(value.toString()))), null, null,
+								false,
 								e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() : null);
-					} 
-					else if (valueType.isAssignableFrom(Double.class)) {
+					} else if (valueType.isAssignableFrom(Double.class)) {
 						// logger.debug("yes double detected "+Double.isFinite((double) value) +"
 						// = "+ value);
 						setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
@@ -3057,7 +3053,7 @@ if (!selectedAreas.isEmpty()) {
 								value, null, null, false,
 								e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() : null);
 					}
-				} else if (e.getType().toString().equals("range") && valuex == null && e.getDefaultvalue() != null) {	
+				} else if (e.getType().toString().equals("range") && valuex == null && e.getDefaultvalue() != null) {
 				}
 			} catch (SpelEvaluationException evaluationException) {
 				// LOG.error("Error evaluating expression: {} / {}",
