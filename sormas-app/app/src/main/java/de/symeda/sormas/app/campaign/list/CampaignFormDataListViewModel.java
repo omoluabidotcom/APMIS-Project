@@ -11,8 +11,9 @@ import androidx.paging.PositionalDataSource;
 
 import java.util.List;
 
-import de.symeda.sormas.app.backend.campaign.data.CampaignFormData;
 import de.symeda.sormas.app.backend.campaign.data.CampaignFormDataCriteria;
+import de.symeda.sormas.app.backend.campaign.data.CampaignFormData;
+import de.symeda.sormas.app.campaign.list.CampaignFormDataListViewModel.CampaignFormDataDataSource;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 
 public class CampaignFormDataListViewModel extends ViewModel {
@@ -26,9 +27,12 @@ public class CampaignFormDataListViewModel extends ViewModel {
         campaignFormDataFactory = new CampaignFormDataFactory();
         CampaignFormDataCriteria campaignFormDataCriteria = new CampaignFormDataCriteria();
         campaignFormDataFactory.setCampaignFormDataCriteria(campaignFormDataCriteria);
-        PagedList.Config config = new PagedList.Config.Builder().setEnablePlaceholders(true).setInitialLoadSizeHint(32).setPageSize(16).build();
+        PagedList.Config config = new PagedList.Config.Builder().setEnablePlaceholders(false).setInitialLoadSizeHint(32).setPageSize(16).build();
 
-        LivePagedListBuilder campaignsListBuilder = new LivePagedListBuilder(campaignFormDataFactory, config);
+        LivePagedListBuilder<CampaignFormData, CampaignFormData> campaignsListBuilder =
+                new LivePagedListBuilder<>(campaignFormDataFactory, config);
+
+//        LivePagedListBuilder campaignsListBuilder = new LivePagedListBuilder(campaignFormDataFactory, config);
         campaignFormDataList = campaignsListBuilder.build();
 
         // Observe the data changes to update row count
@@ -78,17 +82,37 @@ public class CampaignFormDataListViewModel extends ViewModel {
             this.campaignFormDataCriteria = campaignFormDataCriteria;
         }
 
+//        @Override
+//        public void loadInitial(@NonNull LoadInitialParams params, @NonNull LoadInitialCallback<CampaignFormData> callback) {
+//            long totalCount = DatabaseHelper.getCampaignFormDataDao().countByCriteria(campaignFormDataCriteria);
+//            int offset = params.requestedStartPosition;
+//            int count = params.requestedLoadSize;
+//            if (offset + count > totalCount) {
+//                offset = (int) Math.max(0, totalCount - count);
+//            }
+//            List<CampaignFormData> formDataList = DatabaseHelper.getCampaignFormDataDao().queryByCriteria(campaignFormDataCriteria, offset, count);
+//            callback.onResult(formDataList, offset, (int) totalCount);
+//        }
+//
+
         @Override
-        public void loadInitial(@NonNull LoadInitialParams params, @NonNull LoadInitialCallback<CampaignFormData> callback) {
-            long totalCount = DatabaseHelper.getCampaignFormDataDao().countByCriteria(campaignFormDataCriteria);
-            int offset = params.requestedStartPosition;
-            int count = params.requestedLoadSize;
-            if (offset + count > totalCount) {
-                offset = (int) Math.max(0, totalCount - count);
-            }
-            List<CampaignFormData> formDataList = DatabaseHelper.getCampaignFormDataDao().queryByCriteria(campaignFormDataCriteria, offset, count);
-            callback.onResult(formDataList, offset, (int) totalCount);
+        public void loadInitial(@NonNull LoadInitialParams params,
+                                @NonNull LoadInitialCallback<CampaignFormData> callback) {
+
+            long totalCount = DatabaseHelper.getCampaignFormDataDao()
+                    .countByCriteria(campaignFormDataCriteria);
+
+            int loadSize = params.requestedLoadSize;  // can be any number now
+            int startPosition = 0; // Always start from the beginning for initial load
+
+            List<CampaignFormData> formDataList =
+                    DatabaseHelper.getCampaignFormDataDao()
+                            .queryByCriteria(campaignFormDataCriteria, startPosition, loadSize);
+
+            // With placeholders disabled, use this form of onResult:
+            callback.onResult(formDataList, startPosition);
         }
+
 
         @Override
         public void loadRange(@NonNull LoadRangeParams params, @NonNull LoadRangeCallback<CampaignFormData> callback) {
@@ -97,7 +121,10 @@ public class CampaignFormDataListViewModel extends ViewModel {
         }
     }
 
-    public static class CampaignFormDataFactory extends DataSource.Factory {
+
+
+
+        public static class CampaignFormDataFactory extends DataSource.Factory {
 
         private MutableLiveData<CampaignFormDataDataSource> mutableDataSource;
         private CampaignFormDataDataSource campaignFormDataDataSource;
@@ -107,13 +134,21 @@ public class CampaignFormDataListViewModel extends ViewModel {
             this.mutableDataSource = new MutableLiveData<>();
         }
 
-        @NonNull
-        @Override
-        public DataSource create() {
-            campaignFormDataDataSource = new CampaignFormDataDataSource(campaignFormDataCriteria);
-            mutableDataSource.postValue(campaignFormDataDataSource);
-            return campaignFormDataDataSource;
-        }
+
+            @NonNull
+            @Override
+            public DataSource<Integer, CampaignFormData> create() {
+                            mutableDataSource.postValue(campaignFormDataDataSource);
+
+                return new CampaignFormDataDataSource(campaignFormDataCriteria);
+            }
+//        @NonNull
+//        @Override
+//        public DataSource create() {
+//            campaignFormDataDataSource = new CampaignFormDataDataSource(campaignFormDataCriteria);
+//            mutableDataSource.postValue(campaignFormDataDataSource);
+//            return campaignFormDataDataSource;
+//        }
 
         public CampaignFormDataCriteria getCampaignFormDataCriteria() {
             return campaignFormDataCriteria;
@@ -122,5 +157,7 @@ public class CampaignFormDataListViewModel extends ViewModel {
         public void setCampaignFormDataCriteria(CampaignFormDataCriteria campaignFormDataCriteria) {
             this.campaignFormDataCriteria = campaignFormDataCriteria;
         }
+
+
     }
 }

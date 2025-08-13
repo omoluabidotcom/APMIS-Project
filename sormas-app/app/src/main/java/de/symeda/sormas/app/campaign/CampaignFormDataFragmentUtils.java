@@ -95,74 +95,34 @@ public class CampaignFormDataFragmentUtils {
                 final Object expressionValue = getExpressionValue(expressionParser, formValues, expressionString);
                 String valuex = expressionValue + "";
 
-             //   System.out.println(dynamicField.getCaption()+" =------))))))))))))))))))))))))))))))))))))))-----= " + valuex);
                 if (!valuex.isEmpty() && !valuex.equals("") && expressionValue != null) {//&& !valuex.equals("0")
 
                     if (expressionValue != null) { //we need to see how to check and filter when its blank or empty
-
-                        //     System.out.println(dynamicField.getCaption()+" : "+ expressionString+" =====)))))))))))))))==== "+expressionValue);
+                    System.out.println(dynamicField.getCaption()+" : "+ expressionString+" =====)))))))))))))))==== "+expressionValue);
                         if (type == CampaignFormElementType.YES_NO) {
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, expressionValue, true, YesNo.class, null);
-                        } else
-//                            if (type == CampaignFormElementType.RANGE) {
-//                            String valudex = valuex.equals("0") ? null : valuex.endsWith(".0") ? valuex.replace(".0", "") : valuex;
-//                            if (orginalValue != null) {
-//                                if (!orginalValue.toString().equals(valudex)) {
-//                                        System.out.println(orginalValue + "from handlesec++++++++++++2222333++++++++++++++++ " + valudex);
-//                                    if (!(orginalValue.toString().isEmpty() && valudex == null)) {
-//                                        System.out.println("from handlesec++++++++++++333333333++++++++++++++++ " + valudex);
-//                                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? null : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
-//                                    }
-//                                }
-//                            }else {
-//                                if (valudex != null) {
-//                                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? null : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
-//                                    }
-//                                }
-//                        }
-                            if (type == CampaignFormElementType.RANGE) {
-
-                                String valudex = valuex;
-
-                                if (!valudex.isEmpty() &&  valudex != null) {
-                                    ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex.endsWith(".0") ? valudex.replace(".0","") : valudex);
+                        }else if (type == CampaignFormElementType.RANGE) {
+                            String valudex = valuex.equals("0") ? null : valuex.endsWith(".0") ? valuex.replace(".0", "") : valuex;
+                            if (orginalValue != null) {
+                                if (!orginalValue.toString().equals(valudex)) {
+                                        System.out.println(orginalValue + "from handlesec++++++++++++2222333++++++++++++++++ " + valudex);
+                                    if (!(orginalValue.toString().isEmpty() && valudex == null)) {
+                                        System.out.println("from handlesec++++++++++++333333333++++++++++++++++ " + valudex);
+                                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? null : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
+                                    }
                                 }
+                            }else {
+                                if (valudex != null) {
+                                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? null : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
+                                    }
+                                }
+                        }
+//                            else if (type == CampaignFormElementType.RANGE) {
+//                                String valudex = valuex;
+//                                if (!valudex.isEmpty() &&  valudex != null) {
+//                                    ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex.endsWith(".0") ? valudex.replace(".0","") : valudex);
+//                                }
 //                            }
-//                                String valudex = null;
-//                                try {
-//                                    double num = Double.parseDouble(valuex);
-//                                    if (num != 0) {
-//                                        // If it's a whole number (like 15.0), convert to integer string
-//                                        if (num == Math.floor(num)) {
-//                                            valudex = String.valueOf((int) num);
-//                                        } else {
-//                                            // If it's a decimal, format to 2 decimal places
-//                                            valudex = String.format("%.2f", num);
-//                                        }
-//                                    }else{
-//                                        valudex = String.valueOf((int) num);
-//                                    }
-//                                    // If num == 0, valudex stays null
-//                                } catch (NumberFormatException e) {
-//                                    valudex = valuex;
-//                                }
-
-//                                if (orginalValue != null) {
-//                                    if (!orginalValue.toString().equals(valudex)) {
-//                                        System.out.println(orginalValue + " from handlesec++++++++++++2222333++++++++++++++++ " + valudex);
-//                                        if (!(orginalValue.toString().isEmpty() && valudex == null)) {
-//                                            System.out.println("from handlesec++++++++++++333333333++++++++++++++++ " + valudex);
-//                                            ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex);
-//                                        }
-//                                    }
-//                                } else {
-//                                    if (valudex != null) {
-//                                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex);
-//                                    }
-//                                }
-                            }
-
-
                             else if (type == CampaignFormElementType.DECIMAL) {
                             if (dynamicField instanceof ControlDecimalEditField) {
                                 String formattedValue;
@@ -210,9 +170,7 @@ public class CampaignFormDataFragmentUtils {
 
                                 if (orginalValue != null) {
                                     if (!orginalValue.toString().equals(valudex)) {
-                                        System.out.println(orginalValue + " from handlesec++++++++++++2222333++++++++++++++++ " + valudex);
                                         if (!(orginalValue.toString().isEmpty() && valudex == null)) {
-                                            System.out.println("from handlesec++++++++++++333333333++++++++++++++++ " + valudex);
                                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex);
                                         }
                                     }
@@ -221,39 +179,12 @@ public class CampaignFormDataFragmentUtils {
                                         ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex);
                                     }
                                 }
-
-//                            ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? "0" : (expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString()));
-
-                        } else if (expressionValue.getClass().isAssignableFrom(Boolean.class)) {
+                            } else if (expressionValue.getClass().isAssignableFrom(Boolean.class)) {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, (Double) (!Double.isFinite((double) expressionValue) ? 0 : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : df.format((double) expressionValue)));
                         } else {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue == null ? null : expressionValue.toString());
                         }
-
-                        //  if (type == CampaignFormElementType.RANGE) {
-
-                        //  } else {
-                        //     dynamicField.setEnabled(isDisIgnore);
-                        // }
                     }
-
-                    // Segun alleged Fix
-//                    else{
-//                        System.out.println(dynamicField.getCaption() + "EXPRESSION VALUE IS NOT NULLLLLLLLLLLLLLL+++++++++++111111+++++++++++++++++ " + valuex);
-//                        if (type == CampaignFormElementType.RANGE) {
-//                            System.out.println("+++++++++++111111+++++++++++++++++ " + valuex);
-//                            String valudex = valuex.equals("0") ? null : valuex.endsWith(".0") ? valuex.replace(".0", "") : valuex;
-//                            System.out.println("++++++++++++22222222++++++++++++++++ " + valudex);
-//                            if (valudex != null) {
-//                                if (!valudex.isEmpty()) {
-//                                    System.out.println("++++++++++++333333333++++++++++++++++ " + valudex);
-//                                    ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex);
-//                                }
-//                            }
-//                        }
-//                    }
-
-
                 }
 
 
@@ -340,12 +271,9 @@ public class CampaignFormDataFragmentUtils {
                                 formatted = valuex;
                             }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, formatted);
-
-
-//                            ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? "0" : (expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString()));
+                            //                            ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? "0" : (expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString()));
 
                         } else if (type == CampaignFormElementType.DECIMAL) {
-
                             if (dynamicField instanceof ControlDecimalEditField) {
                                 String formattedValue;
                                 if (valuex != null) {
@@ -375,11 +303,7 @@ public class CampaignFormDataFragmentUtils {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue == null ? null : expressionValue.toString());
                         }
                     }
-
-
                 }
-
-
             }
         } catch (SpelEvaluationException e) {
             Log.e("Error evaluating expression on field2 : " + dynamicField.getCaption(), e.getMessage());
@@ -396,10 +320,6 @@ public class CampaignFormDataFragmentUtils {
 
     public static Object getExpressionValue(ExpressionParser expressionParser, List<CampaignFormDataEntry> formValues, String expressionString)
             throws SpelEvaluationException, EvaluationException {
-
-
-
-
         System.out.println("111111111" +expressionString);
         final EvaluationContext context = refreshEvaluationContext(formValues);
 //        System.out.println("2222222222222");
@@ -420,7 +340,6 @@ public class CampaignFormDataFragmentUtils {
         }
         return expression.getValue(context, valueType);
     }
-
 
     public static void handleDependingOnSectionAndLabel(
             Map<String, ControlPropertyField> fieldMap,
@@ -456,8 +375,6 @@ public class CampaignFormDataFragmentUtils {
             setVisibilityDependencyForSectionAndLabel(dynamicField, depenValuex, controlPropertyField.getValue());
         };
     }
-
-
 
     public static void handleDependingOn(
             Map<String, ControlPropertyField> fieldMap,
@@ -549,8 +466,6 @@ public class CampaignFormDataFragmentUtils {
             }
         }
     }
-
-
 
     public static void setVisibilityDependencyForSectionAndLabel(LinearLayout field, String dependingOnValues, Object dependingOnFieldValue) {
         System.out.println(dependingOnValues+ " = static --  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22>>>>>>>> dynamic = "+dependingOnFieldValue);
@@ -841,7 +756,8 @@ public class CampaignFormDataFragmentUtils {
             Map<String, String> userTranslations,
             Boolean isIntegerField,
             Boolean isRequired,
-            String errorMsg) {
+            String errorMsg,
+            Boolean warnOnError) {
         return new ControlTextEditField(context) {
 
             @Override
@@ -874,18 +790,15 @@ public class CampaignFormDataFragmentUtils {
                 return CHARACTER_LIMIT_DEFAULT;
             }
 
-            //	@Override
-            //	public int getMinLength() {
-            //		return DEFAULT_MIN_LENGTH;
-            //	}
-//
+
             @Override
             protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
                 super.inflateView(context, attrs, defStyle);
                 initLabel();
-                initLabelAndValidationListenersErrorMsg(errorMsg);
-                setLiveValidationDisabled(true);
-                initInput(isIntegerField, isRequired, true, null, null, true, false);
+                initLabelAndValidationListeners();
+//                initLabelAndValidationListenersErrorMsg(errorMsg);
+                setLiveValidationDisabled(false);
+                initInput(isIntegerField, isRequired, true, null, null, true, warnOnError);
             }
         };
     }
@@ -1071,6 +984,47 @@ public class CampaignFormDataFragmentUtils {
                 initLabelAndValidationListenersErrorMsg(errorMsg);
                 setLiveValidationDisabled(true);
                 initInput(isDecimalField, isRequired, true, null, null, true, false);
+            }
+        };
+    }
+
+
+    //to fix required for dropdown
+    public static ControlSpinnerField createControlSpinnerFieldEditField(
+            CampaignFormElement campaignFormElement,
+            Context context,
+            Map<String, String> userTranslations,
+            Map<String, String> isIntegerField,
+            boolean isRequired) {
+        return new ControlSpinnerField(context) {
+
+            @Override
+            protected String getPrefixDescription() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getPrefixCaption() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            public int getTextAlignment() {
+                return View.TEXT_ALIGNMENT_VIEW_START;
+            }
+
+            @Override
+            public int getGravity() {
+                return Gravity.CENTER_VERTICAL;
+            }
+
+            @Override
+            protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
+                super.inflateView(context, attrs, defStyle);
+                initLabel();
+                initLabelAndValidationListeners();
+                setLiveValidationDisabled(true);
+                initInput(isIntegerField, isRequired);
             }
         };
     }

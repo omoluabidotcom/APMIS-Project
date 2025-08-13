@@ -15,6 +15,7 @@
 
 package de.symeda.sormas.app.component.controls;
 
+import static de.symeda.sormas.app.core.notification.NotificationType.ERROR;
 import static de.symeda.sormas.app.core.notification.NotificationType.WARNING;
 
 import android.app.ActivityManager;
@@ -304,13 +305,6 @@ public class ControlTextEditField extends ControlPropertyEditField<String> {
         }
 
         required = isRequired;
-/*
-		if (getMinLength() >= 0) {
-			input.setFilters(
-					new InputFilter[] {
-							new InputFilter.LengthFilter(getMinLength()) });
-		}
-*/
 
         CharSequence valx = input.getText();
         if (valx == null && required) {
@@ -334,7 +328,6 @@ public class ControlTextEditField extends ControlPropertyEditField<String> {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 onChangeData = charSequence+"";
-                System.out.println("z11111111111-===================================================== "+ onChangeData);
 
                 /*if (isRange && isExpression && isRequired){
                     System.out.println((onChangeData.length() == 0) +" =XXXXXXXXXXX ENTERSSSSS XXXXXXXX =" +(beforeData.length() > 0));
@@ -348,10 +341,6 @@ public class ControlTextEditField extends ControlPropertyEditField<String> {
 
             @Override
             public void afterTextChanged(Editable editablex) {
-
-                System.out.println("===================================================== "+editablex.toString());
-                System.out.println("===================================================== "+input.getId());
-
                 if (inverseBindingListener != null) {
                     inverseBindingListener.onChange();
                 }
@@ -386,60 +375,74 @@ public class ControlTextEditField extends ControlPropertyEditField<String> {
 
 
                 if (isRange && minValue != null && maxValue != null) {
+                    System.out.println(minValue + "--------%%%11%%%------------" + maxValue);
                     if (minValue != null && maxValue != null && input.getText() != null) {
                         if (!input.getText().toString().equals("") && !input.getText().toString().isEmpty()) {
                             try {
-
-
                                 int valxx = Integer.parseInt(input.getText().toString());
                                 if (valxx >= minValue && valxx <= maxValue) {
-
                                     // Valid value
                                 } else if (warnOnError) {
-                                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING,
-                                            "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                    NotificationHelper.showNotification(input, ERROR,
+                                            "Number not in provided range! i.e minaa: " + minValue + " and max: " + maxValue);
+
+//                                    NotificationHelper.showNotification(this, ERROR, "Form Date cannot be left Empty.");
+
                                 } else {
-                                    input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                    input.setError("Number not in provided range! i.e minbbb: " + minValue + " and max: " + maxValue);
                                     setErrorIfEmptyRange();
-                                    enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                    enableErrorState("Number not in provided range! i.e minccc: " + minValue + " and max: " + maxValue);
                                 }
-
-
                             } catch (NumberFormatException e) {
                                 // Handle case where text doesn't parse as a number
                                 if (warnOnError) {
-                                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING,
-                                            "Please enter a valid number.");
+                                    NotificationHelper.showNotification(input, ERROR,
+                                            "Please enter a valid numberddd.");
+
                                 } else {
-                                    input.setError("Please enter a valid number.");
+                                    input.setError("Please enter a valid numbercc.");
                                     enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
 
                                 }
                             }
                         }
                     }
+                }else{
+                    System.out.println(minValue + " Minimumm or maximum " + isExpression +  "value set as null =========" +maxValue);
                 }
 
                 if (isRange && isExpression && isRequired){
-//                     if(beforeData.length() > 0 && onChangeData.length() == 0) {
-//                        enableErrorState("Number not in provided range!");
-//                    }
                     System.out.println("111111111111111111111111111111111-==================");
                     try {
                         if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
+
+                            System.out.println(beforeData.toString() + "beforeData.toString()111111111111111111111111111111111-==================onChangeData.toString()" + onChangeData.toString());
+
                             if(beforeData.toString() != "" && onChangeData.toString() != ""){
                                 int beforeDatavalxx = Integer.parseInt(beforeData.toString());
                                 int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
                                 System.out.println(beforeDatavalxx + "valxx111111111111111111111111111111111-==================" + onChangeDatavalxx);
                                 if (beforeData.length() > 0 && onChangeData.length() == 0) {
-                                    enableErrorState("Number not in provided range!");
+                                    enableErrorState("Number not in provided rangehhhh!");
                                 }
+                            }else if(beforeData.toString() == "" && onChangeData.toString() != ""){
+                                try{
+                                    int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
+
+                                }catch(NumberFormatException e){
+                                    input.setError("Please enter a valid numberuuuuujj.");
+
+                                    enableErrorState("Please Enter a Valid Number 999!");
+
+                                }
+
                             }
+                            System.out.println(beforeData + "beforeData111111111111111111111111111111111-==================onChangeData " + onChangeData);
 
                         }
                     }catch (NumberFormatException e){
-                        input.setError("Please enter a valid number.");
-                        enableErrorState("1111111111111111111111-=====Number not in provided range! i.e min:------------------");
+                        input.setError("Please enter a valid numberuuuuu.");
+                        enableErrorState("1111111111111111111111-=====Number not in provided range! i.e minhhhhh:------------------");
                     }
                     System.out.println("111111111111111111111111111111111-==================cccccc");
                 }else if(isRange && isExpression && !isRequired){
@@ -450,12 +453,12 @@ public class ControlTextEditField extends ControlPropertyEditField<String> {
 
                                 int beforeDatavalxx = Integer.parseInt(beforeData.toString());
                                 int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
-                                System.out.println(beforeDatavalxx + "elsevalxx111111111111111111111111111111111-==================" + onChangeDatavalxx);
+                                System.out.println(beforeDatavalxx + "88888elsevalxx111111111111111111111111111111111-==================" + onChangeDatavalxx);
                             }
                         }
                     }catch (NumberFormatException e){
-                        input.setError("Please enter a valid number.");
-                        enableErrorState("else1111111111111111111111-=====Number not in provided range! i.e min:------------------");
+                        input.setError("Please enter a valid number9999.");
+                        enableErrorState("dddgggelse1111111111111111111111-=====Number not in provided range! i.e min:------------------");
                     }
                 }
             }

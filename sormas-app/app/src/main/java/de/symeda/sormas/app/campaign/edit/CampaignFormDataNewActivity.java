@@ -287,42 +287,6 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         }
     }
 
-//    public String dateFormatterLongAndMobile(Object value) {
-//        String dateStr = String.valueOf(value);
-//        System.out.println("Date in question: " + dateStr);
-//
-//        // List of possible input date formats (ordered by likelihood)
-//        String[] inputFormats = {
-//                "yyyy-MM-dd",                   // e.g., 2025-06-25
-//                "MMM dd, yyyy HH:mm:ss a",      // e.g., Jun 25, 2025 10:30:00 AM
-//                "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
-//                "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
-//                "dd/MM/yyyy",                   // e.g., 25/06/2025
-//                "EEE MMM dd HH:mm:ss z yyyy"    // e.g., Wed Jun 25 10:30:00 GMT 2025
-//        };
-//
-//        // The desired output format (date only)
-//        DateFormat outputFormatter = new SimpleDateFormat("dd-MM-yyyy");
-//
-//        for (String formatString : inputFormats) {
-//            try {
-//                DateFormat inputFormatter = new SimpleDateFormat(formatString);
-//                Date parsedDate = inputFormatter.parse(dateStr);
-//
-//                // Format the parsed date into the desired output format
-//                String formattedDate = outputFormatter.format(parsedDate);
-//                System.out.println("Successfully parsed. Formatted date: " + formattedDate);
-//
-//                return formattedDate; // Return date in yyyy-MM-dd format
-//            } catch (ParseException e) {
-//                System.out.println("Failed to parse with format '" + formatString + "': " + e.getMessage());
-//            }
-//        }
-//
-//        System.out.println("Could not parse date----: " + dateStr);
-//        return null; // or throw an exception
-//    }
-
     public String dateFormatterLongAndMobile(Object value) {
         if (value == null) return null;
 
