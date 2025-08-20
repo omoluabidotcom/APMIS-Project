@@ -361,8 +361,16 @@ System.out.println("YESSSS");
 			.forEach(
 					formElement -> {
 						 String elementType =  formElement.getType();
+						 String elementCaption =  formElement.getCaption();// .getType();
+
 					        if (elementType != null && elementType.equalsIgnoreCase("Date")) {
-					        	elementType += " : dd/mm/yyyy";
+					        	if(elementCaption.equalsIgnoreCase("visit date")) {
+						        	elementType += " : dd-mm-yyyy";
+
+					        	}else {
+						        	elementType += " : dd/mm/yyyy";
+
+					        	}
 					        }
 					        
 						importColumns.add(new ImportColumn(formElement.getId(), formElement.getCaption(), elementType));

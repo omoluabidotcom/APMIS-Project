@@ -600,6 +600,7 @@
 
     <string name="validation_error_info_post_text">To learn more about the error on a specific field and how to solve it, click on the ERROR indicator next to its caption.</string>
     <string name="validation_error_info_pre_text">Please enter a valid value for</string>
+    <string name="validation_error_negative" translatable="false">Please enter a valid value, Negative Values are not allowed </string>
     <string name="validation_error_required">A value is required for this field. Please make sure to type in or select a value before continuing.</string>
     <string name="validation_soft_add_list_entry">Please add an entry to the list if there is any data available to you.</string>
     <string name="validation_soft_case_classification">This case should be classified as soon as the required information is available.</string>

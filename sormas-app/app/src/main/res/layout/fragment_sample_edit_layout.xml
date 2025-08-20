@@ -211,13 +211,10 @@
                         app:value="@={data.pathogenTestingRequested}"
                         style="@style/ControlSingleColumnStyle" />
 
-                    <de.symeda.sormas.app.component.controls.ControlCheckBoxGroupField
+                    <de.symeda.sormas.app.component.controls.ControlSwitchField
                         android:id="@+id/sample_requestedPathogenTests"
-                        app:enumClass="@{pathogenTestTypeClass}"
-                        app:value="@={data.requestedPathogenTests}"
-                        app:dependencyParentField="@{samplePathogenTestingRequested}"
-                        app:dependencyParentValue="@{true}"
-                        app:dependencyParentClearOnHide="@{false}"
+                        app:useBoolean="true"
+                        app:value="@={data.pathogenTestingRequested}"
                         style="@style/ControlSingleColumnStyle" />
 
                     <de.symeda.sormas.app.component.controls.ControlTagViewField

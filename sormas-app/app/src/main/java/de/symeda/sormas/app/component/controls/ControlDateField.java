@@ -143,6 +143,11 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 //				cal.set(Calendar.SECOND, cal.get(Calendar.SECOND));
 //				cal.set(Calendar.MILLISECOND, 0);
 
+				cal.set(Calendar.HOUR_OF_DAY, 0);
+				cal.set(Calendar.MINUTE, 0);
+				cal.set(Calendar.SECOND, 0);
+				cal.set(Calendar.MILLISECOND, 0);
+
 				cachedTime = cal.getTime();
 				input.setText(standardDateFormat.format(cachedTime));
 			}
