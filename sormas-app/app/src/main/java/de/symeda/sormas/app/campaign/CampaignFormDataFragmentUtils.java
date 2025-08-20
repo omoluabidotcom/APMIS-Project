@@ -881,29 +881,6 @@ public class CampaignFormDataFragmentUtils {
                 initInput(isIntegerField, isRequired, true, minVal, maxVal, isExpressionx, warnOnError);
 //                setVisibility(GONE);
             }
-
-//            @Override
-//            public boolean setErrorIfEmpty() {
-//                // First check if there's already a custom error (like negative value)
-//                if (hasError) {
-//                    return true; // Return true to indicate there's an error
-//                }
-//
-//                // Check for negative values in integer fields
-//                if (isIntegerField != null && isIntegerField) {
-//                    String value = getValue();
-//                    if (value != null && !value.isEmpty() && value.startsWith("-")) {
-//                        enableErrorState("Negative values are not allowed");
-//
-//                        return true; // Return true to indicate validation error
-//                    }
-//                }
-//
-//                // Then do the normal required field validation
-//                return super.setErrorIfEmpty();
-//            }
-
-
         };
     }
 
