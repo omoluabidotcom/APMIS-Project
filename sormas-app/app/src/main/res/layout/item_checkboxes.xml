@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- item_checkbox.xml - Layout for individual checkbox items -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="4dp"
+    android:gravity="center_vertical"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp">
+
+    <CheckBox
+        android:id="@+id/checkbox"
+        style="@style/ControlCheckboxStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:focusable="true"
+        android:clickable="true" />
+
+    <TextView
+        android:id="@+id/checkbox_caption"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"
+        android:textSize="14sp"
+        android:textColor="@android:color/black"
+        android:clickable="true"
+        android:focusable="true" />
+
+</LinearLayout>

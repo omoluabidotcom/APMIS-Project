@@ -629,6 +629,26 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		discard.getStyle().set("background", "white");
 		discard.getStyle().set("border", "1px solid green");
 		discard.setIcon(vadIc);
+		discard.addClickListener(e -> {
+			firstnamee.clear();
+			firstnamee.setValue(currentUser.getFirstName());
+			lastnamee.clear();
+			lastnamee.setValue(currentUser.getLastName());
+			emailAddresss.clear();
+			emailAddresss.setValue(currentUser.getUserEmail());
+			phoneNumberr.clear();
+			phoneNumberr.setValue(currentUser.getPhone());
+			countryCodeCombo.setVisible(false);
+			
+			emailAddresss.setReadOnly(true);
+			phoneNumberr.setReadOnly(true);
+
+
+			editPersonalInfo.setVisible(true);
+			cancelUpdatePersonalInfo.setVisible(false);
+			updatePersonalInfo.setVisible(false);
+
+		});
 
 		Button savee = new Button(I18nProperties.getCaption(Captions.actionSave), vadIcc);
 		savee.addClickListener(e -> {

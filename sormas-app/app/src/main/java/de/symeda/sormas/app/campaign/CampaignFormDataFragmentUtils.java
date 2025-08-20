@@ -62,6 +62,7 @@ import de.symeda.sormas.api.utils.YesNoUnknown;
 import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.component.controls.ControlCheckBoxField;
+import de.symeda.sormas.app.component.controls.ControlCheckBoxGroupField;
 import de.symeda.sormas.app.component.controls.ControlDateField;
 import de.symeda.sormas.app.component.controls.ControlDecimalEditField;
 import de.symeda.sormas.app.component.controls.ControlPhoneField;
@@ -102,18 +103,18 @@ public class CampaignFormDataFragmentUtils {
                         if (type == CampaignFormElementType.YES_NO) {
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, expressionValue, true, YesNo.class, null);
                         }else if (type == CampaignFormElementType.RANGE) {
-                            String valudex = valuex.equals("0") ? null : valuex.endsWith(".0") ? valuex.replace(".0", "") : valuex;
+                            String valudex = valuex == null ? "" : valuex.endsWith(".0") ? valuex.replace(".0", "") : valuex;
                             if (orginalValue != null) {
                                 if (!orginalValue.toString().equals(valudex)) {
                                         System.out.println(orginalValue + "from handlesec++++++++++++2222333++++++++++++++++ " + valudex);
                                     if (!(orginalValue.toString().isEmpty() && valudex == null)) {
                                         System.out.println("from handlesec++++++++++++333333333++++++++++++++++ " + valudex);
-                                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? null : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
+                                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? "0" : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
                                     }
                                 }
                             }else {
                                 if (valudex != null) {
-                                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? null : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
+                                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? "" : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
                                     }
                                 }
                         }
@@ -743,7 +744,7 @@ public class CampaignFormDataFragmentUtils {
                 super.inflateView(context, attrs, defStyle);
                 initLabel();
                 initLabelAndValidationListenersErrorMsg(errorMsg);
-                setLiveValidationDisabled(true);
+                setLiveValidationDisabled(false);
                 initInput(isIntegerField, isRequired, false, null, null, false, false);
             }
         };
@@ -797,8 +798,23 @@ public class CampaignFormDataFragmentUtils {
                 initLabel();
                 initLabelAndValidationListeners();
 //                initLabelAndValidationListenersErrorMsg(errorMsg);
-                setLiveValidationDisabled(false);
+                setLiveValidationDisabled(true);
                 initInput(isIntegerField, isRequired, true, null, null, true, warnOnError);
+            }
+
+            @Override
+            public boolean setErrorIfEmpty() {
+                if (hasError) {
+                    return true;
+                }
+                if (isIntegerField != null && isIntegerField) {
+                    String value = getValue();
+                    if (value != null && !value.isEmpty() && value.startsWith("-")) {
+                        enableErrorState("Negative values are not allowed");
+                        return true;
+                    }
+                }
+                return super.setErrorIfEmpty();
             }
         };
     }
@@ -865,6 +881,27 @@ public class CampaignFormDataFragmentUtils {
                 initInput(isIntegerField, isRequired, true, minVal, maxVal, isExpressionx, warnOnError);
 //                setVisibility(GONE);
             }
+
+//            @Override
+//            public boolean setErrorIfEmpty() {
+//                // First check if there's already a custom error (like negative value)
+//                if (hasError) {
+//                    return true; // Return true to indicate there's an error
+//                }
+//
+//                // Check for negative values in integer fields
+//                if (isIntegerField != null && isIntegerField) {
+//                    String value = getValue();
+//                    if (value != null && !value.isEmpty() && value.startsWith("-")) {
+//                        enableErrorState("Negative values are not allowed");
+//
+//                        return true; // Return true to indicate validation error
+//                    }
+//                }
+//
+//                // Then do the normal required field validation
+//                return super.setErrorIfEmpty();
+//            }
 
 
         };
@@ -1034,7 +1071,10 @@ public class CampaignFormDataFragmentUtils {
             CampaignFormElement campaignFormElement,
             Context context,
             Map<String, String> userTranslations,
-            Map<String, String> isIntegerField) {
+//            Map<String, String> isIntegerField) {
+            Map<String, String> optionsList) {
+
+
         return new ControlSpinnerField(context) {
 
             @Override
@@ -1063,7 +1103,10 @@ public class CampaignFormDataFragmentUtils {
                 initLabel();
                 initLabelAndValidationListeners();
                 setLiveValidationDisabled(true);
-                initInput(isIntegerField);
+//                initInput(isIntegerField);
+                initInput(optionsList);
+
+
             }
         };
     }
@@ -1109,6 +1152,160 @@ public class CampaignFormDataFragmentUtils {
             }
         };
     }
+public static ControlCheckBoxGroupField createControlCheckBoxEditField(
+        CampaignFormElement campaignFormElement,
+        Context context,
+        Map<String, String> userTranslations,
+        Map<String, String> optionValues,
+        List<?> selectedKeys) {
+
+    return new ControlCheckBoxGroupField(context) {
+        @Override
+        protected String getPrefixDescription() {
+            return getUserLanguageCaption(userTranslations, campaignFormElement);
+        }
+
+        @Override
+        protected String getPrefixCaption() {
+            return getUserLanguageCaption(userTranslations, campaignFormElement);
+        }
+
+        @Override
+        public int getTextAlignment() {
+            return View.TEXT_ALIGNMENT_VIEW_START;
+        }
+
+        @Override
+        public int getGravity() {
+            return Gravity.CENTER_VERTICAL;
+        }
+
+        @Override
+        protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
+            super.inflateView(context, attrs, defStyle);
+
+            // Initialize the parent field components
+            initLabel();
+            initLabelAndValidationListeners();
+            setLiveValidationDisabled(true);
+
+            // Set the group label text from campaign form element
+            String labelText = getUserLanguageCaption(userTranslations, campaignFormElement);
+            if (labelText != null && !labelText.isEmpty()) {
+                setGroupLabel(labelText);
+            }
+
+            // IMPORTANT: Set up the checkbox options FIRST
+            if (optionValues != null && !optionValues.isEmpty()) {
+                System.out.println("Setting up options in createControlCheckBoxField: " + optionValues);
+                setOptionsAndValue(optionValues, selectedKeys);
+            }
+        }
+    };
+}
+
+    public static ControlCheckBoxGroupField createControlCheckBoxField(
+            CampaignFormElement campaignFormElement,
+            Context context,
+            Map<String, String> userTranslations,
+            Map<String, String> optionValues) {
+
+        return new ControlCheckBoxGroupField(context) {
+
+            @Override
+            protected String getPrefixDescription() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getPrefixCaption() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            public int getTextAlignment() {
+                return View.TEXT_ALIGNMENT_VIEW_START;
+            }
+
+            @Override
+            public int getGravity() {
+                return Gravity.CENTER_VERTICAL;
+            }
+
+            @Override
+            protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
+                super.inflateView(context, attrs, defStyle);
+
+                // Initialize the parent field components
+                initLabel();
+                initLabelAndValidationListeners();
+                setLiveValidationDisabled(true);
+
+                // Set the group label text from campaign form element
+                String labelText = getUserLanguageCaption(userTranslations, campaignFormElement);
+                if (labelText != null && !labelText.isEmpty()) {
+//                    setGroupLabel(labelText);
+                }
+
+                // Set up the checkbox options
+                if (optionValues != null && !optionValues.isEmpty()) {
+                    setOptions(optionValues);
+                }
+
+                // Configure required field if needed
+                // if (campaignFormElement.isRequired()) {
+                //     setRequired(true);
+                // }
+            }
+
+
+
+//            // Override validation if needed
+//            @Override
+//            public boolean validate() {
+//                boolean isValid = super.validate();
+//
+//                // Add custom validation logic for checkbox group
+//                Object fieldValue = getFieldValue();
+//                if (fieldValue instanceof Set) {
+//                    Set<?> selectedValues = (Set<?>) fieldValue;
+//
+//                    // Example: Check if required field has at least one selection
+//                    // if (isRequired() && selectedValues.isEmpty()) {
+//                    //     showError("Please select at least one option");
+//                    //     return false;
+//                    // }
+//
+//                    // Add any other custom validation rules here
+//                    // Example: minimum/maximum selection constraints
+//                    // if (selectedValues.size() < minSelections) {
+//                    //     showError("Please select at least " + minSelections + " options");
+//                    //     return false;
+//                    // }
+//                }
+//
+//                if (isValid) {
+//                    hideErrors();
+//                }
+//
+//                return isValid;
+//            }
+
+            // Handle error messages from campaign form element
+            public void handleCampaignFormErrors(String errorMessage, boolean warnOnError) {
+                if (errorMessage != null && !errorMessage.isEmpty()) {
+                    if (warnOnError) {
+                        // Show as warning instead of error
+                        // You can customize this based on your warning style
+                        showError("Warning: " + errorMessage);
+                    } else {
+                        showError(errorMessage);
+                    }
+                }
+            }
+        };
+    }
+
 
 
     public static ControlCheckBoxField createControlCheckBoxField(

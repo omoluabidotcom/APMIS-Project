@@ -2370,6 +2370,15 @@ public class CampaignDataView extends VerticalLayout
 	                	}
             		return formValueCaption;
 
+	                }else if(fieldsType != null && (fieldsType.equalsIgnoreCase("checkboxbasic"))) {
+	                	String formValueCaption = "";
+	                	for(MapperUtil valueCaption : options) {
+	                		if(formValue != null  && formValue.getValue().toString().equalsIgnoreCase(valueCaption.getKey())) {
+		                		formValueCaption = valueCaption.getCaption();	
+	                		}
+	                	}
+            		return formValueCaption;
+
 	                }else {
 	        			return removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
 
