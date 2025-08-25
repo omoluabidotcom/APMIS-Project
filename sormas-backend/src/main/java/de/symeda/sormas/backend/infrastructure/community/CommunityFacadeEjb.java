@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
@@ -372,51 +373,82 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		
 		
 		
-		String orderby = "";
-		
-		
-		
-		if (sortProperties != null && sortProperties.size() > 0) {
-			for (SortProperty sortProperty : sortProperties) {
-				switch (sortProperty.propertyName) {
-				case "region":
-					orderby = orderby.isEmpty() ? " order by area " + (sortProperty.ascending ? "asc" : "desc") : orderby+", area" + (sortProperty.ascending ? "asc" : "desc");
-				break;
-				
-				case "province":
-					orderby = orderby.isEmpty() ? " order by region" + (sortProperty.ascending ? "asc" : "desc") : orderby+", region" + (sortProperty.ascending ? "asc" : "desc");
-				break;
-					
-				case "district":
-					orderby = orderby.isEmpty() ? " order by district " + (sortProperty.ascending ? "asc" : "desc") : orderby+", district " + (sortProperty.ascending ? "asc" : "desc");
-				break;	
-				
-//				case "formAccess":
-//					orderby = orderby.isEmpty() ? " order by uf.formaccess " + (sortProperty.ascending ? "asc" : "desc") : orderby+", uf.formaccess " + (sortProperty.ascending ? "asc" : "desc");
+//		String orderby = "";
+//		
+//		
+//		
+//		if (sortProperties != null && sortProperties.size() > 0) {
+//			for (SortProperty sortProperty : sortProperties) {
+//				switch (sortProperty.propertyName) {
+//				case "region":					
+//					orderby = orderby.isEmpty() ? " order by area " + (sortProperty.ascending ? "asc" : "desc") : orderby+", area" + (sortProperty.ascending ? "asc" : "desc");
 //				break;
-				
-				case "clusterNumberr":
-					orderby = orderby.isEmpty() ? " order by clusternumber " + (sortProperty.ascending ? "asc" : "desc") : orderby+", clusternumber " + (sortProperty.ascending ? "asc" : "desc");
-				break;
-				
-				case "ccode":
-					orderby = orderby.isEmpty() ? " order by externalid " + (sortProperty.ascending ? "asc" : "desc") : orderby+", externalid " + (sortProperty.ascending ? "asc" : "desc");
-				break;
-				
-//				case "message":
-//					orderby = orderby.isEmpty() ? " order by district5_x.\"name\" " + (sortProperty.ascending ? "asc" : "desc") : orderby+", district5_x.\"name\" " + (sortProperty.ascending ? "asc" : "desc");
+//				
+//				case "province":					
+//					orderby = orderby.isEmpty() ? " order by region " + (sortProperty.ascending ? "asc" : "desc") : orderby+", region" + (sortProperty.ascending ? "asc" : "desc");
 //				break;
-				
-				default:
-					throw new IllegalArgumentException(sortProperty.propertyName);
-				}
-				
-			}
-		}
-		
-		System.out.println(" ===================== "+orderby);
+//					
+//				case "district":					
+//					orderby = orderby.isEmpty() ? " order by district " + (sortProperty.ascending ? "asc" : "desc") : orderby+", district " + (sortProperty.ascending ? "asc" : "desc");
+//				break;	
+//				
+////				case "formAccess":
+////					orderby = orderby.isEmpty() ? " order by uf.formaccess " + (sortProperty.ascending ? "asc" : "desc") : orderby+", uf.formaccess " + (sortProperty.ascending ? "asc" : "desc");
+////				break;
+//				
+//				case "clusterNumberr":					
+//					orderby = orderby.isEmpty() ? " order by clusternumber " + (sortProperty.ascending ? "asc" : "desc") : orderby+", clusternumber " + (sortProperty.ascending ? "asc" : "desc");
+//				break;
+//				
+//				case "ccode":					
+//					orderby = orderby.isEmpty() ? " order by externalid " + (sortProperty.ascending ? "asc" : "desc") : orderby+", externalid " + (sortProperty.ascending ? "asc" : "desc");
+//				break;
+//				
+//				case "username":					
+//					orderby = orderby.isEmpty() ? " order by users_attached " + (sortProperty.ascending ? "asc" : "desc") : orderby+", users_attached " + (sortProperty.ascending ? "asc" : "desc");
+//				break;
+////				case "message":
+////					orderby = orderby.isEmpty() ? " order by district5_x.\"name\" " + (sortProperty.ascending ? "asc" : "desc") : orderby+", district5_x.\"name\" " + (sortProperty.ascending ? "asc" : "desc");
+////				break;
+//				
+//				default:
+//					throw new IllegalArgumentException(sortProperty.propertyName);
+//				}
+//				
+//			}
+//		}
+//		
+//		System.out.println(" ===================== "+orderby);
 			
 		
+		Map<String, String> propertyToColumn = Map.of(
+			    // UI property      // DB column or HQL path (use aliases if you have them)
+			    "region",         "area",            // check this mapping is intended
+			    "province",       "region",
+			    "district",       "district",
+			    "clusterNumber",  "clusternumber",   // fixed typo from clusterNumberr
+			    "ccode",          "externalid",
+			    "username",       "users_attached"
+			    // add more here...
+			);
+
+			String orderby = "";
+			if (sortProperties != null && !sortProperties.isEmpty()) {
+			    StringJoiner joinerxx = new StringJoiner(", ", " order by ", "");
+			    for (SortProperty sp : sortProperties) {
+			        String column = propertyToColumn.get(sp.propertyName);
+			        if (column == null) {
+			            throw new IllegalArgumentException("Unknown sort property: " + sp.propertyName);
+			        }
+			        joinerxx.add(column + (sp.ascending ? " asc" : " desc"));
+			    }
+			    // Optional tie-breaker for deterministic results
+			    // joiner.add("id asc");
+
+			    orderby = joinerxx.toString();
+			}
+
+			System.out.println("ORDER BY => " + orderby);
 		
 		String communityAnalysis = "select *"
 				+ "from useranalysis_main \n"

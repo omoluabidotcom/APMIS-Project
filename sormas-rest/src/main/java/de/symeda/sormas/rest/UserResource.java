@@ -35,6 +35,7 @@ import javax.ws.rs.core.MediaType;
 
 import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.PushResult;
+import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
 import de.symeda.sormas.api.caze.CriteriaWithSorting;
 import de.symeda.sormas.api.common.Page;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
@@ -49,11 +50,11 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
  */
 @Path("/users")
 @Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
-@Consumes(MediaType.APPLICATION_JSON + "; charset=UTF-8")
+//@Consumes(MediaType.APPLICATION_JSON + "; charset=UTF-8")
 @RolesAllowed({
 	"USER",
 	"REST_USER"})
-public class UserResource {
+public class UserResource extends EntityDtoResource {
 
 	
 	final UserDto userDto = FacadeProvider.getUserFacade().getCurrentUser();
@@ -63,7 +64,8 @@ public class UserResource {
 	@Path("/all/{since}")
 	public List<UserDto> getAll(@PathParam("since") long since) {
 		
-		
+		System.out.println("xxxgetByUuids Request recieved on userindexlist ====================");
+
 		List<UserDto> userDtoList = new ArrayList<>();
 		userDtoList.add(userDto);
 		return userDtoList; //FacadeProvider.getUserFacade().getAllAfter(new Date(since));
@@ -72,6 +74,8 @@ public class UserResource {
 	@POST
 	@Path("/query")
 	public List<UserDto> getByUuids(List<String> uuids) {
+		System.out.println("getByUuids Request recieved on userindexlist ====================");
+
 		List<UserDto> result = FacadeProvider.getUserFacade().getByUuids(uuids);
 		return result;
 	}
@@ -91,19 +95,28 @@ public class UserResource {
 		@RequestBody CriteriaWithSorting<UserCriteria> criteriaWithSorting,
 		@QueryParam("offset") int offset,
 		@QueryParam("size") int size) {
+		System.out.println("Request recieved on userindexlist ====================");
+
 		return FacadeProvider.getUserFacade().getIndexPage(criteriaWithSorting.getCriteria(), offset, size, criteriaWithSorting.getSortProperties());
 	}
 
+//	@POST
+//	@Path("/push")
+//	public List<PushResult> postUserFcm(@Valid List<UserDto> dtos) {
+//		System.out.println("Before enter passed userdto from mobile to resttttttttttttttttt " + dtos.get(0).getName());
+//		List<PushResult> resultlist = new ArrayList();
+//		for (UserDto userDto : dtos) {
+//			System.out.println("after enter passed userdto from mobile to resttttttttttttttttt " + userDto.getName());
+//			FacadeProvider.getUserFacade().saveUserFcmMobile(userDto);
+//			resultlist.add(PushResult.OK);
+//		} 			
+//		return resultlist;
+//	}
+	
 	@POST
 	@Path("/push")
-	public List<PushResult> postUserFcm(@Valid List<UserDto> dtos) {
-		System.out.println("Before enter passed userdto from mobile to resttttttttttttttttt " + dtos.get(0).getName());
-		List<PushResult> resultlist = new ArrayList();
-		for (UserDto userDto : dtos) {
-			System.out.println("after enter passed userdto from mobile to resttttttttttttttttt " + userDto.getName());
-			FacadeProvider.getUserFacade().saveUserFcmMobile(userDto);
-			resultlist.add(PushResult.OK);
-		} 			
-		return resultlist;
+	public List<PushResult> postCampaignFormData(@Valid List<UserDto> dtos) {
+		System.out.println("Request recieved on user pusdh ====================");
+		return savePushedDto(dtos, FacadeProvider.getUserFacade()::saveUserFcmMobile);// .getCampaignFormDataFacade()::saveCampaignFormDataMobile);
 	}
 }

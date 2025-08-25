@@ -51,6 +51,7 @@ import de.symeda.sormas.api.i18n.Validations;
 import de.symeda.sormas.api.utils.DateHelper;
 import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
+import de.symeda.sormas.app.component.Item;
 import de.symeda.sormas.app.component.VisualState;
 import de.symeda.sormas.app.component.VisualStateControlType;
 import de.symeda.sormas.app.util.DateFormatHelper;
@@ -73,8 +74,8 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 	private Date cachedTime;
 
 
-	private static final String STANDARD_DATE_FORMAT = "dd-MM-yyyy";
-	private SimpleDateFormat standardDateFormat = new SimpleDateFormat(STANDARD_DATE_FORMAT, Locale.US);
+	private static final String STANDARD_DATE_TIME_FORMAT = "dd-MM-yyyy";
+	private SimpleDateFormat standardDateFormat = new SimpleDateFormat(STANDARD_DATE_TIME_FORMAT, Locale.ENGLISH);
 
 
 
@@ -131,37 +132,29 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 		fragment.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
 			@Override
 			public void onDateSet(DatePicker view, int yy, int mm, int dd) {
-				// Create calendar in device's local timezone
-				Calendar cal = Calendar.getInstance();
-
-				// Set the exact date selected (mm is 0-based in DatePicker)
-				cal.set(Calendar.YEAR, yy);
+				Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+				cal.set(Calendar. YEAR, yy);
 				cal.set(Calendar.MONTH, mm);
-				cal.set(Calendar.DAY_OF_MONTH, dd);
+				cal.set(Calendar.DATE, dd);
 
-				// If you want to preserve existing time from cachedTime
-//				if (cachedTime != null) {
-//					Calendar cachedCal = Calendar.getInstance();
-//					cachedCal.setTime(cachedTime);
+				// Clear time components
+//				cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY));
+//				cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE));
+//				cal.set(Calendar.SECOND, cal.get(Calendar.SECOND));
+//				cal.set(Calendar.MILLISECOND, 0);
 //
-//					cal.set(Calendar.HOUR_OF_DAY, cachedCal.get(Calendar.HOUR_OF_DAY));
-//					cal.set(Calendar.MINUTE, cachedCal.get(Calendar.MINUTE));
-//					cal.set(Calendar.SECOND, cachedCal.get(Calendar.SECOND));
-//					cal.set(Calendar.MILLISECOND, cachedCal.get(Calendar.MILLISECOND));
-//				} else {
-					// Set to current time if no cached time
-					Calendar now = Calendar.getInstance();
-					cal.set(Calendar.HOUR_OF_DAY, now.get(Calendar.HOUR_OF_DAY));
-					cal.set(Calendar.MINUTE, now.get(Calendar.MINUTE));
-					cal.set(Calendar.SECOND, now.get(Calendar.SECOND));
-					cal.set(Calendar.MILLISECOND, now.get(Calendar.MILLISECOND));
-//				}
+				cal.set(Calendar.HOUR_OF_DAY, 0);
+				cal.set(Calendar.MINUTE, 0);
+				cal.set(Calendar.SECOND, 0);
+				cal.set(Calendar.MILLISECOND, 0);
+
+//				cal.add(Calendar.HOUR_OF_DAY, +24);
 
 				cachedTime = cal.getTime();
 
-				// Display only the date part in DD-MM-YYYY format
-				input.setText(dateFormat.format(cachedTime));
+				input.setText(standardDateFormat.format(cachedTime));
 			}
+
 		});
 		fragment.setOnClearListener(new DialogInterface.OnClickListener() {
 
@@ -194,6 +187,11 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 		this.fragmentManager = fm;
 	}
 
+	public void initializeDateField(final FragmentManager fm, Date initialValue) {
+		this.fragmentManager = fm;
+		setFieldValue(initialValue);
+	}
+
 	// Overrides
 
 	@Override
@@ -210,7 +208,9 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 
 		try {
 			// Parse with time included
-			return dateFormat.parse(input.getText().toString());
+			return standardDateFormat.parse(input.getText().toString());
+
+//			return dateFormat.parse(input.getText().toString());
 		} catch (ParseException e) {
 			// Fallback to date-only parsing if time isn't included
 			try {
@@ -219,11 +219,9 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 
 				// Add current time if only date was provided
 				Calendar cal = Calendar.getInstance();
+
 				cal.setTime(dateOnly);
 				Calendar now = Calendar.getInstance();
-				cal.set(Calendar.HOUR_OF_DAY, now.get(Calendar.HOUR_OF_DAY));
-				cal.set(Calendar.MINUTE, now.get(Calendar.MINUTE));
-				cal.set(Calendar.SECOND, now.get(Calendar.SECOND));
 
 				return cal.getTime();
 			} catch (ParseException e2) {
@@ -234,14 +232,18 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 	}
 
 	@Override
-	protected void setFieldValue(Date value) {
+	public void setFieldValue(Date value) {
 		cachedTime = value;
 		if (value == null) {
 			input.setText(null);
 		} else {
 			// Always format with full datetime
-			input.setText(dateFormat.format(value));
+			input.setText(standardDateFormat.format(value));
+
+//			input.setText(dateFormat.format(value));
 		}
+//		super.setFieldValue(value);
+
 	}
 
 	@Override

@@ -23,6 +23,7 @@ import static android.view.View.GONE;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -73,6 +74,8 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
     private Campaign campaign;
     private CampaignFormMeta campaignFormMeta;
 
+    private Locale currentLocale;
+
     private CampaignFormDataCriteria criteria = new CampaignFormDataCriteria();
 
     public static void startActivity(Context context, String campaignUUID, String campaignFormMetaUUID) {
@@ -121,18 +124,15 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         boolean saveChecker = true;
         criteria.setCampaign(campaign);
         criteria.setCampaignFormMeta(campaignFormMeta);
-
-
-
+        criteria.setCommunity(null);
+        List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteria(criteria, 0, 100);
 
         if(!ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) { // District Officer
             criteria.setCommunity(campaignFormDataToSave.getCommunity());
 //            criteria.setCommunity(null);
-        }else{
-            criteria.setCommunity(null);
         }
+        System.out.println(campaignFormDataToSave.getFormDate()  + "campaignFormDataToSave.getFormDate()campaignFormDataToSave.getFormDate()campaignFormDataToSave.getFormDate()campaignFormDataToSave.getFormDate()");
 
-        List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteria(criteria, 0, 100);
 
 //        campaignFormDataToSave.setRecordversion(1L);
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
@@ -145,8 +145,36 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
             return;
         }
 
-        final List<CampaignFormDataEntry> formValues = campaignFormDataToSave.getFormValues();
-        final List<CampaignFormDataEntry> filledFormValues = new ArrayList<>();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            currentLocale = getResources().getConfiguration().getLocales().get(0);
+        } else {
+            currentLocale = getResources().getConfiguration().locale;
+        }
+        String language = currentLocale.getLanguage();
+
+        List<CampaignFormDataEntry> cleanedFormValues = new ArrayList<>(campaignFormDataToSave.getFormValues().size());
+        List<CampaignFormDataEntry> formValues = new ArrayList<>();
+        if (!language.equalsIgnoreCase("en")) {
+
+            for (CampaignFormDataEntry entry : campaignFormDataToSave.getFormValues()) {
+                if ("time".equalsIgnoreCase(entry.getId())) {
+                    String convertedTime = convertToEnglishNumbers(String.valueOf(entry.getValue()));
+                    if (!convertedTime.equals(entry.getValue())) {
+                        CampaignFormDataEntry timeEntry = new CampaignFormDataEntry();
+                        timeEntry.setId(entry.getId());
+                        timeEntry.setValue(convertedTime);
+                        cleanedFormValues.add(timeEntry);
+                    } else {
+                        cleanedFormValues.add(entry);
+                    }
+                } else {
+                    cleanedFormValues.add(entry);
+                }
+            }
+            formValues = cleanedFormValues;
+        } else {
+            formValues = campaignFormDataToSave.getFormValues();
+        }        final List<CampaignFormDataEntry> filledFormValues = new ArrayList<>();
 
         CampaignFormDataEntry lotNo = new CampaignFormDataEntry();
         CampaignFormDataEntry lotClusterNo = new CampaignFormDataEntry();
@@ -156,10 +184,17 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
             if (campaignFormDataEntry.getId() != null && campaignFormDataEntry.getValue() != null) {
                 String value = campaignFormDataEntry.getValue().toString();
-                if (value.endsWith(".0")) {
-                    value = value.replaceAll(".0", "");// .replaceALl(".0", "");
-                    campaignFormDataEntry.setValue(value);
+                try {
+                    double num = Double.parseDouble(value);
+                    if (num == Math.floor(num)) { // means it's a whole number
+                        value = String.valueOf((int) num); // convert to int string
+                    } else {
+                        value = String.valueOf(num); // keep original decimal
+                    }
+                } catch (NumberFormatException e) {
+                    // not a number, leave value as is
                 }
+                campaignFormDataEntry.setValue(value);
                 filledFormValues.add(campaignFormDataEntry);
                 if (campaignFormDataEntry.getId().equalsIgnoreCase("LotNo")) {
                     lotNo = campaignFormDataEntry;
@@ -217,6 +252,12 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         CampaignFormDataNewFragment activeFragment = (CampaignFormDataNewFragment) getActiveFragment();
         activeFragment.setLiveValidationDisabled(false);
 
+        if(campaignFormDataToSave.getFormDate() == null){
+            saveChecker = false;
+//            NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number");
+
+        }
+
         if (saveChecker) {
             saveTask = new SavingAsyncTask(getRootView(), campaignFormDataToSave) {
 
@@ -239,45 +280,56 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
                 }
             }.executeOnThreadPool();
         } else {
-            NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number");
+            if(campaignFormDataToSave.getFormDate() == null){
+                NotificationHelper.showNotification(this, ERROR, "Form Date cannot be left Empty.");
+
+            }else{
+                NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number");
+
+            }
             return;
         }
     }
 
     public String dateFormatterLongAndMobile(Object value) {
+        if (value == null) return null;
+
         String dateStr = String.valueOf(value);
         System.out.println("Date in question: " + dateStr);
 
-        // List of possible input date formats (ordered by likelihood)
-        String[] inputFormats = {
-                "yyyy-MM-dd",                   // e.g., 2025-06-25
-                "MMM dd, yyyy HH:mm:ss a",      // e.g., Jun 25, 2025 10:30:00 AM
-                "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
-                "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
-                "dd/MM/yyyy",                   // e.g., 25/06/2025
-                "EEE MMM dd HH:mm:ss z yyyy"    // e.g., Wed Jun 25 10:30:00 GMT 2025
-        };
-
-        // The desired output format (date only)
+        // Standard output format
         DateFormat outputFormatter = new SimpleDateFormat("dd-MM-yyyy");
 
-        for (String formatString : inputFormats) {
-            try {
-                DateFormat inputFormatter = new SimpleDateFormat(formatString);
-                Date parsedDate = inputFormatter.parse(dateStr);
+        try {
+            // First try parsing with the standard format
+            Date parsedDate = outputFormatter.parse(dateStr);
+            return outputFormatter.format(parsedDate);
+        } catch (ParseException e) {
+            // If standard format fails, try other formats
+            String[] inputFormats = {
+                    "yyyy-MM-dd",                   // e.g., 2025-06-25
+                    "MMM dd, yyyy HH:mm:ss a",      // e.g., Jun 25, 2025 10:30:00 AM
+                    "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
+                    "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
+                    "dd/MM/yyyy",                   // e.g., 25/06/2025
+                    "EEE MMM dd HH:mm:ss z yyyy" ,   // e.g., Wed Jun 25 10:30:00 GMT 2025
+                    "EEE MMM dd HH:mm:ss zzz yyyy"
 
-                // Format the parsed date into the desired output format
-                String formattedDate = outputFormatter.format(parsedDate);
-                System.out.println("Successfully parsed. Formatted date: " + formattedDate);
+            };
 
-                return formattedDate; // Return date in yyyy-MM-dd format
-            } catch (ParseException e) {
-                System.out.println("Failed to parse with format '" + formatString + "': " + e.getMessage());
+            for (String formatString : inputFormats) {
+                try {
+                    DateFormat inputFormatter = new SimpleDateFormat(formatString);
+                    Date parsedDate = inputFormatter.parse(dateStr);
+                    return outputFormatter.format(parsedDate);
+                } catch (ParseException e2) {
+                    // Continue to next format
+                }
             }
         }
 
-        System.out.println("Could not parse date----: " + dateStr);
-        return null; // or throw an exception
+        System.out.println("Could not parse date: " + dateStr);
+        return dateStr; // Return original if we can't parse it
     }
 
 
@@ -289,5 +341,27 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
     @Override
     protected int getActivityTitle() {
         return R.string.heading_campaign_form_data_new;
+    }
+
+    public static String convertToEnglishNumbers(String input) {
+        if (input == null) return null;
+        final char[] persianDigits = {'\u06F0','\u06F1','\u06F2','\u06F3','\u06F4','\u06F5','\u06F6','\u06F7','\u06F8','\u06F9'};
+        final char[] arabicDigits = {'\u0660','\u0661','\u0662','\u0663','\u0664','\u0665','\u0666','\u0667','\u0668','\u0669'};
+        StringBuilder output = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            char ch = input.charAt(i);
+            boolean found = false;
+            for (int j = 0; j < 10; j++) {
+                if (ch == persianDigits[j] || ch == arabicDigits[j]) {
+                    output.append((char) ('0' + j));
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                output.append(ch);
+            }
+        }
+        return output.toString();
     }
 }

@@ -343,6 +343,9 @@ public class AdminCompletionAnalysisView extends VerticalLayout {
 	@SuppressWarnings("deprecation")
 	private void completionAnalysisGrid(CampaignFormDataCriteria criteria, FormAccess formAccess) {
 
+		
+		System.out.println("creating tabs created configuring completion analyssi  grid " );
+
 		grid_.setSelectionMode(SelectionMode.SINGLE);
 		grid_.setMultiSort(true, MultiSortPriority.APPEND);
 		grid_.setSizeFull();
@@ -608,6 +611,9 @@ public class AdminCompletionAnalysisView extends VerticalLayout {
 					}
 				});
 		grid_.setDataProvider(dataProvider);
+		
+		System.out.println("creating tabs created configuring completion analysis complete  grid " );
+
 
 		GridExporter<CampaignFormDataIndexDto> exporter = GridExporter.createFor(grid_);
 		exporter.setAutoAttachExportButtons(false);

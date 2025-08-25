@@ -361,8 +361,16 @@ System.out.println("YESSSS");
 			.forEach(
 					formElement -> {
 						 String elementType =  formElement.getType();
+						 String elementCaption =  formElement.getCaption();// .getType();
+
 					        if (elementType != null && elementType.equalsIgnoreCase("Date")) {
-					        	elementType += " : dd/mm/yyyy";
+					        	if(elementCaption.equalsIgnoreCase("visit date")) {
+						        	elementType += " : dd-mm-yyyy";
+
+					        	}else {
+						        	elementType += " : dd/mm/yyyy";
+
+					        	}
 					        }
 					        
 						importColumns.add(new ImportColumn(formElement.getId(), formElement.getCaption(), elementType));
@@ -579,7 +587,7 @@ System.out.println("YESSSS");
 		importColumns.add(ImportColumn.from(CommunityDto.class, "CCode", Integer.class, separator));
 		importColumns.add(ImportColumn.from(CommunityDto.class, "ClusterNo", Integer.class, separator));
 		importColumns.add(ImportColumn.from(CommunityDto.class, "Float_Status",String.class, separator));
-//		importColumns.add(ImportColumn.from(CommunityDto.class, "Active",String.class, separator));
+		importColumns.add(ImportColumn.from(CommunityDto.class, "Active_Status",String.class, separator));
 		
 		writeTemplate(Paths.get(getCommunityImportTemplateFilePath()), importColumns, false);
 	}

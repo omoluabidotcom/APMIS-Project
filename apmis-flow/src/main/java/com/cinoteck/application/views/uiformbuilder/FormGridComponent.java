@@ -26,6 +26,8 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
@@ -68,7 +70,7 @@ public class FormGridComponent extends VerticalLayout {
 //	TextField dependingOn = new TextField("Depending On");
 	ComboBox<String> dependingOnValues = new ComboBox<>("Depending On Values");
 	TextField styles = new TextField("Styles");
-	ComboBox<String> constraints = new ComboBox<>("Constraints");
+	ComboBox<Constraint> constraints = new ComboBox<>("Constraints");
 	TextField min = new TextField("Min");
 	TextField max = new TextField("Max");
 	TextField defaultValues = new TextField("Default Values");
@@ -150,7 +152,7 @@ public class FormGridComponent extends VerticalLayout {
 		formId.setHelperText("Append \"-readonly\" at the end of the Id value. If you want it to be Read Only");
 		dependingOnValues.setItems("true", "false");
 		formType.setItems(formTypeAll);
-		constraints.setItems("Expression", "Range");
+		constraints.setItems(Constraint.EXPRESSION, Constraint.RANGE);
 		important.setItems(true, false);
 		styles.setHelperText("Examples of all styles: inline, row, first, col-1, col-2, col-3, col-4, "
 				+ "col-5, col-6, col-7, col-8, col-9, col-10, col-11, col-12 add them in a comma seperated format");
@@ -258,7 +260,7 @@ public class FormGridComponent extends VerticalLayout {
 				vr3.setEnabled(isSingleSelection);
 
 				formLayout.setVisible(true);
-				vr3.setVisible(true);
+				vr3.setVisible(true);				
 				formType.setValue(generateType(formBeenEdited.getType()));
 				formType.setVisible(true);
 
@@ -341,29 +343,31 @@ public class FormGridComponent extends VerticalLayout {
 //					}
 //				}
 
-				if (formBeenEdited.getConstraints() != null) {
+				if (formBeenEdited.getConstraints() != null) {					
 					if (formBeenEdited.getConstraints()[0].toLowerCase().equals("expression")) {
-						constraints.setValue("Expression");
+						constraints.setValue(Constraint.EXPRESSION);
 						constraints.setVisible(true);
 						max.setVisible(false);
 						min.setVisible(false);
 					} else {
-						constraints.setValue("Range");
+						constraints.setValue(Constraint.RANGE);
 						constraints.setVisible(true);
 
-//						min.setValue(Double.parseDouble(formBeenEdited.getConstraints()[1].substring(4,
-//								formBeenEdited.getConstraints()[1].length())));
-						min.setValue(formBeenEdited.getConstraints()[0].substring(4,
-								formBeenEdited.getConstraints()[1].length()));
-						min.setVisible(true);
-						logger.debug(min.getValue() + " minnnnn value");
-//						max.setValue(Double.parseDouble(formBeenEdited.getConstraints()[0].substring(4,
-//						formBeenEdited.getConstraints()[0].length())));
-						max.setValue(formBeenEdited.getConstraints()[1].substring(4,
-								formBeenEdited.getConstraints()[0].length()));
+						for (String part : formBeenEdited.getConstraints()) {							
+							if (part.startsWith("max=")) {
+								max.setValue(part.substring(4));
+							} else if (part.startsWith("min=")) {
+								min.setValue(part.substring(4));
+							}
+						}
 						max.setVisible(true);
-						logger.debug(min.getValue() + " Maxxxxxxxxxxxxxxx value");
+						min.setVisible(true);
 					}
+				} else {
+					constraints.setValue(Constraint.EXPRESSION);
+					constraints.setVisible(true);
+					max.setVisible(false);
+					min.setVisible(false);
 				}
 
 				if (formBeenEdited.getErrormessage() != null) {
@@ -379,6 +383,13 @@ public class FormGridComponent extends VerticalLayout {
 				if (formBeenEdited.getDefaultvalue() != null) {
 					defaultValues.setValue(formBeenEdited.getDefaultvalue());
 					defaultValues.setVisible(true);
+				}
+				
+				if (!formBeenEdited.getType().equalsIgnoreCase("number") 
+						&& !formBeenEdited.getType().equalsIgnoreCase("range")
+						&& !formBeenEdited.getType().equalsIgnoreCase("decimal")) {
+					constraints.clear();
+					constraints.setVisible(false);
 				}
 
 				save.setText("Update");
@@ -541,13 +552,13 @@ public class FormGridComponent extends VerticalLayout {
 
 					if (constraints.getValue().toString().toLowerCase().equals("expression")) {
 
-						newForm.setConstraints(constraints.getValue().split(","));
+						newForm.setConstraints(constraints.getValue().toString().split(","));
 					} else {
 
 						if (min.getValue() != null && max.getValue() != null
 								&& Integer.parseInt(min.getValue()) < Integer.parseInt(max.getValue())) {
 
-							String valueOfMinMAx = "max=" + min.getValue() + " min=" + max.getValue();
+							String valueOfMinMAx = "max=" + max.getValue() + " min=" + min.getValue();
 							newForm.setConstraints(valueOfMinMAx.split(" "));
 						} else {
 
@@ -727,14 +738,14 @@ public class FormGridComponent extends VerticalLayout {
 
 						if (constraints.getValue().toString().equalsIgnoreCase("expression")) {
 
-							newForm.setConstraints(constraints.getValue().split(","));
+							newForm.setConstraints(constraints.getValue().toString().split(","));
 						} else {
 
 							if (!min.getValue().isEmpty() && !max.getValue().isEmpty()) {
 								if (min.getValue() != null && max.getValue() != null
 										&& Integer.parseInt(min.getValue()) < Integer.parseInt(max.getValue())) {
 
-									String valueOfMinMAx = "max=" + min.getValue() + " min=" + max.getValue();
+									String valueOfMinMAx = "max=" + max.getValue() + " min=" + min.getValue();
 									newForm.setConstraints(valueOfMinMAx.split(" "));
 								} else {
 
@@ -787,7 +798,7 @@ public class FormGridComponent extends VerticalLayout {
 					}
 
 					if (!comment.getValue().isEmpty()) {
-							newForm.setComment(comment.getValue());	
+						newForm.setComment(comment.getValue());
 					}
 
 					if (!defaultValues.getValue().isEmpty()) {
@@ -918,8 +929,6 @@ public class FormGridComponent extends VerticalLayout {
 			return CampaignFormElementType.DECIMAL;
 		} else if (type.equalsIgnoreCase("DROPDOWN")) {
 			return CampaignFormElementType.DROPDOWN;
-		} else if (type.equalsIgnoreCase("DROPDOWN")) {
-			return CampaignFormElementType.DROPDOWN;
 		} else if (type.equalsIgnoreCase("NUMBER")) {
 			return CampaignFormElementType.NUMBER;
 		} else if (type.equalsIgnoreCase("RADIO")) {
@@ -936,17 +945,24 @@ public class FormGridComponent extends VerticalLayout {
 			return CampaignFormElementType.TEXTBOX;
 		} else if (type.equalsIgnoreCase("YES_NO")) {
 			return CampaignFormElementType.YES_NO;
-		}
-
+		} else if (type.equalsIgnoreCase("PHONE")) {
+			return CampaignFormElementType.PHONE;
+		} else if (type.equalsIgnoreCase("EMAIL")) {
+			return CampaignFormElementType.EMAIL;
+		} else if (type.equalsIgnoreCase("LINEBREAK")) {
+			return CampaignFormElementType.LINEBREAK;
+		} else if (type.equalsIgnoreCase("TIME")) {
+			return CampaignFormElementType.TIME;
+		}			
 		return CampaignFormElementType.LABEL;
 	}
 
 	void configureGrid() {
 
-//		grid.setSelectionMode(SelectionMode.SINGLE);
-//		grid.setMultiSort(true, MultiSortPriority.APPEND);
-//		grid.setSizeFull();
-//		grid.setColumnReorderingAllowed(true);
+		grid.setSelectionMode(SelectionMode.SINGLE);
+		grid.setMultiSort(true, MultiSortPriority.APPEND);
+		grid.setSizeFull();
+		grid.setColumnReorderingAllowed(true);
 
 		ComponentRenderer<Span, CampaignFormElement> constraintRenderer = new ComponentRenderer<>(input -> {
 			String value = Arrays.toString(input.getConstraints());
@@ -1081,7 +1097,8 @@ public class FormGridComponent extends VerticalLayout {
 				comment.setVisible(false);
 				defaultValues.setVisible(false);
 			} else if (e.getValue().toString().toLowerCase().equals("number")
-					|| e.getValue().toString().toLowerCase().equals("range")) {
+					|| e.getValue().toString().toLowerCase().equals("range")
+					|| e.getValue().toString().toLowerCase().equals("decimal")) {
 
 				constraints.setVisible(true);
 				expression.setVisible(true);
@@ -1117,15 +1134,17 @@ public class FormGridComponent extends VerticalLayout {
 			}
 		});
 
-		constraints.addValueChangeListener(e -> {
-			if (e.getValue().toString().toLowerCase().substring(0, e.getValue().toString().toLowerCase().length())
-					.equals("expression")) {
-				min.setVisible(false);
-				max.setVisible(false);
-			} else {
-				min.setVisible(true);
-				max.setVisible(true);
-			}
+		constraints.addValueChangeListener(e -> {			
+			if (e.getValue() != null) {
+				if (e.getValue().toString().toLowerCase().substring(0, e.getValue().toString().toLowerCase().length())
+						.equals("expression")) {
+					min.setVisible(false);
+					max.setVisible(false);
+				} else {
+					min.setVisible(true);
+					max.setVisible(true);
+				}
+			} 
 		});
 
 		expressions.addClickListener(e -> {
@@ -1147,7 +1166,7 @@ public class FormGridComponent extends VerticalLayout {
 		VerticalLayout expressionLayout = new VerticalLayout();
 		ComboBox<String> ids = new ComboBox<String>("Form Ids");
 		ids.setWidthFull();
-		
+
 //		TextArea
 		TextArea expressionEdit = new TextArea("Expression Editor");
 		expressionEdit.setWidthFull();

@@ -320,27 +320,27 @@ public class UserAnalysisGridView extends VerticalLayout {
 				.setSortProperty("district").setSortable(true).setResizable(true)
 				.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.district));
 		grid.addColumn(CommunityUserReportModelDto::getFormAccess)
-				.setHeader(I18nProperties.getCaption(Captions.formAccess)).setSortProperty("formAccess")
-				.setSortable(true).setResizable(true)
+				.setHeader(I18nProperties.getCaption(Captions.formAccess))
+				.setResizable(true)
 				.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.formAccess));
 
 		if (currentUser.getUser().getLanguage().toString().equals("Pashto")) {
 			grid.addColumn(clusterNumberRenderer).setHeader(I18nProperties.getCaption(Captions.clusterNumber))
-					.setSortProperty("clusterNumberr").setSortable(true).setResizable(true)
+					.setSortProperty("clusterNumber").setSortable(true).setResizable(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.clusterNumber));
 			grid.addColumn(cCodeRenderer).setHeader(I18nProperties.getCaption(Captions.Community_externalID))
 					.setSortProperty("ccode").setSortable(true).setResizable(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.Community_externalID));
 		} else if (currentUser.getUser().getLanguage().toString().equals("Dari")) {
 			grid.addColumn(clusterNumberRenderer).setHeader(I18nProperties.getCaption(Captions.clusterNumber))
-					.setSortProperty("clusterNumberr").setSortable(true).setResizable(true)
+					.setSortProperty("clusterNumber").setSortable(true).setResizable(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.clusterNumber));
 			grid.addColumn(cCodeRenderer).setHeader(I18nProperties.getCaption(Captions.Community_externalID))
 					.setSortProperty("ccode").setSortable(true).setResizable(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.Community_externalID));
 		} else {
 			grid.addColumn(CommunityUserReportModelDto::getClusterNumberr)
-					.setHeader(I18nProperties.getCaption(Captions.clusterNumber)).setSortProperty("clusterNumberr")
+					.setHeader(I18nProperties.getCaption(Captions.clusterNumber)).setSortProperty("clusterNumber")
 					.setSortable(true).setResizable(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.clusterNumber));
 			grid.addColumn(CommunityUserReportModelDto::getcCode)
@@ -354,7 +354,7 @@ public class UserAnalysisGridView extends VerticalLayout {
 				.setSortable(true).setResizable(true)
 				.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.Login_username));
 		grid.addColumn(CommunityUserReportModelDto::getMessage).setHeader(I18nProperties.getCaption(Captions.message))
-				.setSortProperty("message").setSortable(true).setResizable(true)
+				.setSortProperty("message").setSortable(false).setResizable(true)
 				.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.message));
 
 		int numberOfRows = FacadeProvider.getCommunityFacade().getAllActiveCommunitytoRerenceCount(null, null, null,

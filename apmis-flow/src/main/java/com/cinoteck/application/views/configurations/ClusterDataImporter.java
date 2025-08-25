@@ -313,11 +313,8 @@ public class ClusterDataImporter extends DataImporter {
 					return ImportLineResult.ERROR;
 
 				} else {
-//					System.out.println("22222222222222222222222222222222222222222222222222222222222222222222222222222");
-
 					String clusterName_ = values[i];
 
-//					String regex = "\\S+";
 					boolean isNoSpaceMatch = clusterName_.matches(clusterName_);
 
 					if (!isNoSpaceMatch) {
@@ -335,13 +332,6 @@ public class ClusterDataImporter extends DataImporter {
 							clusterName = clusterName_;
 
 						} else {
-
-//							if (isOverWrite) {
-//								clusterName = clusterName_;
-//								return ImportLineResult.SUCCESS;
-//
-//							} else {
-
 							if (clusterNameList.size() >= 0) {
 								 System.out.println(clusterName_ + "6666666666666666666666666666666666666666666666666666" + clusterName_);
 
@@ -365,10 +355,6 @@ public class ClusterDataImporter extends DataImporter {
 									String caption = ffff.getCaption();
 
 									clusterNames.add(caption);
-
-//										System.out.println(clusterNames + " Cluster Name   Liat"  + caption );
-//										System.out/.println(clusterNames.size() + "Size  of Clusters Name List");
-
 								}
 								if (clusterNames.contains(values[i])) {
 
@@ -378,16 +364,9 @@ public class ClusterDataImporter extends DataImporter {
 
 									return ImportLineResult.ERROR;
 								} else {
-
-//										System.out.println("Successssssfulllll   " + clusterName_ + "yyy"+ clusterName + values[i]);
 									clusterName = clusterName_;
-
-//										return ImportLineResult.SUCCESS;
 								}
 							}
-
-//							}
-
 						}
 
 					}
@@ -399,29 +378,44 @@ public class ClusterDataImporter extends DataImporter {
 				if (DataHelper.isNullOrEmpty(values[i])) {
 					
 
-		
-					floatStatus = "Normal";
-					System.out.println(floatStatus + "floatStatusfloatStatusfloatStatusf)");
+	
+					floatStatus = null;
+					writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
+							+ " | Float Status cannot be left empty");
+					return ImportLineResult.ERROR;
+
 
 					} else {
+					if (values[i].toString().equalsIgnoreCase("floating") || values[i].toString().equalsIgnoreCase("normal")) {
 					floatStatus = values[i];
+					}else {
+						writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
+								+ " | Float Status can only be either Floating or Normal");
+						return ImportLineResult.ERROR;
 					}
 
 				}
+			}
 			
 			if ("Active_Status".equalsIgnoreCase(entityProperties[i])) {
 
 				if (DataHelper.isNullOrEmpty(values[i])) {		
 					activeStatus = false;
-					System.out.println(activeStatus + "floatStatusfloatStatusfloatStatusf)");
+	
+					writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
+							+ " | Active Status cannot be left empty");
+					return ImportLineResult.ERROR;
+
 
 					} else {
-						if (values[i].toString().equalsIgnoreCase("Archived")) {
-							activeStatus = true;
-
+					if (values[i].toString().equalsIgnoreCase("Archived")) {
+					activeStatus = true;
+					}else if (values[i].toString().equalsIgnoreCase("Active")) {
+					activeStatus = false;	
 					}else {
-						activeStatus = false;
-	
+						writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
+								+ " | Active Status can only be either Active or Archived");
+						return ImportLineResult.ERROR;
 					}
 
 				}

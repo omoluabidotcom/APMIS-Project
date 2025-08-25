@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.PlatformEnum;
@@ -61,6 +62,8 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
     private CampaignFormMeta campaignFormMeta;
     private CampaignFormDataCriteria criteria = new CampaignFormDataCriteria();
 
+    private Locale currentLocale;
+
     public static void startActivity(Context context, String rootUuid) {
         BaseActivity.startActivity(context, CampaignFormDataEditActivity.class, buildBundle(rootUuid));
     }
@@ -88,6 +91,8 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
             return; // don't save multiple times
         }
 
+        boolean saveChecker = true;
+
         final CampaignFormData campaignFormDataToSave = getStoredRootEntity();
 
         campaign = DatabaseHelper.getCampaignDao().queryUuid(campaignFormDataToSave.getCampaign().getUuid());
@@ -109,7 +114,36 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
             return;
         }
 
-        final List<CampaignFormDataEntry> formValues = campaignFormDataToSave.getFormValues();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            currentLocale = getResources().getConfiguration().getLocales().get(0);
+        } else {
+            currentLocale = getResources().getConfiguration().locale;
+        }
+        String language = currentLocale.getLanguage();
+
+        List<CampaignFormDataEntry> cleanedFormValues = new ArrayList<>(campaignFormDataToSave.getFormValues().size());
+        List<CampaignFormDataEntry> formValues = new ArrayList<>();
+        if (!language.equalsIgnoreCase("en")) {
+
+            for (CampaignFormDataEntry entry : campaignFormDataToSave.getFormValues()) {
+                if ("time".equalsIgnoreCase(entry.getId())) {
+                    String convertedTime = convertToEnglishNumbers(String.valueOf(entry.getValue()));
+                    if (!convertedTime.equals(entry.getValue())) {
+                        CampaignFormDataEntry timeEntry = new CampaignFormDataEntry();
+                        timeEntry.setId(entry.getId());
+                        timeEntry.setValue(convertedTime);
+                        cleanedFormValues.add(timeEntry);
+                    } else {
+                        cleanedFormValues.add(entry);
+                    }
+                } else {
+                    cleanedFormValues.add(entry);
+                }
+            }
+            formValues = cleanedFormValues;
+        } else {
+            formValues = campaignFormDataToSave.getFormValues();
+        }
         final List<CampaignFormDataEntry> filledFormValues = new ArrayList<>();
 
 
@@ -133,70 +167,123 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
         campaignFormDataToSave.setFormValues(filledFormValues);
         campaignFormDataToSave.setSoruce(PlatformEnum.MOBILE);
 
-        saveTask = new SavingAsyncTask(getRootView(), campaignFormDataToSave) {
+        if(campaignFormDataToSave.getFormDate() == null){
+            saveChecker = false;
+        }
+        if (saveChecker) {
+            saveTask = new SavingAsyncTask(getRootView(), campaignFormDataToSave) {
 
-            @Override
-            public void doInBackground(TaskResultHolder resultHolder) throws DaoException {
+                @Override
+                public void doInBackground(TaskResultHolder resultHolder) throws DaoException {
 
-                if(!campaignFormDataToSave.isModifiedOrChildModified()){
-                    campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion()== null ? 1l  : campaignFormDataToSave.getRecordversion() + 1L);
-                }
+                    if(!campaignFormDataToSave.isModifiedOrChildModified()){
+                        campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion()== null ? 1l  : campaignFormDataToSave.getRecordversion() + 1L);
+                    }
 
 //                campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion() == null ? 1L : campaignFormDataToSave.getRecordversion());
 
-                DatabaseHelper.getCampaignFormDataDao().saveAndSnapshot(campaignFormDataToSave);
-            }
-
-            @Override
-            protected void onPostExecute(AsyncTaskResult<TaskResultHolder> taskResult) {
-                super.onPostExecute(taskResult);
-
-                if (taskResult.getResultStatus().isSuccess()) {
-                    Intent intent = new Intent();
-                    intent.setAction("REFRESH_ROW_COUNT");
-                    sendBroadcast(intent);
-
-                    finish();
-                } else {
-                 //   onResume(); // reload data
+                    DatabaseHelper.getCampaignFormDataDao().saveAndSnapshot(campaignFormDataToSave);
                 }
-                saveTask = null;
+
+                @Override
+                protected void onPostExecute(AsyncTaskResult<TaskResultHolder> taskResult) {
+                    super.onPostExecute(taskResult);
+
+                    if (taskResult.getResultStatus().isSuccess()) {
+                        Intent intent = new Intent();
+                        intent.setAction("REFRESH_ROW_COUNT");
+                        sendBroadcast(intent);
+
+                        finish();
+                    } else {
+                        //   onResume(); // reload data
+                    }
+                    saveTask = null;
+                }
+            }.executeOnThreadPool();
+
+        }else {
+            if(campaignFormDataToSave.getFormDate() == null){
+NotificationHelper.showNotification(this, ERROR, "Form Date cannot be left Empty.");
+
             }
-        }.executeOnThreadPool();
+
+            }
     }
+
     void setSetSubHeadingRowCountForCampaign(){
 
     };
 
+//    public String dateFormatterLongAndMobile(Object value) {
+//        String dateStr = String.valueOf(value);
+//        System.out.println("Date in question: " + dateStr);
+//
+//        String[] inputFormats = {
+//                "yyyy-MM-dd",                   // e.g., 2025-06-25
+//                "MMM dd, yyyy HH:mm:ss a",      // e.g., Jun 25, 2025 10:30:00 AM
+//                "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
+//                "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
+//                "dd/MM/yyyy",                   // e.g., 25/06/2025
+//                "EEE MMM dd HH:mm:ss z yyyy"    // e.g., Wed Jun 25 10:30:00 GMT 2025
+//        };
+//
+//        // The desired output format (date only)
+//        DateFormat outputFormatter = new SimpleDateFormat("dd-MM-yyyy");
+//
+//        for (String formatString : inputFormats) {
+//            try {
+//                DateFormat inputFormatter = new SimpleDateFormat(formatString);
+//                Date parsedDate = inputFormatter.parse(dateStr);
+//                String formattedDate = outputFormatter.format(parsedDate);
+//
+//                return formattedDate; // Return date in yyyy-MM-dd format
+//            } catch (ParseException e) {
+//                System.out.println("Failed to parse with format '" + formatString + "': " + e.getMessage());
+//            }
+//        }
+//        System.out.println("Could not parse date----: " + dateStr);
+//        return value.toString();
+//    }
+
     public String dateFormatterLongAndMobile(Object value) {
+        if (value == null) return null;
+
         String dateStr = String.valueOf(value);
         System.out.println("Date in question: " + dateStr);
 
-        String[] inputFormats = {
-                "yyyy-MM-dd",                   // e.g., 2025-06-25
-                "MMM dd, yyyy HH:mm:ss a",      // e.g., Jun 25, 2025 10:30:00 AM
-                "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
-                "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
-                "dd/MM/yyyy",                   // e.g., 25/06/2025
-                "EEE MMM dd HH:mm:ss z yyyy"    // e.g., Wed Jun 25 10:30:00 GMT 2025
-        };
-
-        // The desired output format (date only)
+        // Standard output format
         DateFormat outputFormatter = new SimpleDateFormat("dd-MM-yyyy");
 
-        for (String formatString : inputFormats) {
-            try {
-                DateFormat inputFormatter = new SimpleDateFormat(formatString);
-                Date parsedDate = inputFormatter.parse(dateStr);
-                String formattedDate = outputFormatter.format(parsedDate);
+        try {
+            // First try parsing with the standard format
+            Date parsedDate = outputFormatter.parse(dateStr);
+            return outputFormatter.format(parsedDate);
+        } catch (ParseException e) {
+            // If standard format fails, try other formats
+            String[] inputFormats = {
+                    "yyyy-MM-dd",                   // e.g., 2025-06-25
+                    "MMM dd, yyyy HH:mm:ss a",      // e.g., Jun 25, 2025 10:30:00 AM
+                    "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
+                    "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
+                    "dd/MM/yyyy",                   // e.g., 25/06/2025
+                    "EEE MMM dd HH:mm:ss z yyyy",   // e.g., Wed Jun 25 10:30:00 GMT 2025
+                    "EEE MMM dd HH:mm:ss zzz yyyy"        // slight variation
+            };
 
-                return formattedDate; // Return date in yyyy-MM-dd format
-            } catch (ParseException e) {
-                System.out.println("Failed to parse with format '" + formatString + "': " + e.getMessage());
+            for (String formatString : inputFormats) {
+                try {
+                    DateFormat inputFormatter = new SimpleDateFormat(formatString);
+                    Date parsedDate = inputFormatter.parse(dateStr);
+                    return outputFormatter.format(parsedDate);
+                } catch (ParseException e2) {
+                    // Continue to next format
+                }
             }
         }
-        System.out.println("Could not parse date----: " + dateStr);
-        return value.toString();
+
+        System.out.println("Could not parse date: " + dateStr);
+        return dateStr; // Return original if we can't parse it
     }
 
     @Override
@@ -215,5 +302,27 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
 
         if (saveTask != null && !saveTask.isCancelled())
             saveTask.cancel(true);
+    }
+
+    public static String convertToEnglishNumbers(String input) {
+        if (input == null) return null;
+        final char[] persianDigits = {'\u06F0','\u06F1','\u06F2','\u06F3','\u06F4','\u06F5','\u06F6','\u06F7','\u06F8','\u06F9'};
+        final char[] arabicDigits = {'\u0660','\u0661','\u0662','\u0663','\u0664','\u0665','\u0666','\u0667','\u0668','\u0669'};
+        StringBuilder output = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            char ch = input.charAt(i);
+            boolean found = false;
+            for (int j = 0; j < 10; j++) {
+                if (ch == persianDigits[j] || ch == arabicDigits[j]) {
+                    output.append((char) ('0' + j));
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                output.append(ch);
+            }
+        }
+        return output.toString();
     }
 }

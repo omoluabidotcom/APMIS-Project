@@ -241,7 +241,7 @@ public class ControlSpinnerField extends ControlPropertyEditField<Object> {
 	protected void onFinishInflate() {
 		super.onFinishInflate();
 		Map<String, String> str = new  HashMap<String, String>();
-		initInput(str);
+		initInput(str, false);
 	}
 
 	protected void initInput(Map<String, String> isIntegerFlag) {
@@ -249,6 +249,8 @@ public class ControlSpinnerField extends ControlPropertyEditField<Object> {
 		if (getImeOptions() == EditorInfo.IME_NULL) {
 			setImeOptions(EditorInfo.IME_ACTION_DONE);
 		}
+
+
 
 		spinnerFieldListeners.registerListener(new ValueChangeListener() {
 
@@ -278,6 +280,73 @@ public class ControlSpinnerField extends ControlPropertyEditField<Object> {
 	//	ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
 //set the spinners adapter to the previously created one.
 	//	input.setAdapter(adapter);
+
+		// caused a lot of problems, because the spinner is shown whenever the field is focused
+		// - in contrast to only showing it when the user clicks/touches
+//        input.setFocusable(true);
+//        input.setFocusableInTouchMode(true);
+//        input.setOnFocusChangeListener(new OnFocusChangeListener() {
+//            @Override
+//            public void onFocusChange(View v, boolean hasFocus) {
+//                if (hasFocus) {
+//                    InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+//                    if (imm != null) {
+//                        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+//                    }
+//                    if (input.isShown()) {
+//                        input.performClick();
+//                    }
+//                }
+//            }
+//        });
+
+		List<Item> objectList = convertOtpions(isIntegerFlag);
+
+		setSpinnerData(objectList, null);
+
+
+
+	}
+
+
+//for required
+	protected void initInput(Map<String, String> isIntegerFlag, boolean isRequired) {
+		input = (Spinner) this.findViewById(R.id.spinner_input);
+		if (getImeOptions() == EditorInfo.IME_NULL) {
+			setImeOptions(EditorInfo.IME_ACTION_DONE);
+		}
+
+		required = isRequired;
+
+
+		spinnerFieldListeners.registerListener(new ValueChangeListener() {
+
+			@Override
+			public void onChange(ControlPropertyField field) {
+				if (inverseBindingListener != null) {
+					inverseBindingListener.onChange();
+				}
+				onValueChanged();
+			}
+		}, this);
+
+		input.setOnItemSelectedListener(spinnerFieldListeners);
+
+		input.setOnTouchListener((view, event) -> {
+			if (event.getAction() == MotionEvent.ACTION_UP) {
+				if (getValue() == null && indexOnOpen >= 0) {
+					input.setSelection(indexOnOpen);
+				}
+			}
+			return false;
+		});
+
+		//	String[] items = new String[]{"1", "2", "three"};
+//create an adapter to describe how the items are displayed, adapters are used in several places in android.
+//There are multiple variations of this, but this is the basic variant.
+		//	ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
+//set the spinners adapter to the previously created one.
+		//	input.setAdapter(adapter);
 
 		// caused a lot of problems, because the spinner is shown whenever the field is focused
 		// - in contrast to only showing it when the user clicks/touches

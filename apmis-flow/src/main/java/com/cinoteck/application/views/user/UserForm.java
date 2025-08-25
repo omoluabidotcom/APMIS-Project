@@ -377,7 +377,6 @@ public class UserForm extends FormLayout {
 		province.addValueChangeListener(e -> {
 
 			if (e.getValue() != null && userRoles.getValue() != null) {
-
 				final JurisdictionLevel jurisdictionLevel = UserRole.getJurisdictionLevel(userRoles.getValue());
 				System.out.println((jurisdictionLevel == JurisdictionLevel.DISTRICT) + " +++___________111"
 						+ userRoles.getValue());
@@ -430,7 +429,7 @@ public class UserForm extends FormLayout {
 					});
 //			            
 
-				} else {
+				} else if(jurisdictionLevel == JurisdictionLevel.DISTRICT && !userRoles.getValue().contains(UserRole.SURVEILLANCE_OFFICER)) {
 
 					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegion(e.getValue().getUuid());
 					System.out.println(" +++___________333333: ");
@@ -448,6 +447,27 @@ public class UserForm extends FormLayout {
 					
 					districtMulti.setVisible(false);
 					district.setVisible(true);
+					clusterNo.setVisible(false);
+
+					
+				}else {
+
+					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegion(e.getValue().getUuid());
+					System.out.println(" +++___________333333: ");
+					if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
+						district.setItems(
+								FacadeProvider.getDistrictFacade().getAllActiveByRegionPashto(e.getValue().getUuid()));
+					} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
+						district.setItems(
+								FacadeProvider.getDistrictFacade().getAllActiveByRegionDari(e.getValue().getUuid()));
+					} else {
+						district.setItems(districts);
+					}
+					
+					isDistrictMulti = false;
+					
+					districtMulti.setVisible(false);
+					district.setVisible(false);
 					clusterNo.setVisible(false);
 
 					
