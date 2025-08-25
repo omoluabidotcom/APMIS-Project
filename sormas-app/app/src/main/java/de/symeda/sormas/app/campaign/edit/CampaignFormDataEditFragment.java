@@ -366,7 +366,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
-
+                            System.out.println( exprx + " exprxexprxexprxexprxexprx");
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
@@ -374,6 +374,18 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
 
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
+                            }
 
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
 
@@ -506,6 +518,18 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
 
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
+                            }
 
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
 
@@ -639,6 +663,19 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
 
+
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
+                            }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
                             dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
@@ -765,6 +802,19 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             } else {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
+                            }
+
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
                             }
 
 //                            if (value != null) {
@@ -912,6 +962,19 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
+
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
+                            }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
                             dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
@@ -1036,6 +1099,19 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             } else {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
+                            }
+
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
                             }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
@@ -1162,6 +1238,19 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
+
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
+                            }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
                             dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
@@ -1287,6 +1376,19 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
+
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
+                            }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
                             dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
@@ -1373,18 +1475,18 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     String value = formValuesMap.get(campaignFormElement.getId());
 //                    value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                     String yes_no = "";
-                    if (value != null) {
-                        try {
-                            double num = Double.parseDouble(value);
-                            if (num == Math.floor(num)) {
-                                value = String.valueOf((int) num); // whole number, no decimal
-                            } else {
-                                value = String.format("%.2f", num); // round to 2 decimal places
-                            }
-                        } catch (NumberFormatException e) {
-                            // value is not a number, leave as-is
-                        }
-                    }
+//                    if (value != null) {
+//                        try {
+//                            double num = Double.parseDouble(value);
+//                            if (num == Math.floor(num)) {
+//                                value = String.valueOf((int) num); // whole number, no decimal
+//                            } else {
+//                                value = String.format("%.2f", num); // round to 2 decimal places
+//                            }
+//                        } catch (NumberFormatException e) {
+//                            // value is not a number, leave as-is
+//                        }
+//                    }
                     ControlPropertyField dynamicField;
                     boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                     if (type == CampaignFormElementType.YES_NO) {
@@ -1413,6 +1515,19 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                         } else {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                             isRangeandExpression = true;
+                        }
+
+                        if (value != null) {
+                            try {
+                                double num = Double.parseDouble(value);
+                                if (num == Math.floor(num)) {
+                                    value = String.valueOf((int) num); // whole number, no decimal
+                                } else {
+                                    value = String.format("%.2f", num); // round to 2 decimal places
+                                }
+                            } catch (NumberFormatException e) {
+                                // value is not a number, leave as-is
+                            }
                         }
                         ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                     } else if (type == CampaignFormElementType.DROPDOWN) {
