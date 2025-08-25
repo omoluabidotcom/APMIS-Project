@@ -131,6 +131,8 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
             criteria.setCommunity(campaignFormDataToSave.getCommunity());
 //            criteria.setCommunity(null);
         }
+        System.out.println(campaignFormDataToSave.getFormDate()  + "campaignFormDataToSave.getFormDate()campaignFormDataToSave.getFormDate()campaignFormDataToSave.getFormDate()campaignFormDataToSave.getFormDate()");
+
 
 //        campaignFormDataToSave.setRecordversion(1L);
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
@@ -182,10 +184,17 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
             if (campaignFormDataEntry.getId() != null && campaignFormDataEntry.getValue() != null) {
                 String value = campaignFormDataEntry.getValue().toString();
-//                if (value.endsWith(".0")) {
-//                    value = value.replaceAll(".0", "");// .replaceALl(".0", "");
-//                    campaignFormDataEntry.setValue(value);
-//                }
+                try {
+                    double num = Double.parseDouble(value);
+                    if (num == Math.floor(num)) { // means it's a whole number
+                        value = String.valueOf((int) num); // convert to int string
+                    } else {
+                        value = String.valueOf(num); // keep original decimal
+                    }
+                } catch (NumberFormatException e) {
+                    // not a number, leave value as is
+                }
+                campaignFormDataEntry.setValue(value);
                 filledFormValues.add(campaignFormDataEntry);
                 if (campaignFormDataEntry.getId().equalsIgnoreCase("LotNo")) {
                     lotNo = campaignFormDataEntry;

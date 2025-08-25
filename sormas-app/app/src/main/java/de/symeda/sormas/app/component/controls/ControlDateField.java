@@ -75,7 +75,7 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 
 
 	private static final String STANDARD_DATE_TIME_FORMAT = "dd-MM-yyyy";
-	private SimpleDateFormat standardDateFormat = new SimpleDateFormat(STANDARD_DATE_TIME_FORMAT, Locale.getDefault());
+	private SimpleDateFormat standardDateFormat = new SimpleDateFormat(STANDARD_DATE_TIME_FORMAT, Locale.ENGLISH);
 
 
 
@@ -132,23 +132,26 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 		fragment.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
 			@Override
 			public void onDateSet(DatePicker view, int yy, int mm, int dd) {
-				Calendar cal = Calendar.getInstance();
-				cal.set(Calendar.YEAR, yy);
+				Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+				cal.set(Calendar. YEAR, yy);
 				cal.set(Calendar.MONTH, mm);
-				cal.set(Calendar.DAY_OF_MONTH, dd);
+				cal.set(Calendar.DATE, dd);
 
 				// Clear time components
 //				cal.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY));
 //				cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE));
 //				cal.set(Calendar.SECOND, cal.get(Calendar.SECOND));
 //				cal.set(Calendar.MILLISECOND, 0);
-
+//
 				cal.set(Calendar.HOUR_OF_DAY, 0);
 				cal.set(Calendar.MINUTE, 0);
 				cal.set(Calendar.SECOND, 0);
 				cal.set(Calendar.MILLISECOND, 0);
 
+//				cal.add(Calendar.HOUR_OF_DAY, +24);
+
 				cachedTime = cal.getTime();
+
 				input.setText(standardDateFormat.format(cachedTime));
 			}
 
@@ -216,6 +219,7 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 
 				// Add current time if only date was provided
 				Calendar cal = Calendar.getInstance();
+
 				cal.setTime(dateOnly);
 				Calendar now = Calendar.getInstance();
 
