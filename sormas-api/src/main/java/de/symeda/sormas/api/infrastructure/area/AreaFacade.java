@@ -13,7 +13,9 @@ import de.symeda.sormas.api.infrastructure.GeoLocationFacade;
 public interface AreaFacade extends GeoLocationFacade<AreaDto, AreaDto, AreaReferenceDto, AreaCriteria> {
 
 	List<AreaReferenceDto> getAllActiveAsReference();
-
+	
+	List<AreaReferenceDto> getAllSelectedAreasByFormUuidAndLocale(String campaignFormUuid, String userLanguage);
+	
 	List<AreaReferenceDto> getAllActiveAsReferencePashto();
 
 	List<AreaReferenceDto> getAllActiveAsReferenceDari();

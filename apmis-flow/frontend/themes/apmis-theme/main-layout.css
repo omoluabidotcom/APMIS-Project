@@ -79,7 +79,7 @@ vaadin-scroller[slot="drawer"][overflow~="bottom"] {
 	display: none;
 }
 
-textarea {
+textarea#Comment {
 	height: 40vh !important;
 }
 
@@ -792,4 +792,16 @@ vaadin-vertical-layout#campaignFormLayout vaadin-tabsheet vaadin-tabs {
 	border: 1px solid green !important;
     box-shadow: none !important;
     outline: none !important;
+}
+
+vaadin-text-area#formAccessTextFieldID .vaadin-text-area-container vaadin-input-container {
+	overflow : hidden;
+	background-color: none !important;
+	
+}
+
+vaadin-text-area#userRolesTextFieldID .vaadin-text-area-container vaadin-input-container {
+	overflow : hidden;
+	background-color: none !important;
+	
 }

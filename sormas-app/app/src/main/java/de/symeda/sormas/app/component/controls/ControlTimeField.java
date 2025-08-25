@@ -437,12 +437,20 @@ public class ControlTimeField extends ControlPropertyEditField<String> {
 		int hour = calendar.get(Calendar.HOUR_OF_DAY);
 		int minute = calendar.get(Calendar.MINUTE);
 
-		new TimePickerDialog(getContext(), (TimePicker view, int hourOfDay, int minuteOfDay) -> {
-			calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-			calendar.set(Calendar.MINUTE, minuteOfDay);
-			selectedTime = calendar.getTime();
-			updateInput();
-		}, hour, minute, true).show();
+		TimePickerDialog timePickerDialog = new TimePickerDialog(
+				getContext(),
+				(TimePicker view, int hourOfDay, int minuteOfDay) -> {
+					calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+					calendar.set(Calendar.MINUTE, minuteOfDay);
+					selectedTime = calendar.getTime();
+					updateInput();
+				},
+				hour,
+				minute,
+				true
+		);
+
+		timePickerDialog.show();
 	}
 
 	private void updateInput() {

@@ -40,6 +40,6 @@ public interface UserFacadeRetro {
 	@GET("users/uuids")
 	Call<List<String>> pullUuids();
 
-	@POST("/users/push")
+	@POST("users/push")
 	Call<List<PushResult>> pushAll(@Body List<UserDto> dtos);
 }

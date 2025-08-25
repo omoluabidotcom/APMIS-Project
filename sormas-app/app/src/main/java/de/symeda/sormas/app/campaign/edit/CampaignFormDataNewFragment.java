@@ -22,15 +22,12 @@ import static androidx.databinding.DataBindingUtil.setContentView;
 
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Patterns;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -41,6 +38,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -56,16 +55,13 @@ import java.util.stream.Collectors;
 import de.symeda.sormas.api.MapperUtil;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
 import de.symeda.sormas.api.i18n.I18nProperties;
-import de.symeda.sormas.api.utils.DateHelper;
 import de.symeda.sormas.app.BaseEditFragment;
 import de.symeda.sormas.app.backend.campaign.data.CampaignFormData;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
-import de.symeda.sormas.app.backend.region.Community;
 import de.symeda.sormas.app.backend.user.User;
 import de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils;
-import de.symeda.sormas.app.component.controls.ControlPhoneField;
 import de.symeda.sormas.app.component.controls.ControlPropertyEditField;
 import de.symeda.sormas.app.component.controls.ControlPropertyField;
 import de.symeda.sormas.app.util.DataUtils;
@@ -80,10 +76,8 @@ import de.symeda.sormas.app.component.Item;
 import de.symeda.sormas.app.databinding.FragmentCampaignDataNewLayoutBinding;
 
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handleDependingOn;
-import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handleDependingOnSectionAndLabel;
 
 import androidx.core.content.ContextCompat;
-import androidx.databinding.adapters.ImageViewBindingAdapter;
 
 public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampaignDataNewLayoutBinding, CampaignFormData, CampaignFormData> {
 
@@ -94,6 +88,9 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
     private List<Item> initialRegions;
     private List<Item> initialDistricts;
     private List<Item> initialCommunities;
+
+    private Date presentDate;
+
     private Map<String, String> optionsValues;
     private List<String> constraints;
 
@@ -279,11 +276,21 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                        }  else if (type == CampaignFormElementType.NUMBER) {
 
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
                         }  else if (type == CampaignFormElementType.EMAIL) {
 
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
@@ -292,12 +299,12 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 //campaignFormElement
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlDateEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                         } else {
@@ -382,7 +389,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
 
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            CampaignFormDataFragmentUtils.handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -416,10 +423,20 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                        } else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+                        }else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
                         } else if (type == CampaignFormElementType.EMAIL) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.RANGE) {
@@ -428,12 +445,12 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlDateEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                         } else {
@@ -482,7 +499,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField.setValue(defaultValue == null ? null : defaultValue);
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -517,10 +534,20 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        }else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                        } else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
                         } else if (type == CampaignFormElementType.EMAIL) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.RANGE) {
@@ -529,13 +556,13 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage,onError);
 
                                 isRangeandExpression = true;
                             }
 
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlDateEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                         } else {
@@ -582,7 +609,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField.setValue(defaultValue == null ? null : defaultValue);
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -616,10 +643,20 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                        }  else if (type == CampaignFormElementType.NUMBER ) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
                         } else if (type == CampaignFormElementType.EMAIL) {
 
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
@@ -629,12 +666,12 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlDateEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                         } else {
@@ -681,7 +718,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField.setValue(defaultValue == null ? null : defaultValue);
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -715,12 +752,20 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
-                            dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                        }  else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
                         }  else if (type == CampaignFormElementType.EMAIL) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.RANGE) {
@@ -729,12 +774,12 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlDateEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                         } else {
@@ -782,7 +827,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField.setValue(defaultValue == null ? null : defaultValue);
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -816,11 +861,21 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                        }  else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
-                        }  else if (type == CampaignFormElementType.EMAIL) {
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
+                        } else if (type == CampaignFormElementType.EMAIL) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
@@ -828,12 +883,12 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlDateEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                         } else {
@@ -882,7 +937,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField.setValue(defaultValue == null ? null : defaultValue);
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -916,11 +971,21 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                        }  else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
-                        }  else if (type == CampaignFormElementType.EMAIL) {
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
+                        } else if (type == CampaignFormElementType.EMAIL) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
@@ -928,12 +993,12 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlDateEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                         } else {
@@ -982,7 +1047,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicField.setValue(defaultValue == null ? null : defaultValue);
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -1016,10 +1081,20 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        } else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                        }  else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
                         }  else if (type == CampaignFormElementType.EMAIL) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.RANGE) {
@@ -1028,12 +1103,12 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlDateEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                         } else {
@@ -1083,7 +1158,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         final String dependingOn = campaignFormElement.getDependingOn();
 
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -1121,11 +1196,21 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                     if (type == CampaignFormElementType.YES_NO) {
 
                         dynamicField = CampaignFormDataFragmentUtils.createControlYesNoUnknownField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                    } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                    } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta));
-                    } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                    } else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                        dynamicField = CampaignFormDataFragmentUtils.createControlCheckBoxField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                    } else if (type == CampaignFormElementType.NUMBER) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
-                    }else if (type == CampaignFormElementType.EMAIL) {
+                    } else if (type == CampaignFormElementType.DECIMAL) {
+                        final boolean exprx = expressionx;
+                        if (!exprx) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                        } else {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                            isRangeandExpression = true;
+                        }
+                    } else if (type == CampaignFormElementType.EMAIL) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(
                                 campaignFormElement,
                                 requireContext(),
@@ -1217,17 +1302,15 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         });
                     } else if (type == CampaignFormElementType.RANGE) {
                         final boolean exprx = expressionx;
-
                         if (!exprx) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                         } else {
-                            dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
-
+                            dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                             isRangeandExpression = true;
                         }
 
                     } else if (type == CampaignFormElementType.DROPDOWN) {
-                        dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues);
+                        dynamicField = CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                     } else if (type == CampaignFormElementType.DATE) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlDateEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
 
@@ -1242,7 +1325,6 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                     }  else {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
                     }
-//                    System.out.println("Field properties: " + campaignFormElement.getId() + " exp = " + campaignFormElement.getExpression() + " :");
                     fieldMap.put(campaignFormElement.getId(), dynamicField);
                     dynamicField.setShowCaption(true);
                     dynamicLayout.addView(dynamicField, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -1252,11 +1334,9 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                     if (dependingOn != null) {
                         isdependingOn = true;
                     }
-//                    System.out.println(record.getLotClusterNo() + "++++++++_______________" + campaignFormElement.getId());
 
                     Boolean finalIsdependingOn = isdependingOn;
                     if (type == CampaignFormElementType.DROPDOWN && campaignFormElement.getId().equalsIgnoreCase("lotClusterNo")) {
-//                        System.out.println(record.getLotClusterNo() + "++++++++_______________222__________lotClusterNo");
                         dynamicField.addValueChangedListener(field -> {
                             baseEditActivity.setDataModified(true);
                             if (field.getValue() != null) {
@@ -1304,11 +1384,6 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                 expressionMap.forEach((formElement, controlPropertyField) ->
                                         CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
                             }
-//                                else if (field.isFocused()){
-//                                    System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" +fieldMap.get(campaignFormElement.getId()).getCaption());
-//
-//                                }
-
                             if (finalIsdependingOn && isRangeandExpressionx) {
                                 field.setVisibility(View.GONE);
                             }
@@ -1373,7 +1448,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                     if (dependingOn != null && finalIsRangeandExpression) {
                         dynamicField.hideFieldOnly();
                     } else if (dependingOn != null) {
-                        handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                        handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                     }
 
                     final String expressionString = campaignFormElement.getExpression();
@@ -1400,39 +1475,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                         dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                     }
                 }
-//                else if (type == CampaignFormElementType.SECTION) {
-//                    System.out.println("Type is not daywise but section ---------------------");
-//                    if (campaignFormElement.getDependingOn() == null) {
-//                        ControlPropertyField dynamicField;
-//                        dynamicLayout.addView(new ImageView(requireContext(), null, R.style.FullHorizontalDividerStyle));
-//                    }else{
-//                        System.out.println(" Section---------------------Depending on is not null");
-//                        ControlPropertyField dynamicField;
-//                        dynamicLayout.addView(new ImageView(requireContext(), null, R.style.FullHorizontalDividerStyle));
-//                        handleDependingOnSectionAndLabel(fieldMap, campaignFormElement, dynamicLayout);
-//
-//                    }
-//                } else if (type == CampaignFormElementType.LABEL) {
-//                    System.out.println("Type is not daywise but Label ---------------------");
-//
-//                    if (campaignFormElement.getDependingOn() == null) {
-//                        System.out.println("Type is not daywise but Label ---------------------Depending on is null");
-//
-//                        TextView textView = new TextView(requireContext());
-//                        TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
-//                        dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//                    }else{
-//                        System.out.println(" Label---------------------Depending on is not null");
-//
-//                        TextView textView = new TextView(requireContext());
-//                        TextViewBindingAdapters.setHtmlValue(textView, CampaignFormDataFragmentUtils.getUserLanguageCaption(CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), campaignFormElement));
-//                        dynamicLayout.addView(textView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//                        handleDependingOnSectionAndLabel(fieldMap, campaignFormElement, dynamicLayout);
-//
-//                    }
-//                }
-
-            }
+              }
         }
 
         if (daywise) {
@@ -1657,6 +1700,11 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
         initialRegions = InfrastructureDaoHelper.loadRegionsByServerCountry();
         initialDistricts = InfrastructureDaoHelper.loadAllDistricts();
         initialCommunities = InfrastructureDaoHelper.loadAllCommunities();
+
+        Calendar cal = Calendar.getInstance();
+        Date date = cal.getTime();
+        System.out.println(date + "Issues generating/ Parsing Datvvve ------------------");
+        presentDate =  date;
     }
 
     @Override
@@ -1672,7 +1720,42 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
         contentBinding.campaignFormDataCampaign.initializeSpinner(initialCampaigns, record.getCampaign());
         contentBinding.campaignFormDataCampaign.setEnabled(false);
 
-        contentBinding.campaignFormDataFormDate.initializeDateField(getFragmentManager());
+
+        Calendar cal = Calendar.getInstance();
+        Date date = cal.getTime();
+
+        System.out.println("Initializing date field with: " + date);
+
+        try {
+            // Initialize the date field with fragment manager and initial date
+            contentBinding.campaignFormDataFormDate.initializeDateField(getFragmentManager(), getDateValue(date.toString()));
+
+
+            contentBinding.campaignFormDataFormDate.setValue(getDateValue(date.toString()));
+            // Verify the value was set correctly
+            Date retrievedValue = contentBinding.campaignFormDataFormDate.getValue();
+            System.out.println("Date field value after initialization: " + retrievedValue);
+
+            // Only disable after successful initialization
+            contentBinding.campaignFormDataFormDate.setFieldValue(getDateValue(date.toString()));
+//            contentBinding.campaignFormDataFormDate.setEnabled(false);
+
+            System.out.println("Date field initialization completed successfully" +  contentBinding.campaignFormDataFormDate.getValue());
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            System.out.println("Date field Error during date field initialization: " + exception.getMessage());
+
+            // Fallback: try basic initialization
+            try {
+                contentBinding.campaignFormDataFormDate.initializeDateField(getFragmentManager());
+                contentBinding.campaignFormDataFormDate.setFieldValue(date);
+                contentBinding.campaignFormDataFormDate.setEnabled(false);
+                System.out.println("Date field Fallback initialization completed");
+            } catch (Exception fallbackException) {
+                System.out.println("Date field Fallback initialization also failed: " + fallbackException.getMessage());
+            }
+        }
 
         InfrastructureDaoHelper.initializeRegionAreaFields(
                 contentBinding.campaignFormDataArea,
@@ -1688,6 +1771,76 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                 initialCommunities,
                 record.getCommunity(), false);
     }
+
+//    protected Date getDateValue(String input) {
+//        if (StringUtils.isEmpty(input)) {
+//            return null;
+//        }
+//
+//        try {
+//            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+//            Date parsedDate = dateFormat.parse(input);
+//
+//            // Clear time components
+//            Calendar cal = Calendar.getInstance();
+//            cal.setTime(parsedDate);
+//            return cal.getTime();
+//        } catch (ParseException e) {
+//            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+//            return null;
+//        }
+//    }
+
+    protected Date getDateValue(String input) {
+        if (StringUtils.isEmpty(input)) {
+            return null;
+        }
+
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+            Date parsedDate = dateFormat.parse(input);
+
+            // Clear time components
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(parsedDate);
+            return cal.getTime();
+        } catch (ParseException e) {
+//            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+//            return null;
+            try{
+                String normalizedDateString = normalizeRawDateString(input); // this gives "03-08-2025"
+                if (normalizedDateString != null) {
+                    SimpleDateFormat fallbackFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+                    return fallbackFormat.parse(normalizedDateString);
+                }
+            }catch(Exception ee){
+                Log.e(getClass().getName(), "Error parsing date: " + input, ee);
+                return null;
+            }
+            return null;
+
+        }
+    }
+    public static String normalizeRawDateString(String rawDateStr) {
+        try {
+            // First parse the raw string
+            SimpleDateFormat inputFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+            Date date = inputFormat.parse(rawDateStr);
+
+            // Then format it to dd-MM-yyyy
+            return formatDateToDdMMyyyy(date);
+        } catch (ParseException e) {
+            Log.e("DateParse", "Could not parse date: " + rawDateStr, e);
+            return null;
+        }
+    }
+    public static String formatDateToDdMMyyyy(Date date) {
+        if (date == null) return null;
+
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+        return formatter.format(date);
+    }
+
 
     @Override
     protected void onAfterLayoutBinding(FragmentCampaignDataNewLayoutBinding contentBinding) {

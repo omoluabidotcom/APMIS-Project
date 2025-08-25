@@ -101,6 +101,8 @@ public class AggregateReportView extends VerticalLayout implements RouterLayout 
 	}
 
 	public void configureGrid(CampaignStatisticsCriteria criteria) {
+		System.out.println("creating tabs created configuring agggreprt grid " );
+
 		this.criteria = criteria;
 		criteria.setLanguage(userProvider.getUser().getLanguage().toString());
 		grid.setSelectionMode(SelectionMode.NONE);
@@ -166,6 +168,9 @@ public class AggregateReportView extends VerticalLayout implements RouterLayout 
 		dataProvider = DataProvider.fromStream(getGridData().stream());
 
 		grid.setDataProvider(dataProvider);
+		
+		System.out.println("creating tabs created dataprovider set agg report " );
+
 
 		GridExporter<CampaignStatisticsDto> exporter = GridExporter.createFor(grid);
 		exporter.setAutoAttachExportButtons(false);

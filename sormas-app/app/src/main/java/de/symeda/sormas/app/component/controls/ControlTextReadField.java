@@ -279,18 +279,43 @@ public class ControlTextReadField extends ControlPropertyField<String> {
 		}
 	}
 
+//	@BindingAdapter(value = {
+//		"value",
+//		"appendValue",
+//		"valueFormat",
+//		"defaultValue" }, requireAll = false)
+//	public static void setValue(ControlTextReadField textField, String stringValue, String appendValue, String valueFormat, String defaultValue) {
+//		System.out.println(stringValue +" setValuesetValuesetValue");
+//		String cleanStringValue  = stringValue == null ? null : stringValue.endsWith(".0") ? stringValue.substring(0, stringValue.length() - 2): stringValue;
+//		System.out.println(stringValue +" cleanStringValuecleanStringValuecleanStringValuecleanStringValue" + cleanStringValue);
+//		setValue(textField, cleanStringValue, appendValue, valueFormat, defaultValue, stringValue);
+//	}
+
 	@BindingAdapter(value = {
-		"value",
-		"appendValue",
-		"valueFormat",
-		"defaultValue" }, requireAll = false)
+			"value",
+			"appendValue",
+			"valueFormat",
+			"defaultValue"
+	}, requireAll = false)
 	public static void setValue(ControlTextReadField textField, String stringValue, String appendValue, String valueFormat, String defaultValue) {
-		System.out.println(stringValue +" setValuesetValuesetValue");
-		String cleanStringValue  = stringValue == null ? null : stringValue.endsWith(".0") ? stringValue.substring(0, stringValue.length() - 2): stringValue;
-
-
-
-		System.out.println(stringValue +" cleanStringValuecleanStringValuecleanStringValuecleanStringValue" + cleanStringValue);
+		System.out.println(stringValue + " setValuesetValuesetValue");
+		String cleanStringValue = null;
+		if (stringValue != null && !stringValue.isEmpty()) {
+			try {
+				double num = Double.parseDouble(stringValue);
+				if (num == Math.floor(num)) {
+					// It's a whole number
+					cleanStringValue = String.valueOf((int) num);
+				} else {
+					// It's a decimal – round to 2 decimal places
+					cleanStringValue = String.format("%.2f", num);
+				}
+			} catch (NumberFormatException e) {
+				// Not a number – fallback to original string
+				cleanStringValue = stringValue;
+			}
+		}
+		System.out.println(stringValue + " cleanStringValuecleanStringValuecleanStringValue = " + cleanStringValue);
 		setValue(textField, cleanStringValue, appendValue, valueFormat, defaultValue, stringValue);
 	}
 

@@ -26,12 +26,9 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.TextView;
 
@@ -51,8 +48,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import de.symeda.sormas.api.MapperUtil;
@@ -63,7 +58,6 @@ import de.symeda.sormas.api.campaign.form.CampaignFormElementType;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.utils.DataHelper;
-import de.symeda.sormas.app.BaseEditActivity;
 import de.symeda.sormas.app.BaseEditFragment;
 import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.campaign.Campaign;
@@ -76,7 +70,9 @@ import de.symeda.sormas.app.backend.user.User;
 import de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils;
 import de.symeda.sormas.app.component.Item;
 import de.symeda.sormas.app.component.controls.ControlCheckBoxField;
+import de.symeda.sormas.app.component.controls.ControlCheckBoxGroupField;
 import de.symeda.sormas.app.component.controls.ControlDateField;
+import de.symeda.sormas.app.component.controls.ControlDecimalEditField;
 import de.symeda.sormas.app.component.controls.ControlPhoneField;
 import de.symeda.sormas.app.component.controls.ControlPropertyField;
 import de.symeda.sormas.app.component.controls.ControlSpinnerField;
@@ -89,6 +85,7 @@ import de.symeda.sormas.app.util.InfrastructureDaoHelper;
 import de.symeda.sormas.app.util.TextViewBindingAdapters;
 import de.symeda.sormas.app.util.YesNo;
 
+import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlCheckBoxEditField;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlCheckBoxField;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlDateEditField;
@@ -99,16 +96,8 @@ import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.getUse
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.getUserTranslations;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handleDependingOn;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handleExpression;
-import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handleExpressionSec;
-import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.setVisibilityDependency;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
-import androidx.viewpager.widget.ViewPager;
-import androidx.viewpager2.widget.ViewPager2;
-
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
 
 public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampaignDataEditLayoutBinding, CampaignFormData, CampaignFormData> {
 
@@ -338,34 +327,70 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet1);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+                        if (value != null) {
+                            try {
+                                double num = Double.parseDouble(value);
+                                if (num == Math.floor(num)) {
+                                    value = String.valueOf((int) num); // whole number, no decimal
+                                } else {
+                                    value = String.format("%.2f", num); // round to 2 decimal places
+                                }
+                            } catch (NumberFormatException e) {
+                                // value is not a number, leave as-is
+                            }
+                        }
 
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = createControlYesNoUnknownField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, value, true, YesNo.class, null);
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            List<String> selectedKeys = Collections.singletonList(value);
+                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                        }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
+                            ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
-
+                            System.out.println( exprx + " exprxexprxexprxexprxexprx");
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
+                            }
 
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
 
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues,campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -417,7 +442,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -447,34 +472,69 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet2);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
-
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+                        if (value != null) {
+                            try {
+                                double num = Double.parseDouble(value);
+                                if (num == Math.floor(num)) {
+                                    value = String.valueOf((int) num); // whole number, no decimal
+                                } else {
+                                    value = String.format("%.2f", num); // round to 2 decimal places
+                                }
+                            } catch (NumberFormatException e) {
+                                // value is not a number, leave as-is
+                            }
+                        }
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = createControlYesNoUnknownField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, value, true, YesNo.class, null);
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            List<String> selectedKeys = Collections.singletonList(value);
+                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                        }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
+                            ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
+                            }
 
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
 
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -525,7 +585,9 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+//                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
+
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -555,32 +617,68 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet3);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
-
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+                        if (value != null) {
+                            try {
+                                double num = Double.parseDouble(value);
+                                if (num == Math.floor(num)) {
+                                    value = String.valueOf((int) num); // whole number, no decimal
+                                } else {
+                                    value = String.format("%.2f", num); // round to 2 decimal places
+                                }
+                            } catch (NumberFormatException e) {
+                                // value is not a number, leave as-is
+                            }
+                        }
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = createControlYesNoUnknownField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, value, true, YesNo.class, null);
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            List<String> selectedKeys = Collections.singletonList(value);
+                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                        }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
+                            ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
                             }
 
+
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
+                            }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -630,7 +728,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -660,27 +758,63 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet4);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
-
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+                        if (value != null) {
+                            try {
+                                double num = Double.parseDouble(value);
+                                if (num == Math.floor(num)) {
+                                    value = String.valueOf((int) num); // whole number, no decimal
+                                } else {
+                                    value = String.format("%.2f", num); // round to 2 decimal places
+                                }
+                            } catch (NumberFormatException e) {
+                                // value is not a number, leave as-is
+                            }
+                        }
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = createControlYesNoUnknownField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, value, true, YesNo.class, null);
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            List<String> selectedKeys = Collections.singletonList(value);
+                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                        }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
+                            ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
+                            }
+
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
                             }
 
 //                            if (value != null) {
@@ -704,7 +838,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 //                            }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -753,7 +887,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -783,31 +917,67 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet5);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
-
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+                        if (value != null) {
+                            try {
+                                double num = Double.parseDouble(value);
+                                if (num == Math.floor(num)) {
+                                    value = String.valueOf((int) num); // whole number, no decimal
+                                } else {
+                                    value = String.format("%.2f", num); // round to 2 decimal places
+                                }
+                            } catch (NumberFormatException e) {
+                                // value is not a number, leave as-is
+                            }
+                        }
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = createControlYesNoUnknownField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, value, true, YesNo.class, null);
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            List<String> selectedKeys = Collections.singletonList(value);
+                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                        }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
+                            ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
+                            }
+
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
                             }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -855,7 +1025,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -885,31 +1055,67 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet6);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
-
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+                        if (value != null) {
+                            try {
+                                double num = Double.parseDouble(value);
+                                if (num == Math.floor(num)) {
+                                    value = String.valueOf((int) num); // whole number, no decimal
+                                } else {
+                                    value = String.format("%.2f", num); // round to 2 decimal places
+                                }
+                            } catch (NumberFormatException e) {
+                                // value is not a number, leave as-is
+                            }
+                        }
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = createControlYesNoUnknownField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, value, true, YesNo.class, null);
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            List<String> selectedKeys = Collections.singletonList(value);
+                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                        }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
+                            ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
+                            }
+
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
                             }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -957,7 +1163,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -987,31 +1193,67 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet7);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
-
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+                        if (value != null) {
+                            try {
+                                double num = Double.parseDouble(value);
+                                if (num == Math.floor(num)) {
+                                    value = String.valueOf((int) num); // whole number, no decimal
+                                } else {
+                                    value = String.format("%.2f", num); // round to 2 decimal places
+                                }
+                            } catch (NumberFormatException e) {
+                                // value is not a number, leave as-is
+                            }
+                        }
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = createControlYesNoUnknownField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, value, true, YesNo.class, null);
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            List<String> selectedKeys = Collections.singletonList(value);
+                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                        }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
+                            ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
+                            }
+
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
                             }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -1059,7 +1301,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -1089,31 +1331,67 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final LinearLayout dynamicLayout = mTabHost.findViewById(R.id.tabSheet8);
                     if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                         String value = formValuesMap.get(campaignFormElement.getId());
-                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
-
+//                        value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+                        if (value != null) {
+                            try {
+                                double num = Double.parseDouble(value);
+                                if (num == Math.floor(num)) {
+                                    value = String.valueOf((int) num); // whole number, no decimal
+                                } else {
+                                    value = String.format("%.2f", num); // round to 2 decimal places
+                                }
+                            } catch (NumberFormatException e) {
+                                // value is not a number, leave as-is
+                            }
+                        }
                         ControlPropertyField dynamicField;
                         boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                         if (type == CampaignFormElementType.YES_NO) {
                             dynamicField = createControlYesNoUnknownField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, value, true, YesNo.class, null);
-                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                        } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
-                        } else if (type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                        }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            List<String> selectedKeys = Collections.singletonList(value);
+                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                        } else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            final boolean exprx = expressionx;
+                            if (!exprx) {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                            } else {
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                isRangeandExpression = true;
+                            }
+                            ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
-                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                                 isRangeandExpression = true;
+                            }
+
+                            if (value != null) {
+                                try {
+                                    double num = Double.parseDouble(value);
+                                    if (num == Math.floor(num)) {
+                                        value = String.valueOf((int) num); // whole number, no decimal
+                                    } else {
+                                        value = String.format("%.2f", num); // round to 2 decimal places
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // value is not a number, leave as-is
+                                }
                             }
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DROPDOWN) {
-                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                            dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -1162,7 +1440,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String dependingOn = campaignFormElement.getDependingOn();
                         if (dependingOn != null) {
-                            handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                            handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                         }
 
                         final String expressionString = campaignFormElement.getExpression();
@@ -1195,30 +1473,65 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                 final LinearLayout dynamicLayout = view.findViewById(R.id.dynamicLayoutxXEd);
                 if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL && type != CampaignFormElementType.LINEBREAK) {
                     String value = formValuesMap.get(campaignFormElement.getId());
-                    value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+//                    value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
                     String yes_no = "";
+//                    if (value != null) {
+//                        try {
+//                            double num = Double.parseDouble(value);
+//                            if (num == Math.floor(num)) {
+//                                value = String.valueOf((int) num); // whole number, no decimal
+//                            } else {
+//                                value = String.format("%.2f", num); // round to 2 decimal places
+//                            }
+//                        } catch (NumberFormatException e) {
+//                            // value is not a number, leave as-is
+//                        }
+//                    }
                     ControlPropertyField dynamicField;
                     boolean ignoreDisable = campaignFormElement.isIgnoredisable();
                     if (type == CampaignFormElementType.YES_NO) {
                         dynamicField = createControlYesNoUnknownField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         ControlSwitchField.setValue((ControlSwitchField) dynamicField, value, true, YesNo.class, null);
-                    } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.CHECKBOXBASIC || type == CampaignFormElementType.RADIOBASIC) {
+                    } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                         dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
-                    } else if (type == CampaignFormElementType.DECIMAL) {
-                        dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
-                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
+                    }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+                            List<String> selectedKeys = Collections.singletonList(value);
+                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                    }
+                    else if (type == CampaignFormElementType.DECIMAL) {
+                        final boolean exprx = expressionx;
+                        if (!exprx) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimal(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
+                        } else {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                            isRangeandExpression = true;
+                        }
+                        ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
                     } else if (type == CampaignFormElementType.RANGE) {
                         final boolean exprx = expressionx;
                         if (!exprx) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRange(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                         } else {
-                            dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
+                            dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangex(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, onError);
                             isRangeandExpression = true;
+                        }
+
+                        if (value != null) {
+                            try {
+                                double num = Double.parseDouble(value);
+                                if (num == Math.floor(num)) {
+                                    value = String.valueOf((int) num); // whole number, no decimal
+                                } else {
+                                    value = String.format("%.2f", num); // round to 2 decimal places
+                                }
+                            } catch (NumberFormatException e) {
+                                // value is not a number, leave as-is
+                            }
                         }
                         ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                     } else if (type == CampaignFormElementType.DROPDOWN) {
-                        dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues);
+                        dynamicField = createControlSpinnerFieldEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, campaignFormElement.isImportant());
                         ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                     } else if (type == CampaignFormElementType.DATE) {
                         dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
@@ -1562,7 +1875,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     final String dependingOn = campaignFormElement.getDependingOn();
                     if (dependingOn != null) {
 
-                        handleDependingOn(fieldMap, campaignFormElement, dynamicField);
+                        handleDependingOn(fieldMap, campaignFormElement, dynamicField, formValues);
                     }
 
                     final String expressionString = campaignFormElement.getExpression();
@@ -1778,57 +2091,111 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
         }
 
         try {
-            try {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
-                Date parsedDate = dateFormat.parse(input);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+            Date parsedDate = dateFormat.parse(input);
 
-                // Add current time to date-only input
-                Calendar cal = Calendar.getInstance();
-                Calendar parsedCal = Calendar.getInstance();
-                parsedCal.setTime(parsedDate);
-
-                cal.set(Calendar.YEAR, parsedCal.get(Calendar.YEAR));
-                cal.set(Calendar.MONTH, parsedCal.get(Calendar.MONTH));
-                cal.set(Calendar.DAY_OF_MONTH, parsedCal.get(Calendar.DAY_OF_MONTH));
-
-                return cal.getTime();
-            } catch (ParseException e1) {
-                // Continue to next format
-
-                try {
-                    SimpleDateFormat dateTimeFormatAmPm = new SimpleDateFormat("dd-MM-yyyy h:mm:ss a", Locale.getDefault());
-                    return dateTimeFormatAmPm.parse(input);
-                } catch (ParseException e3) {
-                    // Continue to next format
-
-                    try {
-                        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
-                        return dateTimeFormat.parse(input);
-                    } catch (ParseException e2) {
-                        // Continue to next format
-
-                        try {
-                            SimpleDateFormat monthNameFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a", Locale.US);
-                            return monthNameFormat.parse(input);
-                        } catch (ParseException e4) {
-                            // Continue to next format
-
-                            try {
-                                SimpleDateFormat rfc1123Format = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
-                                return rfc1123Format.parse(input);
-                            } catch (ParseException e5) {
-                                Log.e(getClass().getName(), "Error parsing date: " + input, e5);
-                                return null;
-                            }
-                        }
-                    }
+            // Clear time components
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(parsedDate);
+            return cal.getTime();
+        } catch (ParseException e) {
+//            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+//            return null;
+            try{
+                String normalizedDateString = normalizeRawDateString(input); // this gives "03-08-2025"
+                if (normalizedDateString != null) {
+                    SimpleDateFormat fallbackFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+                    return fallbackFormat.parse(normalizedDateString);
                 }
+            }catch(Exception ee){
+                Log.e(getClass().getName(), "Error parsing date: " + input, ee);
+                return null;
             }
-        } catch (Exception e) {
-            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+            return null;
+
+        }
+    }
+
+    public static String normalizeRawDateString(String rawDateStr) {
+        try {
+            // First parse the raw string
+            SimpleDateFormat inputFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+            Date date = inputFormat.parse(rawDateStr);
+
+            // Then format it to dd-MM-yyyy
+            return formatDateToDdMMyyyy(date);
+        } catch (ParseException e) {
+            Log.e("DateParse", "Could not parse date: " + rawDateStr, e);
             return null;
         }
     }
+    public static String formatDateToDdMMyyyy(Date date) {
+        if (date == null) return null;
+
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+        return formatter.format(date);
+    }
+
+
+
+
+//    protected Date getDateValue(String input) {
+//        if (StringUtils.isEmpty(input)) {
+//            return null;
+//        }
+//
+//        try {
+//            try {
+//                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+//                Date parsedDate = dateFormat.parse(input);
+//
+//                // Add current time to date-only input
+//                Calendar cal = Calendar.getInstance();
+//                Calendar parsedCal = Calendar.getInstance();
+//                parsedCal.setTime(parsedDate);
+//
+//                cal.set(Calendar.YEAR, parsedCal.get(Calendar.YEAR));
+//                cal.set(Calendar.MONTH, parsedCal.get(Calendar.MONTH));
+//                cal.set(Calendar.DAY_OF_MONTH, parsedCal.get(Calendar.DAY_OF_MONTH));
+//
+//                return cal.getTime();
+//            } catch (ParseException e1) {
+//                // Continue to next format
+//
+//                try {
+//                    SimpleDateFormat dateTimeFormatAmPm = new SimpleDateFormat("dd-MM-yyyy h:mm:ss a", Locale.getDefault());
+//                    return dateTimeFormatAmPm.parse(input);
+//                } catch (ParseException e3) {
+//                    // Continue to next format
+//
+//                    try {
+//                        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
+//                        return dateTimeFormat.parse(input);
+//                    } catch (ParseException e2) {
+//                        // Continue to next format
+//
+//                        try {
+//                            SimpleDateFormat monthNameFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a", Locale.US);
+//                            return monthNameFormat.parse(input);
+//                        } catch (ParseException e4) {
+//                            // Continue to next format
+//
+//                            try {
+//                                SimpleDateFormat rfc1123Format = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
+//                                return rfc1123Format.parse(input);
+//                            } catch (ParseException e5) {
+//                                Log.e(getClass().getName(), "Error parsing date: " + input, e5);
+//                                return null;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        } catch (Exception e) {
+//            Log.e(getClass().getName(), "Error parsing date: " + input, e);
+//            return null;
+//        }
+//    }
 
 
 //    protected Date getDateValue(String input) {

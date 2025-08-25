@@ -365,6 +365,9 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			if (populationDataDtoHelper.pullAndPushEntities())
 				populationDataDtoHelper.pullEntities(true);
 
+			final UserDtoHelper userDtoHelper = new UserDtoHelper();
+			if (userDtoHelper.pullAndPushEntities())
+				userDtoHelper.pullEntities(true);
 
 			repullData();
 		}
@@ -467,6 +470,8 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			new CampaignFormMetaWithExpDtoHelper().pullEntities(false);
 			new CampaignDtoHelper().pullEntities(false);
 			new CampaignFormMetaRegionDtoHelper().pullEntities(false);
+			new UserDtoHelper().pullEntities(false);
+
 		}
 
 		new PopulationDataDtoHelper().pullEntities(false);
@@ -605,6 +610,14 @@ if (1 == 3) {
 			DatabaseHelper.getCampaignFormDataDao().deleteInvalid(campaignUuids);
 			campaignFormDataDtoHelper.pullMissing(campaignFormDataUuids);
 		//TODO: Add Expiry Date Login
+
+			System.out.println("USer Pushhh  notified ===========================");
+
+			final UserDtoHelper userDtoHelper = new UserDtoHelper();
+			userDtoHelper.pushEntities(true);
+
+			System.out.println("USer Pushhh  concluded ===========================");
+
 
 		}
 

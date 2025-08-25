@@ -42,6 +42,7 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 	public static final String COMMUNITYNUMBER_ = "clusternumber_";
 	public static final String CCODE = "ccode";
 	public static final String FORM_DATE = "formDate";
+	public static final String CHANGE_DATE = "changeDate";	
 	public static final String FORM_VALUES = "formValues";
 	public static final String FORM_TYPE = "formType";
 	public static final String ANALYSIS_FIELD_A = "analysis_a";
@@ -109,6 +110,7 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 	private String personTitle;
 	
 	private Long recordversion;
+	private Date changeDate;
 
 
 	public CampaignFormDataIndexDto(String uuid, String campaign, String form, Object formValues, String area,
@@ -135,7 +137,6 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 		this.isverified = isverified;
 		this.ispublished = ispublished;
 	}
-	
 
 	public CampaignFormDataIndexDto(String uuid, String campaign, String form, Object formValues, String area,
 			Long rcode, String region, Long pcode, String district, Long dcode, String community, Integer clusternumber,
@@ -161,6 +162,34 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 		this.isverified = isverified;
 		this.ispublished = ispublished;
 		this.recordversion = recordversion;
+	}
+	
+	 
+	public CampaignFormDataIndexDto(String uuid, String campaign, String form, Object formValues, String area,
+			Long rcode, String region, Long pcode, String district, Long dcode, String community, Integer clusternumber,
+			Long ccode, Date formDate, String formType, String source, String creatingUser, boolean isverified,
+			boolean ispublished, Long recordversion, Date changeDate) {
+		this.uuid = uuid;
+		this.campaign = campaign;
+		this.form = form;
+		this.formValues = (List<CampaignFormDataEntry>) formValues;
+		this.area = area;
+		this.rcode = rcode;
+		this.region = region;
+		this.pcode = pcode;
+		this.district = district;
+		this.dcode = dcode;
+		this.community = community;
+		this.clusternumber = clusternumber;
+		this.ccode = ccode;
+		this.formDate = formDate;		
+		this.formType = formType;
+		this.source = source;
+		this.creatingUser = creatingUser;
+		this.isverified = isverified;
+		this.ispublished = ispublished;
+		this.recordversion = recordversion;
+		this.changeDate = changeDate;
 	}
 
 	public CampaignFormDataIndexDto(String uuid, String campaign, String form, Object formValues, String area,
@@ -244,6 +273,20 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 		this.personTitle = personTitle;
 		this.error_status = "Error: Duplicate Tazkira number";
 	}
+	
+	public CampaignFormDataIndexDto(String area, String region, String district,
+			String source, String creatingUser, String personTitle, String error_status) {
+		this.area = area;
+		this.region = region;
+		this.district = district;
+//		this.clusternumber = clusternumber;
+//		this.ccode = ccode;
+		this.source = source; // taskiaNumber
+		this.creatingUser = creatingUser;
+		this.personTitle = personTitle;
+		this.error_status = "Error: Duplicate Tazkira number";
+	}
+
 
 	
 	//*
@@ -449,6 +492,14 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 
 	public void setFormDate(Date formDate) {
 		this.formDate = formDate;
+	}	
+	
+	public Date getChangeDate() {
+		return changeDate;
+	}
+
+	public void setChangeDate(Date changeDate) {
+		this.changeDate = changeDate;
 	}
 
 	public String getFormType() {
@@ -710,7 +761,7 @@ public class CampaignFormDataIndexDto implements Serializable, Cloneable {
 				&& Objects.equals(rcode, other.rcode) && Objects.equals(region, other.region)
 				&& Objects.equals(source, other.source) && Objects.equals(uuid, other.uuid)
 //				&& Objects.equals(recordgroupuuid, other.recordgroupuuid)
-				&& Objects.equals(recordversion, other.recordversion);
+				&& Objects.equals(recordversion, other.recordversion) && Objects.equals(changeDate, other.changeDate);
 	}
 
 }

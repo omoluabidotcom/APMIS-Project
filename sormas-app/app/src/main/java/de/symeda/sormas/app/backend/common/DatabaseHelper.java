@@ -3273,7 +3273,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 					}
 
 
-					GenericRawResults<String[]> tableColumnsxx = getDao(User.class).queryRaw("pragma table_info(users)");
+					GenericRawResults<String[]> tableColumnsxx = getDao(User.class).queryRaw("pragma table_info(campaignformdata)");
 					int nameColumnIndexxx = Arrays.asList(tableColumnsxx.getColumnNames()).indexOf("name");
 					boolean columnUserFormAccessNotExistsx =
 							tableColumnsxx.getResults().stream().noneMatch(columnRowData -> "recordversion".equals(columnRowData[nameColumnIndexxx]));

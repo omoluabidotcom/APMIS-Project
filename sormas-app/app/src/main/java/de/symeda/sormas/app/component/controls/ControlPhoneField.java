@@ -52,11 +52,9 @@ import de.symeda.sormas.app.core.notification.NotificationHelper;
 public class ControlPhoneField extends ControlPropertyEditField<String> {
 
     // Views
-
     protected EditText input;
 
     // Attributes
-
     private boolean singleLine;
     private int maxLines;
     private int maxLength;
@@ -279,11 +277,6 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
     protected void initInput(boolean isIntegerFlag, boolean isRequired, boolean isRange, Integer minValue, Integer maxValue, Boolean isExpression, Boolean warnOnError) {
 
         input = (EditText) this.findViewById(R.id.text_input);
-        //if (getImeOptions() == EditorInfo.IME_NULL) {
-        //	setImeOptions(EditorInfo.IME_ACTION_DONE);
-        //}
-        //	input.setImeOptions(getImeOptions());
-        //input.setImeActionLabel(null, getImeOptions());
         input.setTextAlignment(getTextAlignment());
         if (getTextAlignment() == View.TEXT_ALIGNMENT_GRAVITY) {
             input.setGravity(getGravity());
@@ -305,13 +298,6 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
         }
 
         required = isRequired;
-/*
-		if (getMinLength() >= 0) {
-			input.setFilters(
-					new InputFilter[] {
-							new InputFilter.LengthFilter(getMinLength()) });
-		}
-*/
 
         CharSequence valx = input.getText();
         if (valx == null && required) {
@@ -349,7 +335,7 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
             @Override
             public void afterTextChanged(Editable editablex) {
 
-                System.out.println("yeboooooooooooooooooooooooooooooooooo "+editablex.toString());
+                System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx "+editablex.toString());
 
                 if (inverseBindingListener != null) {
                     inverseBindingListener.onChange();
@@ -373,13 +359,11 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
                 }
 
                 if(validatingHolder.length() > max || validatingHolder.length() < min) {
-//                    input.setError("Mobile Number cannot be less than " + min + " or greater than " + max);
                     setErrorIfEmptyRange();
                     enableErrorState("Mobile Number cannot be less than " + min + " or greater than " + max);
-//                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING,
-//                            "Mobile Number cannot be less than " + min + " or greater than " + max);
+                    input.setError("Mobile Number cannot be less than " + min + " or greater than " + max);
                 } else {
-                    System.out.println("tytytytytytytytytytytytyt");
+                    input.setError(null);
                 }
             }
         });
@@ -387,8 +371,6 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
         setUpOnEditorActionListener();
         setUpOnFocusChangeListener();
         initializeOnClickListener();
-
-
     }
 
     private void NumberNumericValueValidator(String errorMessage, String minValue, String maxValue) {
@@ -465,19 +447,6 @@ public class ControlPhoneField extends ControlPropertyEditField<String> {
     public static void setValue(ControlPhoneField view, String text) {
         view.setFieldValue(text);
     }
-
-/*
-    @BindingAdapter("value")
-    public static void setValue(ControlPhoneField view, String text, Boolean hasErrorNow) {
-        view.setFieldValue(text);
-
-        if (hasErrorNow) {
-            changeVisualState(VisualState.ERROR);
-        } else {
-            changeVisualState(VisualState.NORMAL);
-        }
-    }
-*/
 
     @BindingAdapter("value")
     public static void setValue(ControlPhoneField view, Integer integerValue) {

@@ -19,60 +19,80 @@
 
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Main Vertical Layout Container for Dynamic Multiselect -->
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/controlHalfMarginBottom">
 
         <LinearLayout
-            android:id="@+id/label_frame"
+            android:id="@+id/error_indicators_layout"
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:gravity="start"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/required_indicator"
+                style="@style/RequiredIndicatorStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/soft_required_indicator"
+                style="@style/SoftRequiredIndicatorStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/error_indicator"
+                style="@style/ErrorIndicatorStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/warning_indicator"
+                style="@style/WarningIndicatorStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+
+        <!-- First Horizontal Layout: Group Label Section -->
+        <LinearLayout
+            android:id="@+id/label_frame"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
 
             <TextView
                 android:id="@+id/label"
                 style="@style/ControlLabelStyle"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="60dp"
-                android:labelFor="@+id/checkboxes_frame"/>
-            <!-- 60dp margin makes sure indicators are always visible -->
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginStart="-60dp">
-
-                <TextView
-                    android:id="@+id/required_indicator"
-                    style="@style/RequiredIndicatorStyle"/>
-
-                <TextView
-                    android:id="@+id/soft_required_indicator"
-                    style="@style/SoftRequiredIndicatorStyle"/>
-
-                <TextView
-                    android:id="@+id/error_indicator"
-                    style="@style/ErrorIndicatorStyle"/>
-
-                <TextView
-                    android:id="@+id/warning_indicator"
-                    style="@style/WarningIndicatorStyle"/>
-
-            </LinearLayout>
+                android:layout_height="wrap_content"/>
 
         </LinearLayout>
 
+        <!-- Second Section: Dynamic Checkboxes Container -->
         <LinearLayout
+            android:id="@+id/dynamic_checkboxes_container"
             android:orientation="vertical"
-            android:id="@+id/checkboxes_frame"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipChildren="true"
-            android:layout_marginBottom="@dimen/controlHalfMarginBottom">
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <!-- Checkboxes will be added here programmatically -->
 
         </LinearLayout>
+
+        <!-- Third Horizontal Layout: Error Indicators -->
+
 
     </LinearLayout>
 

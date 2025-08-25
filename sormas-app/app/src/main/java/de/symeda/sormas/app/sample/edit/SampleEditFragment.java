@@ -315,7 +315,7 @@ public class SampleEditFragment extends BaseEditFragment<FragmentSampleEditLayou
 			}
 		} else {
 			contentBinding.sampleRequestedPathogenTestsTags.setVisibility(GONE);
-			contentBinding.sampleRequestedPathogenTests.removeItem(PathogenTestType.OTHER);
+//			contentBinding.sampleRequestedPathogenTests.removeItem(PathogenTestType.OTHER);
 			contentBinding.sampleRequestedAdditionalTestsTags.setVisibility(GONE);
 		}
 
