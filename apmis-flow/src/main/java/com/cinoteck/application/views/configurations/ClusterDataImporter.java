@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import com.cinoteck.application.UserProvider;
 import com.cinoteck.application.views.utils.importutils.DataImporter;
 import com.cinoteck.application.views.utils.importutils.ImportCellData;
@@ -90,9 +89,8 @@ public class ClusterDataImporter extends DataImporter {
 	Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 	private ValueSeparator csvSeparator;
 	File file_;
-    // Constructor and other methods...
+	// Constructor and other methods...
 
-    
 	// file_, true, userDto, campaignForm.getUuid(), campaignReferenceDto,
 	// ValueSeparator.COMMA
 	public ClusterDataImporter(File inputFile, boolean hasEntityClassRow, CommunityDto currentUser,
@@ -103,26 +101,25 @@ public class ClusterDataImporter extends DataImporter {
 
 		this.clusterFacade = FacadeProvider.getCommunityFacade();
 	}
+
 	public ValueSeparator getCsvSeparator() {
-        return csvSeparator;
-    }
+		return csvSeparator;
+	}
 
-	
-	  public List<String> extractColumnValues(String columnName) throws IOException {
-	        Set<String> columnValues = new HashSet<>();
+	public List<String> extractColumnValues(String columnName) throws IOException {
+		Set<String> columnValues = new HashSet<>();
 
-	        try (FileReader reader = new FileReader(inputFile);
-	             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withDelimiter(FacadeProvider.getConfigFacade().getCsvSeparator()))) {
-	            	for (CSVRecord csvRecord : csvParser) {
-		                columnValues.add(csvRecord.get(columnName));
-		            }
-	           
-	        }
+		try (FileReader reader = new FileReader(inputFile);
+				CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader()
+						.withDelimiter(FacadeProvider.getConfigFacade().getCsvSeparator()))) {
+			for (CSVRecord csvRecord : csvParser) {
+				columnValues.add(csvRecord.get(columnName));
+			}
 
-	        return new ArrayList<>(columnValues);
-	    }
+		}
 
-	
+		return new ArrayList<>(columnValues);
+	}
 
 	@Override
 	public void startImport(File file_, Consumer<StreamResource> addErrorReportToLayoutCallback,
@@ -146,15 +143,16 @@ public class ClusterDataImporter extends DataImporter {
 		for (int i = 0; i < entityProperties.length; i++) {
 			if (C_CODE.equalsIgnoreCase(entityProperties[i])) {
 				if (!DataHelper.isNullOrEmpty(values[i])) {
-					
+
 					Long externalIdValue = Long.parseLong(values[i]);
 					comuityExternalIdsInFile.add(externalIdValue);
 //					clusters = FacadeProvider.getCommunityFacade().get
-					
+
 				}
 			}
 		}
-		System.out.println(comuityExternalIdsInFile +"ttttttttttttttttTTTTTTTTTTTTT--------------000000000000000000000000000000000");
+		System.out.println(comuityExternalIdsInFile
+				+ "ttttttttttttttttTTTTTTTTTTTTT--------------000000000000000000000000000000000");
 		// Lets run some validations
 
 		RegionReferenceDto province = null;
@@ -167,7 +165,6 @@ public class ClusterDataImporter extends DataImporter {
 		String clusterName = "";
 		String floatStatus = "";
 		boolean activeStatus = false;
-
 
 		// Retrieve the region and district from the database or throw an error if more
 		// or less than one entry have been retrieved
@@ -304,8 +301,6 @@ public class ClusterDataImporter extends DataImporter {
 
 			if (CLUSTER_NAME.equalsIgnoreCase(entityProperties[i])) {
 
-//				System.out.println("1111111111111111111111111111111111111111111111111111111111111111111111");
-
 				if (DataHelper.isNullOrEmpty(values[i])) {
 					clusterName = null;
 					writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
@@ -333,7 +328,8 @@ public class ClusterDataImporter extends DataImporter {
 
 						} else {
 							if (clusterNameList.size() >= 0) {
-								 System.out.println(clusterName_ + "6666666666666666666666666666666666666666666666666666" + clusterName_);
+								System.out.println(clusterName_ + "6666666666666666666666666666666666666666666666666666"
+										+ clusterName_);
 
 								List<DistrictReferenceDto> existingDistricts = FacadeProvider.getDistrictFacade()
 										.getByExternalId(district_xt_id, false);
@@ -357,12 +353,12 @@ public class ClusterDataImporter extends DataImporter {
 									clusterNames.add(caption);
 								}
 								if (clusterNames.contains(values[i])) {
-
-									writeImportError(values,
-											new ImportErrorException(values[i], entityProperties[i]).getMessage()
-													+ " | Cluster Name exist ");
-
-									return ImportLineResult.ERROR;
+									clusterName = values[i];
+//									writeImportError(values,
+//											new ImportErrorException(values[i], entityProperties[i]).getMessage()
+//													+ " | Cluster Name exist ");
+//
+//									return ImportLineResult.ERROR;
 								} else {
 									clusterName = clusterName_;
 								}
@@ -372,23 +368,21 @@ public class ClusterDataImporter extends DataImporter {
 					}
 				}
 			}
-			
+
 			if ("Float_Status".equalsIgnoreCase(entityProperties[i])) {
 
 				if (DataHelper.isNullOrEmpty(values[i])) {
-					
 
-	
 					floatStatus = null;
 					writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
 							+ " | Float Status cannot be left empty");
 					return ImportLineResult.ERROR;
 
-
+				} else {
+					if (values[i].toString().equalsIgnoreCase("floating")
+							|| values[i].toString().equalsIgnoreCase("normal")) {
+						floatStatus = values[i];
 					} else {
-					if (values[i].toString().equalsIgnoreCase("floating") || values[i].toString().equalsIgnoreCase("normal")) {
-					floatStatus = values[i];
-					}else {
 						writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
 								+ " | Float Status can only be either Floating or Normal");
 						return ImportLineResult.ERROR;
@@ -396,23 +390,22 @@ public class ClusterDataImporter extends DataImporter {
 
 				}
 			}
-			
+
 			if ("Active_Status".equalsIgnoreCase(entityProperties[i])) {
 
-				if (DataHelper.isNullOrEmpty(values[i])) {		
+				if (DataHelper.isNullOrEmpty(values[i])) {
 					activeStatus = false;
-	
+
 					writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
 							+ " | Active Status cannot be left empty");
 					return ImportLineResult.ERROR;
 
-
-					} else {
+				} else {
 					if (values[i].toString().equalsIgnoreCase("Archived")) {
-					activeStatus = true;
-					}else if (values[i].toString().equalsIgnoreCase("Active")) {
-					activeStatus = false;	
-					}else {
+						activeStatus = true;
+					} else if (values[i].toString().equalsIgnoreCase("Active")) {
+						activeStatus = false;
+					} else {
 						writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
 								+ " | Active Status can only be either Active or Archived");
 						return ImportLineResult.ERROR;
@@ -420,9 +413,6 @@ public class ClusterDataImporter extends DataImporter {
 
 				}
 			}
-				
-
-			
 
 		}
 
@@ -450,13 +440,11 @@ public class ClusterDataImporter extends DataImporter {
 		final String finalFloatStatus = floatStatus;
 		final boolean finalActiveStatus = activeStatus;
 
-
-
 		List<CommunityDto> newUserLinetoSave = new ArrayList<>();
 
 		if (isOverWrite && isOverWriteEnabledCode) {
-			
-			if(clusters.size() != 0) {
+
+			if (clusters.size() != 0) {
 				CommunityDto newUserLine_ = FacadeProvider.getCommunityFacade().getByUuid(clusters.get(0).getUuid());
 				newUserLine_.setName(finalClustername);
 				newUserLine_.setRegion(finalRegion);
@@ -466,24 +454,24 @@ public class ClusterDataImporter extends DataImporter {
 				newUserLine_.setFloating(finalFloatStatus);
 				newUserLine_.setArchived(finalActiveStatus);// setFloating(finalFloatStatus);
 
-
-
 				boolean usersDataHasImportError = insertRowIntoData(values, entityClasses, entityPropertyPaths, false,
 						new Function<ImportCellData, Exception>() {
 
 							@Override
 							public Exception apply(ImportCellData cellData) {
-								System.out.println("++++++++++++++++111111111: " + cellData.getEntityPropertyPath()[0]);
+								System.out.println("++++++++++++++++111111111:ccc " + cellData.getEntityPropertyPath()[0]);
 
 								try {
 
 									if (CommunityDto.NAME.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
 										newUserLine_.setName(cellData.getValue());
 									}
-									if (CommunityDto.CLUSTER_NUMBER.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+									if (CommunityDto.CLUSTER_NUMBER
+											.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
 										newUserLine_.setClusterNumber(Integer.parseInt(cellData.getValue()));
 									}
-									if (CommunityDto.EXTERNAL_ID.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+									if (CommunityDto.EXTERNAL_ID
+											.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
 										newUserLine_.setExternalId(Long.parseLong(cellData.getValue()));
 									}
 									if (CommunityDto.REGION.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
@@ -501,39 +489,37 @@ public class ClusterDataImporter extends DataImporter {
 												.getByExternalId(externalId, false);
 										DistrictReferenceDto districtReferenceDto = areasz.get(0);
 										newUserLine_.setDistrict(districtReferenceDto);
-										
+
 //											newUserLine_.setArea(cellData.getValue());
 									}
-									
-									
-									/* PLEASE MAKE SURE TO REMOVE THIS SETTING OF FLOAT UNTIL WE GET A CLEAR DESCRIPTION ON WETHER 
-									 * IT SHOULD BE A COMPULSORY FIELD TO FILL WHEN UPLOADING CLUSTERS IN IMPORT --SEGUN
+
+									/*
+									 * PLEASE MAKE SURE TO REMOVE THIS SETTING OF FLOAT UNTIL WE GET A CLEAR
+									 * DESCRIPTION ON WETHER IT SHOULD BE A COMPULSORY FIELD TO FILL WHEN UPLOADING
+									 * CLUSTERS IN IMPORT --SEGUN
 									 * 
-									 * REPEAT THE PROCESS IN THE ELSE STATEMENT WHEN THIS HAS BEEN FIXED 
+									 * REPEAT THE PROCESS IN THE ELSE STATEMENT WHEN THIS HAS BEEN FIXED
 									 */
-									
+
 									if ("Float_Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
-										System.out.println(cellData.getValue() + "tttttttttttfloating cellData.getValue()cellData.getValue()");
+										System.out.println(cellData.getValue()
+												+ "Active_Statustttttttttttfloating cellData.getValue()cellData.getValue()");
 
 										newUserLine_.setFloating(cellData.getValue());
 
 //										newUserLine_.setName(cellData.getValue());
 									}
-									
-									
-									if ("Active_Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
-										System.out.println(cellData.getValue() + "tttttttttttfloating cellData.getValue()cellData.getValue()");
 
+									if ("Active_Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+										System.out.println(cellData.getValue()
+												+ "Active_Statustttttttttttfloating cellData.getValue()cellData.getValue()");
 										newUserLine_.setArchived(finalActiveStatus);
 
 //										newUserLine_.setName(cellData.getValue());
 									}
-									
 
 //									newUserLine_.setFloating("");
-									
-									
-									
+
 									newUserLinetoSave.add(newUserLine_);
 
 								} catch (NumberFormatException e) {
@@ -559,9 +545,9 @@ public class ClusterDataImporter extends DataImporter {
 				} else {
 					return ImportLineResult.ERROR;
 				}
-				
-			}else {
-				
+
+			} else {
+
 				CommunityDto newUserLine_ = CommunityDto.build();
 
 //				CommunityDto newUserLine_ = FacadeProvider.getCommunityFacade().getByUuid(clusters.get(0).getUuid());
@@ -585,10 +571,12 @@ public class ClusterDataImporter extends DataImporter {
 									if (CommunityDto.NAME.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
 										newUserLine_.setName(cellData.getValue());
 									}
-									if (CommunityDto.CLUSTER_NUMBER.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+									if (CommunityDto.CLUSTER_NUMBER
+											.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
 										newUserLine_.setClusterNumber(Integer.parseInt(cellData.getValue()));
 									}
-									if (CommunityDto.EXTERNAL_ID.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+									if (CommunityDto.EXTERNAL_ID
+											.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
 										newUserLine_.setExternalId(Long.parseLong(cellData.getValue()));
 									}
 									if (CommunityDto.REGION.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
@@ -608,28 +596,31 @@ public class ClusterDataImporter extends DataImporter {
 										newUserLine_.setDistrict(districtReferenceDto);
 //											newUserLine_.setArea(cellData.getValue());
 									}
-									
-									/* PLEASE MAKE SURE TO REMOVE THIS SETTING OF FLOAT UNTIL WE GET A CLEAR DESCRIPTION ON WETHER 
-									 * IT SHOULD BE A COMPULSORY FIELD TO FILL WHEN UPLOADING CLUSTERS IN IMPORT --SEGUN
+
+									/*
+									 * PLEASE MAKE SURE TO REMOVE THIS SETTING OF FLOAT UNTIL WE GET A CLEAR
+									 * DESCRIPTION ON WETHER IT SHOULD BE A COMPULSORY FIELD TO FILL WHEN UPLOADING
+									 * CLUSTERS IN IMPORT --SEGUN
 									 * 
-									 * REPEAT THE PROCESS IN THE IF STATEMENT WHEN THIS HAS BEEN FIXED 
+									 * REPEAT THE PROCESS IN THE IF STATEMENT WHEN THIS HAS BEEN FIXED
 									 */
-									if (CommunityDto.FLOATING_ATTRIBUTE.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
-										System.out.println(cellData.getValue() + "floating cellData.getValue()cellData.getValue()");
+									if (CommunityDto.FLOATING_ATTRIBUTE
+											.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+										System.out.println(cellData.getValue()
+												+ "floating cellData.getValue()cellData.getValue()");
 										newUserLine_.setFloating(cellData.getValue());
 
 //										newUserLine_.setName(cellData.getValue());
 									}
-									
+
 									if ("Active_Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
-										System.out.println(cellData.getValue() + "tttttttttttfloating cellData.getValue()cellData.getValue()");
+										System.out.println(cellData.getValue()
+												+ "tttttttttttfloating cellData.getValue()cellData.getValue()");
 
 										newUserLine_.setArchived(finalActiveStatus);
 
 //										newUserLine_.setName(cellData.getValue());
 									}
-									
-									
 
 									newUserLinetoSave.add(newUserLine_);
 
@@ -656,9 +647,8 @@ public class ClusterDataImporter extends DataImporter {
 				} else {
 					return ImportLineResult.ERROR;
 				}
-				
+
 			}
-		
 
 		} else {
 			CommunityDto newUserLine = CommunityDto.build();
@@ -706,30 +696,32 @@ public class ClusterDataImporter extends DataImporter {
 									newUserLine.setDistrict(districtReferenceDto);
 //										newUserLine.setArea(cellData.getValue());
 								}
-								
-								/* PLEASE MAKE SURE TO REMOVE THIS SETTING OF FLOAT UNTIL WE GET A CLEAR DESCRIPTION ON WETHER 
-								 * IT SHOULD BE A COMPULSORY FIELD TO FILL WHEN UPLOADING CLUSTERS IN IMPORT --SEGUN
+
+								/*
+								 * PLEASE MAKE SURE TO REMOVE THIS SETTING OF FLOAT UNTIL WE GET A CLEAR
+								 * DESCRIPTION ON WETHER IT SHOULD BE A COMPULSORY FIELD TO FILL WHEN UPLOADING
+								 * CLUSTERS IN IMPORT --SEGUN
 								 * 
-								 * REPEAT THE PROCESS IN THE ELSE STATEMENT WHEN THIS HAS BEEN FIXED 
+								 * REPEAT THE PROCESS IN THE ELSE STATEMENT WHEN THIS HAS BEEN FIXED
 								 */
-								if (CommunityDto.FLOATING_ATTRIBUTE.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
-									System.out.println(cellData.getValue() + "eeeeefloating cellData.getValue()cellData.getValue()");
+								if (CommunityDto.FLOATING_ATTRIBUTE
+										.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+									System.out.println(cellData.getValue()
+											+ "eeeeefloating cellData.getValue()cellData.getValue()");
 
 									newUserLine.setFloating(cellData.getValue());
 
 //									newUserLine_.setName(cellData.getValue());
 								}
-								
+
 								if ("Active_Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
-									System.out.println(cellData.getValue() + "tttttttttttfloating cellData.getValue()cellData.getValue()");
+									System.out.println(cellData.getValue()
+											+ "tttttttttttfloating cellData.getValue()cellData.getValue()");
 
 									newUserLine.setArchived(finalActiveStatus);
 
 //									newUserLine_.setName(cellData.getValue());
 								}
-								
-								
-								
 
 								newUserLinetoSave.add(newUserLine);
 

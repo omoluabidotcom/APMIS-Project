@@ -432,7 +432,9 @@ public class UserForm extends FormLayout {
 				} else if(jurisdictionLevel == JurisdictionLevel.DISTRICT && !userRoles.getValue().contains(UserRole.SURVEILLANCE_OFFICER)) {
 
 					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegion(e.getValue().getUuid());
-					System.out.println(" +++___________333333: ");
+					System.out.println(" +++___________333333: elseif ");
+					System.out.println(jurisdictionLevel  + " jurisdictionLevel == JurisdictionLevel.DISTRIC+++___________333333: elseif ");
+
 					if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
 						district.setItems(
 								FacadeProvider.getDistrictFacade().getAllActiveByRegionPashto(e.getValue().getUuid()));
@@ -450,10 +452,12 @@ public class UserForm extends FormLayout {
 					clusterNo.setVisible(false);
 
 					
-				}else {
+				} else if(jurisdictionLevel == JurisdictionLevel.REGION) {
 
 					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegion(e.getValue().getUuid());
-					System.out.println(" +++___________333333: ");
+					System.out.println(" +++___________333333: elseif ");
+					System.out.println(jurisdictionLevel  + " jurisdictionLevel == JurisdictionLevel.DISTRIC+++___________333333: elseif ");
+
 					if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
 						district.setItems(
 								FacadeProvider.getDistrictFacade().getAllActiveByRegionPashto(e.getValue().getUuid()));
@@ -468,6 +472,27 @@ public class UserForm extends FormLayout {
 					
 					districtMulti.setVisible(false);
 					district.setVisible(false);
+					clusterNo.setVisible(false);
+
+					
+				}else {
+
+					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegion(e.getValue().getUuid());
+					System.out.println(" +++___________333333: else ");
+					if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
+						district.setItems(
+								FacadeProvider.getDistrictFacade().getAllActiveByRegionPashto(e.getValue().getUuid()));
+					} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
+						district.setItems(
+								FacadeProvider.getDistrictFacade().getAllActiveByRegionDari(e.getValue().getUuid()));
+					} else {
+						district.setItems(districts);
+					}
+					
+					isDistrictMulti = false;
+					
+					districtMulti.setVisible(false);
+					district.setVisible(true);
 					clusterNo.setVisible(false);
 
 					

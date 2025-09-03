@@ -95,8 +95,7 @@ public abstract class ControlPropertyEditField<T> extends ControlPropertyField<T
 			try {
 				hint = a.getString(R.styleable.ControlPropertyEditField_hint);
 				required = a.getBoolean(R.styleable.ControlPropertyEditField_required, false);
-				softRequired = a.getBoolean(R.styleable.ControlPropertyEditField_required, false);
-				//ControlPropertyEditField_softRequired, false);
+				softRequired = a.getBoolean(R.styleable.ControlPropertyEditField_softRequired, false);//ControlPropertyEditField_softRequired, false);
 			} finally {
 				a.recycle();
 			}
@@ -195,11 +194,11 @@ public abstract class ControlPropertyEditField<T> extends ControlPropertyField<T
 
 	protected void showErrorNotificationx() {
 		//if (hasError && notificationContext != null && errorMessage != null) {
-			if (notificationContext instanceof AbstractDialog) {
-				NotificationHelper.showDialogNotification(notificationContext, NotificationType.ERROR, errorMessage);
-			} else {
-				NotificationHelper.showNotification(notificationContext, NotificationType.ERROR, errorMessage);
-			}
+		if (notificationContext instanceof AbstractDialog) {
+			NotificationHelper.showDialogNotification(notificationContext, NotificationType.ERROR, errorMessage);
+		} else {
+			NotificationHelper.showNotification(notificationContext, NotificationType.ERROR, errorMessage);
+		}
 		//}
 	}
 
@@ -257,33 +256,6 @@ public abstract class ControlPropertyEditField<T> extends ControlPropertyField<T
 	public boolean setErrorIfEmptyRange() {
 		return true;
 	}
-
-	public boolean setErrorIfValueNegative() {
-		if (!required || !isEnabled()) {
-			return false;
-		}
-
-		// 1. Check for empty or null value
-		if (getValue() == null ||
-				(this instanceof ControlTextEditField && ((String) getValue()).trim().isEmpty())) {
-			enableErrorState(R.string.validation_error_required);
-			return true;
-		}
-		try {
-			double number = Double.parseDouble(getValue().toString());
-			//			Check for negative number
-			if (number < 0) {
-				enableErrorState(R.string.validation_error_negative);
-				return true;
-			}
-		} catch (NumberFormatException e) {
-			// Value is not a valid number (e.g. symbols, letters, etc.)
-			enableErrorState(R.string.validation_error_info_pre_text);
-			return true;
-		}
-		return false;
-	}
-
 
 	public void setSoftRequired(boolean softRequired) {
 		if (labelSoftRequired != null) {
@@ -370,7 +342,7 @@ public abstract class ControlPropertyEditField<T> extends ControlPropertyField<T
 		setSoftRequired(softRequired);
 		setWarning(hasWarning);
 
-	//	System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ what is the error message "+errorMessage);
+		//	System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ what is the error message "+errorMessage);
 
 		if (labelRequired != null) {
 			labelRequired.setOnClickListener(new OnClickListener() {
@@ -457,7 +429,7 @@ public abstract class ControlPropertyEditField<T> extends ControlPropertyField<T
 
 		if (labelError != null) {
 			System.out.println("setting onclick for Error");
-		//	labelError.setVisibility(GONE);
+			//	labelError.setVisibility(GONE);
 			labelError.setOnClickListener(new OnClickListener() {
 
 
