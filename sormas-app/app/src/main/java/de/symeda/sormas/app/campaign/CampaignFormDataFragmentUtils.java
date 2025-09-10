@@ -1250,6 +1250,8 @@ public class CampaignFormDataFragmentUtils {
             Boolean isDecimalField,
             Boolean isRequired,
             String errorMsg) {
+
+        System.out.println(context+" --------------------- running decimal stage 1 : "+ isDecimalField);
         return new ControlDecimalEditField(context) {
 
             @Override
@@ -1286,9 +1288,22 @@ public class CampaignFormDataFragmentUtils {
             protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
                 super.inflateView(context, attrs, defStyle);
                 initLabel();
-                initLabelAndValidationListenersErrorMsg(errorMsg);
+                initLabelAndValidationListeners();
+//                initLabelAndValidationListenersErrorMsg(errorMsg);
                 setLiveValidationDisabled(true);
                 initInput(isDecimalField, isRequired, true, null, null, true, false);
+
+                String expr = campaignFormElement.getExpression();
+                if (expr != null) {
+                    String fieldId = campaignFormElement.getId();
+                    if (!expr.contains(fieldId)) {
+                        setEnabled(false);
+                        System.out.println("falseeeeeeeeeeeeeeeeeeeeeeeeeeee xxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+                    } else {
+                        setEnabled(true);
+                        System.out.println("trueeeeeeeeeeeeeeeeeeeeeeeeeeeee xxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+                    }
+                }
             }
         };
     }

@@ -644,7 +644,6 @@ public abstract class ControlPropertyField<T> extends LinearLayout {
 		"enabled" })
 	public static void setEnabled(ControlPropertyField field, Boolean enabled) {
 		boolean isEnabled = Boolean.TRUE.equals(enabled);
-
 		field.setEnabled(isEnabled);
 
 		if (!isEnabled) {
