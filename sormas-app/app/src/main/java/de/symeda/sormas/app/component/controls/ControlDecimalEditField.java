@@ -151,6 +151,7 @@ public class ControlDecimalEditField extends ControlPropertyEditField<Double> {
                         }
                     } else {
                         if (hasError) {
+                            System.out.println("onfocusedddddddddddddddddddddddd");
                             changeVisualState(VisualState.ERROR);
                         } else {
                             changeVisualState(VisualState.NORMAL);
@@ -222,6 +223,7 @@ public class ControlDecimalEditField extends ControlPropertyEditField<Double> {
         super.setEnabled(enabled); // this has to be called first
         input.setEnabled(enabled);
         label.setEnabled(enabled);
+        System.out.println("enableddddddddddddddd valueeeeeeeeeeeeeeeee " + enabled);
     }
 
     @Override
@@ -280,11 +282,11 @@ public class ControlDecimalEditField extends ControlPropertyEditField<Double> {
     protected void initInput(boolean isIntegerFlag, boolean isRequired, boolean isDecimal, Integer minValue, Integer maxValue, Boolean isExpression, Boolean warnOnError) {
 
         input = (EditText) this.findViewById(R.id.text_input);
-        //if (getImeOptions() == EditorInfo.IME_NULL) {
-        //	setImeOptions(EditorInfo.IME_ACTION_DONE);
-        //}
-        //	input.setImeOptions(getImeOptions());
-        //input.setImeActionLabel(null, getImeOptions());
+//        if (getImeOptions() == EditorInfo.IME_NULL) {
+//        	setImeOptions(EditorInfo.IME_ACTION_DONE);
+//        }
+//        	input.setImeOptions(getImeOptions());
+//        input.setImeActionLabel(null, getImeOptions());
         input.setTextAlignment(getTextAlignment());
         if (getTextAlignment() == View.TEXT_ALIGNMENT_GRAVITY) {
             input.setGravity(getGravity());
@@ -394,6 +396,18 @@ public class ControlDecimalEditField extends ControlPropertyEditField<Double> {
                         input.setError("Please enter a valid Decimal");
                         enableErrorState("Decimal not Valid!");
                     }
+                }
+            }
+        });
+
+        addValueChangedListener(new ValueChangeListener() {
+
+
+            @Override
+            public void onChange(ControlPropertyField field) {
+                System.out.println(isLiveValidationDisabled() + " java changes isLiveValidationDisabled()----------");
+                if (!isLiveValidationDisabled()) {
+                    ((ControlDecimalEditField) field).setErrorIfEmptyRange();
                 }
             }
         });
