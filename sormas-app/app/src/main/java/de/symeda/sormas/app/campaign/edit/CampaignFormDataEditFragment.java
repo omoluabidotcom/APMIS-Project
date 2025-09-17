@@ -74,6 +74,7 @@ import de.symeda.sormas.app.component.controls.ControlCheckBoxGroupField;
 import de.symeda.sormas.app.component.controls.ControlDateField;
 import de.symeda.sormas.app.component.controls.ControlDecimalEditField;
 import de.symeda.sormas.app.component.controls.ControlPhoneField;
+import de.symeda.sormas.app.component.controls.ControlPropertyEditField;
 import de.symeda.sormas.app.component.controls.ControlPropertyField;
 import de.symeda.sormas.app.component.controls.ControlSpinnerField;
 import de.symeda.sormas.app.component.controls.ControlSwitchField;
@@ -152,6 +153,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
     private Map<String, CountryDetails> mapvalue = new HashMap<>();
 
     boolean isSpinnerInitialized = false;
+
+    private ControlTextEditField errorSetterGlobal;
 
     public void addMapValue() {
 
@@ -1562,12 +1565,12 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     if (type == CampaignFormElementType.RANGE && campaignFormElement.getId().equalsIgnoreCase("LotNo")) {
                         initialLotNo = formValuesMap.get(campaignFormElement.getId());
                         lotChangedValue = formValuesMap.get(campaignFormElement.getId());
-
                         List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteriaa(criteria, 0, 100);
                         List<String> listLotNo = new ArrayList();
                         List<String> listLotClusterNo = new ArrayList();
-
+                        errorSetterGlobal = (ControlTextEditField) dynamicField;
                         dynamicField.addValueChangedListener(field -> {
+
                             if (field.getValue() != null && !field.getValue().toString().isEmpty()) {
                                 if (initialLotNo != null) {
                                     double initialLotNoValueHelper = Double.parseDouble(initialLotNo);
@@ -1632,11 +1635,15 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     if (!validateChecker) {
                                         validateChecker = true;
                                         showValidationError("Lot Cluster Number Already Exist for this Lot Number");
+                                        errorSetterGlobal.enableErrorState("Lot Cluster Number Already Exist for this Lot Number");
+                                        errorSetterGlobal.getInput().setError("Lot Cluster Number Already Exist for this Lot Number");
+                                    } else {
+                                        errorSetterGlobal.disableErrorState();
+                                        errorSetterGlobal.getInput().setError(null);
                                     }
                                 } else {
                                     System.out.println("Placeholder");
                                 }
-
                             }
                         });
                     }
@@ -1715,6 +1722,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     if (type == CampaignFormElementType.DROPDOWN && campaignFormElement.getId().equalsIgnoreCase("LotClusterNo")) {
                         initialLotClusterNo = formValuesMap.get(campaignFormElement.getId());
                         dynamicField.addValueChangedListener(field -> {
+                            ControlSpinnerField errorSetter = (ControlSpinnerField) dynamicField;
+                            ControlPropertyEditField errorSetterkyc = (ControlPropertyEditField) dynamicField;
 //                            criteria.setCommunity(record.getCommunity());
                             criteria.setCommunity(null);
                             List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteriaa(criteria, 0, 100);
@@ -1785,6 +1794,11 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     if (!validateChecker) {
                                         validateChecker = true;
                                         showValidationError("Lot Cluster Number Already Exist for this Lot Number");
+                                        errorSetter.enableErrorState("Lot Cluster Number Already Exist for this Lot Number");
+                                        errorSetterkyc.setValidationCallback(() -> { return true;});
+                                    } else {
+                                        errorSetter.disableErrorState();
+                                        errorSetterkyc.setValidationCallback(() -> { return false;});
                                     }
                                 } else {
                                     System.out.println("Placeholder");
@@ -1814,6 +1828,16 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             }
 
                         });
+
+//                        dynamicField.setValidationCallback(() -> {
+//                            boolean hasError = !lotClusterValid.get();
+//                            if (hasError) {
+//                                dynamicField.enableErrorState("Lot Cluster Number Already Exist for this Lot Number");
+//                            } else {
+//                                dynamicField.disableErrorState();
+//                            }
+//                            return hasError; // IMPORTANT: true => error; false => ok
+//                        });
                     } else {
                         dynamicField.addValueChangedListener(field -> {
                             final Boolean isRangeandExpressionx = finalIsRangeandExpression;
