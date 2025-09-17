@@ -1377,17 +1377,17 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                     if (type == CampaignFormElementType.NUMBER && campaignFormElement.getId().equalsIgnoreCase("villageCode")) {
                         dynamicField.addValueChangedListener(e->{
                             if (dynamicField.getValue().toString() != null && dynamicField.getValue().toString() != ""){
-                                    if (record != null && record.getCommunity() != null) {
+                                if (record != null && record.getCommunity() != null) {
 
 
-                                        if ( dynamicField.getValue().toString().length() == 3) {
-                                            String inputValue = e.getValue().toString();
-                                            if (inputValue.length() == 3) {
-                                                handleVillageCodeValueGeneration(inputValue, dynamicField);
-                                            }
+                                    if ( dynamicField.getValue().toString().length() == 3) {
+                                        String inputValue = e.getValue().toString();
+                                        if (inputValue.length() == 3) {
+                                            handleVillageCodeValueGeneration(inputValue, dynamicField);
                                         }
                                     }
-                        }
+                                }
+                            }
                         });
                     }
 

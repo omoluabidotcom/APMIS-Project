@@ -313,49 +313,49 @@ public class ControlTextEditField extends ControlPropertyEditField<String> {
             );
         }
 //// After setting LengthFilter
-//        InputFilter[] existing = input.getFilters();
-//        boolean isNumeric = (input.getInputType() & InputType.TYPE_CLASS_NUMBER) == InputType.TYPE_CLASS_NUMBER;
-//        boolean allowDecimal = (input.getInputType() & InputType.TYPE_NUMBER_FLAG_DECIMAL) != 0;
-//
-//        if (isNumeric) {
-//            InputFilter symbolBlocker = new InputFilter() {
-//                @Override
-//                public CharSequence filter(CharSequence source, int start, int end,
-//                                           Spanned dest, int dstart, int dend) {
-//                    if (start == end) return null;
-//
-//                    StringBuilder sb = new StringBuilder(dest);
-//                    sb.replace(dstart, dend, source.subSequence(start, end).toString());
-//                    String newText = sb.toString();
-//
-//                    if (newText.isEmpty()) return null;
-//
-//                    if (!allowDecimal) {
-//                        if (!newText.matches("\\d*")) {
-//                            return "";
-//                        }
-//                        if (newText.length() > 1 && newText.startsWith("0")) {
-//                            return "";
-//                        }
-//                        return null;
-//                    }
-//                    // Decimal: digits, optional single dot, optional digits; no lone dots
-//                    // Valid examples: "1", "0", "12.", "12.3", "0.45"
-//                    // Invalid: ".", "..", "1..2", "1.2.3", "abc"
-//                    if (!newText.matches("\\d+(?:\\.\\d*)?")) {
-//                        return "";
-//                    }
-//                    //Reject "09", "0123", etc. but allow "0.xxx"
-//                    if (newText.length() > 1 && newText.startsWith("0") && !newText.startsWith("0.")) {
-//                        return "";
-//                    }
-//                    return null;                }
-//            };
-//            InputFilter[] merged = new InputFilter[existing.length + 1];
-//            System.arraycopy(existing, 0, merged, 0, existing.length);
-//            merged[existing.length] = symbolBlocker;
-//            input.setFilters(merged);
-//        }
+        InputFilter[] existing = input.getFilters();
+        boolean isNumeric = (input.getInputType() & InputType.TYPE_CLASS_NUMBER) == InputType.TYPE_CLASS_NUMBER;
+        boolean allowDecimal = (input.getInputType() & InputType.TYPE_NUMBER_FLAG_DECIMAL) != 0;
+
+        if (isNumeric) {
+            InputFilter symbolBlocker = new InputFilter() {
+                @Override
+                public CharSequence filter(CharSequence source, int start, int end,
+                                           Spanned dest, int dstart, int dend) {
+                    if (start == end) return null;
+
+                    StringBuilder sb = new StringBuilder(dest);
+                    sb.replace(dstart, dend, source.subSequence(start, end).toString());
+                    String newText = sb.toString();
+
+                    if (newText.isEmpty()) return null;
+
+                    if (!allowDecimal) {
+                        if (!newText.matches("\\d*")) {
+                            return "";
+                        }
+                        if (newText.length() > 1 && newText.startsWith("0")) {
+                            return "";
+                        }
+                        return null;
+                    }
+                    // Decimal: digits, optional single dot, optional digits; no lone dots
+                    // Valid examples: "1", "0", "12.", "12.3", "0.45"
+                    // Invalid: ".", "..", "1..2", "1.2.3", "abc"
+                    if (!newText.matches("\\d+(?:\\.\\d*)?")) {
+                        return "";
+                    }
+                    //Reject "09", "0123", etc. but allow "0.xxx"
+                    if (newText.length() > 1 && newText.startsWith("0") && !newText.startsWith("0.")) {
+                        return "";
+                    }
+                    return null;                }
+            };
+            InputFilter[] merged = new InputFilter[existing.length + 1];
+            System.arraycopy(existing, 0, merged, 0, existing.length);
+            merged[existing.length] = symbolBlocker;
+            input.setFilters(merged);
+        }
         required = isRequired;
 
         CharSequence valx = input.getText();
