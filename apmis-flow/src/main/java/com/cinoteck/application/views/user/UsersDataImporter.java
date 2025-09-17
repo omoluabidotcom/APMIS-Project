@@ -376,7 +376,7 @@ this.file = file;
 			newUserLine.setDistrict(finalDistrict);
 			newUserLine.setCommunity(finalCommunity);
 			newUserLine.setUserName(finalUsername);
-			//define logic to accept other userroles except for, mobile user
+			newUserLine.setUsertype(currentUser.getUsertype());			//define logic to accept other userroles except for, mobile user
 			userRole.add(UserRole.REST_USER);
 			userRole.add(UserRole.COMMUNITY_OFFICER);
 			

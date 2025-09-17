@@ -869,4 +869,12 @@ String onChangeData = "";
     public void setMinLength(int minLength) {
         this.minLength = minLength;
     }
+
+    public EditText getInput() {
+        return input;
+    }
+
+    public void setInput(EditText input) {
+        this.input = input;
+    }
 }
