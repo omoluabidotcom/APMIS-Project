@@ -316,7 +316,7 @@ public class ControlTextReadField extends ControlPropertyField<String> {
 			}
 		}
 		System.out.println(stringValue + " cleanStringValuecleanStringValuecleanStringValue = " + cleanStringValue);
-		setValue(textField, cleanStringValue, appendValue, valueFormat, defaultValue, stringValue);
+		setValue(textField, stringValue, appendValue, valueFormat, defaultValue, stringValue);
 	}
 
 	@BindingAdapter(value = {
