@@ -181,19 +181,24 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
 //        formValues.forEach(campaignFormDataEntry ->
         for(CampaignFormDataEntry campaignFormDataEntry : formValues) {
-
             if (campaignFormDataEntry.getId() != null && campaignFormDataEntry.getValue() != null) {
                 String value = campaignFormDataEntry.getValue().toString();
-                try {
-                    double num = Double.parseDouble(value);
-                    if (num == Math.floor(num)) { // means it's a whole number
-                        value = String.valueOf((int) num); // convert to int string
-                    } else {
-                        value = String.valueOf(num); // keep original decimal
-                    }
-                } catch (NumberFormatException e) {
-                    // not a number, leave value as is
-                }
+               if(campaignFormDataEntry.getId().toString().equalsIgnoreCase("villagecode")
+               || campaignFormDataEntry.getId().toString().equalsIgnoreCase("tazkiraNo")
+               || campaignFormDataEntry.getId().toString().equalsIgnoreCase("phone")){
+                   System.out.println("Village code Value detected -------");
+               }else{
+                   try {
+                       double num = Double.parseDouble(value);
+                       if (num == Math.floor(num)) { // means it's a whole number
+                           value = String.valueOf((int) num); // convert to int string
+                       } else {
+                           value = String.valueOf(num); // keep original decimal
+                       }
+                   } catch (NumberFormatException e) {
+                       // not a number, leave value as is
+                   }
+               }
                 campaignFormDataEntry.setValue(value);
                 filledFormValues.add(campaignFormDataEntry);
                 if (campaignFormDataEntry.getId().equalsIgnoreCase("LotNo")) {
