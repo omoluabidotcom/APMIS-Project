@@ -130,6 +130,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
     private CampaignFormDataCriteria criteria = new CampaignFormDataCriteria();
     private String initialLotNo = "";
     private String lotChangedValue = "";
+    private String lotClusterNoChangedValue = "";
     private String initialLotClusterNo = "";
     private boolean lotNoChanged = false;
     private boolean lotClusterNoChanged = false;
@@ -1565,18 +1566,23 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     if (type == CampaignFormElementType.RANGE && campaignFormElement.getId().equalsIgnoreCase("LotNo")) {
                         initialLotNo = formValuesMap.get(campaignFormElement.getId());
                         lotChangedValue = formValuesMap.get(campaignFormElement.getId());
+
+                        errorSetterGlobal = (ControlTextEditField) dynamicField;
+                        criteria.setCommunity(null);
                         List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteriaa(criteria, 0, 100);
                         List<String> listLotNo = new ArrayList();
                         List<String> listLotClusterNo = new ArrayList();
-                        errorSetterGlobal = (ControlTextEditField) dynamicField;
+
                         dynamicField.addValueChangedListener(field -> {
 
                             if (field.getValue() != null && !field.getValue().toString().isEmpty()) {
-                                if (initialLotNo != null) {
+                                if (initialLotNo != null  && !initialLotNo.isEmpty()) {
                                     double initialLotNoValueHelper = Double.parseDouble(initialLotNo);
                                     Long initialLotNoValueHelperUsed = (long) initialLotNoValueHelper;
-                                    if ((Long.parseLong(field.getValue().toString()) -
-                                            initialLotNoValueHelperUsed != 0)) {
+                                    if ((Long.parseLong(field.getValue().toString()) - Long.parseLong(initialLotNo.toString()) != 0)
+                                        // (Long.parseLong(field.getValue().toString()) -
+                                        //     initialLotNoValueHelperUsed != 0)
+                                    ) {
                                         lotNoChanged = true;
                                         lotChangedValue = field.getValue().toString();
                                     } else {
@@ -1590,7 +1596,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     lotNo.setValue(lotChangedValue);
                                     CampaignFormDataEntry lotClusterNo = new CampaignFormDataEntry();
                                     lotClusterNo.setId("LotClusterNo");
-                                    lotClusterNo.setValue(field.getValue().toString());
+                                    lotClusterNo.setValue(lotClusterNoChangedValue);
                                     if (lotchecker.size() > 0) {
                                         for (CampaignFormData campaignFormDataData : lotchecker) {
                                             List<CampaignFormDataEntry> lotOwnSec = campaignFormDataData.getFormValues();
@@ -1598,7 +1604,6 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                             for (CampaignFormDataEntry campaignFormDataEntry : lotOwnSec) {
                                                 if (campaignFormDataEntry.getId().equalsIgnoreCase(lotNo.getId().toString())) {
                                                     listLotNo.add(campaignFormDataEntry.getValue().toString());
-                                                    ;
                                                 }
                                                 if (campaignFormDataEntry.getId().equalsIgnoreCase(lotClusterNo.getId().toString())) {
                                                     listLotClusterNo.add(campaignFormDataEntry.getValue().toString());
@@ -1612,6 +1617,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                         if (listLotNo.size() > 0) {
                                             double lotChangedValueHelper = Double.parseDouble(lotChangedValue);
                                             Long lotChangedValueHelperUsed = (long) lotChangedValueHelper;
+
                                             double initialLotNoValueHelper = Double.parseDouble(initialLotNo);
                                             Long initialLotNoValueHelperUsed = (long) initialLotNoValueHelper;
 
@@ -1636,13 +1642,11 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                         validateChecker = true;
                                         showValidationError("Lot Cluster Number Already Exist for this Lot Number");
                                         errorSetterGlobal.enableErrorState("Lot Cluster Number Already Exist for this Lot Number");
-                                        errorSetterGlobal.getInput().setError("Lot Cluster Number Already Exist for this Lot Number");
+                                        errorSetterGlobal.setValidationCallback(() -> { return true;});
                                     } else {
                                         errorSetterGlobal.disableErrorState();
-                                        errorSetterGlobal.getInput().setError(null);
+                                        errorSetterGlobal.setValidationCallback(() -> { return false;});
                                     }
-                                } else {
-                                    System.out.println("Placeholder");
                                 }
                             }
                         });
@@ -1721,6 +1725,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                     if (type == CampaignFormElementType.DROPDOWN && campaignFormElement.getId().equalsIgnoreCase("LotClusterNo")) {
                         initialLotClusterNo = formValuesMap.get(campaignFormElement.getId());
+                        lotClusterNoChangedValue = formValuesMap.get(campaignFormElement.getId());
                         dynamicField.addValueChangedListener(field -> {
                             ControlSpinnerField errorSetter = (ControlSpinnerField) dynamicField;
                             ControlPropertyEditField errorSetterkyc = (ControlPropertyEditField) dynamicField;
@@ -1736,6 +1741,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 if (initialLotClusterNo != null && !initialLotClusterNo.isEmpty()) {
                                     if ((Long.parseLong(field.getValue().toString()) - Long.parseLong(initialLotClusterNo.toString()) != 0)) {
                                         lotClusterNoChanged = true;
+                                        lotClusterNoChangedValue = field.getValue().toString();
                                     }
                                 } else {
 //                                    if ((Long.parseLong(field.getValue().toString()) - Long.parseLong(initialLotClusterNo.toString()) != 0)) {
@@ -1800,8 +1806,6 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                         errorSetter.disableErrorState();
                                         errorSetterkyc.setValidationCallback(() -> { return false;});
                                     }
-                                } else {
-                                    System.out.println("Placeholder");
                                 }
                             }
                             final Boolean isRangeandExpressionx = finalIsRangeandExpression;
