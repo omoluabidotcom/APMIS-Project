@@ -21,6 +21,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -39,8 +40,10 @@ import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.SormasApplication;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
+import de.symeda.sormas.app.backend.device.DeviceInfo;
 import de.symeda.sormas.app.backend.user.User;
 import de.symeda.sormas.app.core.NotificationContext;
+import de.symeda.sormas.app.core.device.DeviceInfoService;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
 import de.symeda.sormas.app.core.notification.NotificationType;
 import de.symeda.sormas.app.databinding.ActivityLoginLayoutBinding;
@@ -233,6 +236,7 @@ public class LoginActivity extends BaseLocalizedActivity implements ActivityComp
 								setNewLocale(this, ConfigProvider.getUser().getLanguage());
 							}
 							openLandingActivity();
+							collectAndSaveDeviceInfo();
 						} else {
 							binding.signInLayout.setVisibility(View.VISIBLE);
 						}
@@ -256,6 +260,8 @@ public class LoginActivity extends BaseLocalizedActivity implements ActivityComp
 					System.out.println(">>>>>>>>>trackkk no neeed to syn++++++++c>>>>>>2>>>>>>>>>>>>>>>xxxxxx");
 
 					openLandingActivity();
+					collectAndSaveDeviceInfo();
+
 				}
 			} else {
 //				System.out.println(">>>>>>>trackkk am unable to login>>>>>>>3>>>>>>>>>>>>>>>>"+ConfigProvider.getUser().getLanguage());
@@ -270,6 +276,8 @@ public class LoginActivity extends BaseLocalizedActivity implements ActivityComp
 						setNewLocale(this, ConfigProvider.getUser().getLanguage());
 					}
 					openLandingActivity();
+					collectAndSaveDeviceInfo();
+
 				} else {
 					binding.signInLayout.setVisibility(View.VISIBLE);
 				}
@@ -281,6 +289,21 @@ public class LoginActivity extends BaseLocalizedActivity implements ActivityComp
 		((SormasApplication) getApplication()).getFirebaseAnalytics().setUserId(ConfigProvider.getUser().getUuid());
 		FirebaseCrashlytics.getInstance().setUserId(ConfigProvider.getUser().getUuid());
 	}
+	private void collectAndSaveDeviceInfo() {
+		try {
+			User user = ConfigProvider.getUser();
+			if (user != null) {
+				DeviceInfoService deviceInfoService = new DeviceInfoService(this);
+				DeviceInfo deviceInfo = deviceInfoService.collectDeviceInfo(user);
+				deviceInfoService.saveDeviceInfo(deviceInfo);
+
+				Log.i("DeviceInfo----", "Device information collected and saved for user: " + user.getUserName());
+			}
+		} catch (Exception e) {
+			Log.e("DeviceInfo", "Error collecting device information", e);
+		}
+	}
+
 
 	private void openLandingActivity() {
 

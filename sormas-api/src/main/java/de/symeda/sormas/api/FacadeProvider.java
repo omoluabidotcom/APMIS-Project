@@ -40,6 +40,7 @@ import de.symeda.sormas.api.clinicalcourse.ClinicalVisitFacade;
 import de.symeda.sormas.api.contact.ContactFacade;
 import de.symeda.sormas.api.customizableenum.CustomizableEnumFacade;
 import de.symeda.sormas.api.dashboard.DashboardFacade;
+import de.symeda.sormas.api.devicemanager.DeviceManagerFacade;
 import de.symeda.sormas.api.disease.DiseaseConfigurationFacade;
 import de.symeda.sormas.api.docgeneneration.DocumentTemplateFacade;
 import de.symeda.sormas.api.docgeneneration.EventDocumentFacade;
@@ -525,6 +526,10 @@ public class FacadeProvider {
 	
 	public static CampaignFormMetaRegionFacade getCampaignFormMetaRegionFacade() {
 		return get().lookupEjbRemote(CampaignFormMetaRegionFacade.class);
+	}
+	
+	public static DeviceManagerFacade getDeviceManagerFacade() {
+		return get().lookupEjbRemote(DeviceManagerFacade.class);
 	}
 
 	@SuppressWarnings("unchecked")

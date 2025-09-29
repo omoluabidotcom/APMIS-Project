@@ -11339,6 +11339,39 @@ INSERT INTO schema_version (version_number, comment) VALUES (486, 'Updating FLW 
 
 
 
+CREATE TABLE public.device_manager (
+	id int8 NOT NULL,
+	uuid varchar(255) NOT NULL,
+	device_model varchar(100) NOT NULL,
+	device_brand varchar(50) NOT NULL,
+	device_serial varchar(100) NULL,
+	android_version varchar(20) NOT NULL,
+	user_name varchar(100) NULL,
+	user_location varchar(100) NULL,
+	user_id int8 NULL,
+	apk_version varchar(20) NOT NULL,
+	total_int_storage int8 NULL,
+	free_int_storage int8 NULL,
+	total_ext_storage int8 NULL,
+	free_ext_storage int8 NULL,
+	ram_storage int8 NULL,
+	battery_level int4 NULL,
+	charging_status bool DEFAULT false NULL,
+	battery_status varchar(20) DEFAULT 'UNKNOWN'::character varying NULL,
+	wifi_connected bool DEFAULT false NULL,
+	network_strength int4 NULL,
+	creationdate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	changedate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	device_id varchar(255) NULL,
+	CONSTRAINT chk_battery_level CHECK (((battery_level >= 0) AND (battery_level <= 100))),
+	CONSTRAINT chk_network_strength CHECK (((network_strength >= 0) AND (network_strength <= 5))),
+	CONSTRAINT device_manager_battery_level_check CHECK (((battery_level >= 0) AND (battery_level <= 100))),
+	CONSTRAINT device_manager_network_strength_check CHECK (((network_strength >= 0) AND (network_strength <= 5))),
+	CONSTRAINT device_manager_pkey PRIMARY KEY (id),
+	CONSTRAINT device_manager_uuid_key UNIQUE (uuid)
+);
+
+INSERT INTO schema_version (version_number, comment) VALUES (487, 'Implementing Device Management Table and Feature');
 
 
 
