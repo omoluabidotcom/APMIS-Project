@@ -129,6 +129,7 @@ public interface Captions {
 	String apmisVersionNumber = "apmisVersionNumber";
 	String releaseDate = "releaseDate";
 	String support = "support";
+	String deviceManagement = "deviceManagement";
 	String userProfile = "userProfile";
 	String upload = "upload";
 	String overridaExistingEntriesWithImportedData = "overridaExistingEntriesWithImportedData";

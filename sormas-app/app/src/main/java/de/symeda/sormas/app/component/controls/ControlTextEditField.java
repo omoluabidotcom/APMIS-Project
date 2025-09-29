@@ -533,7 +533,6 @@ String onChangeData = "";
                         }else if (beforeData.length() > 0 &&  onChangeData.length() > 0) {
                             try {
                                 Integer.parseInt(text);
-                                // ✅ If parsing works, clear error
                                 input.setError(null);
                                 disableErrorState();
                             } catch (NumberFormatException eX) {
@@ -717,21 +716,7 @@ String onChangeData = "";
             view.setFieldValue("");
             return;
         }else{
-            try {
-                double num = Double.parseDouble(text);
-                if (num == Math.floor(num)) {
-                    // Whole number, no decimals
-                    text = String.valueOf((int) num);
-                } else {
-                    // Show with 2 decimal places
-                    text = String.format("%.2f", num);
-                }
-            } catch (NumberFormatException e) {
-                // If not a number, leave as-is
-            }
             view.setFieldValue(text);
-            return;
-
         }
     }
 

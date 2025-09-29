@@ -9,7 +9,7 @@ import com.vaadin.flow.component.notification.Notification;
 
 @Tag("onUserInteraction")
 public class SessionTimeout extends Component {
-    private static final int SESSION_TIMEOUT = 30; // 10 minutes in seconds
+    private static final int SESSION_TIMEOUT = 1800; // 10 minutes in seconds
     private long lastInteractionTime;
     private Dialog timeoutDialog;
 

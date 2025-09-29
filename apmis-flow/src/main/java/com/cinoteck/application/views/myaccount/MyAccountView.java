@@ -90,6 +90,10 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 	private int max = 0;
 	DialingCodeDto dialingCodeDto = new DialingCodeDto();
 	String userDefaultEmail = userProvider.getUser().getUserEmail();
+	
+	Button editPersonalInfo = new Button();
+	Button cancelUpdatePersonalInfo = new Button();
+	Button updatePersonalInfo = new Button();
 
 	public MyAccountView() {
 
@@ -155,6 +159,8 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		} else {
 			emailAddresss.setValue(currentUser.getUserEmail());
 		}
+		
+	
 		emailAddresss.setReadOnly(true);
 		binder.forField(emailAddresss).asRequired(I18nProperties.getString(Strings.emailAddressRequired))
 //				.bind(UserDto::getUserEmail, UserDto::setUserEmail);
@@ -183,7 +189,7 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		TextField positionn = new TextField();
 		positionn.setLabel(I18nProperties.getCaption(Captions.User_userPosition));
 
-		if (currentUser.getPhone() == null) {
+		if (currentUser.getUserPosition() == null) {
 			positionn.setPlaceholder(I18nProperties.getCaption(Captions.User_userPosition));
 		} else {
 			positionn.setValue(currentUser.getUserPosition());
@@ -205,9 +211,7 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		dataVieww.getStyle().set("margin-left", "20px");
 		dataVieww.getStyle().set("margin-right", "20px");
 
-		Button editPersonalInfo = new Button();
-		Button cancelUpdatePersonalInfo = new Button();
-		Button updatePersonalInfo = new Button();
+		
 		ComboBox<Language> languagee = new ComboBox<>(I18nProperties.getCaption(Captions.language));
 
 		editPersonalInfo.setText("Edit Personal Information");
@@ -229,9 +233,7 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 							.getCountryByCode(countryCodeCombo.getValue());
 					break;
 				}
-			}
-			
-//			
+			}	
 	
 		
 			countryCodeCombo.addValueChangeListener(listener -> {
@@ -294,117 +296,86 @@ public class MyAccountView extends VerticalLayout implements RouterLayout {
 		updatePersonalInfo.setText("Update Personal Information");
 		updatePersonalInfo.setVisible(false);
 		updatePersonalInfo.addClickListener(e -> {
+		    try {
+		        String userDefaultEmail = userProvider.getUser().getUserEmail() != null
+		                ? userProvider.getUser().getUserEmail()
+		                : "";
 
-			try {
-				String userDefaultEmail = userProvider.getUser().getUserEmail();
-				String userDefaultPhone= userProvider.getUser().getPhone();
+		        String userDefaultPhone = userProvider.getUser().getPhone() != null
+		                ? userProvider.getUser().getPhone()
+		                : "";
 
+		        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
 
-				String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+		        // --- Email validation ---
+		        if (!userDefaultEmail.equalsIgnoreCase(emailAddresss.getValue())) {
+		            if (emailAddresss.getValue().matches(emailRegex)) {
+		                if (!validateEmail(emailAddresss.getValue())) {
+		                    BackDropErrorNotification.show("Email Address Exists.");
+		                    return;
+		                }
+		            } else {
+		                BackDropErrorNotification.show("Email Address is not valid.");
+		                return;
+		            }
+		        }
 
-				if (userDefaultEmail.equalsIgnoreCase(emailAddresss.getValue())) {	
-					
+		        // --- Phone validation ---
+		        if (!userDefaultPhone.equalsIgnoreCase(phoneNumberr.getValue())) {
+		            if (!validatePhone(phoneNumberr.getValue())) {
+		                BackDropErrorNotification.show("Phone Number is Invalid.");
+		                return;
+		            }
+		        }
 
-				} else {
-					if (emailAddresss.getValue().matches(emailRegex)) {
-						if (!validateEmail(emailAddresss.getValue())) {
-							
-//							createNotification("Email Address Exists.");
-//							Notification.show("Email Address Exists.");
-//							
-							BackDropErrorNotification.show("Email Address Exists.");
-							return;
+		        // --- Save user ---
+		        try {
+		            UserDto currentUserToSave = FacadeProvider.getUserFacade().getCurrentUser();
+		            if (languagee.getValue() != null) {
+		                currentUserToSave.setFirstName(firstnamee.getValue());
+		                currentUserToSave.setLastName(lastnamee.getValue());
+		                currentUserToSave.setUserEmail(emailAddresss.getValue());
+		                currentUserToSave.setPhone(phoneNumberr.getValue());
 
-						}
-					} else {
-						
-//						Notification  errorNotif =  new Notification();
-//						errorNotif =  createNotification("Email Address Exists.");
-//						errorNotif.show("Email Address is not valid.", 0, Notification.Position.MIDDLE);
-						BackDropErrorNotification.show("Email Address is not valid.");
+		                FacadeProvider.getUserFacade().saveUser(currentUserToSave);
 
-						return;
-					}
+		            } else {
+		                BackDropErrorNotification.show(I18nProperties.getString(Strings.choosePreferredLanguage));
+		            }
 
-				}
-				
-				if(userDefaultPhone.equalsIgnoreCase(phoneNumberr.getValue())) {
-					
-				}else {
-					if (!validatePhone(phoneNumberr.getValue())) {
-						
-						BackDropErrorNotification.show("Phone Number is Invalid.");
+		        } catch (Exception exception) {
+		            BackDropErrorNotification.show(
+		                    I18nProperties.getString("Error Updating Personal Information, Please contact Administrator..................................................."));
+		        } finally {
+		            try {
+		                BackDropSuccessNotification.show(I18nProperties.getString("Profile updated successfully...................................................."));
+		            } finally {
+		                UserDto currentUserx = FacadeProvider.getUserFacade().getCurrentUser();
+		                firstnamee.clear();
+		                firstnamee.setValue(currentUserx.getFirstName());
+		                lastnamee.clear();
+		                lastnamee.setValue(currentUserx.getLastName());
+		                emailAddresss.clear();
+		                emailAddresss.setValue(currentUserx.getUserEmail());
+		                phoneNumberr.clear();
+		                phoneNumberr.setValue(currentUserx.getPhone());
+		                countryCodeCombo.setVisible(false);
 
-//						Notification.show("Phone Number is Invalid.");
-						return;
-					}
-				}
+		                emailAddresss.setReadOnly(true);
+		                phoneNumberr.setReadOnly(true);
 
+		                editPersonalInfo.setVisible(true);
+		                cancelUpdatePersonalInfo.setVisible(false);
+		                updatePersonalInfo.setVisible(false);
+		            }
+		        }
 
-
-		
-				try {
-					UserDto currentUserToSave = FacadeProvider.getUserFacade().getCurrentUser();
-					if (languagee.getValue() != null) {
-						currentUserToSave.setFirstName(firstnamee.getValue());
-						currentUserToSave.setLastName(lastnamee.getValue());
-						currentUserToSave.setUserEmail(emailAddresss.getValue());
-						currentUserToSave.setPhone(phoneNumberr.getValue());
-
-						FacadeProvider.getUserFacade().saveUser(currentUserToSave);
-
-					} else {
-						
-						BackDropErrorNotification.show(I18nProperties.getString(Strings.choosePreferredLanguage));
-
-
-//						Notification.show(
-//								I18nProperties.getString(Strings.choosePreferredLanguage) + languagee.isInvalid());
-					}
-
-				} catch (Exception exception) {
-					
-					BackDropErrorNotification.show(I18nProperties.getString("Error Updating Personal Information, Please contact Administrator"));
-
-//					Notification.show(I18nProperties
-//							.getString("Error Updating Personal Information, Please contact Administrator"));
-
-				} finally {
-					
-					try {
-						
-						BackDropSuccessNotification.show(I18nProperties.getString("Profile updated successfully."));
-
-					}finally {
-						
-						UserDto currentUserx = FacadeProvider.getUserFacade().getCurrentUser();
-						firstnamee.clear();
-						firstnamee.setValue(currentUserx.getFirstName());
-						lastnamee.clear();
-						lastnamee.setValue(currentUserx.getLastName());
-						emailAddresss.clear();
-						emailAddresss.setValue(currentUserx.getUserEmail());
-						phoneNumberr.clear();
-						phoneNumberr.setValue(currentUserx.getPhone());
-						countryCodeCombo.setVisible(false);
-						
-						emailAddresss.setReadOnly(true);
-						phoneNumberr.setReadOnly(true);
-
-						editPersonalInfo.setVisible(true);
-						cancelUpdatePersonalInfo.setVisible(false);
-						updatePersonalInfo.setVisible(false);
-					}
-			
-				}
-				
-				
-
-			} catch (Exception exception) {
-
-			}
-			
+		    } catch (Exception exception) {
+		        BackDropErrorNotification.show(
+	                    I18nProperties.getString("Error Updating Personal Information, Please contact Administrator.........................................."));
+	        		    }
 		});
+
 
 		Div fieldInfoo = new Div();
 
