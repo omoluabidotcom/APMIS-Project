@@ -127,6 +127,7 @@ public final class RetroProvider {
 	private CampaignFormDataFacadeRetro campaignFormDataFacadeRetro;
 	private FeatureConfigurationFacadeRetro featureConfigurationFacadeRetro;
 	private AggregateReportFacadeRetro aggregateReportFacadeRetro;
+	private DeviceInfoFacadeRetro deviceInfoFacadeRetro;
 
 	private RetroProvider(Context context) throws ServerConnectionException, ServerCommunicationException, ApiVersionException {
 
@@ -1044,6 +1045,19 @@ System.out.println(isConnected() + "connecting +++++++++"+connecting);
 			}
 		}
 		return instance.aggregateReportFacadeRetro;
+	}
+
+	public static DeviceInfoFacadeRetro getDeviceInfoFacadeRetro() throws NoConnectionException {
+		if (instance == null)
+			throw new NoConnectionException();
+		if (instance.deviceInfoFacadeRetro == null) {
+			synchronized ((RetroProvider.class)) {
+				if (instance.deviceInfoFacadeRetro == null) {
+						instance.deviceInfoFacadeRetro = instance.retrofit.create(DeviceInfoFacadeRetro.class);
+				}
+			}
+		}
+		return instance.deviceInfoFacadeRetro;
 	}
 
 	public static void throwException(Response<?> response) throws ServerConnectionException, ServerCommunicationException {

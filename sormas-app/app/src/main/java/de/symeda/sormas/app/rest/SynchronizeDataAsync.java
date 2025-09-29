@@ -45,6 +45,7 @@ import de.symeda.sormas.app.backend.clinicalcourse.ClinicalVisitDtoHelper;
 import de.symeda.sormas.app.backend.common.DaoException;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
+import de.symeda.sormas.app.backend.device.DeviceInfoDtoHelper;
 import de.symeda.sormas.app.backend.feature.FeatureConfigurationDtoHelper;
 import de.symeda.sormas.app.backend.infrastructure.InfrastructureHelper;
 import de.symeda.sormas.app.backend.region.AreaDtoHelper;
@@ -369,6 +370,11 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			if (userDtoHelper.pullAndPushEntities())
 				userDtoHelper.pullEntities(true);
 
+			final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
+			if (deviceInfoDtoHelper.pullAndPushEntities())
+				deviceInfoDtoHelper.pullEntities(true);
+
+
 			repullData();
 		}
 	}
@@ -386,11 +392,15 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			final CampaignFormDataDtoHelper campaignFormDataDtoHelper = new CampaignFormDataDtoHelper();
 			final CampaignFormMetaDtoHelper campaignFormMetaDtoHelper = new CampaignFormMetaDtoHelper();
 			final CampaignFormMetaWithExpDtoHelper campaignFormMetaWithExpDtoHelper = new CampaignFormMetaWithExpDtoHelper();
+			final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
+
 
 			campaignDtoHelper.repullEntities();
 			campaignFormMetaDtoHelper.repullEntities();
 			campaignFormDataDtoHelper.repullEntities();
 			campaignFormMetaWithExpDtoHelper.repullEntities();
+			deviceInfoDtoHelper.repullEntities();
+
 		}
 	}
 
@@ -616,6 +626,13 @@ if (1 == 3) {
 			final UserDtoHelper userDtoHelper = new UserDtoHelper();
 			userDtoHelper.pushEntities(true);
 
+
+			final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
+			deviceInfoDtoHelper.pushEntities(true);
+//			final List<String> deviceinfoUUids = executeUuidCall(RetroProvider.getDeviceInfoFacadeRetro().pullUuids());
+//			DatabaseHelper.getDeviceInfoDao().deleteInvalid(deviceinfoUUids);
+//			deviceInfoDtoHelper.pullMissing(deviceinfoUUids);
+
 			System.out.println("USer Pushhh  concluded ===========================");
 
 
@@ -702,6 +719,9 @@ if (1 == 3) {
 			new CampaignFormMetaDtoHelper().pullMissing(campaignFormMetaUuids);
 			new PopulationDataDtoHelper().pullMissing(populationDataUuids);
 			new CampaignFormMetaRegionDtoHelper().pullMissing(populationDataUuids);
+
+
+
 
 		}
 	}

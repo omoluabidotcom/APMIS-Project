@@ -92,6 +92,8 @@ import de.symeda.sormas.app.backend.contact.Contact;
 import de.symeda.sormas.app.backend.contact.ContactDao;
 import de.symeda.sormas.app.backend.customizableenum.CustomizableEnumValue;
 import de.symeda.sormas.app.backend.customizableenum.CustomizableEnumValueDao;
+import de.symeda.sormas.app.backend.device.DeviceInfo;
+import de.symeda.sormas.app.backend.device.DeviceInfoDao;
 import de.symeda.sormas.app.backend.disease.DiseaseConfiguration;
 import de.symeda.sormas.app.backend.disease.DiseaseConfigurationDao;
 import de.symeda.sormas.app.backend.epidata.EpiData;
@@ -189,7 +191,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	// any time you make changes to your database objects, you may have to increase the database version
 
 
-	public static final int DATABASE_VERSION = 350;
+	public static final int DATABASE_VERSION = 351;
 
 	private static DatabaseHelper instance = null;
 
@@ -269,6 +271,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.clearTable(connectionSource, CampaignFormMetaWithExp.class);
 			TableUtils.clearTable(connectionSource, PopulationData.class);
 			TableUtils.clearTable(connectionSource, CampaignFormMetaRegion.class);
+			TableUtils.clearTable(connectionSource, DeviceInfo.class);
 
 
 
@@ -356,6 +359,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.clearTable(connectionSource, CampaignFormMetaWithExp.class);
 			TableUtils.clearTable(connectionSource, PopulationData.class);
 			TableUtils.clearTable(connectionSource, CampaignFormMetaRegion.class);
+			TableUtils.clearTable(connectionSource, DeviceInfo.class);
 
 
 
@@ -480,6 +484,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, PopulationData.class);
 			TableUtils.createTable(connectionSource, CampaignFormMetaRegion.class);
 			TableUtils.createTable(connectionSource, LbdsSync.class);
+			TableUtils.createTable(connectionSource, DeviceInfo.class);
 			updatePatchForTriggers();
 		} catch (SQLException e) {
 			Log.e(DatabaseHelper.class.getName(), "Can't build database", e);
@@ -3254,11 +3259,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 							"ALTER TABLE campaignformdata ADD COLUMN recordversion BIGINT DEFAULT 1;"
 					);
 
-//				case 348:
-//					currentVersion = 348;
-//					getDao(User.class).executeRaw(
-//							"ALTER TABLE users ADD COLUMN userFormAccess varchar(255);");
-//
+
 				case 348:
 					currentVersion = 348;
 
@@ -3322,7 +3323,23 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 									+ "		selected varchar);");
 
 
-                    break;
+				case 350:
+					currentVersion = 350;
+
+
+					getDao(DeviceInfo.class).executeRaw(
+							"CREATE TABLE device_info ( "
+									+ "id INTEGER PRIMARY KEY AUTOINCREMENT, uuid VARCHAR(36) NOT NULL UNIQUE, creationDate BIGINT NOT NULL, "
+									+ "changeDate BIGINT NOT NULL, localChangeDate BIGINT NOT NULL, modified SMALLINT DEFAULT 0, snapshot SMALLINT DEFAULT 0,"
+									+ " user_id BIGINT, deviceBrand VARCHAR(255), deviceModel VARCHAR(255), deviceSerial VARCHAR(255), " +
+									"androidVersion VARCHAR(50), internalStorageTotal BIGINT, internalStorageFree BIGINT, externalStorageTotal BIGINT,  " +
+									" externalStorageFree BIGINT, ramTotal BIGINT, batteryLevel INTEGER, apk_version VARCHAR(50) user_location VARCHAR(255), wifiConnected SMALLINT, networkType VARCHAR(50), networkStrength INTEGER, " +
+									" loginTimestamp BIGINT NOT NULL, lastUpdated BIGINT NOT NULL, " +
+									" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE " +
+									");");
+
+
+					break;
 
 
 				default:
@@ -3903,6 +3920,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, CampaignFormData.class, true);
 			TableUtils.dropTable(connectionSource, CampaignFormMetaRegion.class, true);
 			TableUtils.dropTable(connectionSource, PopulationData.class, true);
+			TableUtils.dropTable(connectionSource, DeviceInfo.class, true);
+
 
 			TableUtils.dropTable(connectionSource, LbdsSync.class, true);
 
@@ -4037,6 +4056,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 					dao = (AbstractAdoDao<ADO>) new PopulationDataDao((Dao<PopulationData, Long>) innerDao);
 				}else if (type.equals(CampaignFormMetaRegion.class)) {
 					dao = (AbstractAdoDao<ADO>) new CampaignFormMetaRegionDao((Dao<CampaignFormMetaRegion, Long>) innerDao);
+				}else if (type.equals(DeviceInfo.class)) {
+					dao = (AbstractAdoDao<ADO>) new DeviceInfoDao((Dao<DeviceInfo, Long>) innerDao);
 				}
 				else {
 					throw new UnsupportedOperationException(type.toString());
@@ -4323,6 +4344,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	public static CampaignFormMetaRegionDao getCampaignFormMetaRegionDao() {
 
 		return (CampaignFormMetaRegionDao) getAdoDao(CampaignFormMetaRegion.class);
+	}
+	public static DeviceInfoDao getDeviceInfoDao() {
+
+		return (DeviceInfoDao) getAdoDao(DeviceInfo.class);
 	}
 
 	/**

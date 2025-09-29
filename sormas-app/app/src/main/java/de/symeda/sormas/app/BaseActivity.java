@@ -75,6 +75,7 @@ import de.symeda.sormas.api.utils.ValidationException;
 import de.symeda.sormas.app.backend.campaign.data.CampaignFormData;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
+import de.symeda.sormas.app.backend.device.DeviceInfo;
 import de.symeda.sormas.app.backend.region.Community;
 import de.symeda.sormas.app.backend.region.District;
 import de.symeda.sormas.app.backend.synclog.SyncLogDao;
@@ -87,6 +88,7 @@ import de.symeda.sormas.app.component.menu.PageMenuItem;
 import de.symeda.sormas.app.component.validation.FragmentValidator;
 import de.symeda.sormas.app.core.NotImplementedException;
 import de.symeda.sormas.app.core.NotificationContext;
+import de.symeda.sormas.app.core.device.DeviceInfoService;
 import de.symeda.sormas.app.core.enumeration.StatusElaborator;
 import de.symeda.sormas.app.core.enumeration.StatusElaboratorFactory;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
@@ -230,6 +232,22 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 		}
 		getFCMToken();
 		setupDrawer(navigationView);
+		collectAndSaveDeviceInfo();
+	}
+
+	private void collectAndSaveDeviceInfo() {
+		try {
+			User user = ConfigProvider.getUser();
+			if (user != null) {
+				DeviceInfoService deviceInfoService = new DeviceInfoService(this);
+				DeviceInfo deviceInfo = deviceInfoService.collectDeviceInfo(user);
+				deviceInfoService.saveDeviceInfo(deviceInfo);
+
+				Log.i("DeviceInfo----", "xxxxDevice information collected and saved for user: " + user.getUserName());
+			}
+		} catch (Exception e) {
+			Log.e("DeviceInfo-----x", "Error collecting device information", e);
+		}
 	}
 
 	public void getFCMToken() {
