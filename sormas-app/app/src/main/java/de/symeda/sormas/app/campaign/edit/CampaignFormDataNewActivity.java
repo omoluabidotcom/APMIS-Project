@@ -183,7 +183,10 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         for(CampaignFormDataEntry campaignFormDataEntry : formValues) {
             if (campaignFormDataEntry.getId() != null && campaignFormDataEntry.getValue() != null) {
                 String value = campaignFormDataEntry.getValue().toString();
-               if(campaignFormDataEntry.getId().toString().equalsIgnoreCase("villagecode")
+
+                System.out.println(campaignFormDataEntry.getId() + "Village code Value detected -------" + value);
+
+                if(campaignFormDataEntry.getId().toString().equalsIgnoreCase("villageCode")
                || campaignFormDataEntry.getId().toString().equalsIgnoreCase("tazkiraNo")
                || campaignFormDataEntry.getId().toString().equalsIgnoreCase("phone")){
                    System.out.println("Village code Value detected -------");
@@ -199,6 +202,9 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
                        // not a number, leave value as is
                    }
                }
+
+                System.out.println(campaignFormDataEntry.getId() + "before setting v Village code Value detected -------" + value);
+
                 campaignFormDataEntry.setValue(value);
                 filledFormValues.add(campaignFormDataEntry);
                 if (campaignFormDataEntry.getId().equalsIgnoreCase("LotNo")) {

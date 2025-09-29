@@ -1548,7 +1548,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                         ControlTimeField.setValue((ControlTimeField) dynamicField, value);
                     } else {
                         dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
-                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
+                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, value, "");
                     }
 
                     fieldMap.put(campaignFormElement.getId(), dynamicField);

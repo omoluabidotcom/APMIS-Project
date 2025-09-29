@@ -18,6 +18,7 @@
 package de.symeda.sormas.api.infrastructure.community;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
@@ -41,9 +42,18 @@ public class CommunityHistoryExtractDto implements Serializable, Comparable<Comm
 	private String uuid_;
 	private String name;
 	private Long externalId;
+	private Long districtexternalId;
+
 	private boolean archived;
 	private LocalDateTime startDate;
 	private LocalDateTime endDate;
+	
+	private String districtuuid;
+	private String districtname;
+	private String floating;
+	private int clusternumber;
+	private Date changedate;
+
 
 	
 	public CommunityHistoryExtractDto(String uuid, String name, Boolean archived, Long externalID, LocalDateTime startDate, LocalDateTime endDate) {
@@ -62,6 +72,37 @@ public class CommunityHistoryExtractDto implements Serializable, Comparable<Comm
         this.startDate = localDateTime;
         this.endDate = (object instanceof LocalDateTime) ? (LocalDateTime) object : null;
     }
+	public CommunityHistoryExtractDto(
+			String clusterUuid, 
+			String clusterName, 
+			long district_id, 
+			String districtuuid, 
+			String districtname, 
+			long externalid,
+			String externalname, 
+			boolean archived, 
+			String floating, 
+			int clusternumber, 
+			Timestamp changedate) {
+		
+		
+        this.uuid_ = clusterUuid;
+	    this.name = clusterName;
+	    this.districtexternalId = district_id;
+	    this.districtuuid = districtuuid;
+	    this.districtname = districtname;
+	    this.externalId = externalid;
+//	    this.name = externalname;
+	    this.archived = archived;
+	    this.floating =  floating;
+	    this.clusternumber = clusternumber;
+	    this.changedate = changedate;
+	    
+
+
+		
+	}
+
 	public String getUuid_() {
 		return uuid_;
 	}
@@ -98,9 +139,49 @@ public class CommunityHistoryExtractDto implements Serializable, Comparable<Comm
 	public void setEndDate(LocalDateTime endDate) {
 		this.endDate = endDate;
 	}
+	
+	
+	
+	public Long getDistrictexternalId() {
+		return districtexternalId;
+	}
+	public void setDistrictexternalId(Long districtexternalId) {
+		this.districtexternalId = districtexternalId;
+	}
+	public String getDistrictuuid() {
+		return districtuuid;
+	}
+	public void setDistrictuuid(String districtuuid) {
+		this.districtuuid = districtuuid;
+	}
+	public String getDistrictname() {
+		return districtname;
+	}
+	public void setDistrictname(String districtname) {
+		this.districtname = districtname;
+	}
+	public String getFloating() {
+		return floating;
+	}
+	public void setFloating(String floating) {
+		this.floating = floating;
+	}
+	public int getClusternumber() {
+		return clusternumber;
+	}
+	public void setClusternumber(int clusternumber) {
+		this.clusternumber = clusternumber;
+	}
+	public Date getChangedate() {
+		return changedate;
+	}
+	public void setChangedate(Date changedate) {
+		this.changedate = changedate;
+	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(archived, endDate, externalId, name, startDate, uuid_);
+		return Objects.hash(archived, changedate, clusternumber, districtexternalId, districtname, districtuuid,
+				endDate, externalId, floating, name, startDate, uuid_);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -111,8 +192,11 @@ public class CommunityHistoryExtractDto implements Serializable, Comparable<Comm
 		if (getClass() != obj.getClass())
 			return false;
 		CommunityHistoryExtractDto other = (CommunityHistoryExtractDto) obj;
-		return archived == other.archived && Objects.equals(endDate, other.endDate)
-				&& Objects.equals(externalId, other.externalId) && Objects.equals(name, other.name)
+		return archived == other.archived && Objects.equals(changedate, other.changedate)
+				&& clusternumber == other.clusternumber && Objects.equals(districtexternalId, other.districtexternalId)
+				&& Objects.equals(districtname, other.districtname) && Objects.equals(districtuuid, other.districtuuid)
+				&& Objects.equals(endDate, other.endDate) && Objects.equals(externalId, other.externalId)
+				&& Objects.equals(floating, other.floating) && Objects.equals(name, other.name)
 				&& Objects.equals(startDate, other.startDate) && Objects.equals(uuid_, other.uuid_);
 	}
 	@Override

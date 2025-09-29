@@ -1,62 +1,70 @@
 package com.cinoteck.application.utils;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class BackDropSuccessNotification {
 
-    public static void show(String errorMessage) {
+    public static void show(String messageText) {
         UI ui = UI.getCurrent();
 
-        // Create backdrop layer
-        Div backdrop = new Div();
-        backdrop.getStyle()
-                .set("position", "fixed")
-                .set("top", "0")
-                .set("left", "0")
-                .set("width", "100%")
-                .set("height", "100%")
-                .set("background-color", "rgba(0,0,0,0.2)") // dim background
-                .set("z-index", "9998");
+        ui.access(() -> {
+            // Create custom backdrop
+            Div backdrop = new Div();
+            backdrop.getStyle()
+                    .set("position", "fixed")
+                    .set("top", "0")
+                    .set("left", "0")
+                    .set("width", "100%")
+                    .set("height", "100%")
+                    .set("background-color", "rgba(0,0,0,0.4)") // darker dim background
+                    .set("z-index", "1000002");
 
-        // Notification
-        Notification notification = new Notification();
-        notification.setDuration(0); // stays open until closed
-        notification.setPosition(Notification.Position.MIDDLE);
-        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-        notification.getElement().getStyle().set("z-index", "9999");
+            // Create dialog
+            Dialog dialog = new Dialog();
+            dialog.setModal(true);
+            dialog.setCloseOnOutsideClick(true); // clicking outside closes dialog
+            dialog.setCloseOnEsc(true);
+            dialog.getElement().getStyle().set("z-index", "100001"); // above backdrop
 
-        // Message + Cancel button
-        Span message = new Span(errorMessage);
-//        Icon cancelButton = new Icon(VaadinIcon.clo);
-//        cancelButton.se
-//        cancelButton.addClickListener(e->{
-//            ui.remove(backdrop);
-//            notification.close();	
-//        });
+            // Success message
+            Span message = new Span("Profile updated successfully");
+            message.getStyle()
+                    .set("font-size", "16px")
+                    .set("font-weight", "500")
+                    .set("color", "green");
 
-        HorizontalLayout content = new HorizontalLayout(message);
-        content.setSpacing(true);
-        content.setAlignItems(HorizontalLayout.Alignment.CENTER);
-        notification.add(content);
+            VerticalLayout layout = new VerticalLayout(message);
+            layout.setSpacing(true);
+            layout.setAlignItems(VerticalLayout.Alignment.CENTER);
 
-        // Clicking backdrop closes it
-        backdrop.addClickListener(e -> {
+            dialog.add(layout);
+
+            // Ensure backdrop is always removed when dialog closes
+            dialog.addDialogCloseActionListener(e -> {
+            	
+            	dialog.close();
             ui.remove(backdrop);
-            notification.close();
+            });
+            
+            dialog.addOpenedChangeListener(e -> {
+                if (!e.isOpened()) {
+                    ui.remove(backdrop);
+                }
+            });
+
+            // Clicking backdrop also closes dialog
+            backdrop.addClickListener(e -> {
+                ui.remove(backdrop);
+                dialog.close();
+            });
+
+            // Add backdrop + dialog
+            ui.add(backdrop);
+            dialog.open();
         });
-
-        // Add backdrop to UI
-        ui.add(backdrop);
-
-        // Show notification
-        notification.open();
     }
 }
-

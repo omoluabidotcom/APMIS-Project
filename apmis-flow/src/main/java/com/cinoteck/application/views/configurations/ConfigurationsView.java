@@ -68,7 +68,7 @@ public class ConfigurationsView extends VerticalLayout implements RouterLayout {
 
 		if (userProvider.hasUserRight(UserRight.CONFIGURATION_CHANGE_LOG)) {
 			tabComponentMap.put(new Tab(I18nProperties.getCaption("Change Log")), new ConfigurationChangeLogView());
-
+			tabComponentMap.put(new Tab(I18nProperties.getCaption("Cluster Fields Change Log")), new ClusterChangeLogView());
 		}
 
 		return new Tabs(tabComponentMap.keySet().toArray(new Tab[] {}));
