@@ -229,7 +229,7 @@ public class CampaignFormDataFragmentUtils {
                     if (expressionValue != null) {
                         if (type == CampaignFormElementType.YES_NO) {
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, expressionValue, true, YesNo.class, null);
-                        } else if (type == CampaignFormElementType.RANGE) {
+                        } else if (type == CampaignFormElementType.RANGE) {                        
                             String valudex = valuex.equals("0") ? null : valuex.endsWith(".0") ? valuex.replace(".0", "") : valuex;
                             if(orginalValue != null){
                                 if(!orginalValue.toString().equals(valudex)){
@@ -248,7 +248,7 @@ public class CampaignFormDataFragmentUtils {
 //                                        } catch (NumberFormatException e) {
 //                                            valudex = valuex; // fallback for non-numeric input
 //                                        }
-
+                                    	
                                         ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? null : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
 //                                        ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex);
                                     }
@@ -325,7 +325,7 @@ public class CampaignFormDataFragmentUtils {
                                         }
                                     } catch (NumberFormatException e) {
                                         valudex = valuex; // fallback for non-numeric input
-                                    }
+                                    }                                   
                                     ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, valudex);                                }
                             }
                         } else if (expressionValue.getClass().isAssignableFrom(Boolean.class)) {

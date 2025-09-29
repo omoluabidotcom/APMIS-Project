@@ -341,16 +341,16 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
                                 if (valxx >= minValue && valxx <= maxValue) {
                                     // Valid range
                                 } else if (warnOnError) {
-                                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Number not in provided range! i.e min: " + minValue + " and max: 0000000000000" + maxValue);
+                                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
                                 } else {
-                                    input.setError("Number not in provided range! i.e min: " + minValue + " and max: 1111111111111111111111" + maxValue);
+                                    input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
                                     setErrorIfEmptyRange();
-                                    enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: 2222222222222222" + maxValue);
+                                    enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
                                 }
 
                             }catch(NumberFormatException e ){
                                 if(warnOnError){
-                                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Number not in provided range! i.e min: -111111111111111111" + minValue + " and max: " + maxValue);
+                                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
                                 } else {
 //                                    input.setError("Number not in provided range! i.e min: " + minValue + " and max: 333333333333333" + maxValue);
 //                                    setErrorIfEmptyRange();
@@ -373,7 +373,7 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
                         }
                     }catch (NumberFormatException e){
                         if(beforeData.length() > 0 && onChangeData.length() == 0){
-                            input.setError("Please enter a valid number 11111111111111");
+                            input.setError("Please enter a valid number");
                             enableErrorState("Invalid number");
                         }else if (beforeData.length() > 0 &&  onChangeData.length() > 0) {
                             try {
@@ -382,8 +382,8 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
                                 input.setError(null);
                                 disableErrorState();
                             } catch (NumberFormatException eX) {
-                                input.setError("Please enter a valid number 222222222222222");
-                                enableErrorState("Invalid number");
+//                                input.setError("Please enter a valid number 222222222222222");
+//                                enableErrorState("Invalid number");
                             }
                         }
                     }

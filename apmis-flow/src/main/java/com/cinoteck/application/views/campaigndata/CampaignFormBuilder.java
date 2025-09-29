@@ -1459,6 +1459,7 @@ if (!selectedAreas.isEmpty()) {
 					numberField.setId(formElement.getId());
 					numberField.setSizeFull();
 					numberField.setReadOnly(false);
+					numberField.setMin(0);
 					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 					vertical.add(numberField);
 					fields.put(formElement.getId(), numberField);
@@ -3023,7 +3024,7 @@ if (!selectedAreas.isEmpty()) {
 							// return;
 						}
 
-					} else if (e.getType().toString().equals("decimal")) {
+					} else if (e.getType().toString().equals("decimal")) {					
 						setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
 //								!Double.isFinite((double) value) ? 0
 //										: value.toString().endsWith(".0") ? value.toString().replace(".0", "")
@@ -3068,6 +3069,7 @@ if (!selectedAreas.isEmpty()) {
 		getFormElements().stream().filter(formElement -> formElement.getExpression() != null)
 				.filter(formElement -> fields_.get(formElement.getId()) != null)
 				.filter(formElement -> !formElement.getType().equals("range"))
+				.filter(formElement -> !formElement.getType().equals("decimal"))
 				.filter(formElement -> !formElement.isIgnoredisable())
 				.forEach(formElement -> ((AbstractField) fields_.get(formElement.getId())).setEnabled(false));
 		addExpressionListener();
