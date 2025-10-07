@@ -11338,6 +11338,13 @@ $function$
 INSERT INTO schema_version (version_number, comment) VALUES (486, 'Updating FLW Analysis Query');
 
 
+ALTER TABLE public.messagestemplate ADD column title varchar;
+
+ALTER TABLE public.messages ADD column title varchar;
+
+ALTER TABLE public.messages ADD COLUMN messagecategory varchar NULL;
+
+INSERT INTO schema_version (version_number, comment) VALUES (487, 'Updating Notification #870 & #869');
 
 
 
