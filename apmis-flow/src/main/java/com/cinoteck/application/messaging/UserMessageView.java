@@ -18,6 +18,8 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -111,7 +113,9 @@ public class UserMessageView extends VerticalLayout {
 			return dateFormat.format(timestamp);
 		});
 
-		grid.addColumn(MessageDto.MESSAGE_CONTENT).setHeader("Message").setResizable(true);
+		grid.addColumn(MessageDto::getTitle).setHeader("Subject").setResizable(true);
+		grid.addColumn(MessageDto::getMessageCategory).setHeader("Message Category").setResizable(true);
+		grid.addColumn(MessageDto.MESSAGE_CONTENT).setHeader("Message Content").setResizable(true);
 		grid.addColumn(changeDateRenderer).setHeader("Broadcasted at").setResizable(true);
 
 		List<MessageDto> listOfMessagesToRemoveExpiredMessages = FacadeProvider.getMessageFacade()
@@ -135,6 +139,11 @@ public class UserMessageView extends VerticalLayout {
 
 	private void showMessage(MessageDto messageDto) {
 
+		Span subject = new Span("Subject: " + messageDto.getTitle());
+		Span category = new Span("Message Category: " + messageDto.getMessageCategory());
+		Span broadcastedAt = new Span("Broadcasted At: " + messageDto.getChangeDate());
+		
+		
 		TextArea message = new TextArea("Message");
 		message.setValue(messageDto.getMessageContent());
 		message.setReadOnly(true);

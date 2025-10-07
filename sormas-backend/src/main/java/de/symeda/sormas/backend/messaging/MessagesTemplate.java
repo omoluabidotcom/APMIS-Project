@@ -40,19 +40,29 @@ public class MessagesTemplate extends AbstractDomainObject{
 	
 	public static final String TABLE_NAME_MESSAGECATEGORY = "messagestemplate_messagecategory";
 	
-	public static final String TABLE_NAME = "messagestemplate";	
+	public static final String TABLE_NAME = "messagestemplate";
+	public static final String TITLE = "title";
 	public static final String MESSAGE_CONTENT = "messageContent";
 	public static final String MESSAGE_CATEGORY = "messageCategory";
 	public static final String ARCHIVED = "archived";
 	public static final String CHG_DATE = "chgDate";
 	public static final String CREATED_BY = "creatingUser";
 	
+	private String title;
 	private String messageContent;
 	private User creatingUser;
 	private boolean archived;
 	private MessageCategory messageCategory;
 	private Timestamp chgDate;
-	
+		
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
 	public String getMessageContent() {
 		return messageContent;
 	}
