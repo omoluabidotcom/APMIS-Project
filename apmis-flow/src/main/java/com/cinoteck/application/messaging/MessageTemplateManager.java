@@ -449,6 +449,7 @@ public class MessageTemplateManager extends VerticalLayout implements RouterLayo
 
 		grid.addColumn(archiveRenderer).setHeader("Archive Status").setResizable(true)
 		.setClassNameGenerator(item -> "archiveColumn-style");
+		grid.addColumn(MessageTemplateDto::getTitle).setHeader("Subject").setResizable(true);
 		grid.addColumn(MessageTemplateDto.MESSAGE_CONTENT).setHeader("Message Content").setSortable(true)
 				.setResizable(true);
 		grid.addColumn(MessageTemplateDto.MESSAGE_CATEGORY).setHeader("Message category").setSortable(true)

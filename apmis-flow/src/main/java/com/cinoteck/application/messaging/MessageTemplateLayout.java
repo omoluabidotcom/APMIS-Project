@@ -77,11 +77,14 @@ public class MessageTemplateLayout extends VerticalLayout {
 
 	private void configureFields() {
 
-		TextField titleField = new TextField("Title");
+		TextField titleField = new TextField("Subject");
 		TextArea messageContent = new TextArea("Message Template Content");
 
 		ComboBox<MessageCategory> messageCategory = new ComboBox<MessageCategory>("Message Category");
 		messageCategory.setItems(MessageCategory.values());
+		
+		binder.forField(titleField).asRequired("Message Subject is Required")
+		.bind(MessageTemplateDto::getTitle, MessageTemplateDto::setTitle);
 
 		binder.forField(messageContent).asRequired("Message Content is Required")
 				.bind(MessageTemplateDto::getMessageContent, MessageTemplateDto::setMessageContent);
@@ -89,9 +92,11 @@ public class MessageTemplateLayout extends VerticalLayout {
 		binder.forField(messageCategory).bind(MessageTemplateDto::getMessageCategory,
 				MessageTemplateDto::setMessageCategory);
 
-		formLayout.add(messageContent, messageCategory);
+		formLayout.add(titleField, messageContent, messageCategory);
 
 		final HorizontalLayout hr = new HorizontalLayout();
+		
+		formLayout.setColspan(titleField, 2);
 		formLayout.setColspan(messageContent, 2);
 		messageContent.setHeight("250px");
 
@@ -106,6 +111,7 @@ public class MessageTemplateLayout extends VerticalLayout {
 		delete.getStyle().set("background-color", "red");
 		
 		hr.add(discardChanges, saved, delete);
+		
 		hr.setJustifyContentMode(JustifyContentMode.START);
 		add(formLayout, hr);
 
@@ -125,7 +131,8 @@ public class MessageTemplateLayout extends VerticalLayout {
 		});
 		
 		saved.addClickListener(e -> {
-			if (messageContent.getValue() != null && !messageContent.isEmpty()) {
+			if (messageContent.getValue() != null && !messageContent.isEmpty() 
+					&& titleField.getValue() != null && !titleField.isEmpty()) {
 				validateAndSave();
 			} else {
 				Notification notification = new Notification();
@@ -151,6 +158,7 @@ public class MessageTemplateLayout extends VerticalLayout {
 
 	public void validateAndSave() {
 
+		System.out.println("ghghghghghghghghghghghghg "+ binder.getBean().getTitle());
 		if (binder.validate().isOk()) {
 			messageTemplateDto = binder.getBean();		
 
