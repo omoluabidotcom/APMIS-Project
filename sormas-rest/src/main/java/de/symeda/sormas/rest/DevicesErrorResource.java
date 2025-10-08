@@ -18,15 +18,16 @@ import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.PushResult;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataHistoryExtractDto;
+import de.symeda.sormas.api.deviceerrormanager.DeviceErrorManagerDto;
 import de.symeda.sormas.api.devicemanager.DeviceManagerDto;
 import de.symeda.sormas.api.infrastructure.area.AreaHistoryExtractDto;
 
-@Path("/deviceInfo")
+@Path("/deviceErrorLog")
 @Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
 @RolesAllowed({
 	"USER",
 	"REST_USER" })
-public class DeviceInfoResource extends EntityDtoResource {
+public class DevicesErrorResource extends EntityDtoResource {
 
 
 //	@GET
@@ -43,10 +44,10 @@ public class DeviceInfoResource extends EntityDtoResource {
 
 	@POST
 	@Path("/push")
-	public List<PushResult> postDeviceInformation(@Valid List<DeviceManagerDto> dtos) {
-		System.out.println("Request recieved on device into pusdh ====================");
+	public List<PushResult> postDeviceErrorLog(@Valid List<DeviceErrorManagerDto> dtos) {
+		System.out.println("TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTRequest recieved on device errror into pusdh ====================");
 
-		return savePushedDto(dtos, FacadeProvider.getDeviceManagerFacade()::saveDeviceDetailsMobile);
+		return savePushedDto(dtos, FacadeProvider.getDeviceErrorManagerFacade()::saveDeviceErrorFromMobile);
 	}
 
 //	@GET

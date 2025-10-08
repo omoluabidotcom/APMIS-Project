@@ -40,7 +40,7 @@ import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.SormasApplication;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
-import de.symeda.sormas.app.backend.device.DeviceInfo;
+import de.symeda.sormas.app.backend.device.info.DeviceInfo;
 import de.symeda.sormas.app.backend.user.User;
 import de.symeda.sormas.app.core.NotificationContext;
 import de.symeda.sormas.app.core.device.DeviceInfoService;

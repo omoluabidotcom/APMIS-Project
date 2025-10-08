@@ -61,6 +61,12 @@ public class DeviceManagerDto extends EntityDto {
 	public static final String WIFI_CONNECTED= "wifi_connected";
 	public static final String NETWORK_STRENGTH= "network_strength";
 	public static final String LOGGED_IN_USER= "user_id";
+	
+	public static final String TOTAL_INT_STORAGE_GB= "total_int_storage_gb";
+	public static final String FREE_INT_STORAGE_GB= "free_int_storage_gb";
+	public static final String TOTAL_EXT_STORAGE_GB= "total_ext_storage_gb";
+	public static final String FREE_EXT_STORAGE_GB= "free_ext_storage_gb";
+	public static final String RAM_STORAGE_GB= "ram_storage_gb";
 
 
 
@@ -89,6 +95,12 @@ public class DeviceManagerDto extends EntityDto {
     private Boolean wifiConnected;
     private Integer networkStrength;
     private UserReferenceDto user;
+    
+    private Long internalStorageTotalGb;
+    private Long internalStorageFreeGb;
+    private Long externalStorageTotalGb;
+    private Long externalStorageFreeGb;
+    private Long ramTotalGb;
 
 	private DistrictReferenceDto district;
 	private CommunityReferenceDto cluster;
@@ -305,6 +317,8 @@ public class DeviceManagerDto extends EntityDto {
 	public void setDeviceId(String deviceId) {
 		this.deviceId = deviceId;
 	}
+	
+	
 
 	//	public UserReferenceDto getUser() {
 //		return user;
@@ -314,6 +328,56 @@ public class DeviceManagerDto extends EntityDto {
 //	public void setUser(UserReferenceDto user) {
 //		this.user = user;
 //	}
+
+
+	public Long getInternalStorageTotalGb() {
+		return internalStorageTotalGb;
+	}
+
+
+	public void setInternalStorageTotalGb(Long internalStorageTotalGb) {
+		this.internalStorageTotalGb = internalStorageTotalGb;
+	}
+
+
+	public Long getInternalStorageFreeGb() {
+		return internalStorageFreeGb;
+	}
+
+
+	public void setInternalStorageFreeGb(Long internalStorageFreeGb) {
+		this.internalStorageFreeGb = internalStorageFreeGb;
+	}
+
+
+	public Long getExternalStorageTotalGb() {
+		return externalStorageTotalGb;
+	}
+
+
+	public void setExternalStorageTotalGb(Long externalStorageTotalGb) {
+		this.externalStorageTotalGb = externalStorageTotalGb;
+	}
+
+
+	public Long getExternalStorageFreeGb() {
+		return externalStorageFreeGb;
+	}
+
+
+	public void setExternalStorageFreeGb(Long externalStorageFreeGb) {
+		this.externalStorageFreeGb = externalStorageFreeGb;
+	}
+
+
+	public Long getRamTotalGb() {
+		return ramTotalGb;
+	}
+
+
+	public void setRamTotalGb(Long ramTotalGb) {
+		this.ramTotalGb = ramTotalGb;
+	}
 
 
 	@Override

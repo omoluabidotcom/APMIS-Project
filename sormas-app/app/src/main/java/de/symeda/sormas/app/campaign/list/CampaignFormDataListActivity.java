@@ -68,6 +68,7 @@ import de.symeda.sormas.app.component.menu.PageMenuItem;
 import de.symeda.sormas.app.databinding.FilterCampaignFormDataListLayoutBinding;
 import de.symeda.sormas.app.util.Callback;
 import de.symeda.sormas.app.util.DataUtils;
+import de.symeda.sormas.app.util.ErrorReportingHelper;
 import de.symeda.sormas.app.util.InfrastructureDaoHelper;
 
 public class CampaignFormDataListActivity extends PagedBaseListActivity<CampaignFormData> {
@@ -232,7 +233,12 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
         if (list.size() > 0) {
             final CampaignFormMetaDialog campaignFormMetaDialog = new CampaignFormMetaDialog(BaseActivity.getActiveActivity(), criteria.getCampaign());
             campaignFormMetaDialog.setPositiveCallback(() -> {
-                CampaignFormDataNewActivity.startActivity(getContext(), criteria.getCampaign().getUuid(), campaignFormMetaDialog.getCampaignFormMeta().getUuid());
+                //This try and catch block is supposed to logg possible error to the db
+                try {
+                    CampaignFormDataNewActivity.startActivity(getContext(), criteria.getCampaign().getUuid(), campaignFormMetaDialog.getCampaignFormMeta().getUuid());
+                }catch(Exception e){
+                    ErrorReportingHelper.reportAndStore("New Form" , e);
+                }
             });
             campaignFormMetaDialog.show();
             campaignFormMetaDialog.setLiveValidationDisabled(true);

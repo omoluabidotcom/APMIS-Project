@@ -103,6 +103,8 @@
 		<class>de.symeda.sormas.backend.messaging.MessageCron</class>			
 		<class>de.symeda.sormas.backend.messaging.MessagesTemplate</class>
 		<class>de.symeda.sormas.backend.devicemanager.DeviceManager</class>
+		<class>de.symeda.sormas.backend.deviceerrormanager.DeviceErrorManager</class>
+		
 				
 				
 

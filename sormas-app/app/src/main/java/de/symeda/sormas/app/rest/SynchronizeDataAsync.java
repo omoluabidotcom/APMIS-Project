@@ -38,14 +38,12 @@ import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaDtoHelper;
 
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaRegionDtoHelper;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaWithExpDtoHelper;
-import de.symeda.sormas.app.backend.caze.CaseDtoHelper;
-import de.symeda.sormas.app.backend.classification.DiseaseClassificationDtoHelper;
-import de.symeda.sormas.app.backend.clinicalcourse.ClinicalVisitDtoHelper;
 
 import de.symeda.sormas.app.backend.common.DaoException;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
-import de.symeda.sormas.app.backend.device.DeviceInfoDtoHelper;
+import de.symeda.sormas.app.backend.device.errorLog.DeviceErrorLogDtoHelper;
+import de.symeda.sormas.app.backend.device.info.DeviceInfoDtoHelper;
 import de.symeda.sormas.app.backend.feature.FeatureConfigurationDtoHelper;
 import de.symeda.sormas.app.backend.infrastructure.InfrastructureHelper;
 import de.symeda.sormas.app.backend.region.AreaDtoHelper;
@@ -191,6 +189,8 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			Log.e(getClass().getName(), "Error trying to synchronizing data in mode '" + syncMode + "'", e);
 
 			ErrorReportingHelper.sendCaughtException(e);
+//
+			ErrorReportingHelper.reportAndStore( "Sync Mode : " + syncMode.toString(), e); // replaced sendCaughtException
 
 			syncFailed = true;
 			syncFailedMessage = DatabaseHelper.getContext().getString(R.string.error_server_communication);
@@ -218,6 +218,9 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 
 				ErrorReportingHelper.sendCaughtException(e);
 
+				ErrorReportingHelper.reportAndStore( "Sync Mode : " + syncMode.toString(), e); // replaced sendCaughtException
+
+
 				syncMode = newSyncMode;
 				doInBackground(params);
 
@@ -226,6 +229,9 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 				Log.e(getClass().getName(), "Error trying to synchronizing data in mode '" + syncMode + "'", e);
 
 				ErrorReportingHelper.sendCaughtException(e);
+
+				ErrorReportingHelper.reportAndStore( "Sync Mode : " + syncMode.toString(), e); // replaced sendCaughtException
+
 
 				syncFailed = true;
 				syncFailedMessage = DatabaseHelper.getContext().getString(R.string.error_synchronization);
@@ -256,7 +262,7 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 //			|| DatabaseHelper.getPrescriptionDao().isAnyModified()
 //			|| DatabaseHelper.getTreatmentDao().isAnyModified()
 //			|| DatabaseHelper.getClinicalVisitDao().isAnyModified() ||
-			 hasUnsynchronizedCampaignData;
+			 hasUnsynchronizedCampaignData ||   DatabaseHelper.getDeviceErrorLogDao().isAnyModified();
 	}
 
 	@AddTrace(name = "synchronizeChangedDataTrace")
@@ -374,9 +380,27 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			if (deviceInfoDtoHelper.pullAndPushEntities())
 				deviceInfoDtoHelper.pullEntities(true);
 
+			final DeviceErrorLogDtoHelper deviceErrorLogDtoHelper = new DeviceErrorLogDtoHelper();
+			if (deviceErrorLogDtoHelper.pullAndPushEntities())
+				deviceErrorLogDtoHelper.pullEntities(true);
+
+
 
 			repullData();
 		}
+	}
+
+	/**
+	 * Sync only device information and error logs
+	 */
+	public static void syncDeviceInfoAndErrorLogsOnly() throws DaoException, NoConnectionException, ServerConnectionException, ServerCommunicationException {
+		final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
+		if (deviceInfoDtoHelper.pullAndPushEntities())
+			deviceInfoDtoHelper.pullEntities(true);
+
+		final DeviceErrorLogDtoHelper deviceErrorLogDtoHelper = new DeviceErrorLogDtoHelper();
+		if (deviceErrorLogDtoHelper.pullAndPushEntities())
+			deviceErrorLogDtoHelper.pullEntities(true);
 	}
 
 	@AddTrace(name = "repullDataTrace")
@@ -393,6 +417,7 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			final CampaignFormMetaDtoHelper campaignFormMetaDtoHelper = new CampaignFormMetaDtoHelper();
 			final CampaignFormMetaWithExpDtoHelper campaignFormMetaWithExpDtoHelper = new CampaignFormMetaWithExpDtoHelper();
 			final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
+			final DeviceErrorLogDtoHelper deviceErrorLogDtoHelper = new DeviceErrorLogDtoHelper();
 
 
 			campaignDtoHelper.repullEntities();
@@ -400,6 +425,7 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			campaignFormDataDtoHelper.repullEntities();
 			campaignFormMetaWithExpDtoHelper.repullEntities();
 			deviceInfoDtoHelper.repullEntities();
+			deviceErrorLogDtoHelper.repullEntities();
 
 		}
 	}
@@ -629,9 +655,10 @@ if (1 == 3) {
 
 			final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
 			deviceInfoDtoHelper.pushEntities(true);
-//			final List<String> deviceinfoUUids = executeUuidCall(RetroProvider.getDeviceInfoFacadeRetro().pullUuids());
-//			DatabaseHelper.getDeviceInfoDao().deleteInvalid(deviceinfoUUids);
-//			deviceInfoDtoHelper.pullMissing(deviceinfoUUids);
+
+
+			final DeviceErrorLogDtoHelper deviceErrorLogDtoHelper = new DeviceErrorLogDtoHelper();
+			deviceErrorLogDtoHelper.pushEntities(true);
 
 			System.out.println("USer Pushhh  concluded ===========================");
 

@@ -18,7 +18,7 @@
  * ******************************************************************************
  */
 
-package de.symeda.sormas.backend.devicemanager;
+package de.symeda.sormas.backend.deviceerrormanager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,7 +68,6 @@ import de.symeda.sormas.backend.caze.CaseQueryContext;
 import de.symeda.sormas.backend.common.AbstractDomainObject;
 import de.symeda.sormas.backend.common.AdoServiceWithUserFilter;
 import de.symeda.sormas.backend.common.CriteriaBuilderHelper;
-import de.symeda.sormas.backend.deviceerrormanager.DeviceErrorManager;
 import de.symeda.sormas.backend.infrastructure.area.Area;
 import de.symeda.sormas.backend.infrastructure.community.Community;
 import de.symeda.sormas.backend.infrastructure.district.District;
@@ -84,16 +83,46 @@ import de.symeda.sormas.utils.CaseJoins;
 
 @Stateless
 @LocalBean
-public class DeviceManagerService extends AdoServiceWithUserFilter<DeviceManager> {
+public class DeviceErrorManagerService extends AdoServiceWithUserFilter<DeviceErrorManager> {
 
-	public DeviceManagerService() {
-		super(DeviceManager.class);
+	public DeviceErrorManagerService() {
+		super(DeviceErrorManager.class);
 	}
 
 	@Override
-	public Predicate createUserFilter(CriteriaBuilder cb, CriteriaQuery cq, From<?, DeviceManager> from) {
+	public Predicate createUserFilter(CriteriaBuilder cb, CriteriaQuery cq, From<?, DeviceErrorManager> from) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	// ... existing code ...
+
+	/**
+	 * Truing to Get device error details by username and device ID from service //tryin gluck to recieve with dto in ejb 
+	 */
+	public DeviceErrorManager getByUsernameAndDeviceId(String username, String deviceId) {
+	    if (username == null || deviceId == null) {
+	        return null;
+	    }
+	    
+	    CriteriaBuilder cb = em.getCriteriaBuilder();
+	    CriteriaQuery<DeviceErrorManager> cq = cb.createQuery(DeviceErrorManager.class);
+	    Root<DeviceErrorManager> root = cq.from(DeviceErrorManager.class);
+	    
+	    Predicate filter = cb.and(
+	        cb.equal(root.get("userName"), username),
+	        cb.equal(root.get("deviceId"), deviceId)
+	    );
+	    
+	    cq.where(filter);
+	    
+	    // Order by last updated descending to get the most recent record
+	    cq.orderBy(cb.desc(root.get("lastUpdated")));
+	    
+	    TypedQuery<DeviceErrorManager> query = em.createQuery(cq);
+	    query.setMaxResults(1); // Only get the latest record
+	    
+	    List<DeviceErrorManager> results = query.getResultList();
+	    return results.isEmpty() ? null : results.get(0);
 	}
 
 

@@ -13,7 +13,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package de.symeda.sormas.app.backend.device;
+package de.symeda.sormas.app.backend.device.info;
 
 import java.util.Date;
 
@@ -133,10 +133,10 @@ public class DeviceInfo extends AbstractDomainObject {
     @DatabaseField(foreign = true, foreignAutoRefresh = true)
     private User user;
 
-    @Column(name = "login_timestamp")
+    @Column(name = "loginTimestamp")
     private Date loginTimestamp;
 
-    @Column(name = "last_updated")
+    @Column(name = "lastUpdated")
     private Date lastUpdated;
 
     @Column(name = "user_location")

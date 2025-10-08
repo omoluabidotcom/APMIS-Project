@@ -19,19 +19,22 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
+import de.symeda.sormas.api.FacadeProvider;
+import de.symeda.sormas.api.deviceerrormanager.DeviceErrorManagerDto;
 import de.symeda.sormas.api.devicemanager.DeviceManagerDto;
 
 public class DeviceDetailsDialog extends Dialog {
     
     public DeviceDetailsDialog(DeviceManagerDto deviceManagerDto) {
-        setSizeFull();
+        setHeight("94%");
+        setWidth("80%");
         setModal(true);
         setDraggable(true);
         setResizable(true);
-        
+
         createHeader();
         createContent(deviceManagerDto);
-        createFooter();
+        createFooter(deviceManagerDto);
     }
     
     private void createHeader() {
@@ -56,15 +59,16 @@ public class DeviceDetailsDialog extends Dialog {
         
         Div header = new Div(headerContent, closeButton);
         header.getStyle().set("position", "relative");
-        header.getStyle().set("padding", "20px");
-        header.getStyle().set("border-bottom", "1px solid #e0e0e0");
+        header.getStyle().set("padding", "10px");
+//        header.getStyle().set("border-bottom", "1px solid #e0e0e0");
         
         add(header);
     }
     
     private void createContent(DeviceManagerDto deviceManagerDto) {
         HorizontalLayout mainLayout = new HorizontalLayout();
-        mainLayout.setSizeFull();
+        mainLayout.setWidthFull();
+        mainLayout.getStyle().set("height", "84%");
         mainLayout.setSpacing(true);
         
         // Left Column
@@ -96,13 +100,18 @@ public class DeviceDetailsDialog extends Dialog {
         section.getStyle().set("margin-bottom", "15px");
         section.getStyle().set("box-shadow", "0 2px 4px rgba(0,0,0,0.1)");
         section.getStyle().set("padding", "20px !important");
+        section.getStyle().set("height", "20%");
+        section.getStyle().set("gap", "0%");
+
+
 
         
         H4 title = new H4("Device Overview");
         title.getStyle().set("color", "#2d5a3d");
         title.getStyle().set("margin-top", "0");
+        title.getStyle().set("font-size", "13px !important");
         
-        Hr horizontalLine = new Hr();
+//        Hr horizontalLine = new Hr();
 
         
         HorizontalLayout deviceInfo = new HorizontalLayout();
@@ -138,7 +147,7 @@ public class DeviceDetailsDialog extends Dialog {
         deviceInfoLayout.setWidthFull();
         deviceInfoLayout.add(deviceInfo, deviceDetail);
         
-        section.add(title, horizontalLine, deviceInfoLayout);
+        section.add(title,  deviceInfoLayout);
         return section;
     }
     
@@ -151,13 +160,15 @@ public class DeviceDetailsDialog extends Dialog {
         section.getStyle().set("margin-bottom", "15px");
         section.getStyle().set("box-shadow", "0 2px 4px rgba(0,0,0,0.1)");
         section.getStyle().set("padding", "20px !important");
+        section.getStyle().set("gap", "0%");
 
         
         H4 title = new H4("Storage Information");
         title.getStyle().set("color", "#2d5a3d");
         title.getStyle().set("margin-top", "0");
+        title.getStyle().set("font-size", "13px !important");
+
         
-        Hr horizontalLine = new Hr();
 
         
         HorizontalLayout storageRow = new HorizontalLayout();
@@ -173,9 +184,9 @@ public class DeviceDetailsDialog extends Dialog {
         iNtitleSpan.getStyle().set("color", "#666");
         
         VerticalLayout internalStorage = createStorageCard("Internal Storage",
-        		Double.parseDouble(((deviceManagerDto.getInternalStorageTotal()/1024) - (deviceManagerDto.getInternalStorageFree()/1024))+""), 
-        		Double.parseDouble((deviceManagerDto.getInternalStorageTotal()/1024)+""), 
-        		Integer.parseInt((((deviceManagerDto.getInternalStorageFree()/deviceManagerDto.getInternalStorageFree())*100)/1024)+""), 
+        		Double.parseDouble(deviceManagerDto.getInternalStorageTotalGb() - deviceManagerDto.getInternalStorageFreeGb()+""), 
+        		Double.parseDouble(deviceManagerDto.getInternalStorageTotalGb() + ""), 
+        		Integer.parseInt((((deviceManagerDto.getInternalStorageTotalGb() - deviceManagerDto.getInternalStorageFreeGb())/deviceManagerDto.getInternalStorageTotalGb())*100)+""), 
         		"#9C27B0");
         internalStorageLayout.add(iNtitleSpan, internalStorage);
         // External Storage
@@ -186,9 +197,9 @@ public class DeviceDetailsDialog extends Dialog {
         eStitleSpan.getStyle().set("color", "#666");
         
         VerticalLayout externalStorage = createStorageCard("Internal Storage",
-        		Double.parseDouble((deviceManagerDto.getInternalStorageTotal() - deviceManagerDto.getInternalStorageFree())+""), 
-        		Double.parseDouble(deviceManagerDto.getInternalStorageTotal().toString()), 
-        		Integer.parseInt(((deviceManagerDto.getInternalStorageFree()/deviceManagerDto.getInternalStorageTotal())*100)+ ""), "#2196F3");
+        		Double.parseDouble( deviceManagerDto.getExternalStorageTotalGb()  - deviceManagerDto.getExternalStorageFreeGb() +""), 
+        		Double.parseDouble(deviceManagerDto.getExternalStorageTotalGb() + ""), 
+        		Integer.parseInt(((((deviceManagerDto.getExternalStorageTotalGb() - deviceManagerDto.getExternalStorageFreeGb())/deviceManagerDto.getExternalStorageTotalGb())*100)) + ""), "#2196F3");
         
 
         externalStorageLayout.add(eStitleSpan, externalStorage);
@@ -208,7 +219,7 @@ public class DeviceDetailsDialog extends Dialog {
         cputitleSpan.getStyle().set("color", "#666");
         
         VerticalLayout cpuUsage = createUsageCard("CPU Usage", 80, "#2196F3");
-      cpuUsageLayout.add(cputitleSpan, cpuUsage);  
+        cpuUsageLayout.add(cputitleSpan, cpuUsage);  
 //        VerticalLayout ramUsage = createUsageCard("RAM Storage", 91, "#F44336", "7.3 GB / 8 GB Total");
         //RAM Usage 
       
@@ -218,11 +229,11 @@ public class DeviceDetailsDialog extends Dialog {
         ramtitleSpan.getStyle().set("font-size", "12px");
         ramtitleSpan.getStyle().set("color", "#666");
         
-        VerticalLayout ramUsage = createStorageCard("RAM Storage", 47.7, deviceManagerDto.getRamTotal(), 5, "#F44336");
+        VerticalLayout ramUsage = createStorageCard("RAM Storage", deviceManagerDto.getRamTotalGb(), deviceManagerDto.getRamTotal(), 5, "#F44336");
         ramStorageLayout.add(ramtitleSpan, ramUsage);
         performanceRow.add(cpuUsageLayout, ramStorageLayout);
         
-        section.add(title,  horizontalLine, storageRow, performanceRow);
+        section.add(title,   storageRow, performanceRow);
         return section;
     }
     
@@ -233,19 +244,23 @@ public class DeviceDetailsDialog extends Dialog {
         section.getStyle().set("border", "1px solid #e0e0e0");
         section.getStyle().set("border-radius", "8px");
         section.getStyle().set("margin-bottom", "15px");
-        section.getStyle().set("padding", "20px !important");
-        
+        section.getStyle().set("padding", "20px !important");        
+        section.getStyle().set("height", "15%");
+        section.getStyle().set("gap", "0%");
+
+
         H4 title = new H4("Location Information");
         title.getStyle().set("color", "#2d5a3d");
         title.getStyle().set("margin-top", "0");
+        title.getStyle().set("font-size", "13px !important");
+
         
-        Hr horizontalLine = new Hr();
 
         
         HorizontalLayout currentLocation = createLocationRow(VaadinIcon.MAP_MARKER, "Current Location", deviceManagerDto.getUserLocation());
 //        HorizontalLayout lastLocation = createLocationRow(VaadinIcon.MAP_MARKER, "Last known location", "Badaskan");
         
-        section.add(title, horizontalLine, currentLocation);
+        section.add(title,  currentLocation);
         return section;
     }
     
@@ -257,18 +272,26 @@ public class DeviceDetailsDialog extends Dialog {
         section.getStyle().set("border-radius", "8px");
         section.getStyle().set("margin-bottom", "15px");
         section.getStyle().set("padding", "20px !important");
+        section.getStyle().set("height", "30%");
 
         
         H4 title = new H4("Network Information");
         title.getStyle().set("color", "#2d5a3d");
         title.getStyle().set("margin-top", "0");
+        title.getStyle().set("font-size", "13px !important");
+
         
-        Hr horizontalLine = new Hr();
 
         HorizontalLayout networkStrength = createNetworkRow(VaadinIcon.SIGNAL, "Network Strength", "Strong", "#4CAF50");
-        HorizontalLayout wifiStatus = createNetworkRow(VaadinIcon.SIGNAL, "Wi-Fi", "Disconnected", "#F44336");
+        HorizontalLayout wifiStatus = new HorizontalLayout();
+        if(deviceManagerDto.getWifiConnected()) {
+        wifiStatus  = createNetworkRow(VaadinIcon.SIGNAL, "Wi-Fi", "Connected", "#F44336");
+        }else {
+        wifiStatus  = createNetworkRow(VaadinIcon.SIGNAL, "Wi-Fi", "Disonnected", "#F44336");
+        }
+      
         
-        section.add(title, horizontalLine, networkStrength, wifiStatus);
+        section.add(title, networkStrength, wifiStatus);
         return section;
     }
     
@@ -280,11 +303,15 @@ public class DeviceDetailsDialog extends Dialog {
         section.getStyle().set("border-radius", "8px");
         section.getStyle().set("margin-bottom", "15px");
         section.getStyle().set("padding", "20px !important");
+        section.getStyle().set("height", "30%");
+
 
         
         H4 title = new H4("Battery Information");
         title.getStyle().set("color", "#2d5a3d");
         title.getStyle().set("margin-top", "0");
+        title.getStyle().set("font-size", "13px !important");
+
         
         Hr horizontalLine = new Hr();
 
@@ -334,11 +361,15 @@ public class DeviceDetailsDialog extends Dialog {
         section.getStyle().set("border-radius", "8px");
         section.getStyle().set("margin-bottom", "15px");
         section.getStyle().set("padding", "20px !important");
+        section.getStyle().set("height", "30%");
+
 
         
         H4 title = new H4("System Information");
         title.getStyle().set("color", "#2d5a3d");
         title.getStyle().set("margin-top", "0");
+        title.getStyle().set("font-size", "13px !important");
+
         
         Hr horizontalLine = new Hr();
 
@@ -350,7 +381,7 @@ public class DeviceDetailsDialog extends Dialog {
         return section;
     }
     
-    private void createFooter() {
+    private void createFooter(DeviceManagerDto deviceManagerDto) {
         HorizontalLayout footer = new HorizontalLayout();
         footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
@@ -365,6 +396,54 @@ public class DeviceDetailsDialog extends Dialog {
         HorizontalLayout actionButtons = new HorizontalLayout();
         actionButtons.setSpacing(true);
         
+        Button viewDeviceLog = new Button("Error Log", new Icon(VaadinIcon.REFRESH));
+        viewDeviceLog.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        viewDeviceLog.addClickListener(e -> {
+            Dialog errorLogDialog = new Dialog();
+            errorLogDialog.setHeaderTitle("Error Log");
+            errorLogDialog.setWidth("800px");
+            errorLogDialog.setHeight("600px");
+            
+            
+            
+            // Create the error log display area with Eclipse IDE styling
+            Div logContainer = new Div();
+            logContainer.getStyle()
+                .set("background-color", "#2b2b2b")
+                .set("color", "#cccccc")
+                .set("font-family", "Consolas, 'Courier New', monospace")
+                .set("font-size", "12px")
+                .set("padding", "10px")
+                .set("overflow-y", "auto")
+                .set("height", "100%")
+                .set("white-space", "pre-wrap")
+                .set("border", "1px solid #3c3c3c");
+            
+            // Sample error log content (replace with your actual log data)
+            String errorLogContent = buildErrorLogContentByDeviceId(deviceManagerDto);
+            logContainer.getElement().setProperty("innerHTML", errorLogContent);
+            
+            // Create a scrollable content area
+            Div content = new Div(logContainer);
+            content.getStyle()
+                .set("flex", "1")
+                .set("overflow", "hidden");
+            errorLogDialog.add(content);
+            
+            // Footer with close button
+            Button closeButton = new Button("Close", event -> errorLogDialog.close());
+            closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+            errorLogDialog.getFooter().add(closeButton);
+            
+            errorLogDialog.open();
+        });
+        
+        
+
+        // Helper method to build error log content with Eclipse-style formatting
+       
+        
         Button requestDataSync = new Button("Request Data sync", new Icon(VaadinIcon.REFRESH));
         requestDataSync.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         
@@ -374,10 +453,80 @@ public class DeviceDetailsDialog extends Dialog {
         Button remoteSupport = new Button("Remote support", new Icon(VaadinIcon.HEADPHONES));
         remoteSupport.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         
-        actionButtons.add(requestDataSync, latestDiagnostics, remoteSupport);
+        actionButtons.add(viewDeviceLog, requestDataSync, latestDiagnostics, remoteSupport);
         
         footer.add(closeBtn, actionButtons);
         add(footer);
+    }
+    
+    private String buildErrorLogContent() {
+        StringBuilder log = new StringBuilder();
+        
+        // Example error entries with color coding (similar to Eclipse)
+        log.append("<span style='color: #cc7832;'>!ENTRY</span> ")
+           .append("<span style='color: #a9b7c6;'>com.example.application 1 0 2025-10-02 14:32:15.123</span>\n");
+        log.append("<span style='color: #cc7832;'>!MESSAGE</span> ")
+           .append("<span style='color: #ff6b68;'>Error occurred while processing request</span>\n");
+        log.append("<span style='color: #cc7832;'>!STACK 0</span>\n");
+        log.append("<span style='color: #a9b7c6;'>java.lang.NullPointerException: Cannot invoke method on null object\n");
+        log.append("    at com.example.service.DataService.processData(DataService.java:145)\n");
+        log.append("    at com.example.controller.MainController.handleRequest(MainController.java:89)\n");
+        log.append("    at com.vaadin.flow.component.ClickEvent.dispatch(ClickEvent.java:52)</span>\n\n");
+        
+        log.append("<span style='color: #cc7832;'>!ENTRY</span> ")
+           .append("<span style='color: #a9b7c6;'>com.example.application 2 0 2025-10-02 14:30:42.456</span>\n");
+        log.append("<span style='color: #cc7832;'>!MESSAGE</span> ")
+           .append("<span style='color: #ffc66d;'>Warning: Connection timeout exceeded</span>\n");
+        log.append("<span style='color: #a9b7c6;'>Connection to database took longer than expected (5000ms)</span>\n\n");
+        
+        log.append("<span style='color: #cc7832;'>!ENTRY</span> ")
+           .append("<span style='color: #a9b7c6;'>com.example.application 4 0 2025-10-02 14:28:10.789</span>\n");
+        log.append("<span style='color: #cc7832;'>!MESSAGE</span> ")
+           .append("<span style='color: #6897bb;'>Info: Application started successfully</span>\n");
+        
+        return log.toString();
+    }
+    
+    private String buildErrorLogContentByDeviceId(DeviceManagerDto deviceManagerDto) {
+    	
+    	DeviceErrorManagerDto deviceError =  FacadeProvider.getDeviceErrorManagerFacade().getDeviceErrorByUsernameAndDeviceId(deviceManagerDto.getUserName(), deviceManagerDto.getDeviceSerial());
+        
+    	
+    	System.out.println(deviceError.getErrorMessage());
+    
+    	StringBuilder log = new StringBuilder();
+        
+        // Example error entries with color coding (similar to Eclipse)
+    	
+    	log.append("<span style='color: #cc7832;'>!USERNAME</span> ");
+        log.append(deviceError.getUserName() +  "\n");
+    	
+        log.append("<span style='color: #cc7832;'>!ERROR SOURCE</span> ");
+        log.append(deviceError.getErrorAction() +  "\n");
+        
+        log.append("<span style='color: #cc7832;'>!ERROR MESSAGE</span> ");
+        log.append(deviceError.getErrorMessage() +  "\n");
+
+        log.append("<span style='color: #a9b7c6;'>STACKTRACE</span>\n");
+        log.append(deviceError.getStackTrace() +  "\n");
+//        log.append("<span style='color: #cc7832;'>!STACK 0</span>\n");
+//        log.append("<span style='color: #a9b7c6;'>java.lang.NullPointerException: Cannot invoke method on null object\n");
+//        log.append("    at com.example.service.DataService.processData(DataService.java:145)\n");
+//        log.append("    at com.example.controller.MainController.handleRequest(MainController.java:89)\n");
+//        log.append("    at com.vaadin.flow.component.ClickEvent.dispatch(ClickEvent.java:52)</span>\n\n");
+//        
+//        log.append("<span style='color: #cc7832;'>!ENTRY</span> ")
+//           .append("<span style='color: #a9b7c6;'>com.example.application 2 0 2025-10-02 14:30:42.456</span>\n");
+//        log.append("<span style='color: #cc7832;'>!MESSAGE</span> ")
+//           .append("<span style='color: #ffc66d;'>Warning: Connection timeout exceeded</span>\n");
+//        log.append("<span style='color: #a9b7c6;'>Connection to database took longer than expected (5000ms)</span>\n\n");
+//        
+//        log.append("<span style='color: #cc7832;'>!ENTRY</span> ")
+//           .append("<span style='color: #a9b7c6;'>com.example.application 4 0 2025-10-02 14:28:10.789</span>\n");
+//        log.append("<span style='color: #cc7832;'>!MESSAGE</span> ")
+//           .append("<span style='color: #6897bb;'>Info: Application started successfully</span>\n");
+        
+        return log.toString();
     }
     
     // Helper methods
@@ -390,7 +539,7 @@ public class DeviceDetailsDialog extends Dialog {
         
         Span labelSpan = new Span(label);
         labelSpan.getStyle().set("font-weight", "500");
-        labelSpan.getStyle().set("margin-right", "40%");
+//        labelSpan.getStyle().set("margin-right", "40%");
         
         Span valueSpan = new Span(value);
         valueSpan.getStyle().set("color", "#666");

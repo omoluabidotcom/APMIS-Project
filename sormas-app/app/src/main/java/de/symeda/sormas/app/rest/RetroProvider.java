@@ -67,6 +67,7 @@ import de.symeda.sormas.app.core.notification.NotificationType;
 import de.symeda.sormas.app.util.AppUpdateController;
 import de.symeda.sormas.app.util.BiConsumer;
 import de.symeda.sormas.app.util.Consumer;
+import de.symeda.sormas.app.util.ErrorReportingHelper;
 import okhttp3.Credentials;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -128,6 +129,7 @@ public final class RetroProvider {
 	private FeatureConfigurationFacadeRetro featureConfigurationFacadeRetro;
 	private AggregateReportFacadeRetro aggregateReportFacadeRetro;
 	private DeviceInfoFacadeRetro deviceInfoFacadeRetro;
+	private DeviceErrorFacadeRetro deviceErrorFacadeRetro;
 
 	private RetroProvider(Context context) throws ServerConnectionException, ServerCommunicationException, ApiVersionException {
 
@@ -280,6 +282,15 @@ public final class RetroProvider {
 			Log.w(RetroProvider.class.getSimpleName(), e.getMessage());
 			// wrap the exception message inside a response object
 			compatibilityResponse = Response.error(500, ResponseBody.create(MediaType.parse("text/plain"), e.getMessage()));
+
+			System.err.println("System errror recievedddd");
+
+//						ErrorReportingHelper.logAndStoreDeviceError("Connection " , e);
+
+			System.err.println("System errror Loggggeddddd ");
+
+
+
 		}
 
 		if (compatibilityResponse.isSuccessful()) {
@@ -319,6 +330,8 @@ System.out.println(isConnected() + "connecting +++++++++"+connecting);
 //					Toast.LENGTH_LONG).show();
 			disconnect();
 			throw new IllegalStateException("Connection already established... Now disconnecting...");
+		}else{
+			ErrorReportingHelper.logAndStoreDeviceError("Connection Issue " , new Exception("Exception Thrown "));
 		}
 //		if (connecting) {
 ////			Toast.makeText(context, "Connection already established... now disconnecting...",
@@ -1058,6 +1071,19 @@ System.out.println(isConnected() + "connecting +++++++++"+connecting);
 			}
 		}
 		return instance.deviceInfoFacadeRetro;
+	}
+
+	public static DeviceErrorFacadeRetro getDeviceErrorFacadeRetro() throws NoConnectionException {
+		if (instance == null)
+			throw new NoConnectionException();
+		if (instance.deviceErrorFacadeRetro == null) {
+			synchronized ((RetroProvider.class)) {
+				if (instance.deviceErrorFacadeRetro == null) {
+					instance.deviceErrorFacadeRetro = instance.retrofit.create(DeviceErrorFacadeRetro.class);
+				}
+			}
+		}
+		return instance.deviceErrorFacadeRetro;
 	}
 
 	public static void throwException(Response<?> response) throws ServerConnectionException, ServerCommunicationException {

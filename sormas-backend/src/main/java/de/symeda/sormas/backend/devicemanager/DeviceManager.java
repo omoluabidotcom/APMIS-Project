@@ -76,6 +76,12 @@ public class DeviceManager extends AbstractDomainObject{
 	public static final String NETWORK_STRENGTH= "network_strength";
 	public static final String LOGGED_IN_USER= "user_id";
 
+	
+	public static final String TOTAL_INT_STORAGE_GB= "total_int_storage_gb";
+	public static final String FREE_INT_STORAGE_GB= "free_int_storage_gb";
+	public static final String TOTAL_EXT_STORAGE_GB= "total_ext_storage_gb";
+	public static final String FREE_EXT_STORAGE_GB= "free_ext_storage_gb";
+	public static final String RAM_STORAGE_GB= "ram_storage_gb";
 
 	
 	private String device_model ;//VARCHAR(255),
@@ -94,6 +100,14 @@ public class DeviceManager extends AbstractDomainObject{
     private Long total_ext_storage;
     private Long free_ext_storage;
     private Long ram_storage;
+    
+    
+    private Long total_int_storage_gb;
+    private Long free_int_storage_gb;
+    private Long total_ext_storage_gb;
+    private Long free_ext_storage_gb;
+    private Long ram_storage_gb;
+    
     private Integer battery_level;
     private Boolean wifi_connected;
     private Integer network_strength;
@@ -278,6 +292,58 @@ public class DeviceManager extends AbstractDomainObject{
 	public void setDevice_id(String device_id) {
 		this.device_id = device_id;
 	}
+
+
+	public Long getTotal_int_storage_gb() {
+		return total_int_storage_gb;
+	}
+
+
+	public void setTotal_int_storage_gb(Long total_int_storage_gb) {
+		this.total_int_storage_gb = total_int_storage_gb;
+	}
+
+
+	public Long getFree_int_storage_gb() {
+		return free_int_storage_gb;
+	}
+
+
+	public void setFree_int_storage_gb(Long free_int_storage_gb) {
+		this.free_int_storage_gb = free_int_storage_gb;
+	}
+
+
+	public Long getTotal_ext_storage_gb() {
+		return total_ext_storage_gb;
+	}
+
+
+	public void setTotal_ext_storage_gb(Long total_ext_storage_gb) {
+		this.total_ext_storage_gb = total_ext_storage_gb;
+	}
+
+
+	public Long getFree_ext_storage_gb() {
+		return free_ext_storage_gb;
+	}
+
+
+	public void setFree_ext_storage_gb(Long free_ext_storage_gb) {
+		this.free_ext_storage_gb = free_ext_storage_gb;
+	}
+
+
+	public Long getRam_storage_gb() {
+		return ram_storage_gb;
+	}
+
+
+	public void setRam_storage_gb(Long ram_storage_gb) {
+		this.ram_storage_gb = ram_storage_gb;
+	}
+	
+	
 	
 	
 
