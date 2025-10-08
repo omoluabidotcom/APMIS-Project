@@ -16,6 +16,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.UniqueConstraint;
 
+import de.symeda.sormas.api.messaging.MessageCategory;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.backend.common.AbstractDomainObject;
@@ -36,8 +37,12 @@ public class Message extends AbstractDomainObject{
 	public static final String TABLE_NAME = "messages";
 	public static final String TABLE_NAME_USERROLES = "messages_userroles";
 	public static final String TABLE_NAME_USERTYPES = "messages_usertypes";
+	public static final String TABLE_NAME_MESSAGECATEGORY = "messages_messagecategory";
+
 	
+	public static final String TITLE = "title";
 	public static final String MESSAGE_CONTENT = "messageContent";
+	public static final String MESSAGE_CATEGORY = "messageCategory";
 	public static final String USER_ROLES = "userRoles";
 	public static final String MESSAGE_FORM_ACCESS = "formAccess";
 	public static final String AREA = "area";
@@ -47,7 +52,9 @@ public class Message extends AbstractDomainObject{
 	public static final String CHG_DATE = "chgDate";
 	public static final String CREATED_BY = "creatingUser";
 	
+	private String title;
 	private String messageContent;
+	private MessageCategory messageCategory;
 	private Set<UserRole> userRoles;
 	private Set<FormAccess> formAccess;
 	private Set<Area> area;
@@ -56,7 +63,15 @@ public class Message extends AbstractDomainObject{
 	private Set<Community> community;
 	private User creatingUser;
 	private Timestamp chgDate;
-	
+		
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
 	@Column(name = "messagecontent", nullable = false)
 	public String getMessageContent() {
 		return messageContent;
@@ -65,6 +80,22 @@ public class Message extends AbstractDomainObject{
 	public void setMessageContent(String messageContent) {
 		this.messageContent = messageContent;
 	}	
+	
+	@Enumerated(EnumType.STRING)
+	@CollectionTable(name = TABLE_NAME_MESSAGECATEGORY,
+	joinColumns = @JoinColumn(name = "messages_id", referencedColumnName = Message.ID, nullable = false),
+	uniqueConstraints = @UniqueConstraint(columnNames = {
+		"messages_id",
+		"messagecategory" }))
+	@Column(name = "messagecategory", nullable = true)
+	public MessageCategory getMessageCategory() {
+		return messageCategory;
+	}
+
+	public void setMessageCategory(MessageCategory messageCategory) {
+		this.messageCategory = messageCategory;
+	}
+	
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Enumerated(EnumType.STRING)
 	@CollectionTable(name = "messages_userroles",
