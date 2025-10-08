@@ -18,7 +18,7 @@
  * ******************************************************************************
  */
 
-package de.symeda.sormas.backend.devicemanager;
+package de.symeda.sormas.backend.deviceerrormanager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +40,10 @@ import javax.validation.constraints.NotNull;
 
 import com.vladmihalcea.hibernate.type.util.SQLExtractor;
 
+import de.symeda.sormas.api.deviceerrormanager.DeviceErrorManagerDto;
+import de.symeda.sormas.api.deviceerrormanager.DeviceErrorManagerFacade;
+import de.symeda.sormas.api.deviceerrormanager.DeviceErrorManagerReferenceDto;
+import de.symeda.sormas.api.deviceerrormanager.DeviceErrorMangerCriteria;
 import de.symeda.sormas.api.devicemanager.DeviceManagerDto;
 import de.symeda.sormas.api.devicemanager.DeviceManagerFacade;
 import de.symeda.sormas.api.devicemanager.DeviceManagerReferenceDto;
@@ -47,6 +51,7 @@ import de.symeda.sormas.api.devicemanager.DeviceMangerCriteria;
 import de.symeda.sormas.api.user.UserReferenceDto;
 import de.symeda.sormas.api.utils.SortProperty;
 import de.symeda.sormas.api.utils.ValidationRuntimeException;
+import de.symeda.sormas.backend.devicemanager.DeviceManagerService;
 import de.symeda.sormas.backend.infrastructure.community.Community;
 import de.symeda.sormas.backend.infrastructure.community.CommunityService;
 import de.symeda.sormas.backend.infrastructure.district.DistrictFacadeEjb;
@@ -59,14 +64,14 @@ import de.symeda.sormas.backend.util.DtoHelper;
 import de.symeda.sormas.backend.util.ModelConstants;
 import de.symeda.sormas.backend.util.QueryHelper;
 
-@Stateless(name = "DeviceManagerFacade")
-public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
+@Stateless(name = "DeviceErrorManagerFacade")
+public class DeviceErrorManagerFacadeEjb implements DeviceErrorManagerFacade {
 
 	@PersistenceContext(unitName = ModelConstants.PERSISTENCE_UNIT_NAME)
 	private EntityManager em;
 
 	@EJB
-	private DeviceManagerService deviceManagerService;
+	private DeviceErrorManagerService deviceErrorManagerService;
 
 	@EJB
 	private DistrictService districtService;
@@ -86,131 +91,90 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
 	@EJB
 	private UserRoleConfigFacadeEjbLocal userRoleConfigFacade;
 
-	public DeviceManager fromDto(@NotNull DeviceManagerDto source, boolean checkChangeDate) {
-		DeviceManager target = DtoHelper.fillOrBuildEntity(source, deviceManagerService.getByUuid(source.getUuid()),
-				DeviceManager::new, checkChangeDate);
+	public DeviceErrorManager fromDto(@NotNull DeviceErrorManagerDto source, boolean checkChangeDate) {
+		DeviceErrorManager target = DtoHelper.fillOrBuildEntity(source, deviceErrorManagerService.getByUuid(source.getUuid()),
+				DeviceErrorManager::new, checkChangeDate);
 
-		target.setDevice_model(source.getDeviceModel());
-		target.setDevice_brand(source.getDeviceBrand());
-		target.setUser_name(source.getUserName());
-		target.setUser_location(source.getUserLocation());
-		target.setApk_version(source.getApkVersion());		
-        target.setDevice_serial(source.getDeviceSerial());
-        target.setAndroid_version(source.getAndroidVersion());
-        target.setTotal_int_storage(source.getInternalStorageTotal());
-        target.setFree_int_storage(source.getInternalStorageFree());
-        target.setTotal_ext_storage(source.getExternalStorageTotal());
-        target.setFree_ext_storage(source.getExternalStorageFree());
-        target.setRam_storage(source.getRamTotal());
-        target.setBattery_level(source.getBatteryLevel());
-        target.setWifi_connected(source.getWifiConnected());	        
-        target.setNetwork_strength(source.getNetworkStrength());
-        target.setDevice_id(source.getDeviceId());
-        
-        target.setTotal_int_storage_gb(source.getInternalStorageTotalGb());
-        target.setFree_int_storage_gb(source.getInternalStorageFreeGb());
-        target.setTotal_ext_storage_gb(source.getExternalStorageTotalGb());
-        target.setFree_ext_storage_gb(source.getExternalStorageFreeGb());
-        target.setRam_storage_gb(source.getRamTotalGb());
-//        
-//        UserReferenceDto userRef = source.getUser();
-//        if (userRef != null) {
-//            // Prefer by UUID if available, else by ID if your UserService supports it
-//            User userEntity = userService.getByUuid(userRef.getUuid());
-//            target.setUser_id(userEntity);
-//        } else {
-//            target.setUser_id(null);
-//        }
-        
-        target.setUser_name(source.getUserName());
-        target.setUser_location(source.getUserLocation());
-	        
+//target.setChangeDate(source.getChangeDate());
+//target.setCreationDate(source.getCreationDate());
+target.setDeviceId(source.getDeviceId());
+target.setErrorAction(source.getErrorAction());
+target.setErrorMessage(source.getErrorMessage());
+target.setLastUpdated(source.getLastUpdated());
+target.setStackTrace(source.getStackTrace());
+target.setUserName(source.getUserName());
+target.setUuid(source.getUuid());
+
 		return target;
 	}
 
-	public DeviceManagerDto toDto(DeviceManager source) {
+	public DeviceErrorManagerDto toDto(DeviceErrorManager source) {
 		if (source == null) {
 			return null;
 		}
 
-		DeviceManagerDto target = new DeviceManagerDto();
+		DeviceErrorManagerDto target = new DeviceErrorManagerDto();
 		DtoHelper.fillDto(target, source);
 		
-		target.setDeviceModel(source.getDevice_model());
-		target.setUserName(source.getUser_name());
-		target.setUserLocation(source.getUser_location());
-		target.setApkVersion(source.getApk_version());		
-		target.setDeviceBrand(source.getDevice_brand());
-        target.setDeviceSerial(source.getDevice_serial());
-        target.setAndroidVersion(source.getAndroid_version());
-        target.setInternalStorageTotal(source.getTotal_int_storage());
-        target.setInternalStorageFree(source.getFree_int_storage());
-        target.setExternalStorageTotal(source.getTotal_ext_storage());
-        target.setExternalStorageFree(source.getTotal_int_storage());
-        target.setRamTotal(source.getRam_storage());
-        target.setBatteryLevel(source.getBattery_level());
-        target.setWifiConnected(source.getWifi_connected());	        
-        target.setNetworkStrength(source.getNetwork_strength());
-        target.setDeviceId(source.getDevice_id());
-        
-        target.setInternalStorageTotalGb(source.getTotal_int_storage_gb());
-        target.setInternalStorageFreeGb(source.getFree_int_storage_gb());
-        target.setExternalStorageTotalGb(source.getTotal_ext_storage_gb());
-        target.setExternalStorageFreeGb(source.getTotal_int_storage_gb());
-        target.setRamTotalGb(source.getRam_storage_gb());
-
-//        if (source.getUser_id() != null) {
-//            target.setUser(new UserReferenceDto(source.getUser_id().getUuid(), source.getUser_id().getFirstName(), source.getUser_id().getLastName()));
-//        } else {
-//            target.setUser(null);
-//        }        target.setUserName(source.getUser_name());
-        target.setUserLocation(source.getUser_location());
-
-
-        //APPVERSION AND USER LOCATION
-        
+		target.setDeviceId(source.getDeviceId());
+		target.setErrorAction(source.getErrorAction());
+		target.setErrorMessage(source.getErrorMessage());
+		target.setLastUpdated(source.getLastUpdated());
+		target.setStackTrace(source.getStackTrace());
+		target.setUserName(source.getUserName());
+		target.setUuid(source.getUuid());
 
 		return target;
 	}
 
-	private void validate(DeviceManagerDto deviceManagerDto) {
+	private void validate(DeviceErrorManagerDto deviceManagerDto) {
 		
 	}
 
 	@Override
-	public DeviceManagerDto saveDeviceDetailsMobile(@Valid DeviceManagerDto deviceManagerDto)
+	public DeviceErrorManagerDto saveDeviceErrorFromMobile(@Valid DeviceErrorManagerDto deviceErroeManagerDto)
 			throws ValidationRuntimeException {
 
 		System.out.println(" MObile version of save chittt ");
 		UserReferenceDto currtUsr = userServiceEBJ.getCurrentUserAsReference();
 
-		DeviceManager deviceInfoData = fromDto(deviceManagerDto, true);
+		DeviceErrorManager deviceInfoData = fromDto(deviceErroeManagerDto, true);
 
-		validate(deviceManagerDto);
+		validate(deviceErroeManagerDto);
 
-		deviceManagerService.ensurePersisted(deviceInfoData);
+		deviceErrorManagerService.ensurePersisted(deviceInfoData);
 		return toDto(deviceInfoData);
 	}
 
 	@Override
-	public List<DeviceManagerDto> getByUuids(List<String> uuids) {
-		return deviceManagerService.getByUuids(uuids).stream().map(c -> toDto(c)).collect(Collectors.toList());
+	public List<DeviceErrorManagerDto> getByUuids(List<String> uuids) {
+		return deviceErrorManagerService.getByUuids(uuids).stream().map(c -> toDto(c)).collect(Collectors.toList());
 	}
 
 	
 	@Override
-	public DeviceManagerDto getDeviceDetailsByUuid(String uuid) {
-		return toDto(deviceManagerService.getByUuid(uuid));
+	public DeviceErrorManagerDto getDeviceDetailsByUuid(String uuid) {
+		return toDto(deviceErrorManagerService.getByUuid(uuid));
 	}
 	
+	@Override
+	public DeviceErrorManagerDto getDeviceErrorByUsernameAndDeviceId(String username, String deviceId) {
+	    if (username == null || deviceId == null) {
+	        return null;
+	    }
+	    
+	    DeviceErrorManager deviceErrorManager = deviceErrorManagerService.getByUsernameAndDeviceId(username, deviceId);
+	    return toDto(deviceErrorManager);
+	}
+
 	
 	@Override
-	public List<DeviceManagerDto> getIndexList(DeviceMangerCriteria criteria, Integer first, Integer max,
+	public List<DeviceErrorManagerDto> getIndexList(DeviceErrorMangerCriteria criteria, Integer first, Integer max,
 	                                           List<SortProperty> sortProperties) {
 
 	    CriteriaBuilder cb = em.getCriteriaBuilder();
-	    CriteriaQuery<DeviceManager> cq = cb.createQuery(DeviceManager.class);
-	    Root<DeviceManager> root = cq.from(DeviceManager.class);
+	    CriteriaQuery<DeviceErrorManager> cq = cb.createQuery(DeviceErrorManager.class);
+	    Root<DeviceErrorManager> root = cq.from(DeviceErrorManager.class);
 
 	    Predicate filter = null;
 
@@ -265,22 +229,23 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
 	}
 
 
-	private DeviceManagerReferenceDto toReferenceDto(DeviceManager source) {
-		if (source == null) {
-			return null;
-		}
-		return source.toReference();
-	}
+//	private DeviceErrorManagerReferenceDto toReferenceDto(DeviceErrorManager source) {
+//		if (source == null) {
+//			return null;
+//		}
+//		return source.toReference();
+//	}
 
 	@LocalBean
 	@Stateless
-	public static class DeviceManagerFacadeEjbLocal extends DeviceManagerFacadeEjb {
+	public static class DeviceErrorManagerFacadeEjbLocal extends DeviceErrorManagerFacadeEjb {
 
-		public DeviceManagerFacadeEjbLocal() {
+		public DeviceErrorManagerFacadeEjbLocal() {
 
 		}
 
 	}
+
 
 
 

@@ -21,11 +21,11 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -38,7 +38,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
-import de.symeda.sormas.app.backend.device.DeviceInfo;
+import de.symeda.sormas.app.backend.device.info.DeviceInfo;
 import de.symeda.sormas.app.backend.user.User;
 
 /**
@@ -111,7 +111,11 @@ public class DeviceInfoService {
                     deviceInfo.setDeviceSerial("PERMISSION_DENIED");
                 }
             } else {
-                deviceInfo.setDeviceSerial("PERMISSION_NOT_GRANTED");
+                final Context ctx = DatabaseHelper.getContext();
+                final String deviceSerial = ctx !=
+                        null ? Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID) : null;
+
+                deviceInfo.setDeviceSerial(deviceSerial);
             }
 
         } catch (Exception e) {

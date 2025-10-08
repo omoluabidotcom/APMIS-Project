@@ -937,6 +937,8 @@ public class ClusterView extends VerticalLayout {
 			floatStatus.setEnabled(true);
 		}
 
+		
+		
 		// this can generate null
 		dialog.setCloseOnEsc(false);
 		dialog.setCloseOnOutsideClick(false);
@@ -1038,7 +1040,7 @@ public class ClusterView extends VerticalLayout {
 				CommunityDto dce = FacadeProvider.getCommunityFacade().getByUuid(uuids);
 				if (dce != null) {
 					
-					System.out.println(clusterFloatStatus +" ======================clusterFloatStatus");
+					System.out.println(clusterFloatStatus +" ==========new ============clusterFloatStatus");
 					dce.setName(name);
 					int clusternumbervalue = Integer.parseInt(clusterNum);
 					dce.setClusterNumber(clusternumbervalue);
@@ -1050,12 +1052,14 @@ public class ClusterView extends VerticalLayout {
 
 					List<DistrictIndexDto> pcode = FacadeProvider.getDistrictFacade().getAllDistricts();
 					for (DistrictIndexDto districtIndexDto : pcode) {
-						String checkerName = districtIndexDto.getName();
+						String selectedDistrictUuid = districtIndexDto.getUuid();
 
-						if (checkerName.trim().equals(districtOfCluster.getValue().toString().trim())) {
+						if (selectedDistrictUuid.trim().equals(districtOfCluster.getValue().toString().trim())) {
+							
 							DistrictReferenceDto nuller = new DistrictReferenceDto(districtIndexDto.getUuid(),
 									districtIndexDto.getName(), districtIndexDto.getExternalId());
 							dce.setDistrict(nuller);
+							break;
 						}
 					}
 
@@ -1073,6 +1077,9 @@ public class ClusterView extends VerticalLayout {
 						cCodeConstruction = Long.parseLong(cCodeConstruction + clusterNum);
 
 						if (ccodeValue.equals(cCodeConstruction)) {
+							
+							System.out.println(ccodeValue +" ===========equals===========clusterFloatStatus" + cCodeConstruction);
+
 							boolean exceptionCheck = false;
 							try {
 								FacadeProvider.getCommunityFacade().save(dce, true);
@@ -1115,6 +1122,9 @@ public class ClusterView extends VerticalLayout {
 								}
 							}
 						} else {
+							
+							System.out.println(ccodeValue +" ============n ot equals==========clusterFloatStatus" + cCodeConstruction);
+
 
 							Notification notification = new Notification();
 							notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -1148,21 +1158,52 @@ public class ClusterView extends VerticalLayout {
 					dcex.setRegion(provinceOfDistrict.getValue());
 					dcex.setDistrict(districtOfCluster.getValue());
 					
-					System.out.println(clusterFloatStatus +" ======================clusterFloatStatus");
+					System.out.println(clusterFloatStatus +" ============edit==========clusterFloatStatus");
 
 					dcex.setFloating(clusterFloatStatus);
 
-					List<DistrictIndexDto> pcode = FacadeProvider.getDistrictFacade().getAllDistricts();
-					for (DistrictIndexDto districtIndexDto : pcode) {
-						String checkerName = districtIndexDto.getName();
+//					List<DistrictIndexDto> pcode = FacadeProvider.getDistrictFacade().getAllDistricts();
+//					for (DistrictIndexDto districtIndexDto : pcode) {
+//						String checkerName = districtIndexDto.getName();
+//
+//						if (checkerName.trim().equals(districtOfCluster.getValue().toString().trim())) {
+//							DistrictReferenceDto nuller = new DistrictReferenceDto(districtIndexDto.getUuid(),
+//									districtIndexDto.getName(), districtIndexDto.getExternalId());
+//							dcex.setDistrict(nuller);
+//						}
+//					}
 
-						if (checkerName.trim().equals(districtOfCluster.getValue().toString().trim())) {
+					
+					List<DistrictIndexDto> pcode = FacadeProvider.getDistrictFacade().getAllDistricts();
+					
+					System.out.println(pcode + " pcodweeeeeeeeeeeee");
+					for (DistrictIndexDto districtIndexDto : pcode) {
+						
+						System.out.println(districtIndexDto.getRegionexternalId() + " getRegionexternalIdpcodweeeeeeeeeeeee");
+
+						String selectedDistrictUuid = districtIndexDto.getUuid();
+
+						if (selectedDistrictUuid.equals(districtOfCluster.getValue().getUuid().toString())) {
+							
+							System.out.println(" Distric matches pcodweeeeeeeeeeeee facsefprocvider " + 
+FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(selectedDistrictUuid));
+
+							
+							System.out.println(" Distric matches pcodweeeeeeeeeeeee");
+
 							DistrictReferenceDto nuller = new DistrictReferenceDto(districtIndexDto.getUuid(),
 									districtIndexDto.getName(), districtIndexDto.getExternalId());
-							dcex.setDistrict(nuller);
+							
+							System.out.println(nuller.getUuid() +  " Distric matches pcodweeeeeeeeeeeee");
+
+							dce.setDistrict(nuller);
+							break;
 						}
 					}
+					
+					System.out.println(ccodeValue +" ====dcex.getDistrict().getExternalId() != null========clusterFloatStatus" + dcex.getDistrict().getExternalId() != null);
 
+					
 					if (dcex.getDistrict().getExternalId() != null) {
 
 						Long cCodeConstruction = dcex.getDistrict().getExternalId();
@@ -1179,6 +1220,9 @@ public class ClusterView extends VerticalLayout {
 						if (ccodeValue.equals(cCodeConstruction)) {
 							boolean exceptionCheck = false;
 							try {
+								
+								System.out.println(ccodeValue +" ============saving==========clusterFloatStatus" + cCodeConstruction);
+
 								FacadeProvider.getCommunityFacade().save(dcex, true);
 								Notification.show(I18nProperties.getString(Strings.saved) + name + " " + code);
 								dialog.close();
@@ -1221,6 +1265,9 @@ public class ClusterView extends VerticalLayout {
 								}
 							}
 						} else {
+							
+							System.out.println(ccodeValue + "cocode value----- " + cCodeConstruction);
+			
 
 							Notification notification = new Notification();
 							notification.addThemeVariants(NotificationVariant.LUMO_ERROR);

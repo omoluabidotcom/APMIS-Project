@@ -13,17 +13,17 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package de.symeda.sormas.app.backend.device;
+package de.symeda.sormas.app.backend.device.info;
 
-import android.util.Log;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.List;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.stmt.QueryBuilder;
 
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
+import android.util.Log;
 
 import de.symeda.sormas.api.utils.DataHelper;
 import de.symeda.sormas.app.backend.common.AbstractAdoDao;
@@ -31,46 +31,58 @@ import de.symeda.sormas.app.backend.config.ConfigProvider;
 import de.symeda.sormas.app.backend.user.User;
 
 /**
- * Data Access Object for DeviceError Logs
+ * Data Access Object for DeviceInfo
  */
-public class DeviceLogDao extends AbstractAdoDao<DeviceErrorLog> {
+public class DeviceInfoDao extends AbstractAdoDao<DeviceInfo> {
 
-    public DeviceLogDao(Dao<DeviceErrorLog, Long> dao) throws SQLException {
+    public DeviceInfoDao(Dao<DeviceInfo, Long> dao) throws SQLException {
         super(dao);
     }
 
     @Override
-    protected Class<DeviceErrorLog> getAdoClass() {
-        return DeviceErrorLog.class;
+    protected Class<DeviceInfo> getAdoClass() {
+        return DeviceInfo.class;
     }
 
     @Override
     public String getTableName() {
-        return DeviceErrorLog.TABLE_NAME;
+        return DeviceInfo.TABLE_NAME;
     }
 
     /**
      * Get device info for a specific user
      */
-
+    public DeviceInfo getByUser(User user) throws SQLException {
+        if (user == null) {
+            return null;
+        }
+        List<DeviceInfo> deviceInfos = queryForEq(DeviceInfo.USER + "_id", user.getId());
+        // Ensure only one record by deleting duplicates
+        if (deviceInfos.size() > 1) {
+            Log.w(getTableName(), "Multiple DeviceInfo records found for user: " + user.getUserName() + ". Keeping the latest.");
+//            deleteDuplicates(user);
+            deviceInfos = queryForEq(DeviceInfo.USER + "_id", user.getId());
+        }
+        return deviceInfos.isEmpty() ? null : deviceInfos.get(0);
+    }
 
     /**
      * Get device info by device ID
      */
-    public DeviceErrorLog getByDeviceId(String deviceId) throws SQLException {
+    public DeviceInfo getByDeviceId(String deviceId) throws SQLException {
         if (deviceId == null) {
             return null;
         }
-        List<DeviceErrorLog> deviceErrors = queryForEq(DeviceErrorLog.DEVICE_ID, deviceId);
-        return deviceErrors.isEmpty() ? null : deviceErrors.get(0);
+        List<DeviceInfo> deviceInfos = queryForEq(DeviceInfo.DEVICE_ID, deviceId);
+        return deviceInfos.isEmpty() ? null : deviceInfos.get(0);
     }
 
 
     /**
      * Create a new DeviceInfo record for a user
      */
-    private DeviceErrorLog createDeviceErrorLog(String deviceId, DeviceErrorLog inputDeviceError) throws SQLException {
-        if (deviceId == null || inputDeviceError == null) {
+    private DeviceInfo createDeviceInfo(User user, DeviceInfo inputDeviceInfo) throws SQLException {
+        if (user == null || inputDeviceInfo == null) {
             throw new IllegalArgumentException("User and DeviceInfo cannot be null");
         }
         // Ensure no existing records for the user
@@ -80,14 +92,30 @@ public class DeviceLogDao extends AbstractAdoDao<DeviceErrorLog> {
         // Initialize fields from AbstractAdoDao
         deviceInfo.setUuid(DataHelper.createUuid());
         deviceInfo.setCreationDate(new Date());
-        // Copy fields from input
-
-//        deviceInfo.setBatteryStatus(inputDeviceInfo.getBatteryStatus());
-//        deviceInfo.setIsCharging(inputDeviceInfo.getIsCharging());
-
         deviceInfo.setLoginTimestamp(new Date());
         deviceInfo.setLastUpdated(new Date());
         deviceInfo.setChangeDate(new Date());
+        deviceInfo.setLastOpenedDate(new Date());
+        // Copy fields from input
+        deviceInfo.setDeviceBrand(inputDeviceInfo.getDeviceBrand());
+        deviceInfo.setDeviceModel(inputDeviceInfo.getDeviceModel());
+        deviceInfo.setDeviceSerial(inputDeviceInfo.getDeviceSerial());
+        deviceInfo.setAndroidVersion(inputDeviceInfo.getAndroidVersion());
+        deviceInfo.setApiLevel(inputDeviceInfo.getApiLevel());
+        deviceInfo.setDeviceId(inputDeviceInfo.getDeviceId());
+        deviceInfo.setInternalStorageTotal(inputDeviceInfo.getInternalStorageTotal());
+        deviceInfo.setInternalStorageFree(inputDeviceInfo.getInternalStorageFree());
+        deviceInfo.setExternalStorageTotal(inputDeviceInfo.getExternalStorageTotal());
+        deviceInfo.setExternalStorageFree(inputDeviceInfo.getExternalStorageFree());
+        deviceInfo.setRamTotal(inputDeviceInfo.getRamTotal());
+        deviceInfo.setBatteryLevel(inputDeviceInfo.getBatteryLevel());
+//        deviceInfo.setBatteryStatus(inputDeviceInfo.getBatteryStatus());
+//        deviceInfo.setIsCharging(inputDeviceInfo.getIsCharging());
+        deviceInfo.setNetworkType(inputDeviceInfo.getNetworkType());
+        deviceInfo.setWifiConnected(inputDeviceInfo.getWifiConnected());
+        deviceInfo.setNetworkStrength(inputDeviceInfo.getNetworkStrength());
+        deviceInfo.setUser(user);
+
         deviceInfo.setUserLocation(user.getRegion().getName());
         deviceInfo.setApkVersion(ConfigProvider.APPVERSIONNUMBER);
         deviceInfo.setUserName(user.getUserName());

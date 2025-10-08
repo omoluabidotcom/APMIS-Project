@@ -15,10 +15,19 @@
 
 package de.symeda.sormas.app.util;
 
+import android.content.Context;
+import android.provider.Settings;
+import android.util.Log;
+
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
+import java.util.Date;
+
 import de.symeda.sormas.app.backend.common.AbstractDomainObject;
+import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
+import de.symeda.sormas.app.backend.device.errorLog.DeviceErrorLog;
+import de.symeda.sormas.app.backend.user.User;
 import de.symeda.sormas.app.core.FirebaseParameter;
 import de.symeda.sormas.app.rest.RetroProvider;
 
@@ -47,5 +56,51 @@ public class ErrorReportingHelper {
 			crashlytics.setCustomKey(FirebaseParameter.ENTITY_UUID, entity.getUuid());
 		}
 		sendCaughtException(e);
+	}
+
+
+	/**
+	 * Persist the latest device error in the local DB (keeps only the latest per device).
+	 * 'action' should describe where it happened, e.g. "sync", "open_form".
+	 */
+	public static void logAndStoreDeviceError(String action, Exception e) {
+		try {
+
+			System.out.println("Log.i(getTableName(), Creating Error Log foffffffr user----------------------------: ");
+			final Context ctx = DatabaseHelper.getContext();
+
+			System.out.println("Context in Device Error Log----------------------------: " +  ctx) ;
+
+			final String deviceSerial = ctx !=
+					null ? Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID) : null;
+
+			final User user = ConfigProvider.getUser();
+
+			//just incase device id is null to geta afaalback
+			final String safeDeviceId = deviceSerial != null
+					? deviceSerial
+					: (user != null && user.getUserName() != null ? "NO_DEVICEID_" + user.getUserName() : "NO_DEVICEID");
+
+
+			final DeviceErrorLog log = DatabaseHelper.getDeviceErrorLogDao().build();
+			log.setErrorMessage(e != null ? String.valueOf(e.getMessage()) : "Unknown error");
+			log.setStackTrace(e != null ? Log.getStackTraceString(e) : null);
+			log.setDeviceId(safeDeviceId);
+			log.setUserName(user != null ? user.getUserName() : null);
+			log.setErrorAction(action);
+			log.setLastUpdated(new Date());
+
+			DatabaseHelper.getDeviceErrorLogDao().updateOrCreateDeviceInfo(user, log);
+		} catch (Exception ignore) {
+			// never fail the app due to logging
+		}
+	}
+
+	/**
+	 * Convenience method: report to Crashlytics and store as latest device error.
+	 */
+	public static void reportAndStore(String action, Exception e) {
+		sendCaughtException(e);
+		logAndStoreDeviceError(action, e);
 	}
 }

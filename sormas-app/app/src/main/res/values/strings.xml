@@ -21,7 +21,7 @@
     Here there are only strings, which are only useful for the app.
  -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="app_name">APMIS</string>
 
@@ -94,7 +94,7 @@
     <string name="action_refer_case_from_poe">Refer case from Point of Entry</string>
     <string name="action_report">Report Problem</string>
     <string name="action_repull_data">Re-sync Settings</string>
-    <string name="action_reinitialize_app">Re-Initialize Settings</string>
+    <string name="action_reinitialize_app" tools:ignore="MissingTranslation">Re-Initialize Settings</string>
     <string name="action_reset_filters">Reset filters</string>
     <string name="action_save">Save</string>
     <string name="action_save_case">Save Case</string>
@@ -405,6 +405,7 @@
     <string name="heading_treatment_edit">Edit Treatment</string>
     <string name="heading_treatment_new">New Treatment</string>
     <string name="heading_unsynchronized_changes">Unsynchronized Changes</string>
+    <string name="heading_reinitialize_app" translatable="false">Re-initialize App</string>
     <string name="heading_user_report">Report a problem</string>
     <string name="heading_change_laboratory_result">Change Laboratory Result</string>
     <string name="heading_change_case_disease">Change case disease</string>
@@ -528,6 +529,8 @@
     <string name="message_no_more_entries">There are no more entries to display.</string>
     <string name="message_pin_changed">PIN has been successfully changed.</string>
     <string name="message_pin_correct_loading">PIN correct. Starting APMIS ...</string>
+    <string name="message_pin_correct_loading_to_reinitialize" translatable="false">PIN correct. Starting APMIS Re-initilaization...</string>
+
     <string name="message_pin_no_consecutive">PIN must not be made of consecutive numbers.</string>
     <string name="message_pin_no_same">PIN must not have more than 2 equal numbers.</string>
     <string name="message_pin_not_matching">The PINs you\'ve entered do not match. Please try again.</string>

@@ -13,6 +13,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
@@ -40,6 +41,7 @@ public class DeviceInformationView extends VerticalLayout {
 	Grid<DeviceManagerDto> grid = new Grid<>(DeviceManagerDto.class, false);
 	Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
 	List<DeviceManagerDto> dataProvider;
+	GridListDataView<DeviceManagerDto> dataView;
 
 	public DeviceInformationView() {
 
@@ -114,6 +116,25 @@ public class DeviceInformationView extends VerticalLayout {
 		searchField.setValueChangeMode(ValueChangeMode.EAGER);
 		searchField.setWidth("10%");
 		searchField.setClearButtonVisible(true);
+		
+		searchField.addValueChangeListener(e -> {
+			resetFilters.setVisible(true);
+			String term = e.getValue() == null ? "" : e.getValue().trim().toLowerCase();
+			if (term.isEmpty()) {
+				if (dataView != null) {
+					dataView.removeFilters();
+				}
+				resetFilters.setVisible(false);
+			} else {
+				if (dataView != null) {
+					dataView.setFilter(item -> {
+						String u = item.getUserName() == null ? "" : item.getUserName().toLowerCase();
+						String l = item.getUserLocation() == null ? "" : item.getUserLocation().toLowerCase();
+						return u.contains(term) || l.contains(term);
+					});
+				}
+			}
+		});
 
 		layout.add(searchField);
 		layout.add(geographyUnitTypeFilter);
@@ -172,7 +193,7 @@ public class DeviceInformationView extends VerticalLayout {
 		dataProvider = fetchDevicesInfoData();
 
 		grid.setItems(dataProvider);
-//		dataView = grid.setItems(dataProvider);
+		dataView = grid.setItems(dataProvider);
 
 		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_EDIT)) {
 
