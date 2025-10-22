@@ -107,11 +107,11 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
         target.setNetwork_strength(source.getNetworkStrength());
         target.setDevice_id(source.getDeviceId());
         
-        target.setTotal_int_storage_gb(source.getInternalStorageTotalGb());
-        target.setFree_int_storage_gb(source.getInternalStorageFreeGb());
-        target.setTotal_ext_storage_gb(source.getExternalStorageTotalGb());
-        target.setFree_ext_storage_gb(source.getExternalStorageFreeGb());
-        target.setRam_storage_gb(source.getRamTotalGb());
+//        target.setTotal_int_storage_gb(source.getInternalStorageTotalGb());
+//        target.setFree_int_storage_gb(source.getInternalStorageFreeGb());
+//        target.setTotal_ext_storage_gb(source.getExternalStorageTotalGb());
+//        target.setFree_ext_storage_gb(source.getExternalStorageFreeGb());
+//        target.setRam_storage_gb(source.getRamTotalGb());
 //        
 //        UserReferenceDto userRef = source.getUser();
 //        if (userRef != null) {
@@ -156,7 +156,7 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
         target.setInternalStorageTotalGb(source.getTotal_int_storage_gb());
         target.setInternalStorageFreeGb(source.getFree_int_storage_gb());
         target.setExternalStorageTotalGb(source.getTotal_ext_storage_gb());
-        target.setExternalStorageFreeGb(source.getTotal_int_storage_gb());
+        target.setExternalStorageFreeGb(source.getFree_ext_storage_gb());
         target.setRamTotalGb(source.getRam_storage_gb());
 
 //        if (source.getUser_id() != null) {

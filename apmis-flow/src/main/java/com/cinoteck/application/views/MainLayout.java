@@ -339,7 +339,7 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 			nav.addItem(new AppNavItem("Notification", MessagingView.class, VaadinIcon.SERVER, "navitem"));
 		}
 		
-		nav.addItem(new AppNavItem(I18nProperties.getCaption(Captions.deviceManagement), DeviceInformationView.class, VaadinIcon.CHAT,
+		nav.addItem(new AppNavItem("Device Management", DeviceInformationView.class, VaadinIcon.CLUSTER,
 				"navitem"));
 
 

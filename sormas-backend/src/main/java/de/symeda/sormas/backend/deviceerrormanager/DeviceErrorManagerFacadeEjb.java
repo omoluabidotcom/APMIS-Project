@@ -227,6 +227,14 @@ target.setUuid(source.getUuid());
 	    // Convert to DTO
 	    return QueryHelper.getResultList(em, cq, first, max, this::toDto);
 	}
+	
+	
+	@Override
+	public List<DeviceErrorManagerDto> getLatestLogs(String username, String deviceSerial, int max) {
+	    List<DeviceErrorManager> logs = deviceErrorManagerService
+	        .getLatestByUsernameAndDeviceId(username, deviceSerial, max);
+	    return logs.stream().map(this::toDto).collect(Collectors.toList());
+	}
 
 
 //	private DeviceErrorManagerReferenceDto toReferenceDto(DeviceErrorManager source) {

@@ -17,6 +17,7 @@
  *******************************************************************************/
 package de.symeda.sormas.api.devicemanager;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.validation.constraints.NotNull;
@@ -96,11 +97,11 @@ public class DeviceManagerDto extends EntityDto {
     private Integer networkStrength;
     private UserReferenceDto user;
     
-    private Long internalStorageTotalGb;
-    private Long internalStorageFreeGb;
-    private Long externalStorageTotalGb;
-    private Long externalStorageFreeGb;
-    private Long ramTotalGb;
+    private BigDecimal internalStorageTotalGb;
+    private BigDecimal internalStorageFreeGb;
+    private BigDecimal externalStorageTotalGb;
+    private BigDecimal externalStorageFreeGb;
+    private BigDecimal ramTotalGb;
 
 	private DistrictReferenceDto district;
 	private CommunityReferenceDto cluster;
@@ -329,56 +330,22 @@ public class DeviceManagerDto extends EntityDto {
 //		this.user = user;
 //	}
 
+	// getters/setters (change types)
+	// Optionally, do NOT expose setters if you want them strictly read-only externally.
+	public BigDecimal getInternalStorageTotalGb() { return internalStorageTotalGb; }
+	public void setInternalStorageTotalGb(BigDecimal v) { this.internalStorageTotalGb = v; }
 
-	public Long getInternalStorageTotalGb() {
-		return internalStorageTotalGb;
-	}
+	public BigDecimal getInternalStorageFreeGb() { return internalStorageFreeGb; }
+	public void setInternalStorageFreeGb(BigDecimal v) { this.internalStorageFreeGb = v; }
 
+	public BigDecimal getExternalStorageTotalGb() { return externalStorageTotalGb; }
+	public void setExternalStorageTotalGb(BigDecimal v) { this.externalStorageTotalGb = v; }
 
-	public void setInternalStorageTotalGb(Long internalStorageTotalGb) {
-		this.internalStorageTotalGb = internalStorageTotalGb;
-	}
+	public BigDecimal getExternalStorageFreeGb() { return externalStorageFreeGb; }
+	public void setExternalStorageFreeGb(BigDecimal v) { this.externalStorageFreeGb = v; }
 
-
-	public Long getInternalStorageFreeGb() {
-		return internalStorageFreeGb;
-	}
-
-
-	public void setInternalStorageFreeGb(Long internalStorageFreeGb) {
-		this.internalStorageFreeGb = internalStorageFreeGb;
-	}
-
-
-	public Long getExternalStorageTotalGb() {
-		return externalStorageTotalGb;
-	}
-
-
-	public void setExternalStorageTotalGb(Long externalStorageTotalGb) {
-		this.externalStorageTotalGb = externalStorageTotalGb;
-	}
-
-
-	public Long getExternalStorageFreeGb() {
-		return externalStorageFreeGb;
-	}
-
-
-	public void setExternalStorageFreeGb(Long externalStorageFreeGb) {
-		this.externalStorageFreeGb = externalStorageFreeGb;
-	}
-
-
-	public Long getRamTotalGb() {
-		return ramTotalGb;
-	}
-
-
-	public void setRamTotalGb(Long ramTotalGb) {
-		this.ramTotalGb = ramTotalGb;
-	}
-
+	public BigDecimal getRamTotalGb() { return ramTotalGb; }
+	public void setRamTotalGb(BigDecimal v) { this.ramTotalGb = v; }
 
 	@Override
 	public String toString() {

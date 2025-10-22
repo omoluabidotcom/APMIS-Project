@@ -237,7 +237,10 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
                 try {
                     CampaignFormDataNewActivity.startActivity(getContext(), criteria.getCampaign().getUuid(), campaignFormMetaDialog.getCampaignFormMeta().getUuid());
                 }catch(Exception e){
-                    ErrorReportingHelper.reportAndStore("New Form" , e);
+
+                    System.out.println("LIST ACTIVITY  Fragment Error Logged--------------------");
+
+                    ErrorReportingHelper.logAndStoreDeviceError("New Form" , e);
                 }
             });
             campaignFormMetaDialog.show();

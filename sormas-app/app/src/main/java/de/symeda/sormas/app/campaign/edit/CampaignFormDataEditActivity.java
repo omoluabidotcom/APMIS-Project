@@ -51,6 +51,7 @@ import de.symeda.sormas.app.core.async.AsyncTaskResult;
 import de.symeda.sormas.app.core.async.SavingAsyncTask;
 import de.symeda.sormas.app.core.async.TaskResultHolder;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
+import de.symeda.sormas.app.util.ErrorReportingHelper;
 
 import static de.symeda.sormas.app.core.notification.NotificationType.ERROR;
 import static de.symeda.sormas.app.core.notification.NotificationType.WARNING;
@@ -65,7 +66,13 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
     private Locale currentLocale;
 
     public static void startActivity(Context context, String rootUuid) {
-        BaseActivity.startActivity(context, CampaignFormDataEditActivity.class, buildBundle(rootUuid));
+        try {
+            BaseActivity.startActivity(context, CampaignFormDataEditActivity.class, buildBundle(rootUuid));
+        } catch(Exception e ){
+            System.out.println("eDIT STARTACTIVITY Fragment Error Logged--------------------");
+
+            ErrorReportingHelper.logAndStoreDeviceError( "Edit Form : " + e.getMessage(), e); // replaced sendCaughtException
+        }
     }
 
     @Override

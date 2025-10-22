@@ -20,15 +20,19 @@
 
 package de.symeda.sormas.backend.devicemanager;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Access;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.AccessType;
+
 
 import org.hibernate.annotations.Type;
 
@@ -49,6 +53,7 @@ import de.symeda.sormas.backend.infrastructure.region.Region;
 import de.symeda.sormas.backend.user.User;
 import de.symeda.sormas.backend.util.ModelConstants;
 
+@Access(AccessType.FIELD)
 @Entity(name = "device_manager")
 @Audited
 public class DeviceManager extends AbstractDomainObject{
@@ -102,11 +107,28 @@ public class DeviceManager extends AbstractDomainObject{
     private Long ram_storage;
     
     
-    private Long total_int_storage_gb;
-    private Long free_int_storage_gb;
-    private Long total_ext_storage_gb;
-    private Long free_ext_storage_gb;
-    private Long ram_storage_gb;
+
+    @Column(name = "total_int_storage_gb", insertable = false, updatable = false)
+    private BigDecimal total_int_storage_gb;
+
+    @Column(name = "free_int_storage_gb", insertable = false, updatable = false)
+    private BigDecimal free_int_storage_gb;
+
+    @Column(name = "total_ext_storage_gb", insertable = false, updatable = false)
+    private BigDecimal total_ext_storage_gb;
+
+    @Column(name = "free_ext_storage_gb", insertable = false, updatable = false)
+    private BigDecimal free_ext_storage_gb;
+
+    @Column(name = "ram_storage_gb", insertable = false, updatable = false)
+    private BigDecimal ram_storage_gb;
+
+    
+//    private Long total_int_storage_gb;
+//    private Long free_int_storage_gb;
+//    private Long total_ext_storage_gb;
+//    private Long free_ext_storage_gb;
+//    private Long ram_storage_gb;
     
     private Integer battery_level;
     private Boolean wifi_connected;
@@ -293,56 +315,74 @@ public class DeviceManager extends AbstractDomainObject{
 		this.device_id = device_id;
 	}
 
-
-	public Long getTotal_int_storage_gb() {
-		return total_int_storage_gb;
-	}
-
-
-	public void setTotal_int_storage_gb(Long total_int_storage_gb) {
-		this.total_int_storage_gb = total_int_storage_gb;
-	}
-
-
-	public Long getFree_int_storage_gb() {
-		return free_int_storage_gb;
-	}
-
-
-	public void setFree_int_storage_gb(Long free_int_storage_gb) {
-		this.free_int_storage_gb = free_int_storage_gb;
-	}
-
-
-	public Long getTotal_ext_storage_gb() {
-		return total_ext_storage_gb;
-	}
-
-
-	public void setTotal_ext_storage_gb(Long total_ext_storage_gb) {
-		this.total_ext_storage_gb = total_ext_storage_gb;
-	}
-
-
-	public Long getFree_ext_storage_gb() {
-		return free_ext_storage_gb;
-	}
-
-
-	public void setFree_ext_storage_gb(Long free_ext_storage_gb) {
-		this.free_ext_storage_gb = free_ext_storage_gb;
-	}
-
-
-	public Long getRam_storage_gb() {
-		return ram_storage_gb;
-	}
-
-
-	public void setRam_storage_gb(Long ram_storage_gb) {
-		this.ram_storage_gb = ram_storage_gb;
-	}
 	
+	// add import if not present
+
+//	@Column(name = "total_int_storage_gb", insertable = false, updatable = false)
+	public BigDecimal getTotal_int_storage_gb() { return total_int_storage_gb; }
+
+//	@Column(name = "free_int_storage_gb", insertable = false, updatable = false)
+	public BigDecimal getFree_int_storage_gb() { return free_int_storage_gb; }
+
+//	@Column(name = "total_ext_storage_gb", insertable = false, updatable = false)
+	public BigDecimal getTotal_ext_storage_gb() { return total_ext_storage_gb; }
+
+//	@Column(name = "free_ext_storage_gb", insertable = false, updatable = false)
+	public BigDecimal getFree_ext_storage_gb() { return free_ext_storage_gb; }
+
+//	@Column(name = "ram_storage_gb", insertable = false, updatable = false)
+	public BigDecimal getRam_storage_gb() { return ram_storage_gb; }
+
+//
+//	public Long getTotal_int_storage_gb() {
+//		return total_int_storage_gb;
+//	}
+//
+//
+//	public void setTotal_int_storage_gb(Long total_int_storage_gb) {
+//		this.total_int_storage_gb = total_int_storage_gb;
+//	}
+//
+//
+//	public Long getFree_int_storage_gb() {
+//		return free_int_storage_gb;
+//	}
+//
+//
+//	public void setFree_int_storage_gb(Long free_int_storage_gb) {
+//		this.free_int_storage_gb = free_int_storage_gb;
+//	}
+//
+//
+//	public Long getTotal_ext_storage_gb() {
+//		return total_ext_storage_gb;
+//	}
+//
+//
+//	public void setTotal_ext_storage_gb(Long total_ext_storage_gb) {
+//		this.total_ext_storage_gb = total_ext_storage_gb;
+//	}
+//
+//
+//	public Long getFree_ext_storage_gb() {
+//		return free_ext_storage_gb;
+//	}
+//
+//
+//	public void setFree_ext_storage_gb(Long free_ext_storage_gb) {
+//		this.free_ext_storage_gb = free_ext_storage_gb;
+//	}
+//
+//
+//	public Long getRam_storage_gb() {
+//		return ram_storage_gb;
+//	}
+//
+//
+//	public void setRam_storage_gb(Long ram_storage_gb) {
+//		this.ram_storage_gb = ram_storage_gb;
+//	}
+//	
 	
 	
 	

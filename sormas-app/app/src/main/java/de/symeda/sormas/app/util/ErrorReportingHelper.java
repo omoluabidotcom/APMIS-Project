@@ -27,8 +27,10 @@ import de.symeda.sormas.app.backend.common.AbstractDomainObject;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
 import de.symeda.sormas.app.backend.device.errorLog.DeviceErrorLog;
+import de.symeda.sormas.app.backend.device.info.DeviceInfo;
 import de.symeda.sormas.app.backend.user.User;
 import de.symeda.sormas.app.core.FirebaseParameter;
+import de.symeda.sormas.app.core.device.DeviceInfoService;
 import de.symeda.sormas.app.rest.RetroProvider;
 
 public class ErrorReportingHelper {
@@ -71,21 +73,24 @@ public class ErrorReportingHelper {
 
 			System.out.println("Context in Device Error Log----------------------------: " +  ctx) ;
 
-			final String deviceSerial = ctx !=
-					null ? Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID) : null;
-
 			final User user = ConfigProvider.getUser();
 
-			//just incase device id is null to geta afaalback
-			final String safeDeviceId = deviceSerial != null
-					? deviceSerial
-					: (user != null && user.getUserName() != null ? "NO_DEVICEID_" + user.getUserName() : "NO_DEVICEID");
+			String deviceSerial = "";
 
+			if (user != null) {
+
+				DeviceInfoService deviceInfoService = new DeviceInfoService(ctx);
+				DeviceInfo deviceInfo = deviceInfoService.collectDeviceInfo(user);
+				deviceSerial =  deviceInfo.getDeviceId();
+
+				System.out.println(deviceInfo.getDeviceId() + "gggggggggggggg"+  deviceInfo.getDeviceSerial());
+
+				}
 
 			final DeviceErrorLog log = DatabaseHelper.getDeviceErrorLogDao().build();
 			log.setErrorMessage(e != null ? String.valueOf(e.getMessage()) : "Unknown error");
 			log.setStackTrace(e != null ? Log.getStackTraceString(e) : null);
-			log.setDeviceId(safeDeviceId);
+			log.setDeviceId(deviceSerial);
 			log.setUserName(user != null ? user.getUserName() : null);
 			log.setErrorAction(action);
 			log.setLastUpdated(new Date());

@@ -1,9 +1,22 @@
 package com.cinoteck.application.views.deviceinformation;
 
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.List;
+
+import com.cinoteck.application.UserProvider;
+import com.cinoteck.application.views.utils.gridexporter.GridExporter;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.dataview.GridListDataView;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H4;
@@ -22,8 +35,20 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.deviceerrormanager.DeviceErrorManagerDto;
 import de.symeda.sormas.api.devicemanager.DeviceManagerDto;
+import de.symeda.sormas.api.i18n.Captions;
+import de.symeda.sormas.api.i18n.I18nProperties;
+import de.symeda.sormas.api.user.UserRight;
 
 public class DeviceDetailsDialog extends Dialog {
+	
+	
+	UserProvider userProvider = new UserProvider();
+	Grid<DeviceErrorManagerDto> grid = new Grid<>(DeviceErrorManagerDto.class, false);
+	Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
+	List<DeviceErrorManagerDto> dataProvider;
+	GridListDataView<DeviceErrorManagerDto> dataView;
+	
+	
     
     public DeviceDetailsDialog(DeviceManagerDto deviceManagerDto) {
         setHeight("94%");
@@ -183,11 +208,40 @@ public class DeviceDetailsDialog extends Dialog {
         iNtitleSpan.getStyle().set("font-size", "12px");
         iNtitleSpan.getStyle().set("color", "#666");
         
-        VerticalLayout internalStorage = createStorageCard("Internal Storage",
-        		Double.parseDouble(deviceManagerDto.getInternalStorageTotalGb() - deviceManagerDto.getInternalStorageFreeGb()+""), 
-        		Double.parseDouble(deviceManagerDto.getInternalStorageTotalGb() + ""), 
-        		Integer.parseInt((((deviceManagerDto.getInternalStorageTotalGb() - deviceManagerDto.getInternalStorageFreeGb())/deviceManagerDto.getInternalStorageTotalGb())*100)+""), 
-        		"#9C27B0");
+//        VerticalLayout internalStorage = createStorageCard("Internal Storage",
+//        		Double.parseDouble(deviceManagerDto.getInternalStorageTotalGb() - deviceManagerDto.getInternalStorageFreeGb()+""), 
+//        		Double.parseDouble(deviceManagerDto.getInternalStorageTotalGb() + ""), 
+//        		Integer.parseInt((((deviceManagerDto.getInternalStorageTotalGb() - deviceManagerDto.getInternalStorageFreeGb())/deviceManagerDto.getInternalStorageTotalGb())*100)+""), 
+//        		"#9C27B0");
+        
+        
+        BigDecimal totalInternal = deviceManagerDto.getInternalStorageTotalGb();
+        BigDecimal freeInternal  = deviceManagerDto.getInternalStorageFreeGb();
+
+        if (totalInternal == null) totalInternal = BigDecimal.ZERO;
+        if (freeInternal  == null) freeInternal  = BigDecimal.ZERO;
+
+        BigDecimal used = totalInternal.subtract(freeInternal); // used = total - free
+
+        double usedDouble  = used.doubleValue();
+        double totalDouble = totalInternal.doubleValue();
+
+        int percentUsed = totalInternal.signum() == 0
+            ? 0
+            : used
+                .divide(totalInternal, 4, RoundingMode.HALF_UP) // ratio with precision
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(0, RoundingMode.HALF_UP)      // round to whole percent
+                .intValue();
+        
+        
+        VerticalLayout internalStorage = createStorageCard(
+        	    "Internal Storage",
+        	    usedDouble,
+        	    totalDouble,
+        	    percentUsed,
+        	    "#9C27B0"
+        	);
         internalStorageLayout.add(iNtitleSpan, internalStorage);
         // External Storage
         VerticalLayout externalStorageLayout = new VerticalLayout();
@@ -196,11 +250,40 @@ public class DeviceDetailsDialog extends Dialog {
         eStitleSpan.getStyle().set("font-size", "12px");
         eStitleSpan.getStyle().set("color", "#666");
         
-        VerticalLayout externalStorage = createStorageCard("Internal Storage",
-        		Double.parseDouble( deviceManagerDto.getExternalStorageTotalGb()  - deviceManagerDto.getExternalStorageFreeGb() +""), 
-        		Double.parseDouble(deviceManagerDto.getExternalStorageTotalGb() + ""), 
-        		Integer.parseInt(((((deviceManagerDto.getExternalStorageTotalGb() - deviceManagerDto.getExternalStorageFreeGb())/deviceManagerDto.getExternalStorageTotalGb())*100)) + ""), "#2196F3");
+//        VerticalLayout externalStorage = createStorageCard("Internal Storage",
+//        		Double.parseDouble( deviceManagerDto.getExternalStorageTotalGb()  - deviceManagerDto.getExternalStorageFreeGb() +""), 
+//        		Double.parseDouble(deviceManagerDto.getExternalStorageTotalGb() + ""), 
+//        		Integer.parseInt(((((deviceManagerDto.getExternalStorageTotalGb() - deviceManagerDto.getExternalStorageFreeGb())/deviceManagerDto.getExternalStorageTotalGb())*100)) + ""), "#2196F3");
+//        
+//        
         
+        BigDecimal totalExternal = deviceManagerDto.getExternalStorageTotalGb();
+        BigDecimal freeExternal  = deviceManagerDto.getExternalStorageFreeGb();
+
+        if (totalExternal == null) totalExternal = BigDecimal.ZERO;
+        if (freeExternal  == null) freeExternal  = BigDecimal.ZERO;
+
+        BigDecimal usedEx = totalExternal.subtract(freeExternal); // used = total - free
+
+        double usedExDouble  = usedEx.doubleValue();
+        double totalExDouble = totalExternal.doubleValue();
+
+        int percentExUsed = totalExternal.signum() == 0
+            ? 0
+            : usedEx
+                .divide(totalExternal, 4, RoundingMode.HALF_UP) // ratio with precision
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(0, RoundingMode.HALF_UP)      // round to whole percent
+                .intValue();
+        
+        
+        VerticalLayout externalStorage = createStorageCard(
+        	    "Internal Storage",
+        	    usedExDouble,
+        	    totalExDouble,
+        	    percentExUsed,
+        	    "#9C27B0"
+        	);
 
         externalStorageLayout.add(eStitleSpan, externalStorage);
         storageRow.add(internalStorageLayout, externalStorageLayout);
@@ -229,12 +312,43 @@ public class DeviceDetailsDialog extends Dialog {
         ramtitleSpan.getStyle().set("font-size", "12px");
         ramtitleSpan.getStyle().set("color", "#666");
         
-        VerticalLayout ramUsage = createStorageCard("RAM Storage", deviceManagerDto.getRamTotalGb(), deviceManagerDto.getRamTotal(), 5, "#F44336");
+        
+     // RAM in GB (from DTO)
+        BigDecimal ramTotalGb = deviceManagerDto.getRamTotalGb();          // BigDecimal (GB)
+        if (ramTotalGb == null) ramTotalGb = BigDecimal.ZERO;
+
+        // If you only have total (no free), assume used == total, or compute used if you have free.
+        BigDecimal ramUsedGb = ramTotalGb;
+
+        // If `getRamTotal()` is bytes and you prefer to derive total from bytes:
+        Long ramTotalBytes = deviceManagerDto.getRamTotal();               // Long (bytes)
+        double totalDoubleRam = ramTotalBytes == null ? ramTotalGb.doubleValue() : gb(ramTotalBytes).doubleValue();
+
+        // Percent (adjust if you can compute real used)
+        int percentRam = totalDoubleRam == 0 ? 0 : ramUsedGb
+            .divide(BigDecimal.valueOf(totalDoubleRam), 4, RoundingMode.HALF_UP)
+            .multiply(BigDecimal.valueOf(100))
+            .setScale(0, RoundingMode.HALF_UP)
+            .intValue();
+        
+        VerticalLayout ramUsage = createStorageCard(
+        	    "RAM Storage",
+        	    ramUsedGb.doubleValue(),  // double
+        	    totalDoubleRam,              // double
+        	    percentRam,                  // int
+        	    "#F44336"
+        	);
+//        VerticalLayout ramUsage = createStorageCard("RAM Storage", deviceManagerDto.getRamTotalGb(), deviceManagerDto.getRamTotal(), 5, "#F44336");
         ramStorageLayout.add(ramtitleSpan, ramUsage);
         performanceRow.add(cpuUsageLayout, ramStorageLayout);
         
         section.add(title,   storageRow, performanceRow);
         return section;
+    }
+    
+    
+    private static BigDecimal gb(long bytes) {
+        return BigDecimal.valueOf(bytes).divide(BigDecimal.valueOf(1073741824d), 2, RoundingMode.HALF_UP);
     }
     
     private VerticalLayout createLocationInformation(DeviceManagerDto deviceManagerDto) {
@@ -396,41 +510,24 @@ public class DeviceDetailsDialog extends Dialog {
         HorizontalLayout actionButtons = new HorizontalLayout();
         actionButtons.setSpacing(true);
         
-        Button viewDeviceLog = new Button("Error Log", new Icon(VaadinIcon.REFRESH));
-        viewDeviceLog.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        
+        Button viewDeviceLogs = new Button("Error Logs", new Icon(VaadinIcon.REFRESH));
+        viewDeviceLogs.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        viewDeviceLog.addClickListener(e -> {
+        
+//        Button viewDeviceLog = new Button("Error Log", new Icon(VaadinIcon.REFRESH));
+//        viewDeviceLog.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        viewDeviceLogs.addClickListener(e -> {
             Dialog errorLogDialog = new Dialog();
             errorLogDialog.setHeaderTitle("Error Log");
             errorLogDialog.setWidth("800px");
             errorLogDialog.setHeight("600px");
             
-            
-            
-            // Create the error log display area with Eclipse IDE styling
-            Div logContainer = new Div();
-            logContainer.getStyle()
-                .set("background-color", "#2b2b2b")
-                .set("color", "#cccccc")
-                .set("font-family", "Consolas, 'Courier New', monospace")
-                .set("font-size", "12px")
-                .set("padding", "10px")
-                .set("overflow-y", "auto")
-                .set("height", "100%")
-                .set("white-space", "pre-wrap")
-                .set("border", "1px solid #3c3c3c");
-            
-            // Sample error log content (replace with your actual log data)
-            String errorLogContent = buildErrorLogContentByDeviceId(deviceManagerDto);
-            logContainer.getElement().setProperty("innerHTML", errorLogContent);
-            
-            // Create a scrollable content area
-            Div content = new Div(logContainer);
-            content.getStyle()
-                .set("flex", "1")
-                .set("overflow", "hidden");
-            errorLogDialog.add(content);
-            
+            Grid<DeviceErrorManagerDto> errorGrid = new Grid<DeviceErrorManagerDto>();
+            errorGrid =  configureLogsGrid(deviceManagerDto);
+            errorLogDialog.add(errorGrid);
+
             // Footer with close button
             Button closeButton = new Button("Close", event -> errorLogDialog.close());
             closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -453,12 +550,87 @@ public class DeviceDetailsDialog extends Dialog {
         Button remoteSupport = new Button("Remote support", new Icon(VaadinIcon.HEADPHONES));
         remoteSupport.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         
-        actionButtons.add(viewDeviceLog, requestDataSync, latestDiagnostics, remoteSupport);
+        actionButtons.add(viewDeviceLogs,  remoteSupport);
         
         footer.add(closeBtn, actionButtons);
         add(footer);
     }
     
+    
+	private List<DeviceErrorManagerDto> fetchDevicesErrorData(DeviceManagerDto deviceManagerDto) {
+		return FacadeProvider.getDeviceErrorManagerFacade().getLatestLogs(deviceManagerDto.getUserName(), deviceManagerDto.getDeviceSerial(), 19);
+	}
+    
+    
+	private Grid<DeviceErrorManagerDto>configureLogsGrid(DeviceManagerDto deviceManagerDto) {
+
+		grid.setSelectionMode(SelectionMode.SINGLE);
+		grid.setMultiSort(true, MultiSortPriority.APPEND);
+		grid.setSizeFull();
+		grid.setColumnReorderingAllowed(true);
+
+		grid.addColumn(DeviceErrorManagerDto::getErrorAction).setHeader(I18nProperties.getCaption("Error Action"))
+				.setSortable(true).setResizable(true)
+				.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.area));
+		grid.addColumn(DeviceErrorManagerDto::getCreationDate).setHeader(I18nProperties.getCaption("Time"))
+				.setResizable(true).setSortable(true).setTooltipGenerator(e -> I18nProperties.getCaption("Username"));
+		
+		grid.addColumn(DeviceErrorManagerDto::getErrorMessage).setHeader(I18nProperties.getCaption("Error Message"))
+				.setSortable(true).setResizable(true).setTooltipGenerator(e -> I18nProperties.getCaption("Location"));
+
+		grid.setVisible(true);
+
+		dataProvider = fetchDevicesErrorData(deviceManagerDto);
+
+		grid.setItems(dataProvider);
+		dataView = grid.setItems(dataProvider);
+
+			grid.asSingleSelect().addValueChangeListener(event -> {
+				if (event.getValue() != null) {
+					 Dialog errorLogDialog = new Dialog();
+			            errorLogDialog.setHeaderTitle("Error Log Dialog");
+			            errorLogDialog.setWidth("800px");
+			            errorLogDialog.setHeight("600px");        
+			            
+			            
+			            
+//			             Create the error log display area with Eclipse IDE styling
+			            Div logContainer = new Div();
+			            logContainer.getStyle()
+			                .set("background-color", "#2b2b2b")
+			                .set("color", "#cccccc")
+			                .set("font-family", "Consolas, 'Courier New', monospace")
+			                .set("font-size", "12px")
+			                .set("padding", "10px")
+			                .set("overflow-y", "auto")
+			                .set("height", "100%")
+			                .set("white-space", "pre-wrap")
+			                .set("border", "1px solid #3c3c3c");
+			            
+			            // Sample error log content (replace with your actual log data)
+			            String errorLogContent = buildErrorLogContentByDeviceId(event.getValue());
+			            logContainer.getElement().setProperty("innerHTML", errorLogContent);
+			            
+			            // Create a scrollable content area
+			            Div content = new Div(logContainer);
+			            content.getStyle()
+			                .set("flex", "1")
+			                .set("overflow", "hidden");
+			            errorLogDialog.add(content);
+			            
+			            // Footer with close button
+			            Button closeButton = new Button("Close", eventx -> errorLogDialog.close());
+			            closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+			            errorLogDialog.getFooter().add(closeButton);
+			            
+			            errorLogDialog.open();				}
+						grid.deselectAll();
+			});
+//		}
+
+		    return grid;
+	}
+
     private String buildErrorLogContent() {
         StringBuilder log = new StringBuilder();
         
@@ -487,28 +659,28 @@ public class DeviceDetailsDialog extends Dialog {
         return log.toString();
     }
     
-    private String buildErrorLogContentByDeviceId(DeviceManagerDto deviceManagerDto) {
+    private String buildErrorLogContentByDeviceId(DeviceErrorManagerDto deviceManagerDto) {
     	
-    	DeviceErrorManagerDto deviceError =  FacadeProvider.getDeviceErrorManagerFacade().getDeviceErrorByUsernameAndDeviceId(deviceManagerDto.getUserName(), deviceManagerDto.getDeviceSerial());
+//    	DeviceErrorManagerDto deviceError =  FacadeProvider.getDeviceErrorManagerFacade().getDeviceErrorByUsernameAndDeviceId(deviceManagerDto.getUserName(), deviceManagerDto.getDeviceSerial());
         
     	
-    	System.out.println(deviceError.getErrorMessage());
+    	System.out.println(deviceManagerDto.getErrorMessage());
     
     	StringBuilder log = new StringBuilder();
         
         // Example error entries with color coding (similar to Eclipse)
     	
     	log.append("<span style='color: #cc7832;'>!USERNAME</span> ");
-        log.append(deviceError.getUserName() +  "\n");
+        log.append(deviceManagerDto.getUserName() +  "\n");
     	
         log.append("<span style='color: #cc7832;'>!ERROR SOURCE</span> ");
-        log.append(deviceError.getErrorAction() +  "\n");
+        log.append(deviceManagerDto.getErrorAction() +  "\n");
         
         log.append("<span style='color: #cc7832;'>!ERROR MESSAGE</span> ");
-        log.append(deviceError.getErrorMessage() +  "\n");
+        log.append(deviceManagerDto.getErrorMessage() +  "\n");
 
         log.append("<span style='color: #a9b7c6;'>STACKTRACE</span>\n");
-        log.append(deviceError.getStackTrace() +  "\n");
+        log.append(deviceManagerDto.getStackTrace() +  "\n");
 //        log.append("<span style='color: #cc7832;'>!STACK 0</span>\n");
 //        log.append("<span style='color: #a9b7c6;'>java.lang.NullPointerException: Cannot invoke method on null object\n");
 //        log.append("    at com.example.service.DataService.processData(DataService.java:145)\n");
@@ -759,7 +931,7 @@ public class DeviceDetailsDialog extends Dialog {
         
         
         Image icon = new Image();
-        if(label.equalsIgnoreCase("Network Strength")) {
+        if(label.equalsIgnoreCase("Network Provider")) {
         	icon = new Image("images/Shape4.svg", "Android");
         	icon.getStyle().set("width", "30px").set("height", "65px");
              
