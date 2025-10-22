@@ -18,10 +18,12 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -58,6 +60,13 @@ public class UserMessageView extends VerticalLayout {
 	Date thirtyDaysAgo;
 
 	Date usersPreviousLoginDate;
+
+	private Span subjectLabel;
+	private Span subjectValue;
+	private Span categoryLabel;
+	private Span categoryValue;
+	private Span broadcastLabel;
+	private Span broadcastValue;
 
 	public UserMessageView() {
 
@@ -138,12 +147,54 @@ public class UserMessageView extends VerticalLayout {
 	}
 
 	private void showMessage(MessageDto messageDto) {
-
-		Span subject = new Span("Subject: " + messageDto.getTitle());
-		Span category = new Span("Message Category: " + messageDto.getMessageCategory());
-		Span broadcastedAt = new Span("Broadcasted At: " + messageDto.getChangeDate());
 		
-		
+		// Subject section
+        subjectLabel = new Span("Subject: ");
+        subjectLabel.getStyle()
+            .set("color", "#4CAF50")
+            .set("font-weight", "500")
+            .set("margin-right", "8px");
+        
+        subjectValue = new Span(messageDto.getTitle() != null && !messageDto.getTitle().isEmpty() ? messageDto.getTitle() : "");
+        subjectValue.getStyle()
+            .set("color", "#333")
+            .set("margin-right", "40px");
+        
+        Div subjectDiv = new Div(subjectLabel, subjectValue);
+        subjectDiv.getStyle().set("display", "flex");
+        
+        // Message Category section
+        categoryLabel = new Span("Message Category: ");
+        categoryLabel.getStyle()
+            .set("color", "#4CAF50")
+            .set("font-weight", "500")
+            .set("margin-right", "8px");
+        
+        categoryValue = new Span(messageDto != null && messageDto.getMessageCategory() != null ? String.valueOf(messageDto.getMessageCategory()) : "");
+        categoryValue.getStyle()
+            .set("color", "#333")
+            .set("margin-right", "40px");
+        
+        Div categoryDiv = new Div(categoryLabel, categoryValue);
+        categoryDiv.getStyle().set("display", "flex");
+        
+        // Broadcasted at section
+        broadcastLabel = new Span("Broadcasted at: ");
+        broadcastLabel.getStyle()
+            .set("color", "#4CAF50")
+            .set("font-weight", "500")
+            .set("margin-right", "8px");
+        
+        SimpleDateFormat dateDIsplayFormating = new SimpleDateFormat("dd/MM/yyyy");
+        broadcastValue = new Span(messageDto.getChangeDate().toString() != null && !messageDto.getChangeDate().toString().isEmpty() ? dateDIsplayFormating.format(messageDto.getChangeDate()) : "");
+        broadcastValue.getStyle().set("color", "#333");
+        
+        Div broadcastDiv = new Div(broadcastLabel, broadcastValue);
+        broadcastDiv.getStyle().set("display", "flex");
+        
+        HorizontalLayout horizontalLayout = new HorizontalLayout();
+        horizontalLayout.add(subjectDiv, categoryDiv, broadcastDiv);
+        
 		TextArea message = new TextArea("Message");
 		message.setValue(messageDto.getMessageContent());
 		message.setReadOnly(true);
@@ -157,7 +208,7 @@ public class UserMessageView extends VerticalLayout {
 		Button closePreviewButton = new Button("Back", e -> messageDetails.close());
 		Icon backIcon = new Icon(VaadinIcon.BACKWARDS);
 		closePreviewButton.setIcon(backIcon);
-		messageDetails.add(message);
+		messageDetails.add(horizontalLayout, message);
 		messageDetails.setHeaderTitle("Message Details");
 		messageDetails.open();
 		messageDetails.setCloseOnEsc(false);
