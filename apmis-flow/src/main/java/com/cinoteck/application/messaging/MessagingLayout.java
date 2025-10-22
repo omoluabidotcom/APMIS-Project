@@ -202,13 +202,35 @@ public class MessagingLayout extends VerticalLayout {
 		final HorizontalLayout hr = new HorizontalLayout();
 		formLayout.setColspan(messageContent, 2);
 		messageContent.setHeight("300px");
-
+		
 		Icon discardIcon = new Icon(VaadinIcon.CLOSE_CIRCLE_O);
 		Button discardChanges = new Button("Discard Changes", discardIcon);
 
 		Icon saveIcon = new Icon(VaadinIcon.CHECK_CIRCLE_O);
 		Button saved = new Button("Send", saveIcon);
-		hr.add(discardChanges, saved);
+		
+		Icon reSendIcon = new Icon(VaadinIcon.CHECK_CIRCLE_O);
+		Button reSend = new Button("Resend", reSendIcon);
+		
+		if(!isNew) {
+			saved.setVisible(isNew);
+			reSend.setVisible(!isNew);
+			
+			titleField.setEnabled(isNew); 
+			messageContent.setEnabled(isNew); 
+			messageCategory.setEnabled(isNew);  
+			userRoles.setEnabled(isNew);  
+			formAccessSelector.setEnabled(isNew);  
+			areaSelector.setEnabled(isNew);  
+			regionSelector.setEnabled(isNew);  
+			districtSelector.setEnabled(isNew); 
+			communitySelector.setEnabled(isNew); 
+		} else {
+			saved.setVisible(true);
+			reSend.setVisible(false);
+		}
+		
+		hr.add(discardChanges, saved, reSend);
 		add(formLayout, hr);
 
 		discardChanges.addClickListener(e -> discardChanges());
@@ -222,8 +244,10 @@ public class MessagingLayout extends VerticalLayout {
 		messageContent.addValueChangeListener(e -> {
 			templateCombo.setVisible(false);
 		});
+		
 		saved.addClickListener(e -> {
-			if (messageContent.getValue() != null && !messageContent.isEmpty()) {
+			if (messageContent.getValue() != null && !messageContent.isEmpty() && messageCategory.getValue() != null
+					&& userRoles.getValue() != null) {
 				if(binder.getBean() != null) {
 				preView(binder.getBean());
 				} else {
@@ -242,7 +266,7 @@ public class MessagingLayout extends VerticalLayout {
 					notification.close();
 				});
 
-				Paragraph text = new Paragraph("Message cannot be left Empty");
+				Paragraph text = new Paragraph("Required field cannot be left Empty");
 
 				HorizontalLayout layout = new HorizontalLayout(text, closeButton);
 				layout.setAlignItems(Alignment.CENTER);
@@ -250,6 +274,23 @@ public class MessagingLayout extends VerticalLayout {
 				notification.add(layout);
 				notification.open();
 			}
+		});
+		
+		reSend.addClickListener(e -> {
+			
+			MessageDto messageDtoResend = new MessageDto().build();
+			messageDtoResend.setArea(binder.getBean().getArea());
+			messageDtoResend.setCommunity(binder.getBean().getCommunity());
+			messageDtoResend.setDistrict(binder.getBean().getDistrict());
+			messageDtoResend.setMessageCategory(binder.getBean().getMessageCategory());
+			messageDtoResend.setFormAccess(binder.getBean().getFormAccess());
+			messageDtoResend.setMessageCategory(binder.getBean().getMessageCategory());
+			messageDtoResend.setMessageContent(binder.getBean().getMessageContent());
+			messageDtoResend.setRegion(binder.getBean().getRegion());
+			messageDtoResend.setUserRoles(binder.getBean().getUserRoles());
+			messageDtoResend.setTitle(binder.getBean().getTitle());
+			
+			validateAndSave(messageDtoResend);
 		});
 
 		savePreviewButton.addClickListener(e -> {
@@ -339,6 +380,40 @@ public class MessagingLayout extends VerticalLayout {
 			});
 
 			Paragraph text = new Paragraph("Unable to Create a Message at the Moment");
+
+			HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+			layout.setAlignItems(Alignment.CENTER);
+
+			notification.add(layout);
+			notification.open();
+		}
+	}
+	
+	public void validateAndSave(MessageDto messageDto) {
+
+		if (binder.validate().isOk()) {
+
+//			messageDto = binder.getBean();
+			messageDto.setChgDate(Timestamp.from(Instant.now()));
+			messageDto.setCreatingUser(userProvider.getUser().getUserName());
+			fireEvent(new SaveEvent(this, messageDto));
+
+			Notification notification = new Notification("New Message Sent", 3000, Position.MIDDLE);
+			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+			notification.open();
+			UI.getCurrent().getPage().reload();
+		} else {
+			Notification notification = new Notification();
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			notification.setPosition(Position.MIDDLE);
+			Button closeButton = new Button(new Icon("lumo", "cross"));
+			closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+			closeButton.getElement().setAttribute("aria-label", "Close");
+			closeButton.addClickListener(event -> {
+				notification.close();
+			});
+
+			Paragraph text = new Paragraph("Unable to Rebroadcast this Message at the Moment");
 
 			HorizontalLayout layout = new HorizontalLayout(text, closeButton);
 			layout.setAlignItems(Alignment.CENTER);
