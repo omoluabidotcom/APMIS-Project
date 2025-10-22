@@ -169,26 +169,67 @@ public class DeviceErrorLogDao extends AbstractAdoDao<DeviceErrorLog> {
     }
 
 
-    // Make the whole upsert atomic and deterministic
     public synchronized DeviceErrorLog updateOrCreateDeviceInfo(User user, DeviceErrorLog deviceError) throws SQLException {
         if (user == null || deviceError == null) {
             throw new IllegalArgumentException("User and DeviceInfo cannot be null");
         }
-        // Fallback if deviceId is missing to avoid perpetual inserts
         if (deviceError.getDeviceId() == null) {
             deviceError.setDeviceId(user.getUserName() != null ? "NO_DEVICEID_" + user.getUserName() : "NO_DEVICEID");
         }
 
-        DeviceErrorLog existing = getLatestByDeviceAndUser(deviceError.getDeviceId(), deviceError.getUserName());
-        DeviceErrorLog result = existing != null ? updateDeviceInfo(existing, deviceError)
-                : createDeviceErrorLog(deviceError.getDeviceId(), deviceError);
+        // Always insert a new row
+        DeviceErrorLog inserted = createDeviceErrorLog(deviceError.getDeviceId(), deviceError);
 
-        // Best-effort cleanup in case duplicates already exist (keeps newest)
+        // Keep only the 20 newest logs for this (deviceId, userName)
         try {
-            deleteDuplicatesByDeviceAndUser(deviceError.getDeviceId(), deviceError.getUserName());
+            pruneOldestLogs(deviceError.getDeviceId(), deviceError.getUserName(), 20);
         } catch (Exception ignore) {}
-        return result;
+
+        return inserted;
     }
+
+    /**
+     * Deletes all but the newest `maxKeep` logs for the given device+user.
+     */
+    private void pruneOldestLogs(String deviceId, String userName, int maxKeep) throws SQLException {
+        if (deviceId == null || userName == null || maxKeep < 1) return;
+
+        // keep `maxKeep - 1` existing so that the next insert becomes the `maxKeep`th
+        int keepExisting = Math.max(0, maxKeep - 1);
+
+        dao.executeRaw(
+                "DELETE FROM device_error " +
+                        " WHERE id IN ( " +
+                        "   SELECT id FROM device_error " +
+                        "    WHERE userName = ? AND deviceId = ? " +
+                        "    ORDER BY lastUpdated DESC, id DESC " +
+                        "    LIMIT -1 OFFSET " + keepExisting +
+                        " )",
+                userName, deviceId
+        );
+    }
+
+
+    // Make the whole upsert atomic and deterministic
+//    public synchronized DeviceErrorLog updateOrCreateDeviceInfo(User user, DeviceErrorLog deviceError) throws SQLException {
+//        if (user == null || deviceError == null) {
+//            throw new IllegalArgumentException("User and DeviceInfo cannot be null");
+//        }
+//        // Fallback if deviceId is missing to avoid perpetual inserts
+//        if (deviceError.getDeviceId() == null) {
+//            deviceError.setDeviceId(user.getUserName() != null ? "NO_DEVICEID_" + user.getUserName() : "NO_DEVICEID");
+//        }
+//
+//        DeviceErrorLog existing = getLatestByDeviceAndUser(deviceError.getDeviceId(), deviceError.getUserName());
+//        DeviceErrorLog result = existing != null ? updateDeviceInfo(existing, deviceError)
+//                : createDeviceErrorLog(deviceError.getDeviceId(), deviceError);
+//
+//        // Best-effort cleanup in case duplicates already exist (keeps newest)
+//        try {
+//            deleteDuplicatesByDeviceAndUser(deviceError.getDeviceId(), deviceError.getUserName());
+//        } catch (Exception ignore) {}
+//        return result;
+//    }
 
     // Prefer latest if multiple exist
     private DeviceErrorLog getLatestByDeviceAndUser(String deviceId, String userName) throws SQLException {

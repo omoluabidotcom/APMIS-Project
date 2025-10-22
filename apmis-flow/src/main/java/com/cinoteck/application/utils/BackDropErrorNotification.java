@@ -2,12 +2,14 @@ package com.cinoteck.application.utils;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class BackDropErrorNotification {
 
@@ -15,6 +17,8 @@ public class BackDropErrorNotification {
         UI ui = UI.getCurrent();
 
         // Create backdrop layer
+        ui.access(() -> {
+
         Div backdrop = new Div();
         backdrop.getStyle()
                 .set("position", "fixed")
@@ -26,37 +30,48 @@ public class BackDropErrorNotification {
                 .set("z-index", "9998");
 
         // Notification
-        Notification notification = new Notification();
-        notification.setDuration(0); // stays open until closed
-        notification.setPosition(Notification.Position.MIDDLE);
-        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        notification.getElement().getStyle().set("z-index", "9999");
+        Dialog dialog = new Dialog();
+        dialog.setModal(true);
+        dialog.setCloseOnOutsideClick(true); // clicking outside closes dialog
+        dialog.setCloseOnEsc(true);
+        dialog.getElement().getStyle().set("z-index", "100001"); // above backdrop
 
         // Message + Cancel button
-        Span message = new Span(errorMessage);
-//        Icon cancelButton = new Icon(VaadinIcon.clo);
-//        cancelButton.se
-//        cancelButton.addClickListener(e->{
-//            ui.remove(backdrop);
-//            notification.close();	
-//        });
+        // Success message
+        Span message = new Span("Profile update failed. Please contact administrator.");
+        message.getStyle()
+                .set("font-size", "16px")
+                .set("font-weight", "500")
+                .set("color", "green");
+        VerticalLayout layout = new VerticalLayout(message);
+        layout.setSpacing(true);
+        layout.setAlignItems(VerticalLayout.Alignment.CENTER);
 
-        HorizontalLayout content = new HorizontalLayout(message);
-        content.setSpacing(true);
-        content.setAlignItems(HorizontalLayout.Alignment.CENTER);
-        notification.add(content);
+        dialog.add(layout);
 
-        // Clicking backdrop closes it
-        backdrop.addClickListener(e -> {
-            ui.remove(backdrop);
-            notification.close();
+        // Ensure backdrop is always removed when dialog closes
+        dialog.addDialogCloseActionListener(e -> {
+        	
+        	dialog.close();
+        ui.remove(backdrop);
+        });
+        
+        dialog.addOpenedChangeListener(e -> {
+            if (!e.isOpened()) {
+                ui.remove(backdrop);
+            }
         });
 
-        // Add backdrop to UI
-        ui.add(backdrop);
+        // Clicking backdrop also closes dialog
+        backdrop.addClickListener(e -> {
+            ui.remove(backdrop);
+            dialog.close();
+        });
 
-        // Show notification
-        notification.open();
+        // Add backdrop + dialog
+        ui.add(backdrop);
+        dialog.open();
+    });
     }
 }
 

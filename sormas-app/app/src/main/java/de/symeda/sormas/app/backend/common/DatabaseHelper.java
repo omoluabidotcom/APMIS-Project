@@ -3432,21 +3432,41 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 						"SELECT RAISE (ABORT, \"We cannot accept another form on this Cluster, Please edit the previous data submitted\");\n" +
 						"END;");
 
+//		getDao(DeviceErrorLog.class).executeRaw(
+//				"CREATE TRIGGER IF NOT EXISTS prevent_duplicate_on_error_logs " +
+//						"BEFORE INSERT ON device_error " +
+//						"WHEN EXISTS (SELECT 1 FROM device_error rec_info " +
+//						"             WHERE rec_info.userName = NEW.userName AND rec_info.deviceId = NEW.deviceId) " +
+//						"BEGIN " +
+//						"  UPDATE device_error " +
+//						"     SET errorMessage = NEW.errorMessage, " +
+//						"         uuid = NEW.uuid, " +
+//						"         stackTrace = NEW.stackTrace, " +
+//						"         errorAction = NEW.errorAction, " +
+//						"         lastUpdated = NEW.lastUpdated, " +
+//						"         changeDate = CAST(ROUND((julianday('now') - 2440587.5)*86400000) As INTEGER) " +
+//						"   WHERE userName = NEW.userName AND deviceId = NEW.deviceId; " +
+//						"  SELECT RAISE(IGNORE); " +
+//						"END;"
+//		);
+//
+//		// Drop old upsert trigger if it exists
+//		getDao(DeviceErrorLog.class).executeRaw(
+//				"DROP TRIGGER IF EXISTS prevent_duplicate_on_error_logs;"
+//		);
+
+// Cap logs per (userName, deviceId) to 20 newest: delete older ones before insert
 		getDao(DeviceErrorLog.class).executeRaw(
-				"CREATE TRIGGER IF NOT EXISTS prevent_duplicate_on_error_logs " +
+				"CREATE TRIGGER IF NOT EXISTS cap_device_error_logs_20 " +
 						"BEFORE INSERT ON device_error " +
-						"WHEN EXISTS (SELECT 1 FROM device_error rec_info " +
-						"             WHERE rec_info.userName = NEW.userName AND rec_info.deviceId = NEW.deviceId) " +
 						"BEGIN " +
-						"  UPDATE device_error " +
-						"     SET errorMessage = NEW.errorMessage, " +
-						"         uuid = NEW.uuid, " +
-						"         stackTrace = NEW.stackTrace, " +
-						"         errorAction = NEW.errorAction, " +
-						"         lastUpdated = NEW.lastUpdated, " +
-						"         changeDate = CAST(ROUND((julianday('now') - 2440587.5)*86400000) As INTEGER) " +
-						"   WHERE userName = NEW.userName AND deviceId = NEW.deviceId; " +
-						"  SELECT RAISE(IGNORE); " +
+						"  DELETE FROM device_error " +
+						"   WHERE id IN ( " +
+						"     SELECT id FROM device_error " +
+						"      WHERE userName = NEW.userName AND deviceId = NEW.deviceId " +
+						"      ORDER BY lastUpdated DESC, id DESC " +
+						"      LIMIT -1 OFFSET 19 " + // keep 19 existing; the new row becomes #20
+						"   ); " +
 						"END;"
 		);
 

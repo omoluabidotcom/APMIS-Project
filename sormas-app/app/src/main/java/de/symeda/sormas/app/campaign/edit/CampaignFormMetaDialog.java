@@ -52,6 +52,7 @@ import de.symeda.sormas.app.component.validation.FragmentValidator;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
 import de.symeda.sormas.app.databinding.DialogSelectCampaignFormMetaLayoutBinding;
 import de.symeda.sormas.app.util.DataUtils;
+import de.symeda.sormas.app.util.ErrorReportingHelper;
 import de.symeda.sormas.app.util.InfrastructureDaoHelper;
 
 import static de.symeda.sormas.app.core.notification.NotificationType.ERROR;
@@ -140,6 +141,11 @@ public class CampaignFormMetaDialog extends FormDialog {
             FragmentValidator.validate(getContext(), contentBinding);
         } catch (ValidationException e) {
             NotificationHelper.showDialogNotification(CampaignFormMetaDialog.this, ERROR, e.getMessage());
+
+            System.out.println("META DIALOG  Fragment Error Logged--------------------");
+
+            ErrorReportingHelper.logAndStoreDeviceError( "New Form : " + e.getMessage(), e); // replaced sendCaughtException
+
             return;
         }
 

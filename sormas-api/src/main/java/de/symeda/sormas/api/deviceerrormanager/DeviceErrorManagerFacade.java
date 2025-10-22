@@ -39,6 +39,8 @@ public interface DeviceErrorManagerFacade {
 	DeviceErrorManagerDto getDeviceDetailsByUuid(String uuid);
 	
 	DeviceErrorManagerDto getDeviceErrorByUsernameAndDeviceId(String username, String deviceSerial);
+	
+	List<DeviceErrorManagerDto> getLatestLogs(String username, String deviceSerial, int max);
 
 
 }

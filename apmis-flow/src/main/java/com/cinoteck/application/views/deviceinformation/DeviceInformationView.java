@@ -102,7 +102,7 @@ public class DeviceInformationView extends VerticalLayout {
 
 		TextField searchField = new TextField();
 
-		ComboBox<?> geographyUnitTypeFilter = new ComboBox<>(I18nProperties.getCaption("Unit Type"));
+//		ComboBox<?> geographyUnitTypeFilter = new ComboBox<>(I18nProperties.getCaption("Unit Type"));
 
 		Button resetFilters = new Button(I18nProperties.getCaption(Captions.resetFilters));
 
@@ -137,7 +137,7 @@ public class DeviceInformationView extends VerticalLayout {
 		});
 
 		layout.add(searchField);
-		layout.add(geographyUnitTypeFilter);
+//		layout.add(geographyUnitTypeFilter);
 
 		layout.add(resetFilters);
 		layout.add(exportDevicesInfo);

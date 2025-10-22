@@ -36,7 +36,7 @@ public class DeviceErrorManagerDto extends EntityDto {
 
 	public static final String UUID = "uuid";
 	    public static final String ANDROID_VERSION = "errorMessage";
-    public static final String STACK_TRACE = "stacktrace";
+    public static final String STACK_TRACE = "stackTrace";
     public static final String DEVICE_ID = "deviceId";
     public static final String USERNAME = "username";
     public static final String ERRORED_ACTION = "errorAction";

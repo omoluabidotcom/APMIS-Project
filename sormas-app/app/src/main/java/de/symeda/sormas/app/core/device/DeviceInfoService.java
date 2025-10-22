@@ -23,6 +23,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.os.CpuUsageInfo;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings;
@@ -197,6 +198,8 @@ public class DeviceInfoService {
     private void collectBatteryInfo(DeviceInfo deviceInfo) {
         try {
             BatteryManager batteryManager = (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
+
+
             
             if (batteryManager != null) {
                 int batteryLevel = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
@@ -210,6 +213,8 @@ public class DeviceInfoService {
                     if (batteryStatus != null) {
                         int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
                         int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+
+
                         batteryLevel = (level * 100) / scale;
                         deviceInfo.setBatteryLevel(batteryLevel);
 
@@ -220,22 +225,31 @@ public class DeviceInfoService {
 //                        deviceInfo.setIsCharging(isCharging);
 
                         // Battery status
-//                        switch (status) {
-//                            case BatteryManager.BATTERY_STATUS_CHARGING:
+                        switch (status) {
+                            case BatteryManager.BATTERY_STATUS_CHARGING:
+                                System.out.println("battery status ======  BATTERY_STATUS_CHARGING");
 //                                deviceInfo.setBatteryStatus(DeviceInfo.BatteryStatus.CHARGING);
-//                                break;
-//                            case BatteryManager.BATTERY_STATUS_DISCHARGING:
+                                break;
+                            case BatteryManager.BATTERY_STATUS_DISCHARGING:
+                                System.out.println("battery status ======  BATTERY_STATUS_DISCHARGING");
+
 //                                deviceInfo.setBatteryStatus(DeviceInfo.BatteryStatus.DISCHARGING);
-//                                break;
-//                            case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
+                                break;
+                            case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
+                                System.out.println("battery status ======  BATTERY_STATUS_NOT_CHARGING");
+
 //                                deviceInfo.setBatteryStatus(DeviceInfo.BatteryStatus.NOT_CHARGING);
-//                                break;
-//                            case BatteryManager.BATTERY_STATUS_FULL:
+                                break;
+                            case BatteryManager.BATTERY_STATUS_FULL:
+                                System.out.println("battery status ======  BATTERY_STATUS_FULL");
+
 //                                deviceInfo.setBatteryStatus(DeviceInfo.BatteryStatus.FULL);
-//                                break;
-//                            default:
+                                break;
+                            default:
+                                System.out.println("battery status ======  default");
+
 //                                deviceInfo.setBatteryStatus(DeviceInfo.BatteryStatus.UNKNOWN);
-//                        }
+                        }
                     }
                 }
             }
@@ -275,6 +289,18 @@ public class DeviceInfoService {
                             deviceInfo.setWifiConnected(false);
                     }
 
+                    TelephonyManager telephonyManagerx =
+                            (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+
+                    System.out.println(telephonyManagerx.getNetworkOperator() + "telephonyManager.getNetworkOperator();" +  telephonyManagerx.getNetworkOperatorName() + telephonyManagerx.getSimOperator());
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        telephonyManagerx.getSignalStrength();
+
+                        System.out.println(telephonyManagerx.getSignalStrength() + "telephonyManagerx.getSignalStrength()");
+                    }
+
+
                     // Network strength (for mobile networks)
                     if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
                         try {
@@ -283,7 +309,14 @@ public class DeviceInfoService {
                             if (telephonyManager != null && 
                                 ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) 
                                 == PackageManager.PERMISSION_GRANTED) {
-                                
+
+//                                telephonyManager.getNetworkOperator();
+//
+//                                telephonyManager.getNetworkOperatorName();
+//                                System.out.println(telephonyManager.getNetworkOperator() + "telephonyManager.getNetworkOperator();" +  telephonyManager.getNetworkOperatorName());
+
+
+
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                     // For Android 10+, signal strength access is restricted
                                     deviceInfo.setNetworkStrength(-1);

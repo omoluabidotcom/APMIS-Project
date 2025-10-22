@@ -188,9 +188,13 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 
 			Log.e(getClass().getName(), "Error trying to synchronizing data in mode '" + syncMode + "'", e);
 
+			// Single error log per synchronization failure
 			ErrorReportingHelper.sendCaughtException(e);
-//
-			ErrorReportingHelper.reportAndStore( "Sync Mode : " + syncMode.toString(), e); // replaced sendCaughtException
+
+
+			System.out.println("DATA ASYNCY 1  Fragment Error Logged--------------------");
+
+			ErrorReportingHelper.logAndStoreDeviceError("Synchronization Failed - No Connection: " + syncMode.toString(), e);
 
 			syncFailed = true;
 			syncFailedMessage = DatabaseHelper.getContext().getString(R.string.error_server_communication);
@@ -215,28 +219,25 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			if (newSyncMode != null) {
 
 				Log.w(getClass().getName(), "Error trying to synchronizing data in mode '" + syncMode + "'", e);
-
 				ErrorReportingHelper.sendCaughtException(e);
-
-				ErrorReportingHelper.reportAndStore( "Sync Mode : " + syncMode.toString(), e); // replaced sendCaughtException
-
-
 				syncMode = newSyncMode;
 				doInBackground(params);
 
 			} else {
-
 				Log.e(getClass().getName(), "Error trying to synchronizing data in mode '" + syncMode + "'", e);
+				            ErrorReportingHelper.sendCaughtException(e);
 
-				ErrorReportingHelper.sendCaughtException(e);
 
-				ErrorReportingHelper.reportAndStore( "Sync Mode : " + syncMode.toString(), e); // replaced sendCaughtException
+				System.out.println("SYNC 2 Fragment Error Logged--------------------");
 
+				// Single error log per synchronization failure
+				ErrorReportingHelper.logAndStoreDeviceError("Synchronization Failed - Runtime/Dao Exception: " + syncMode.toString(), e);
 
 				syncFailed = true;
 				syncFailedMessage = DatabaseHelper.getContext().getString(R.string.error_synchronization);
 				RetroProvider.disconnect();
 			}
+
 		}
 
 		return null;

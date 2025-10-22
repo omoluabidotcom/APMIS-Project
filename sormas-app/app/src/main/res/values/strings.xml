@@ -94,7 +94,7 @@
     <string name="action_refer_case_from_poe">Refer case from Point of Entry</string>
     <string name="action_report">Report Problem</string>
     <string name="action_repull_data">Re-sync Settings</string>
-    <string name="action_reinitialize_app" tools:ignore="MissingTranslation">Re-Initialize Settings</string>
+    <string name="action_reinitialize_app" tools:ignore="MissingTranslation">Erase Data and Restore App</string>
     <string name="action_reset_filters">Reset filters</string>
     <string name="action_save">Save</string>
     <string name="action_save_case">Save Case</string>
@@ -405,7 +405,7 @@
     <string name="heading_treatment_edit">Edit Treatment</string>
     <string name="heading_treatment_new">New Treatment</string>
     <string name="heading_unsynchronized_changes">Unsynchronized Changes</string>
-    <string name="heading_reinitialize_app" translatable="false">Re-initialize App</string>
+    <string name="heading_reinitialize_app" translatable="false">Erase Data and Restore App</string>
     <string name="heading_user_report">Report a problem</string>
     <string name="heading_change_laboratory_result">Change Laboratory Result</string>
     <string name="heading_change_case_disease">Change case disease</string>

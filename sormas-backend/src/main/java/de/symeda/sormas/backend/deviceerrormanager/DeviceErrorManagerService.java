@@ -124,6 +124,21 @@ public class DeviceErrorManagerService extends AdoServiceWithUserFilter<DeviceEr
 	    List<DeviceErrorManager> results = query.getResultList();
 	    return results.isEmpty() ? null : results.get(0);
 	}
+	
+	public List<DeviceErrorManager> getLatestByUsernameAndDeviceId(String username, String deviceId, int max) {
+	    if (username == null || deviceId == null || max < 1) return Collections.emptyList();
+
+	    CriteriaBuilder cb = em.getCriteriaBuilder();
+	    CriteriaQuery<DeviceErrorManager> cq = cb.createQuery(DeviceErrorManager.class);
+	    Root<DeviceErrorManager> root = cq.from(DeviceErrorManager.class);
+
+	    cq.where(cb.and(
+	        cb.equal(root.get("userName"), username),
+	        cb.equal(root.get("deviceId"), deviceId)
+	    ));
+	    cq.orderBy(cb.desc(root.get("lastUpdated")), cb.desc(root.get("id")));
+	    return em.createQuery(cq).setMaxResults(max).getResultList();
+	}
 
 
 }

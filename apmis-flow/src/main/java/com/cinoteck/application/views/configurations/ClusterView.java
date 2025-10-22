@@ -1050,18 +1050,34 @@ public class ClusterView extends VerticalLayout {
 					dce.setDistrict(districtOfCluster.getValue());
 					dce.setFloating(clusterFloatStatus);
 
+					
 					List<DistrictIndexDto> pcode = FacadeProvider.getDistrictFacade().getAllDistricts();
+					
+					System.out.println(pcode + " pcodweeeeeeeeeeeee");
 					for (DistrictIndexDto districtIndexDto : pcode) {
+						
+						System.out.println(districtIndexDto.getRegionexternalId() + " getRegionexternalIdpcodweeeeeeeeeeeee");
+
 						String selectedDistrictUuid = districtIndexDto.getUuid();
 
-						if (selectedDistrictUuid.trim().equals(districtOfCluster.getValue().toString().trim())) {
+						if (selectedDistrictUuid.equals(districtOfCluster.getValue().getUuid().toString())) {
 							
+							System.out.println(" Distric matches pcodweeeeeeeeeeeee facsefprocvider " + 
+FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(selectedDistrictUuid));
+
+							
+							System.out.println(" Distric matches pcodweeeeeeeeeeeee");
+
 							DistrictReferenceDto nuller = new DistrictReferenceDto(districtIndexDto.getUuid(),
 									districtIndexDto.getName(), districtIndexDto.getExternalId());
+							
+							System.out.println(nuller.getUuid() +  " Distric matches pcodweeeeeeeeeeeee");
+
 							dce.setDistrict(nuller);
 							break;
 						}
 					}
+					
 
 					if (dce.getDistrict().getExternalId() != null) {
 
@@ -1196,7 +1212,7 @@ FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(selectedDistrictUu
 							
 							System.out.println(nuller.getUuid() +  " Distric matches pcodweeeeeeeeeeeee");
 
-							dce.setDistrict(nuller);
+							dcex.setDistrict(nuller);
 							break;
 						}
 					}

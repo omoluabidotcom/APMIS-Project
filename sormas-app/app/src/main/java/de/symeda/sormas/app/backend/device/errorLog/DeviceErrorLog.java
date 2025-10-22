@@ -35,16 +35,16 @@ public class DeviceErrorLog extends AbstractDomainObject {
     public static final String I18N_PREFIX = "Device_error";
 
     public static final String ANDROID_VERSION = "errorMessage";
-    public static final String STACK_TRACE = "stacktrace";
+    public static final String STACK_TRACE = "stackTrace";
     public static final String DEVICE_ID = "deviceId";
-    public static final String USERNAME = "username";
+    public static final String USERNAME = "userName";
     public static final String ERRORED_ACTION = "errorAction";
     public static final String LAST_UPDATED = "lastUpdated";
 
     @Column(name = "errorMessage")
     private String errorMessage;
 
-    @Column(name = "stacktrace")
+    @Column(name = "stackTrace")
     private String stackTrace;
 
     @Column(name = "deviceId")
@@ -56,7 +56,7 @@ public class DeviceErrorLog extends AbstractDomainObject {
     @Column(name = "lastUpdated")
     private Date lastUpdated;
 
-    @Column(name = "username")
+    @Column(name = "userName")
     private String userName;
 
 
