@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -99,6 +100,7 @@ import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
+import de.symeda.sormas.api.campaign.form.CampaignFormMetaExpiryDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaHistoryExtractDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.i18n.Captions;
@@ -965,16 +967,57 @@ public class CampaignDataView extends VerticalLayout
 				boolean isCampaignClosed = FacadeProvider.getCampaignFacade().isClosedd(campaignz.getValue().getUuid());
 
 				if (!isCampaignClosed) {
-					CampaignFormMetaDto formDatax = FacadeProvider.getCampaignFormMetaFacade()
-							.getCampaignFormMetaByUuid(e.getValue().getUuid());
+					
+					if(campaignPhase.getValue() != null) {
+						
+						if(FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(
+								campaignz.getValue().getUuid(), 
+								e.getValue().getUuid()).size() > 0 ) {
+							
+					
+						CampaignFormMetaExpiryDto expiryDto = FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(
+								campaignz.getValue().getUuid(), 
+								e.getValue().getUuid()).get(0);
+						
+						CampaignDto campaign = FacadeProvider.getCampaignFacade().getByUuid(campaignz.getValue().getUuid());						
+					
+					    if(checkFormValidityByPhase(campaignPhase.getValue().toString().toLowerCase(), campaign, expiryDto)){
+					    	CampaignFormMetaDto formDatax = FacadeProvider.getCampaignFormMetaFacade()
+									.getCampaignFormMetaByUuid(e.getValue().getUuid());
 
-					boolean fff = formDatax.isDistrictentry();
+							boolean fff = formDatax.isDistrictentry();
 
-					CampaignFormDataEditForm cam = new CampaignFormDataEditForm(e.getValue(), campaignz.getValue(),
-							false, null, grid, fff);
-					// add(cam);
+							CampaignFormDataEditForm cam = new CampaignFormDataEditForm(e.getValue(), campaignz.getValue(),
+									false, null, grid, fff);
+							// add(cam);
 
-					newForm.setValue(null);
+							newForm.setValue(null);	
+					    }
+					} else {
+						Notification notification = new Notification();
+						notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+						notification.setPosition(Position.TOP_END);
+						Div text = new Div(new Text(
+						        "This Form is not available for Data Entry. Please contact System Administrator to Specify Entry Period."),
+						        new HtmlComponent("br"),
+						        new Text("Close this warning to continue working in APMIS."));
+
+						Button closeButton = new Button(new Icon("lumo", "cross"));
+						closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+//						closeButton.setAriaLabel("Close");
+						closeButton.addClickListener(event -> {
+						    notification.close();
+						});
+
+						HorizontalLayout layoutx = new HorizontalLayout(text, closeButton);
+						layoutx.setAlignItems(Alignment.CENTER);
+
+						notification.add(layoutx);
+						notification.open();
+						
+					}
+				}
+					
 
 				} else {
 					Notification notification = new Notification();
@@ -1008,9 +1051,47 @@ public class CampaignDataView extends VerticalLayout
 
 			if (!isCampaignClosed) {
 			if (importFormData.getValue() != null) {
-				ImportCampaignsFormDataDialog dialogx = new ImportCampaignsFormDataDialog(campaignz.getValue(),
-						importFormData.getValue(), campaignUuid);
-				dialogx.open();
+				if (e.getValue() != null) {
+					
+
+					if(FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(campaignUuid.getUuid(), e.getValue().getUuid()).size() > 0) {
+						
+					CampaignFormMetaExpiryDto expiryDto = FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(campaignUuid.getUuid(), e.getValue().getUuid()).get(0);
+
+
+					if(checkFormValidityByPhase(e.getValue().getFormType().toString().toLowerCase(), campaignUuid, expiryDto)) {
+						ImportCampaignsFormDataDialog dialogx = new ImportCampaignsFormDataDialog(campaignz.getValue(),
+								importFormData.getValue(), campaignUuid);
+						dialogx.open();
+
+					}
+					
+				} else {
+					Notification notification = new Notification();
+					notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+					notification.setPosition(Position.TOP_END);
+					Div text = new Div(new Text(
+					        "This Form is not available for Data Import. Please contact System Administrator to Specify Entry Period."),
+					        new HtmlComponent("br"),
+					        new Text("Close this warning to continue working in APMIS."));
+
+					Button closeButton = new Button(new Icon("lumo", "cross"));
+					closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+//					closeButton.setAriaLabel("Close");
+					closeButton.addClickListener(event -> {
+					    notification.close();
+					});
+
+					HorizontalLayout layoutx = new HorizontalLayout(text, closeButton);
+					layoutx.setAlignItems(Alignment.CENTER);
+
+					notification.add(layoutx);
+					notification.open();
+					
+				}
+
+				}
+				
 			}
 		}else {
 			Notification notification = new Notification();
@@ -1209,6 +1290,78 @@ public class CampaignDataView extends VerticalLayout
 
 		add(filterBlock);
 	}
+	
+	private boolean checkFormValidityByPhase(String campaignPhase, CampaignDto campaignDto, CampaignFormMetaExpiryDto expiryDto) {
+	    String phase = campaignPhase;
+	    Date today = new Date();
+
+	    // 🔹 Check if form expired
+	    if (expiryDto.getEnddate() != null && expiryDto.getEnddate().before(today)) {
+	        showErrorNotification(
+	            "This Form has been Closed for Data Entry. Please contact System Administrator."
+	        );
+	        return false;
+	    }
+
+	    switch (phase.toLowerCase()) {
+	        case "pre-campaign":
+	            if (today.before(campaignDto.getPreCampStartDate())) {
+	                showErrorNotification(
+	                    "This Form is not yet open for Data Entry. Please contact System Administrator."
+	                );
+	                return false;
+	            }
+	            break;
+
+	        case "intra-campaign":
+	            if (today.before(campaignDto.getStartDate())) {
+	                showErrorNotification(
+	                    "This Form has been Closed for Data Entry. Please contact System Administrator."
+	                );
+	                return false;
+	            }
+	            break;
+
+	        case "post-campaign":
+	            if (today.before(campaignDto.getPostCampStartDate())) {
+	                showErrorNotification(
+	                    "This Form has been Closed for Data Entry. Please contact System Administrator."
+	                );
+	                return false;
+	            }
+	            break;
+
+	        default:
+	            // Optional: handle unexpected phases
+	            break;
+	    }
+
+	    return true;
+	}
+
+
+	private void showErrorNotification(String message) {
+	    Notification notification = new Notification();
+	    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+	    notification.setPosition(Notification.Position.TOP_END);
+
+	    Div text = new Div(
+	        new Text(message),
+	        new HtmlComponent("br"),
+	        new Text("Close this warning to continue working in APMIS.")
+	    );
+
+	    Button closeButton = new Button(new Icon("lumo", "cross"));
+	    closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+	    closeButton.addClickListener(event -> notification.close());
+
+	    HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+	    layout.setAlignItems(Alignment.CENTER);
+
+	    notification.add(layout);
+	    notification.open();
+	}
+
 
 	public void buildLqasTransposedData(CampaignFormDataCriteria criteria) {
 //		FacadeProvider.getCampaignFormDataFacade().getTransposedCampaignFormDataLQAS(criteria);
@@ -2160,41 +2313,62 @@ public class CampaignDataView extends VerticalLayout
 
 //			System.out.println("1111111111111111111" + campaignPhase.getValue() + campaignz.getValue());
 			if (campaignPhase.getValue().toString().equalsIgnoreCase("POST-CAMPAIGN")) {
-//		        newSelectionModel = new GridSelectionModel<CampaignFormDataIndexDto>(Grid.SelectionMode.NONE);
-//				System.out.println("1111111111111111111aaaaaaaaaaaaaa");
 				if (isPublished) {
 					grid.setSelectionMode(Grid.SelectionMode.NONE);
-//					grid.asSingleSelect().addValueChangeListener(e -> {
-//						if (e.getValue() != null) {
-//							CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
-//									.getCampaignFormDataByUuid(e.getValue().getUuid());
-//
-//							CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
-//									.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
-//
-//							CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
-//									campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
-//
-//						}
-//
-//					});
-//					System.out.println("1111111111111111111bbbbbbbbbbbbbbb");
 				}
-
 			} else {
 
 //				System.out.println("1111111111111111111cccccccccccccccccccc");
 				grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+				
+
 				grid.asSingleSelect().addValueChangeListener(e -> {
+
+						
 					if (e.getValue() != null) {
-						CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
-								.getCampaignFormDataByUuid(e.getValue().getUuid());
+						
 
-						CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
-								.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
+						if(FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(e.getValue().getCampaign(), e.getValue().getUuid()).size() > 0) {
+							
+						CampaignFormMetaExpiryDto expiryDto = FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(e.getValue().getCampaign(), e.getValue().getUuid()).get(0);
 
-						CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
-								campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
+						CampaignDto campaign = FacadeProvider.getCampaignFacade().getByUuid(e.getValue().getCampaign()); //campaignz.getValue().getUuid());						
+
+						if(checkFormValidityByPhase(e.getValue().getFormType().toString().toLowerCase(), campaign, expiryDto)) {
+							CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
+									.getCampaignFormDataByUuid(e.getValue().getUuid());
+
+							CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
+									.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
+
+							CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
+									campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
+
+						}
+						
+					} else {
+						Notification notification = new Notification();
+						notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+						notification.setPosition(Position.TOP_END);
+						Div text = new Div(new Text(
+						        "This Form is not available for Data Entry. Please contact System Administrator to Specify Entry Period."),
+						        new HtmlComponent("br"),
+						        new Text("Close this warning to continue working in APMIS."));
+
+						Button closeButton = new Button(new Icon("lumo", "cross"));
+						closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+//						closeButton.setAriaLabel("Close");
+						closeButton.addClickListener(event -> {
+						    notification.close();
+						});
+
+						HorizontalLayout layoutx = new HorizontalLayout(text, closeButton);
+						layoutx.setAlignItems(Alignment.CENTER);
+
+						notification.add(layoutx);
+						notification.open();
+						
+					}
 
 					}
 
@@ -2204,17 +2378,61 @@ public class CampaignDataView extends VerticalLayout
 
 			grid.setSelectionMode(Grid.SelectionMode.SINGLE);
 			grid.asSingleSelect().addValueChangeListener(e -> {
-				CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
-						.getCampaignFormDataByUuid(e.getValue().getUuid());
+				
+				if(FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(e.getValue().getCampaign(), e.getValue().getUuid()).size() > 0) {
 
-				CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
-						.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
+					
+				CampaignFormMetaExpiryDto expiryDto = FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(e.getValue().getCampaign(), e.getValue().getUuid()).get(0);
 
-				CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
-						campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
+				CampaignDto campaign = FacadeProvider.getCampaignFacade().getByUuid(e.getValue().getCampaign()); //campaignz.getValue().getUuid());						
+
+				if(checkFormValidityByPhase(e.getValue().getFormType().toString().toLowerCase(), campaign, expiryDto)) {
+					CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
+							.getCampaignFormDataByUuid(e.getValue().getUuid());
+
+					CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
+							.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
+
+					CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
+							campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
+
+				}
+			} else {
+				Notification notification = new Notification();
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+				notification.setPosition(Position.TOP_END);
+				Div text = new Div(new Text(
+				        "This Form is not available for Data Entry. Please contact System Administrator to Specify Entry Period."),
+				        new HtmlComponent("br"),
+				        new Text("Close this warning to continue working in APMIS."));
+
+				Button closeButton = new Button(new Icon("lumo", "cross"));
+				closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+//				closeButton.setAriaLabel("Close");
+				closeButton.addClickListener(event -> {
+				    notification.close();
+				});
+
+				HorizontalLayout layoutx = new HorizontalLayout(text, closeButton);
+				layoutx.setAlignItems(Alignment.CENTER);
+
+				notification.add(layoutx);
+				notification.open();
+				
+			}
+
+				
+//				CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
+//						.getCampaignFormDataByUuid(e.getValue().getUuid());
+//
+//				CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
+//						.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
+//
+//				CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
+//						campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
 
 //				cam.verifyAndPublishButton.setText(I18nProperties.getCaption("Verify & Publish"));
-				System.out.println("2222222222222222222222" + formData.getUuid());
+//				System.out.println("2222222222222222222222" + formData.getUuid());
 
 				grid.deselectAll();
 

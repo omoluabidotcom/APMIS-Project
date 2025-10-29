@@ -11350,7 +11350,7 @@ INSERT INTO schema_version (version_number, comment) VALUES (487, 'Updating Noti
 
 CREATE TABLE public.device_manager (
 	id int8 NOT NULL,
-	"uuid" varchar(255) NOT NULL,
+	uuid varchar(255) NOT NULL,
 	device_model varchar(100) NOT NULL,
 	device_brand varchar(50) NOT NULL,
 	device_serial varchar(100) NULL,
@@ -11384,7 +11384,6 @@ CREATE TABLE public.device_manager (
 );
 CREATE INDEX idx_device_manager_user_device ON public.device_manager USING btree (user_name, device_id);
 
-
 CREATE OR REPLACE FUNCTION public.delete_old_device_info()
  RETURNS trigger
  LANGUAGE plpgsql
@@ -11415,7 +11414,7 @@ insert
     
 CREATE TABLE public.devices_error_manager (
 	id int8 NOT NULL,
-	"uuid" varchar(255) NOT NULL,
+	uuid varchar(255) NOT NULL,
 	errormessage text NOT NULL,
 	stacktrace text NULL,
 	deviceid varchar(255) NULL,
@@ -11424,33 +11423,56 @@ CREATE TABLE public.devices_error_manager (
 	lastupdated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
 	creationdate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
 	changedate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-	CONSTRAINT devices_error_pkey PRIMARY KEY (id),
-	CONSTRAINT devices_error_username_deviceid_unique UNIQUE (username, deviceid)
+	CONSTRAINT devices_error_pkey PRIMARY KEY (id)
 );
+CREATE INDEX idx_devices_error_user_device_lastupdated ON public.devices_error_manager USING btree (username, deviceid, lastupdated DESC, id DESC);
 
-CREATE OR REPLACE FUNCTION public.delete_old_device_error()
+-- Table Triggers
+CREATE OR REPLACE FUNCTION public.cap_device_error_logs()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
 BEGIN
-    DELETE FROM public.devices_error_manager
-    WHERE username = NEW.username 
-      AND deviceid = NEW.deviceid
-      AND uuid != NEW.uuid;
-    RETURN NEW;
+  -- delete rows beyond the newest 19; the new row will become #20
+  DELETE FROM public.devices_error_manager d
+   WHERE d.username = NEW.username
+     AND d.deviceid = NEW.deviceid
+     AND d.id IN (
+       SELECT id
+         FROM public.devices_error_manager
+        WHERE username = NEW.username
+          AND deviceid = NEW.deviceid
+        ORDER BY lastupdated DESC, id DESC
+        OFFSET 19
+     );
+  RETURN NEW;
 END;
 $function$
 ;
 
--- Table Triggers
 
 create trigger before_insert_device_error before
 insert
     on
-    public.devices_error_manager for each row execute function delete_old_device_error();
-
+    public.devices_error_manager for each row execute function cap_device_error_logs();
     
-    INSERT INTO schema_version (version_number, comment) VALUES (488, 'Implementing Device Info and Device Error');
+INSERT INTO schema_version (version_number, comment) VALUES (488, 'Implementing Device Info and Device Error');
+
+ALTER TABLE campaigns
+ADD COLUMN precampstartdate TIMESTAMP NULL,
+ADD COLUMN precampenddate TIMESTAMP NULL;
+ADD COLUMN postcampstartdate TIMESTAMP NULL,
+ADD COLUMN postcampenddate TIMESTAMP NULL;
+
+ALTER TABLE campaigns_history
+ADD COLUMN precampstartdate TIMESTAMP NULL,
+ADD COLUMN precampenddate TIMESTAMP NULL;
+ADD COLUMN postcampstartdate TIMESTAMP NULL,
+ADD COLUMN postcampenddate TIMESTAMP NULL;
+
+
+INSERT INTO schema_version (version_number, comment) VALUES (489, 'Implementing Pre Campaign Na Post Campaign STart Date');
+
 
 
 

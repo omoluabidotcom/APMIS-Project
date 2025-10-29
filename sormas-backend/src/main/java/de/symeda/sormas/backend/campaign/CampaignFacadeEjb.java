@@ -131,7 +131,9 @@ public class CampaignFacadeEjb implements CampaignFacade {
 
 		cq.multiselect(campaign.get(Campaign.UUID), campaign.get(Campaign.NAME), campaign.get(Campaign.CLOSEOPEN),
 				campaign.get(Campaign.ROUND), campaign.get(Campaign.CAMPAIGN_YEAR), campaign.get(Campaign.START_DATE),
-				campaign.get(Campaign.END_DATE), campaign.get(Campaign.ARCHIVED));
+				campaign.get(Campaign.END_DATE), campaign.get(Campaign.PRE_CAMPAIGN_START_DATE),
+				campaign.get(Campaign.PRE_CAMPAIGN_END_DATE), campaign.get(Campaign.POST_CAMPAIGN_START_DATE),
+				campaign.get(Campaign.POST_CAMPAIGN_END_DATE), campaign.get(Campaign.ARCHIVED));
 
 		Predicate filter = campaignService.createUserFilter(cb, cq, campaign);
 
@@ -202,9 +204,6 @@ public class CampaignFacadeEjb implements CampaignFacade {
 				cb.lessThanOrEqualTo(from.get(Campaign.START_DATE), new Date())));
 		query.orderBy(cb.desc(from.get(Campaign.START_DATE)));
 
-		// //System.out.println(new Date() + " DEBUGGER r567ujhgty8ijyu8dfrf
-		// "+SQLExtractor.from(em.createQuery(query)));
-
 		final TypedQuery<Campaign> q = em.createQuery(query);
 		final Campaign lastStartedCampaign = q.getResultList().stream().findFirst().orElse(null);
 
@@ -245,68 +244,235 @@ public class CampaignFacadeEjb implements CampaignFacade {
 	}
 
 	private void saveCampaignFormExp(CampaignDto dto) {
-		try {
-			for (CampaignFormMetaWithExpReferenceDto data : dto.getCampaignFormMetaExpiry()) {
+//try {
+	
 
-				String sqlQuery = "INSERT INTO " + CampaignFormMetaExpDay.TABLE_NAME + "("
+		for (CampaignFormMetaWithExpReferenceDto data : dto.getCampaignFormMetaExpiry()) {
+			String fetchFormTypeSql = "SELECT LOWER(formtype) FROM campaignformmeta WHERE uuid = '"
+					+ data.getFormId() + "' LIMIT 1";
+
+			Object result = em.createNativeQuery(fetchFormTypeSql).getSingleResult();
+			String formType = result != null ? result.toString() : "";
+
+			// 2️⃣ Determine which column/value to use based on form type
+
+			try {
+
+				String expireDayColumn;
+				String expireValue;
+				switch (formType) {
+				case "pre-campaign":
+					expireDayColumn = CampaignFormMetaExpDay.EXPIRE_DAY;
+					expireValue = String.valueOf(data.getDaysExpired());
+					break;
+				case "post-campaign":
+					expireDayColumn = CampaignFormMetaExpDay.EXPIRE_DAY;
+					expireValue = String.valueOf(data.getDaysExpired());
+					break;
+				case "intra-campaign":
+					expireDayColumn = CampaignFormMetaExpDay.EXPIRE_DAY;
+					expireValue = String.valueOf(data.getDaysExpired());
+					break;
+				default:
+					expireDayColumn = CampaignFormMetaExpDay.EXPIRE_DAY;
+					expireValue = String.valueOf(data.getDaysExpired());
+					break;
+				}
+
+				System.out.println("Expire value-------------: " + expireValue);
+				System.out.println("Form type (final)-------------:: " + formType);
+
+				// 3️⃣ Insert or update expiry day
+				String sqlQuery = "INSERT INTO " + CampaignFormMetaExpDay.TABLE_NAME + " ("
 						+ CampaignFormMetaExpDay.FORM_ID + ", " + CampaignFormMetaExpDay.CAMPAIGN + ", "
-						+ CampaignFormMetaExpDay.EXPIRE_DAY + ", " + CampaignFormMetaExpDay.UUID + ", "
-						+ CampaignFormMetaExpDay.CHANGE_DATE + ")" + " VALUES ('" + data.getFormId() + "', '"
-						+ data.getCampaignId() + "', '" + data.getDaysExpired() + "', '" + data.getUuid()
-						+ "', CURRENT_TIMESTAMP)" + " ON CONFLICT (" + CampaignFormMetaExpDay.FORM_ID + ", "
-						+ CampaignFormMetaExpDay.CAMPAIGN + ") DO UPDATE " + " SET " + CampaignFormMetaExpDay.EXPIRE_DAY
-						+ " = EXCLUDED." + CampaignFormMetaExpDay.EXPIRE_DAY + ", " + CampaignFormMetaExpDay.UUID
-						+ " = EXCLUDED." + CampaignFormMetaExpDay.UUID + ", " + CampaignFormMetaExpDay.CHANGE_DATE
+						+ expireDayColumn + ", " + CampaignFormMetaExpDay.UUID + ", "
+						+ CampaignFormMetaExpDay.CHANGE_DATE + ") " + "VALUES ('" + data.getFormId() + "', '"
+						+ data.getCampaignId() + "', '" + expireValue + "', '" + data.getUuid()
+						+ "', CURRENT_TIMESTAMP) " + "ON CONFLICT (" + CampaignFormMetaExpDay.FORM_ID + ", "
+						+ CampaignFormMetaExpDay.CAMPAIGN + ") DO UPDATE SET " + expireDayColumn + " = EXCLUDED."
+						+ expireDayColumn + ", " + CampaignFormMetaExpDay.UUID + " = EXCLUDED."
+						+ CampaignFormMetaExpDay.UUID + ", " + CampaignFormMetaExpDay.CHANGE_DATE
 						+ " = CURRENT_TIMESTAMP;";
 
-//				String sqlQuery = "insert into " + CampaignFormMetaExpDay.TABLE_NAME + "("
-//						+ CampaignFormMetaExpDay.FORM_ID + ", " 
-//						+ CampaignFormMetaExpDay.CAMPAIGN + ", "
-//						+ CampaignFormMetaExpDay.EXPIRE_DAY + ", " 
-//						+ CampaignFormMetaExpDay.UUID + ", "
-//						+ CampaignFormMetaExpDay.CHANGE_DATE + ")"
-//						
-//						+ " values (" + "'" + data.getFormId()
-//						+ "'," + "'" + data.getCampaignId() + "','" + data.getDaysExpired() + " ','"+ data.getUuid() + "', CURRENT_TIMESTAMP"+" )"
-//						+ "ON CONFLICT (" + CampaignFormMetaExpDay.FORM_ID + ", " + CampaignFormMetaExpDay.CAMPAIGN
-//						+ ") DO UPDATE\n" + "SET " + CampaignFormMetaExpDay.EXPIRE_DAY + " = EXCLUDED."
-//						+ CampaignFormMetaExpDay.EXPIRE_DAY + ";" ;
+				System.out.println("Executing query for formType [" + formType + "]: " + sqlQuery);
+				int resultUpdate = em.createNativeQuery(sqlQuery).executeUpdate();
+				System.out.println("Insert/Update done: " + resultUpdate);
 
-//				String sqlQuery = "INSERT INTO " + CampaignFormMetaExpDay.TABLE_NAME + "("
-//	                    + CampaignFormMetaExpDay.FORM_ID + ", " 
-//	                    + CampaignFormMetaExpDay.CAMPAIGN + ", "
-//	                    + CampaignFormMetaExpDay.EXPIRE_DAY + ", " 
-//	                    + CampaignFormMetaExpDay.UUID + ", "
-//	                    + CampaignFormMetaExpDay.CHANGE_DATE + ")"
-//	                    + " VALUES ('" + data.getFormId() + "', '" 
-//	                    + data.getCampaignId() + "', '" 
-//	                    + data.getDaysExpired() + "', '" 
-//	                    + data.getUuid() + "', CURRENT_TIMESTAMP)"
-//	                    + " ON CONFLICT (" + CampaignFormMetaExpDay.FORM_ID + ", " 
-//	                    + CampaignFormMetaExpDay.CAMPAIGN + ") DO UPDATE "
-//	                    + " SET " + CampaignFormMetaExpDay.EXPIRE_DAY + " = EXCLUDED." 
-//	                    + CampaignFormMetaExpDay.EXPIRE_DAY + ", "
-//	                    + CampaignFormMetaExpDay.UUID + " = EXCLUDED." 
-//	                    + CampaignFormMetaExpDay.UUID + ", "
-//	                    + CampaignFormMetaExpDay.CHANGE_DATE + " = CURRENT_TIMESTAMP;";
-				System.out.println(" trying tio ru  q]sqkkkf : " + sqlQuery);
+			} catch (Exception e) {
 
-				int dsc = em.createNativeQuery(sqlQuery).executeUpdate();
-				System.out.println(" =========done: " + dsc);
+			} finally {
+
+				String updateCampaignExpiry = "";
+
+				switch (formType) {
+				case "pre-campaign":
+					updateCampaignExpiry = "UPDATE " + CampaignFormMetaExpDay.TABLE_NAME + " AS campaignExpiry "
+							+ "SET " + CampaignFormMetaExpDay.EXPIRE_DATE + " = campaigns.precampstartdate + (campaignExpiry."
+							+ CampaignFormMetaExpDay.EXPIRE_DAY + " * INTERVAL '1 day') " 
+							+ "FROM "
+							+ Campaign.TABLE_NAME + " AS campaigns " 
+							+ "WHERE campaigns.uuid  = '" + dto.getUuid()
+							+ "' and campaignExpiry.formid = '" + data.getFormId() + "';";
+
+					break;
+				case "post-campaign":
+					updateCampaignExpiry = "UPDATE " + CampaignFormMetaExpDay.TABLE_NAME + " AS campaignExpiry "
+							+ "SET " + CampaignFormMetaExpDay.EXPIRE_DATE + " = campaigns.postcampstartdate + (campaignExpiry."
+							+ CampaignFormMetaExpDay.EXPIRE_DAY + " * INTERVAL '1 day') " 
+							+ "FROM "
+							+ Campaign.TABLE_NAME + " AS campaigns " 
+							+ "WHERE campaigns.uuid  = '" + dto.getUuid()
+							+ "' and campaignExpiry.formid = '" + data.getFormId() + "';";
+
+					break;
+				case "intra-campaign":
+					updateCampaignExpiry = "UPDATE " + CampaignFormMetaExpDay.TABLE_NAME + " AS campaignExpiry "
+							+ "SET " + CampaignFormMetaExpDay.EXPIRE_DATE + " = campaigns.startdate + (campaignExpiry."
+							+ CampaignFormMetaExpDay.EXPIRE_DAY + " * INTERVAL '1 day') " 
+							+ "FROM "
+							+ Campaign.TABLE_NAME + " AS campaigns " 
+							+ "WHERE campaigns.uuid  = '" + dto.getUuid()
+							+ "' and campaignExpiry.formid = '" + data.getFormId() + "';";
+
+					break;
+				default:
+					updateCampaignExpiry = "UPDATE " + CampaignFormMetaExpDay.TABLE_NAME + " AS campaignExpiry "
+							+ "SET " + CampaignFormMetaExpDay.EXPIRE_DATE + " = campaigns.prestartdate + (campaignExpiry."
+							+ CampaignFormMetaExpDay.EXPIRE_DAY + " * INTERVAL '1 day') " 
+							+ "FROM "
+							+ Campaign.TABLE_NAME + " AS campaigns " 
+							+ "WHERE campaigns.uuid  = '" + dto.getUuid()
+							+ "' and campaignExpiry.formid = '" + data.getFormId() + "';";
+
+					break;
+				}
+				
+				  System.out.println("Updating PRE_CAMPAIGN_EXPIRE_DATE...");
+	            em.createNativeQuery(updateCampaignExpiry).executeUpdate();
+
 			}
-		} catch (Exception e) {
-			System.err.println(e.getStackTrace());
-		} finally {
-			String sqlQuery = "UPDATE " + CampaignFormMetaExpDay.TABLE_NAME + " AS campaignExpiry \n" + "SET "
-					+ CampaignFormMetaExpDay.EXPIRE_DATE + " = " + Campaign.START_DATE + " + "
-					+ CampaignFormMetaExpDay.EXPIRE_DAY + " * interval '1 day'\n" + "FROM " + Campaign.TABLE_NAME
-					+ " AS camapigns  \n" + " WHERE " + CampaignFormMetaExpDay.CAMPAIGN + " =  camapigns."
-					+ Campaign.UUID + ";";
-			System.out.println(" vvvvvvvvvv+++++++++==+++++========: " + sqlQuery);
-			em.createNativeQuery(sqlQuery).executeUpdate();
 		}
 
 	}
+
+
+//
+//	private void saveCampaignFormExp(CampaignDto dto) {
+//		try {
+//			for (CampaignFormMetaWithExpReferenceDto data : dto.getCampaignFormMetaExpiry()) {
+//
+//				String sqlQuery = "INSERT INTO " + CampaignFormMetaExpDay.TABLE_NAME 
+//						+ "("
+//						+ CampaignFormMetaExpDay.FORM_ID 
+//						+ ", " 
+//						+ CampaignFormMetaExpDay.CAMPAIGN 
+//						+ ", "
+//						+ CampaignFormMetaExpDay.EXPIRE_DAY 
+//						+ ", " 
+////						+ CampaignFormMetaExpDay.PRE_CAMP_EXPIRE_DAY 
+////						+ ", " 
+////						+ CampaignFormMetaExpDay.POST_CAMP_EXPIRE_DAY 
+////						+ ", " 
+//						+  CampaignFormMetaExpDay.UUID 
+//						+ ", "
+//						+ CampaignFormMetaExpDay.CHANGE_DATE 
+//						+ ")" 
+//						+ " VALUES ('" 
+//						+ data.getFormId() 
+//						+ "', '"
+//						+ data.getCampaignId() 
+//						+ "', '" 
+//						+ data.getDaysExpired() 
+//						+ "', '" 
+////						+ data.getPreCampDaysExpired() 
+////						+ "', '" 
+////						+ data.getPostCampDaysExpired() 
+////						+ "', '" 
+//						+ data.getUuid()
+//						+ "', CURRENT_TIMESTAMP)" 
+//						+ " ON CONFLICT (" 
+//						+ CampaignFormMetaExpDay.FORM_ID 
+//						+ ", "
+//						+ CampaignFormMetaExpDay.CAMPAIGN 
+//						+ ") DO UPDATE " 
+//						+ " SET " 
+//						+ CampaignFormMetaExpDay.EXPIRE_DAY
+//						+ " = EXCLUDED." 						
+//						+ CampaignFormMetaExpDay.EXPIRE_DAY 
+//						+ ", " 
+////						+ CampaignFormMetaExpDay.PRE_CAMP_EXPIRE_DAY
+////						+ " = EXCLUDED." 						
+////						+ CampaignFormMetaExpDay.PRE_CAMP_EXPIRE_DAY 
+////						+ ", " 
+////						+ CampaignFormMetaExpDay.POST_CAMP_EXPIRE_DAY
+////						+ " = EXCLUDED." 						
+////						+ CampaignFormMetaExpDay.POST_CAMP_EXPIRE_DAY 
+////						+ ", " 
+//						+ CampaignFormMetaExpDay.UUID
+//						+ " = EXCLUDED." 
+//						+ CampaignFormMetaExpDay.UUID 
+//						+ ", " 
+//						+ CampaignFormMetaExpDay.CHANGE_DATE
+//						+ " = CURRENT_TIMESTAMP;";
+//
+//				System.out.println(" trying tio ru  q]sqkkkf : " + sqlQuery);
+//
+//				int dsc = em.createNativeQuery(sqlQuery).executeUpdate();
+//				System.out.println(" =========done: " + dsc);
+//			}
+//		} catch (Exception e) {
+//			System.err.println(e.getStackTrace());
+//		} finally {
+//			String sqlQuery = "UPDATE " 
+//		+ CampaignFormMetaExpDay.TABLE_NAME 
+//		+ " AS campaignExpiry \n" 
+//		+ "SET "
+//		+ CampaignFormMetaExpDay.EXPIRE_DATE 
+//		+ " = " + Campaign.START_DATE 
+//		+ " + "
+//		+ CampaignFormMetaExpDay.EXPIRE_DAY 
+//		+ " * interval '1 day'\n" 
+//		+ "FROM " 
+//		+ Campaign.TABLE_NAME
+//		+ " AS camapigns  \n" 
+//		+ " WHERE " 
+//		+ CampaignFormMetaExpDay.CAMPAIGN 
+//		+ " =  camapigns."
+//		+ Campaign.UUID 
+//		+ ";";
+//			System.out.println(" vvvvvvvvvv+++++++++==+++++========: " + sqlQuery);
+//			
+//		String updatePreCampaignExpiry = "UPDATE " 
+//	                    + CampaignFormMetaExpDay.TABLE_NAME + " AS campaignExpiry "
+//	                    + "SET " + CampaignFormMetaExpDay.EXPIRE_DATE + " = " 
+//	                    + Campaign.PRE_CAMPAIGN_START_DATE + " - " 
+//	                    + CampaignFormMetaExpDay.PRE_CAMP_EXPIRE_DAY + " * interval '1 day' "
+//	                    + "FROM " + Campaign.TABLE_NAME + " AS campaigns "
+//	                    + "WHERE campaignExpiry." + CampaignFormMetaExpDay.CAMPAIGN + " = campaigns." + Campaign.UUID + ";";
+//			 
+//			 String updatePostCampaignExpiry = "UPDATE " 
+//	                    + CampaignFormMetaExpDay.TABLE_NAME + " AS campaignExpiry "
+//	                    + "SET " + CampaignFormMetaExpDay.EXPIRE_DATE + " = " 
+//	                    + Campaign.POST_CAMPAIGN_START_DATE + " - " 
+//	                    + CampaignFormMetaExpDay.POST_CAMP_EXPIRE_DAY + " * interval '1 day' "
+//	                    + "FROM " + Campaign.TABLE_NAME + " AS campaigns "
+//	                    + "WHERE campaignExpiry." + CampaignFormMetaExpDay.CAMPAIGN + " = campaigns." + Campaign.UUID + ";";
+//
+//
+//			  System.out.println("Updating PRE_CAMPAIGN_EXPIRE_DATE...");
+//	            em.createNativeQuery(updatePreCampaignExpiry).executeUpdate();
+////	            
+//				  System.out.println("Updating Pintra_CAMPAIGN_EXPIRE_DATE...");
+//			em.createNativeQuery(sqlQuery).executeUpdate();
+//			
+//			  System.out.println("Updating PRE_CAMPAIGN_EXPIRE_DATE...");
+//	            em.createNativeQuery(updatePostCampaignExpiry).executeUpdate();
+////	            
+//		  
+//
+//		}
+//
+//	}
 
 	@Override
 	public int getCampaignFormExp(String formUuuid, String campaignUuid) {
@@ -328,14 +494,91 @@ public class CampaignFacadeEjb implements CampaignFacade {
 		}
 		return dsc;
 	}
-	
+
+	@Override
+	public int getCampaignFormExpByPhase(String formUuuid, String campaignUuid, String formPhase) {
+		int dsc = 0;
+		try {
+			String sqlQuery = "";
+			BigInteger result = null;
+			switch (formPhase) {
+			case "PRE":
+				sqlQuery = "select " + CampaignFormMetaExpDay.EXPIRE_DAY + " from " + CampaignFormMetaExpDay.TABLE_NAME
+						+ " where " + CampaignFormMetaExpDay.FORM_ID + "= '" + formUuuid + "' and "
+						+ CampaignFormMetaExpDay.CAMPAIGN + " = '" + campaignUuid + "';";
+				result = (BigInteger) em.createNativeQuery(sqlQuery).getSingleResult();
+
+				break;
+			case "INTRA":
+				sqlQuery = "select " + CampaignFormMetaExpDay.EXPIRE_DAY + " from " + CampaignFormMetaExpDay.TABLE_NAME
+						+ " where " + CampaignFormMetaExpDay.FORM_ID + "= '" + formUuuid + "' and "
+						+ CampaignFormMetaExpDay.CAMPAIGN + " = '" + campaignUuid + "';";
+				result = (BigInteger) em.createNativeQuery(sqlQuery).getSingleResult();
+
+				break;
+			case "POST":
+				sqlQuery = "select " + CampaignFormMetaExpDay.EXPIRE_DAY + " from " + CampaignFormMetaExpDay.TABLE_NAME
+						+ " where " + CampaignFormMetaExpDay.FORM_ID + "= '" + formUuuid + "' and "
+						+ CampaignFormMetaExpDay.CAMPAIGN + " = '" + campaignUuid + "';";
+				result = (BigInteger) em.createNativeQuery(sqlQuery).getSingleResult();
+
+				break;
+
+			default:
+
+				break;
+			}
+
+			return dsc = result.intValue();
+		} catch (NoResultException e) {
+
+		}
+		return dsc;
+	}
+
 	@Override
 	public int getDefaultCampaignFormExp(String formUuuid) {
 		int dsc = 0;
 		try {
-			String sqlQuery = "select " + CampaignFormMeta.DAYSTOEXPIRE + " from "
-					+ CampaignFormMeta.TABLE_NAME + " where " + CampaignFormMeta.UUID + "= '" + formUuuid
-					+ "';";
+			String sqlQuery = "select " + CampaignFormMeta.DAYSTOEXPIRE + " from " + CampaignFormMeta.TABLE_NAME
+					+ " where " + CampaignFormMeta.UUID + "= '" + formUuuid + "';";
+
+			Integer result = (Integer) em.createNativeQuery(sqlQuery).getSingleResult();
+
+			// Convert the BigInteger to int
+			dsc = result.intValue();
+
+//				dsc = (int) em.createNativeQuery(sqlQuery).getSingleResult();
+			System.out.println(" =========retriving...: " + dsc);
+		} catch (NoResultException e) {
+
+		}
+		return dsc;
+	}
+
+	@Override
+	public int getDefaultCampaignFormExpByPhase(String formUuuid, String formPhase) {
+		int dsc = 0;
+		try {
+			String sqlQuery = "";
+
+			switch (formPhase) {
+			case "PRE":
+				sqlQuery = "select " + CampaignFormMeta.DAYSTOEXPIRE + " from " + CampaignFormMeta.TABLE_NAME
+						+ " where " + CampaignFormMeta.UUID + "= '" + formUuuid + "';";
+				break;
+			case "INTRA":
+				sqlQuery = "select " + CampaignFormMeta.DAYSTOEXPIRE + " from " + CampaignFormMeta.TABLE_NAME
+						+ " where " + CampaignFormMeta.UUID + "= '" + formUuuid + "';";
+				break;
+			case "POST":
+				sqlQuery = "select " + CampaignFormMeta.DAYSTOEXPIRE + " from " + CampaignFormMeta.TABLE_NAME
+						+ " where " + CampaignFormMeta.UUID + "= '" + formUuuid + "';";
+				break;
+			default:
+
+				break;
+			}
 
 			Integer result = (Integer) em.createNativeQuery(sqlQuery).getSingleResult();
 
@@ -425,6 +668,12 @@ public class CampaignFacadeEjb implements CampaignFacade {
 		target.setCampaignYear(source.getCampaignYear());
 		target.setStartDate(source.getStartDate());
 
+		target.setPreCampEndDate(source.getPreCampEndDate());
+		target.setPreCampStartDate(source.getPreCampStartDate());
+
+		target.setPostCampEndDate(source.getPostCampEndDate());
+		target.setPostCampStartDate(source.getPostCampStartDate());
+
 		final Set<AreaReferenceDto> areas = source.getAreas();
 		if (!CollectionUtils.isEmpty(areas)) {
 			target.setAreas(areas.stream().map(e -> areaService.getByUuid(e.getUuid())).collect(Collectors.toSet()));
@@ -475,6 +724,12 @@ public class CampaignFacadeEjb implements CampaignFacade {
 		target.setCampaignYear(source.getCampaignYear());
 		target.setStartDate(source.getStartDate());
 
+		target.setPreCampEndDate(source.getPreCampEndDate());
+		target.setPreCampStartDate(source.getPreCampStartDate());
+
+		target.setPostCampEndDate(source.getPostCampEndDate());
+		target.setPostCampStartDate(source.getPostCampStartDate());
+
 		final Set<AreaReferenceDto> areas = source.getAreas();
 		if (!CollectionUtils.isEmpty(areas)) {
 			target.setAreas(areas.stream().map(e -> areaService.getByUuid(e.getUuid())).collect(Collectors.toSet()));
@@ -506,7 +761,7 @@ public class CampaignFacadeEjb implements CampaignFacade {
 		}
 
 //		final Set<CampaignFormMetaWithExpReferenceDto> campaignFormMetasx = source.getCampaignFormMetaExpiry(); // Campaign
-																												// data
+		// data
 //		if (!CollectionUtils.isEmpty(campaignFormMetasx)) {
 //			target.setCampaignFormMetasExpiry(
 //					campaignFormMetasx.stream().map(campaignFormMetaReferenceDto -> campaignFormMetaWithExpiryService
@@ -704,7 +959,13 @@ public class CampaignFacadeEjb implements CampaignFacade {
 		target.setCommunity(CommunityFacadeEjb.toReferenceDto(new HashSet<Community>(source.getCommunity())));
 		target.setCampaignDashboardElements(source.getDashboardElements());
 		target.setPublished(source.isPublished());
-		target.setCampaignStatus(source.isOpenandclose() == true ? "True" : "False" );
+		target.setCampaignStatus(source.isOpenandclose() == true ? "True" : "False");
+
+		target.setPreCampEndDate(source.getPreCampEndDate());
+		target.setPreCampStartDate(source.getPreCampStartDate());
+
+		target.setPostCampEndDate(source.getPostCampEndDate());
+		target.setPostCampStartDate(source.getPostCampStartDate());
 
 		return target;
 	}
@@ -738,10 +999,14 @@ public class CampaignFacadeEjb implements CampaignFacade {
 		target.setDeleted(source.isDeleted());
 		target.setCampaignStatus(source.isOpenandclose() == true ? "True" : "False");
 
+		target.setPreCampEndDate(source.getPreCampEndDate());
+		target.setPreCampStartDate(source.getPreCampStartDate());
+
+		target.setPostCampEndDate(source.getPostCampEndDate());
+		target.setPostCampStartDate(source.getPostCampStartDate());
 
 		return target;
 	}
-
 
 	@Override
 	public CampaignDto getByUuid(String uuid) {

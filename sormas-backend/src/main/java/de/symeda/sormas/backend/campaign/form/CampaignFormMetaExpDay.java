@@ -26,8 +26,10 @@ public class CampaignFormMetaExpDay  extends AbstractDomainObject {
 
 	public static final String FORM_ID = "formId";
 	public static final String CAMPAIGN = "campaignId";
+; 
 	public static final String EXPIRE_DAY = "expiryDay"; 
 	public static final String EXPIRE_DATE = "endDate"; 
+
 	public static final String UUID = "uuid"; 
 
 	
@@ -35,34 +37,12 @@ public class CampaignFormMetaExpDay  extends AbstractDomainObject {
 
 	private String formId;
 	private String campaignId;
+
 	private int expiryDay;
 	private Date expiryDate;
+
 	private String uuid;
 
-
-//	public CampaignFormMetaExpDay(String formId, String campaignId, int expiryDay) {
-//		super();
-//		this.formId = formId;
-//		this.campaignId = campaignId;
-//		this.expiryDay = expiryDay;
-//	}
-//	
-//	public CampaignFormMetaExpDay(String formId, String campaignId, int expiryDay, Date expiryDate) {
-//		super();
-//		this.formId = formId;
-//		this.campaignId = campaignId;
-//		this.expiryDay = expiryDay;
-//		this.expiryDate = expiryDate;
-//	}
-//	
-//	public CampaignFormMetaExpDay(String formId, String campaignId, int expiryDay, Date expiryDate, Date changedDate) {
-//		super();
-//		this.formId = formId;
-//		this.campaignId = campaignId;
-//		this.expiryDay = expiryDay;
-//		this.expiryDate = expiryDate;
-////		this.setChangeDate(changedDate);
-//	}
 
 	public CampaignFormMetaExpDay() {
 		// TODO Auto-generated constructor stub
@@ -114,9 +94,14 @@ public class CampaignFormMetaExpDay  extends AbstractDomainObject {
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
 	}
+	
+	
+
 
 	public CampaignFormMetaWithExpReferenceDto toReference() {
 		Long expiryDayLong  = Long.valueOf(expiryDay);
+//		Long preCampExpiryDayLong  = Long.valueOf(preCampExpiryDay);
+//		Long postCampExpiryDayLong  = Long.valueOf(postCampExpiryDay);
 		return new CampaignFormMetaWithExpReferenceDto(formId, campaignId, expiryDayLong, expiryDate, uuid);
 	}
 

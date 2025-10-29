@@ -47,6 +47,8 @@ public class DeviceDetailsDialog extends Dialog {
 	Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
 	List<DeviceErrorManagerDto> dataProvider;
 	GridListDataView<DeviceErrorManagerDto> dataView;
+    private Dialog errorLogDialog;
+    private Grid<DeviceErrorManagerDto> errorGrid;
 	
 	
     
@@ -517,25 +519,54 @@ public class DeviceDetailsDialog extends Dialog {
         
 //        Button viewDeviceLog = new Button("Error Log", new Icon(VaadinIcon.REFRESH));
 //        viewDeviceLog.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        
 
+        
         viewDeviceLogs.addClickListener(e -> {
-            Dialog errorLogDialog = new Dialog();
-            errorLogDialog.setHeaderTitle("Error Log");
-            errorLogDialog.setWidth("800px");
-            errorLogDialog.setHeight("600px");
-            
-            Grid<DeviceErrorManagerDto> errorGrid = new Grid<DeviceErrorManagerDto>();
-            errorGrid =  configureLogsGrid(deviceManagerDto);
-            errorLogDialog.add(errorGrid);
+            if (errorLogDialog == null) {
+                errorLogDialog = new Dialog();
+                errorLogDialog.setHeaderTitle("Error Log");
+                errorLogDialog.setWidth("800px");
+                errorLogDialog.setHeight("600px");
 
-            // Footer with close button
-            Button closeButton = new Button("Close", event -> errorLogDialog.close());
-            closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-            errorLogDialog.getFooter().add(closeButton);
-            
+                errorGrid = configureLogsGrid(deviceManagerDto); 
+                errorLogDialog.add(errorGrid);
+
+                Button closeButton = new Button("Close", ev -> errorLogDialog.close());
+                closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+                errorLogDialog.getFooter().add(closeButton);
+
+                errorLogDialog.addOpenedChangeListener(ev -> {
+                    if (!ev.isOpened()) {
+//                      errorLogDialog.getDataProvider().refreshAll();
+                    }
+                });
+            } else {
+                // refresh items if needed
+                // errorGrid.setItems(fetchLogs(deviceManagerDto));
+                errorGrid.getDataProvider().refreshAll();
+            }
             errorLogDialog.open();
         });
-        
+
+//        viewDeviceLogs.addClickListener(e -> {
+//            Dialog errorLogDialog = new Dialog();
+//            errorLogDialog.setHeaderTitle("Error Log");
+//            errorLogDialog.setWidth("800px");
+//            errorLogDialog.setHeight("600px");
+//            
+//            Grid<DeviceErrorManagerDto> errorGrid = new Grid<DeviceErrorManagerDto>();
+//            errorGrid =  configureLogsGrid(deviceManagerDto);
+//            errorLogDialog.add(errorGrid);
+//
+//            // Footer with close button
+//            Button closeButton = new Button("Close", event -> errorLogDialog.close());
+//            closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+//            errorLogDialog.getFooter().add(closeButton);
+//            
+//            errorLogDialog.open();
+//        });
+//        
         
 
         // Helper method to build error log content with Eclipse-style formatting
@@ -558,7 +589,7 @@ public class DeviceDetailsDialog extends Dialog {
     
     
 	private List<DeviceErrorManagerDto> fetchDevicesErrorData(DeviceManagerDto deviceManagerDto) {
-		return FacadeProvider.getDeviceErrorManagerFacade().getLatestLogs(deviceManagerDto.getUserName(), deviceManagerDto.getDeviceSerial(), 19);
+		return FacadeProvider.getDeviceErrorManagerFacade().getLatestLogs(deviceManagerDto.getUserName(), deviceManagerDto.getDeviceId(), 19);
 	}
     
     

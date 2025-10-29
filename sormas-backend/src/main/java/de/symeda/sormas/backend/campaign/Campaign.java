@@ -51,8 +51,12 @@ public class Campaign extends CoreAdo {
 	public static final String ROUND = "round";
 	public static final String DESCRIPTION = "description";
 	public static final String CAMPAIGN_YEAR = "campaignYear";
+	public static final String PRE_CAMPAIGN_START_DATE = "preCampStartDate";
+	public static final String PRE_CAMPAIGN_END_DATE = "preCampEndDate";
 	public static final String START_DATE = "startDate";
 	public static final String END_DATE = "endDate";
+	public static final String POST_CAMPAIGN_START_DATE = "postCampStartDate";
+	public static final String POST_CAMPAIGN_END_DATE = "postCampEndDate";
 	public static final String CREATING_USER = "creatingUser";
 	public static final String CAMPAIGN_FORM_METAS = "campaignFormMetas";
 	public static final String CAMPAIGN_DASHBOARD_ELEMENTS = "dashboardElements";
@@ -64,8 +68,12 @@ public class Campaign extends CoreAdo {
 	private String round;
 	private String description;
 	private String campaignYear;
+	private Date preCampStartDate;
+	private Date preCampEndDate;
 	private Date startDate;
 	private Date endDate;
+	private Date postCampStartDate;
+	private Date postCampEndDate;
 	private User creatingUser;
 	private boolean archived;
 	private boolean openandclose;
@@ -73,9 +81,7 @@ public class Campaign extends CoreAdo {
 	private List<CampaignDashboardElement> dashboardElements;
 	private Set<CampaignFormMeta> campaignFormMetas = new HashSet<>();
 	
-//	private Set<CampaignFormMetaExpDay> campaignFormMetasExpiry = new HashSet<>();
 
-	
 	private Set<Area> areas= new HashSet<>();
 	private Set<Region> regions= new HashSet<>();
 	private Set<District> districts= new HashSet<>();
@@ -256,13 +262,37 @@ public class Campaign extends CoreAdo {
 		this.communities = communities;
 	}
 
-	
-//	public Set<CampaignFormMetaExpDay> getCampaignFormMetasexpiry() {
-//		return campaignFormMetasExpiry;
-//	}
-//
-//	public void setCampaignFormMetasExpiry(Set<CampaignFormMetaExpDay> campaignFormMetasExpiry) {
-//		this.campaignFormMetasExpiry = campaignFormMetasExpiry;
-//	}
-	
+	public Date getPreCampStartDate() {
+		return preCampStartDate;
+	}
+
+	public void setPreCampStartDate(Date preCampStartDate) {
+		this.preCampStartDate = preCampStartDate;
+	}
+
+	public Date getPreCampEndDate() {
+		return preCampEndDate;
+	}
+
+	public void setPreCampEndDate(Date preCampEndDate) {
+		this.preCampEndDate = preCampEndDate;
+	}
+
+	public Date getPostCampStartDate() {
+		return postCampStartDate;
+	}
+
+	public void setPostCampStartDate(Date postCampStartDate) {
+		this.postCampStartDate = postCampStartDate;
+	}
+
+	public Date getPostCampEndDate() {
+		return postCampEndDate;
+	}
+
+	public void setPostCampEndDate(Date postCampEndDate) {
+		this.postCampEndDate = postCampEndDate;
+	}
+
+
 }

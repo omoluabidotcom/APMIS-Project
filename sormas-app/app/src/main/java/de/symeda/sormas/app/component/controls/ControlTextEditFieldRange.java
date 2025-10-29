@@ -71,6 +71,9 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
 
     protected InverseBindingListener inverseBindingListener;
     private OnClickListener onClickListener;
+    boolean isUpdatingText = false;
+    private TextWatcher textWatcher;
+
 
     // Constructors
 
@@ -209,9 +212,65 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
         return input.getText().toString();
     }
 
+
+
     @Override
     protected void setFieldValue(String value) {
-        input.setText(value);
+        if (isUpdatingText) {
+            System.out.println("Preventing recursion - isUpdatingText is true");
+            return;
+        }
+
+        // Check if value is actually different
+        String currentValue = input.getText().toString();
+        if (currentValue.equals(value == null ? "" : value)) {
+            return; // No change needed
+        }
+
+        System.out.println("String value being set--------- " + value);
+
+        isUpdatingText = true;
+        try {
+            // Remove listener before setText
+            if (textWatcher != null) {
+                input.removeTextChangedListener(textWatcher);
+            }
+
+            input.setText(value);
+
+            // Re-add listener after setText
+            if (textWatcher != null) {
+                input.addTextChangedListener(textWatcher);
+            }
+        } finally {
+            isUpdatingText = false;
+        }
+    }
+
+//    @Override
+//    protected void setFieldValue(String value) {
+//        if (isUpdatingText) return;
+//
+//        String currentValue = input.getText().toString();
+//        if (currentValue.equals(value)) return; // Don't update if same
+//
+//        isUpdatingText = true;
+//        try {
+//            input.setText(value);
+//        } finally {
+//            isUpdatingText = false;
+//        }
+//    }
+
+    // Add this method for safe expression updates
+    public void setFieldValueFromExpression(String value) {
+        isUpdatingText = true;
+        try {
+            System.out.println("Setting value from expression: " + value);
+            input.setText(value);
+        } finally {
+            isUpdatingText = false;
+        }
     }
 
 //
@@ -340,7 +399,9 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
 
         required = isRequired;
 
-        input.addTextChangedListener(new TextWatcher() {
+
+
+        textWatcher = new TextWatcher() {
             String beforeData = "";
             String onChangeData = "";
 
@@ -356,16 +417,28 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
 
             @Override
             public void afterTextChanged(Editable editable) {
+
+                System.out.println("===================================================== " + editable.toString());
+                System.out.println("===================================================== " + input.getText());
+
+
                 String text = editable.toString();
 
                 // STRICTER REGEX PROTECTION FOR INTEGER FIELDS
-                if (isIntegerFlag && !text.isEmpty()) {
-                    // Use strict regex to allow only digits (0-9) - no decimals, no signs, no anything else
-                    if (!text.matches("^\\d+$")) {
-                        // Remove the TextWatcher to prevent infinite loop
-                        input.removeTextChangedListener(this);
+                if (text.equals("0")) {
+                    // Allow single zero, don't clean it
+                    if (inverseBindingListener != null) {
+                        inverseBindingListener.onChange();
+                    }
+                    onValueChanged();
+                    return;
+                }
 
-                        // Clean the text - remove ANY non-digit characters
+                // STRICTER REGEX PROTECTION FOR INTEGER FIELDS
+                if (isIntegerFlag && !text.isEmpty()) {
+                    if (!text.matches("^\\d+$")) {
+                        isUpdatingText = true; // PREVENT RECURSION
+
                         String cleanedText = text.replaceAll("[^0-9]", "");
 
                         // Prevent leading zeros (except single zero)
@@ -377,14 +450,12 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
                         input.setText(cleanedText);
                         input.setSelection(cleanedText.length());
 
-                        // Re-add the TextWatcher
-                        input.addTextChangedListener(this);
+                        isUpdatingText = false; // RESET FLAG
 
-                        // Show warning if we had to clean the input
                         if (!cleanedText.equals(text)) {
                             NotificationHelper.showNotification((NotificationContext) getContext(), WARNING, "Only whole numbers are allowed");
                         }
-                        return; // Exit early since we modified the text
+                        return;
                     }
                 }
 
@@ -417,7 +488,9 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
                     }
                 }
             }
-        });
+        };
+
+        input.addTextChangedListener(textWatcher);
 
         addValueChangedListener(new ValueChangeListener() {
             @Override
@@ -433,160 +506,6 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
         setUpOnFocusChangeListener();
         initializeOnClickListener();
     }
-
-//protected void initInput(boolean isIntegerFlag, boolean isRequired, boolean isRange, Integer minValue, Integer maxValue, Boolean isExpression, Boolean warnOnError) {
-//
-//    input = (EditText) this.findViewById(R.id.text_input);
-//    input.setTextAlignment(getTextAlignment());
-//    if (getTextAlignment() == View.TEXT_ALIGNMENT_GRAVITY) {
-//        input.setGravity(getGravity());
-//    }
-//
-//    if (isIntegerFlag) {
-//        input.setInputType(InputType.TYPE_CLASS_NUMBER);
-//
-//        InputFilter digitFilter = new InputFilter() {
-//            @Override
-//            public CharSequence filter(CharSequence source, int start, int end,
-//                                       Spanned dest, int dstart, int dend) {
-//                // If deleting characters, allow it
-//                if (source.length() == 0) {
-//                    return null;
-//                }
-//
-//                // Check each character being added
-//                for (int i = start; i < end; i++) {
-//                    char c = source.charAt(i);
-//                    // Only allow digits 0-9 - explicitly block decimal point, minus, etc.
-//                    if (c < '0' || c > '9') {
-//                        return "";
-//                    }
-//                }
-//                return null;
-//            }
-//        };
-//
-//        // Combine filters
-//        InputFilter[] filters;
-//        if (getMaxLength() >= 0) {
-//            filters = new InputFilter[]{
-//                    new InputFilter.LengthFilter(getMaxLength()),
-//                    digitFilter
-//            };
-//        } else {
-//            filters = new InputFilter[]{digitFilter};
-//        }
-//        input.setFilters(filters);
-//
-//        // Set key listener to only allow digits
-//        input.setKeyListener(DigitsKeyListener.getInstance("0123456789"));
-//    } else if (getMaxLength() >= 0) {
-//        input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(getMaxLength())});
-//    }
-//
-//    required = isRequired;
-//
-//    input.addTextChangedListener(new TextWatcher() {
-//        String beforeData = "";
-//        String onChangeData = "";
-//
-//        @Override
-//        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//            beforeData = charSequence.toString();
-//        }
-//
-//        @Override
-//        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//            onChangeData = charSequence.toString();
-//        }
-//
-//        @Override
-//        public void afterTextChanged(Editable editable) {
-//            String text = editable.toString();
-//
-//            // STRICT REGEX PROTECTION FOR INTEGER FIELDS
-//            if (isIntegerFlag && !text.isEmpty()) {
-//                // Use regex to allow only digits (0-9) - no decimals, no signs
-//                if (!text.matches("^\\d*$")) {
-//                    // Remove the TextWatcher to prevent infinite loop
-//                    input.removeTextChangedListener(this);
-//
-//                    // Clean the text - remove ANY non-digit characters
-//                    String cleanedText = text.replaceAll("[^0-9]", "");
-//                    input.setText(cleanedText);
-//                    input.setSelection(cleanedText.length());
-//
-//                    // Re-add the TextWatcher
-//                    input.addTextChangedListener(this);
-//
-//                    // Show warning if we had to clean the input
-//                    if (!cleanedText.equals(text)) {
-//                        NotificationHelper.showNotification((NotificationContext) getContext(), WARNING, "Only whole numbers are allowed");
-//                    }
-//                    return; // Exit early since we modified the text
-//                }
-//
-//                // Additional protection: prevent numbers starting with 0 followed by more digits (like 012)
-//                if (text.length() > 1 && text.startsWith("0")) {
-//                    input.removeTextChangedListener(this);
-//                    String cleanedText = text.replaceFirst("^0+", "");
-//                    if (cleanedText.isEmpty()) cleanedText = "0";
-//                    input.setText(cleanedText);
-//                    input.setSelection(cleanedText.length());
-//                    input.addTextChangedListener(this);
-//                    return;
-//                }
-//            }
-//
-//            if (inverseBindingListener != null) {
-//                inverseBindingListener.onChange();
-//            }
-//
-//            onValueChanged();
-//
-//            // Your existing range validation logic...
-//            if (isRange && minValue != null && maxValue != null && !text.isEmpty()) {
-//                try {
-//                    int valxx = Integer.parseInt(text);
-//                    if (valxx < minValue || valxx > maxValue) {
-//                        if (warnOnError) {
-//                            NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING,
-//                                    "Number must be between " + minValue + " and " + maxValue);
-//                        } else {
-//                            input.setError("Number must be between " + minValue + " and " + maxValue);
-//                            enableErrorState("Number must be between " + minValue + " and " + maxValue);
-//                        }
-//                    } else {
-//                        input.setError(null);
-//                        disableErrorState();
-//                    }
-//                } catch (NumberFormatException e) {
-//                    // This shouldn't happen with our filters, but just in case
-//                    input.setError("Please enter a valid number");
-//                    enableErrorState("Please enter a valid number");
-//                }
-//            }
-//
-//            // Rest of your validation logic...
-//        }
-//    });
-//
-//          addValueChangedListener(new ValueChangeListener() {
-//
-//
-//          @Override
-//          public void onChange(ControlPropertyField field) {
-//              System.out.println(isLiveValidationDisabled() + " vaue changes isLiveValidationDisabled()----------");
-//                      if (!isLiveValidationDisabled()) {
-//                      ((ControlTextEditFieldRange) field).setErrorIfEmptyRange();
-//              }
-//          }
-//      });
-//
-//    setUpOnEditorActionListener();
-//    setUpOnFocusChangeListener();
-//    initializeOnClickListener();
-//}
 
     private void NumberNumericValueValidator(String errorMessage, String minValue, String maxValue) {
         Integer minValuex = 0;
@@ -656,15 +575,54 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
         setBackgroundFor(input, background);
     }
 
-    // Data binding, getters & setters
+//    // Data binding, getters & setters
+//    @BindingAdapter("value")
+//    public static void setValue(ControlTextEditFieldRange view, String text) {
+//        if (text == null || text.trim().isEmpty() || text.equals("")) {
+//            view.setFieldValue("");
+//            return;
+//        } else {
+//            // STRICTER integer formatting - remove any non-digit characters
+//            String cleanedText = text.replaceAll("[^0-9]", "");
+//
+//            // Prevent leading zeros (except single zero)
+//            if (cleanedText.length() > 1 && cleanedText.startsWith("0")) {
+//                cleanedText = cleanedText.replaceFirst("^0+", "");
+//                if (cleanedText.isEmpty()) cleanedText = "0";
+//            }
+//
+//            view.setFieldValue(cleanedText);
+//        }
+//    }
+
+
     @BindingAdapter("value")
     public static void setValue(ControlTextEditFieldRange view, String text) {
+        if (view.isUpdatingText) return;
+
         if (text == null || text.trim().isEmpty() || text.equals("")) {
             view.setFieldValue("");
             return;
         } else {
-            // STRICTER integer formatting - remove any non-digit characters
-            String cleanedText = text.replaceAll("[^0-9]", "");
+            // IMPROVED: Handle decimal values properly for range fields
+            String cleanedText = text.replaceAll("[^0-9.]", ""); // Allow decimal points
+
+            // Remove multiple decimal points
+            int firstDot = cleanedText.indexOf('.');
+            if (firstDot != -1) {
+                cleanedText = cleanedText.substring(0, firstDot + 1) +
+                        cleanedText.substring(firstDot + 1).replace(".", "");
+            }
+
+            // For range fields, convert to integer if it's a whole number
+            try {
+                double num = Double.parseDouble(cleanedText);
+                if (num == Math.floor(num)) {
+                    cleanedText = String.valueOf((int) num);
+                }
+            } catch (NumberFormatException e) {
+                // Keep original if parsing fails
+            }
 
             // Prevent leading zeros (except single zero)
             if (cleanedText.length() > 1 && cleanedText.startsWith("0")) {

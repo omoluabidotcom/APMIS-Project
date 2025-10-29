@@ -71,4 +71,8 @@ public interface CampaignFacade { //CampaignFacadeEjb
 	
 	int getDefaultCampaignFormExp(String formUuuid);
 
+	int getCampaignFormExpByPhase(String formUuuid, String campaignUuid, String formPhase);
+
+	int getDefaultCampaignFormExpByPhase(String formUuuid, String formPhase);
+
 }

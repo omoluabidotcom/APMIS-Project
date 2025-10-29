@@ -145,12 +145,18 @@ public class CampaignsView extends VerticalLayout {
 
 		TextRenderer<CampaignIndexDto> startDateRenderer = new TextRenderer<>(dto -> {
 			Date timestamp = dto.getStartDate();
+			 if (timestamp == null) {
+			        return ""; // or "—", "N/A", or any placeholder
+			    }
 			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 			return dateFormat.format(timestamp);
 		});
 
 		TextRenderer<CampaignIndexDto> endDateRenderer = new TextRenderer<>(dto -> {
 			Date timestamp = dto.getEndDate();
+			 if (timestamp == null) {
+			        return ""; // or "—", "N/A", or any placeholder
+			    }
 			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 			return dateFormat.format(timestamp);
 		});
