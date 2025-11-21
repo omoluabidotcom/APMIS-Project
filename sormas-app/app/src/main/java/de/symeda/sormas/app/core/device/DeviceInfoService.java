@@ -37,7 +37,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
+import de.symeda.sormas.app.backend.campaign.Campaign;
+import de.symeda.sormas.app.backend.campaign.CampaignDao;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.device.info.DeviceInfo;
 import de.symeda.sormas.app.backend.user.User;
@@ -61,6 +64,8 @@ public class DeviceInfoService {
         DeviceInfo deviceInfo = new DeviceInfo();
         deviceInfo.setUser(user);
         deviceInfo.setLoginTimestamp(new Date());
+
+
 
         try {
             // Device Information
@@ -118,6 +123,13 @@ public class DeviceInfoService {
 
                 deviceInfo.setDeviceSerial(deviceSerial);
             }
+            int activecampaignsSize = DatabaseHelper.getCampaignDao().getAllActive().size();
+
+            deviceInfo.setActiveCampaigns(DatabaseHelper.getCampaignDao().getAllActive().size());
+            deviceInfo.setActiveFormCount(DatabaseHelper.getCampaignFormDataDao().queryActiveForAll().size());
+
+
+
 
         } catch (Exception e) {
             Log.e(TAG, "Error collecting basic device info", e);
@@ -130,7 +142,7 @@ public class DeviceInfoService {
     private void collectStorageInfo(DeviceInfo deviceInfo) {
         try {
             // Internal Storage
-            StatFs internalStat = new StatFs(Environment.getDataDirectory().getPath());
+            StatFs internalStat = new StatFs(Environment .getDataDirectory().getPath());
             long internalBlockSize = internalStat.getBlockSizeLong();
             long internalTotalBlocks = internalStat.getBlockCountLong();
             long internalAvailableBlocks = internalStat.getAvailableBlocksLong();
@@ -269,8 +281,16 @@ public class DeviceInfoService {
             
             if (connectivityManager != null) {
                 NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-                
                 if (activeNetwork != null && activeNetwork.isConnected()) {
+                    TelephonyManager telephonyManagerx =
+                            (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+
+                    if(telephonyManagerx != null) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            deviceInfo.setNetworkProvider(telephonyManagerx.getNetworkOperatorName());
+                        }
+                    }
+
                     switch (activeNetwork.getType()) {
                         case ConnectivityManager.TYPE_WIFI:
                             deviceInfo.setNetworkType(DeviceInfo.NetworkType.WIFI);
@@ -279,6 +299,7 @@ public class DeviceInfoService {
                         case ConnectivityManager.TYPE_MOBILE:
                             deviceInfo.setNetworkType(DeviceInfo.NetworkType.MOBILE);
                             deviceInfo.setWifiConnected(false);
+
                             break;
                         case ConnectivityManager.TYPE_ETHERNET:
                             deviceInfo.setNetworkType(DeviceInfo.NetworkType.ETHERNET);
@@ -289,47 +310,7 @@ public class DeviceInfoService {
                             deviceInfo.setWifiConnected(false);
                     }
 
-                    TelephonyManager telephonyManagerx =
-                            (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
-                    System.out.println(telephonyManagerx.getNetworkOperator() + "telephonyManager.getNetworkOperator();" +  telephonyManagerx.getNetworkOperatorName() + telephonyManagerx.getSimOperator());
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        telephonyManagerx.getSignalStrength();
-
-                        System.out.println(telephonyManagerx.getSignalStrength() + "telephonyManagerx.getSignalStrength()");
-                    }
-
-
-                    // Network strength (for mobile networks)
-                    if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
-                        try {
-                            TelephonyManager telephonyManager = 
-                                (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-                            if (telephonyManager != null && 
-                                ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) 
-                                == PackageManager.PERMISSION_GRANTED) {
-
-//                                telephonyManager.getNetworkOperator();
-//
-//                                telephonyManager.getNetworkOperatorName();
-//                                System.out.println(telephonyManager.getNetworkOperator() + "telephonyManager.getNetworkOperator();" +  telephonyManager.getNetworkOperatorName());
-
-
-
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    // For Android 10+, signal strength access is restricted
-                                    deviceInfo.setNetworkStrength(-1);
-                                } else {
-                                    // This would require additional implementation for signal strength
-                                    deviceInfo.setNetworkStrength(-1); // Placeholder
-                                }
-                            }
-                        } catch (Exception e) {
-                            Log.w(TAG, "Could not get network strength", e);
-                            deviceInfo.setNetworkStrength(-1);
-                        }
-                    }
                 } else {
                     deviceInfo.setNetworkType(DeviceInfo.NetworkType.UNKNOWN);
                     deviceInfo.setWifiConnected(false);

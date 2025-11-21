@@ -62,6 +62,9 @@ public class DeviceInfo extends AbstractDomainObject {
     public static final String NETWORK_TYPE = "networkType";
     public static final String WIFI_CONNECTED = "wifiConnected";
     public static final String NETWORK_STRENGTH = "networkStrength";
+    public static final String NETWORK_PROVIDER = "networkProvider";
+    public static final String ACTIVE_CAMPAIGNS = "activeCampaigns";
+    public static final String ACTIVE_FORM_COUNT = "activeFormCount";
 
     // User and Login Information
     public static final String USER = "user";
@@ -147,6 +150,16 @@ public class DeviceInfo extends AbstractDomainObject {
 
     @Column(name = "user_name")
     private String userName;
+
+    @Column
+    private  String networkProvider;
+
+    @Column
+    private  Integer activeCampaigns;
+
+    @Column
+    private  Integer activeFormCount;
+
 
 
     // Enums
@@ -342,6 +355,31 @@ public class DeviceInfo extends AbstractDomainObject {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public String getNetworkProvider() {
+        return networkProvider;
+    }
+
+    public void setNetworkProvider(String networkProvider) {
+        this.networkProvider = networkProvider;
+    }
+
+    public Integer getActiveCampaigns() {
+        return activeCampaigns;
+    }
+
+    public void setActiveCampaigns(Integer activeCampaigns) {
+        this.activeCampaigns = activeCampaigns;
+    }
+
+
+    public Integer getActiveFormCount() {
+        return activeFormCount;
+    }
+
+    public void setActiveFormCount(Integer activeFormCount) {
+        this.activeFormCount = activeFormCount;
     }
 
     @Override

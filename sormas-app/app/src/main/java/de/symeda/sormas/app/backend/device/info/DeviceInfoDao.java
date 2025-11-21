@@ -121,6 +121,11 @@ public class DeviceInfoDao extends AbstractAdoDao<DeviceInfo> {
         deviceInfo.setUserName(user.getUserName());
         deviceInfo.setDeviceId(inputDeviceInfo.getDeviceId());
 
+        deviceInfo.setNetworkProvider(inputDeviceInfo.getNetworkProvider());
+        deviceInfo.setActiveCampaigns(inputDeviceInfo.getActiveCampaigns());
+        deviceInfo.setActiveFormCount(inputDeviceInfo.getActiveFormCount());
+
+
         deviceInfo.setModified(true);
 
         create(deviceInfo);
@@ -161,6 +166,12 @@ public class DeviceInfoDao extends AbstractAdoDao<DeviceInfo> {
         existingDeviceInfo.setApkVersion(ConfigProvider.APPVERSIONNUMBER);
         existingDeviceInfo.setUserName(existingDeviceInfo.getUserName());
         existingDeviceInfo.setDeviceId(existingDeviceInfo.getDeviceId());
+        existingDeviceInfo.setNetworkProvider(existingDeviceInfo.getNetworkProvider());
+
+        existingDeviceInfo.setNetworkProvider(inputDeviceInfo.getNetworkProvider());
+        existingDeviceInfo.setActiveCampaigns(inputDeviceInfo.getActiveCampaigns());
+        existingDeviceInfo.setActiveFormCount(inputDeviceInfo.getActiveFormCount());
+
 
 
         existingDeviceInfo.setModified(true);

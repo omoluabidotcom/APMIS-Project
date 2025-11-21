@@ -100,6 +100,9 @@ public class CampaignFormDataFragmentUtils {
                         } else if (type == CampaignFormElementType.RANGE) {
                             // IMPROVED: Better handling of range values
                             String valudex = valuex;
+                            System.out.println("type == CampaignFormElementType.RANGE==== " + valuex);
+
+                            System.out.println("NAH ME CAUSE AMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM 222222222222222222222");
                             try {
                                 double num = Double.parseDouble(valuex);
                                 if (num == Math.floor(num)) {
@@ -108,13 +111,19 @@ public class CampaignFormDataFragmentUtils {
                                     // For range fields, round to integer
                                     valudex = String.valueOf((int) Math.round(num));
                                 }
+                                System.out.println("NAH ME CAUSE AMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM 333333333333333333333333");
                             } catch (NumberFormatException e) {
+
+ System.out.println(" NumberFormatExceptiontype == CampaignFormElementType.RANGE==== " + valuex);
                                 valudex = valuex;
+                                System.out.println("NAH ME CAUSE AMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM 44444444444444444444444");
                             }
 
                             if (valudex != null && !valudex.isEmpty() && !valudex.equals("")) {
+                                System.out.println("NAH ME CAUSE AMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM 5555555555555555555555555");
                                 // IMPROVED: Use field-specific update to prevent interference
                                 if (dynamicField instanceof ControlTextEditFieldRange) {
+                                    System.out.println("NAH ME CAUSE AMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM 6666666666666666666666666");
                                     ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, valudex);
                                 }
                             }
@@ -179,14 +188,135 @@ public class CampaignFormDataFragmentUtils {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue == null ? null : expressionValue.toString());
                         }
                     }
+                }else{
+                    System.out.println("Expression not calculated handle expression sec");
                 }
             }
         } catch (SpelEvaluationException e) {
-            Log.e("Error evaluating expression on field2 : " + dynamicField.getCaption(), e.getMessage());
+            Log.e("xxx handle expError evaluating expression on field2 : " + dynamicField.getCaption(), e.getMessage());
         }
         if (type == CampaignFormElementType.RANGE) {
             dynamicField.setEnabled(true);
         }  else if (type == CampaignFormElementType.DECIMAL) {
+            dynamicField.setEnabled(true);
+        } else if (isDisIgnore) {
+            dynamicField.setEnabled(true);
+        }else{
+            dynamicField.setEnabled(false);
+        }
+
+    }
+
+
+    public static void handleExpressionNewForm(
+            ExpressionParser expressionParser,
+            List<CampaignFormDataEntry> formValues,
+            CampaignFormElementType type,
+            ControlPropertyField dynamicField,
+            String expressionString,
+            Boolean isDisIgnore,
+            Boolean isNewForm) {
+        try {
+            if(!expressionString.isEmpty() && expressionString != null && !expressionString.equals("")) {
+                final Object expressionValue = getExpressionValue(expressionParser, formValues, expressionString);
+                String valuex = expressionValue + "";
+
+                System.out.println("handleExpression___))))))))))))1111111111NewForm= " + valuex);
+
+                if (!valuex.isEmpty() && !valuex.equals("") && expressionValue != null) {//&& !valuex.equals("0")
+
+                    if (expressionValue != null) {
+                        if (type == CampaignFormElementType.YES_NO) {
+                            ControlSwitchField.setValue((ControlSwitchField) dynamicField, expressionValue, true, YesNo.class, null);
+                        } else if (type == CampaignFormElementType.RANGE) {
+                            // IMPROVED: Better handling of range values
+                            String valudex = valuex;
+                            try {
+                                double num = Double.parseDouble(valuex);
+                                if (num == Math.floor(num)) {
+                                    valudex = String.valueOf((int) num); // Whole number
+                                } else {
+                                    // For range fields, round to integer
+                                    valudex = String.valueOf((int) Math.round(num));
+                                }
+                            } catch (NumberFormatException e) {
+                                valudex = valuex;
+                            }
+
+                            if (valudex != null && !valudex.isEmpty() && !valudex.equals("")) {
+
+                                System.out.println("NAH ME CAUSE AMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM 111111111");
+                                // IMPROVED: Use field-specific update to prevent interference
+                                if(isNewForm && (valudex.equals(0) || valudex.equals("0")) ){
+
+                                    System.out.println("99999999999999New Form and ");
+                                    if (dynamicField instanceof ControlTextEditFieldRange) {
+                                        ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, "");
+                                    }
+                                }else{
+                                    if (dynamicField instanceof ControlTextEditFieldRange) {
+                                        ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, valudex);
+                                    }
+                                }
+
+                            }
+                        } else if (type == CampaignFormElementType.NUMBER) {
+
+                            String formatted;
+                            try {
+                                double num = Double.parseDouble(valuex);
+                                if (num == Math.floor(num)) {
+                                    formatted = String.valueOf((int) num);
+                                } else {
+                                    formatted = String.format("%.2f", num);
+                                }
+                            } catch (NumberFormatException e) {
+                                formatted = valuex;
+                            }
+                            ControlTextEditField.setValue((ControlTextEditField) dynamicField, formatted);
+                            //                            ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue.toString().equals("0") ? "0" : (expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString()));
+
+                        } else if (type == CampaignFormElementType.DECIMAL) {
+                            String valudex = valuex;
+//                            if (!valudex.isEmpty()) {
+//                                    ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex.endsWith(".0") ? valudex.replace(".0","") : valudex);
+//                                }
+//                            }
+                            try {
+                                double num = Double.parseDouble(valuex);
+                                if (num != 0) {
+                                    if (num == Math.floor(num)) {
+                                        valudex = String.valueOf((int) num); // Whole number
+                                    } else {
+                                        valudex = String.format("%.2f", num); // Decimal to 2 dp
+                                    }
+                                }else{
+                                    valudex = String.valueOf((int) num); // Whole number
+                                }
+                            } catch (NumberFormatException e) {
+                                valudex = valuex; // fallback for non-numeric input
+                            }
+
+                            if (valudex != null && !valudex.isEmpty() && !valudex.toString().equals("")) {
+                                System.out.println(valudex + "valudexvaludexvaludexvaludexvaludexvaludexvaludexdecimallllllllllll");
+                                ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, valudex);
+                            }
+                        } else if (expressionValue.getClass().isAssignableFrom(Boolean.class)) {
+                            ControlTextEditField.setValue((ControlTextEditField) dynamicField, (Double) (!Double.isFinite((double) expressionValue) ? 0 : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : df.format((double) expressionValue)));
+                        } else {
+                            ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue == null ? null : expressionValue.toString());
+                        }
+                    }
+                }
+            }else{
+                System.out.println("Expression not calculated handle expression new form ");
+            }
+        } catch (SpelEvaluationException e) {
+            Log.e("new xxxError evaluating expression on field2 : " + dynamicField.getCaption(), e.getMessage());
+        }
+        if (type == CampaignFormElementType.RANGE) {
+            dynamicField.setEnabled(true);
+        } else if (type == CampaignFormElementType.DECIMAL) {
             dynamicField.setEnabled(true);
         } else if (isDisIgnore) {
             dynamicField.setEnabled(true);
@@ -284,10 +414,13 @@ public class CampaignFormDataFragmentUtils {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, expressionValue == null ? null : expressionValue.toString());
                         }
                     }
+                }else{
+                    System.out.println("Expression cant calculate becuae of  null ");
                 }
             }
         } catch (SpelEvaluationException e) {
-            Log.e("Error evaluating expression on field2 : " + dynamicField.getCaption(), e.getMessage());
+
+            Log.e("xxxError evaluating expression on field2 : " + dynamicField.getCaption(), e.getMessage());
         }
         if (type == CampaignFormElementType.RANGE) {
             dynamicField.setEnabled(true);
@@ -303,21 +436,63 @@ public class CampaignFormDataFragmentUtils {
 
     public static Object getExpressionValue(ExpressionParser expressionParser, List<CampaignFormDataEntry> formValues, String expressionString)
             throws SpelEvaluationException, EvaluationException {
-        System.out.println("111111111 getExpressionValue" +expressionString);
+        System.out.println("111111111 getExpressionValue" + expressionString);
+
         final EvaluationContext context = refreshEvaluationContext(formValues);
         final Expression expression = expressionParser.parseExpression(expressionString);
-        final Class<?> valueType = expression.getValueType(context);
-        final Object valueFin = expression.getValue(context, valueType);
-        if(valueFin != null) {
-            if (!valueFin.getClass().isAssignableFrom(valueType)) {
-                System.out.println("EmptyStackException: >>>>>>-");
-                throw new EmptyStackException();
+
+        try {
+            final Class<?> valueType = expression.getValueType(context);
+            final Object valueFin = expression.getValue(context, valueType);
+
+            System.out.println(valueType + "valueType value fin is null EmptyStackException: >>>>>>-" + valueFin);
+
+
+            if(valueFin != null) {
+                if (!valueFin.getClass().isAssignableFrom(valueType)) {
+                    System.out.println("EmptyStackException: >>>>>>-");
+                    throw new EmptyStackException();
+                }
+                return valueFin;
+            } else {
+
+                System.out.println(" value fin is null EmptyStackException: >>>>>>-");
+
+                // Handle null values gracefully - return 0 for numeric expressions
+                // Check if this is likely a numeric expression
+                if (expressionString.contains("*") || expressionString.contains("+") ||
+                        expressionString.contains("-") || expressionString.contains("/")) {
+                    return 0; // Return 0 instead of null for mathematical expressions
+                }
+                return null;
             }
-        } else{
-            throw new SpelEvaluationException(SpelMessage.NOT_A_REAL);
+        } catch (SpelEvaluationException e) {
+            // If there's a null operation error, return 0 for numeric fields
+            if (e.getMessage().contains("The operator") && e.getMessage().contains("is not supported between objects of type 'null'")) {
+                System.out.println("Null operation detected, returning 0");
+                return 0;
+            }
+            throw e;
         }
-        return expression.getValue(context, valueType);
     }
+
+//    public static Object getExpressionValue(ExpressionParser expressionParser, List<CampaignFormDataEntry> formValues, String expressionString)
+//            throws SpelEvaluationException, EvaluationException {
+//        System.out.println("111111111 getExpressionValue" +expressionString);
+//        final EvaluationContext context = refreshEvaluationContext(formValues);
+//        final Expression expression = expressionParser.parseExpression(expressionString);
+//        final Class<?> valueType = expression.getValueType(context);
+//        final Object valueFin = expression.getValue(context, valueType);
+//        if(valueFin != null) {
+//            if (!valueFin.getClass().isAssignableFrom(valueType)) {
+//                System.out.println("EmptyStackException: >>>>>>-");
+//                throw new EmptyStackException();
+//            }
+//        } else{
+//            throw new SpelEvaluationException(SpelMessage.NOT_A_REAL);
+//        }
+//        return expression.getValue(context, valueType);
+//    }
 
     public static void handleDependingOnSectionAndLabel(
             Map<String, ControlPropertyField> fieldMap,
@@ -924,6 +1099,63 @@ public class CampaignFormDataFragmentUtils {
             Boolean isIntegerField,
             Boolean isRequired,
             String errorMsg) {
+        return new ControlTextEditFieldRange(context) {
+
+            @Override
+            protected String getPrefixDescription() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getPrefixCaption() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            public int getTextAlignment() {
+                return View.TEXT_ALIGNMENT_VIEW_START;
+            }
+
+            @Override
+            public int getGravity() {
+                return Gravity.CENTER_VERTICAL;
+            }
+
+            @Override
+            public int getMaxLines() {
+                return 1;
+            }
+
+            @Override
+            public int getMaxLength() {
+                return CHARACTER_LIMIT_DEFAULT;
+            }
+
+
+            @Override
+            protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
+                super.inflateView(context, attrs, defStyle);
+                initLabel();
+                initLabelAndValidationListeners();
+//                initLabelAndValidationListenersErrorMsg(errorMsg);
+                setLiveValidationDisabled(true);
+//                initInput(isIntegerField, isRequired, true, null, null, true, false);
+
+                initInput(true, isRequired, true, null, null, true, false);
+
+
+            }
+        };
+    }
+
+    public static ControlTextEditFieldRange createControlTextEditFieldRangexOnlyExpressionNew(
+            CampaignFormElement campaignFormElement,
+            Context context,
+            Map<String, String> userTranslations,
+            Boolean isIntegerField,
+            Boolean isRequired,
+            String errorMsg,
+            Boolean isNewForm) {
         return new ControlTextEditFieldRange(context) {
 
             @Override

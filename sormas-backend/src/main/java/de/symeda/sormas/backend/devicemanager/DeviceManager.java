@@ -87,6 +87,12 @@ public class DeviceManager extends AbstractDomainObject{
 	public static final String TOTAL_EXT_STORAGE_GB= "total_ext_storage_gb";
 	public static final String FREE_EXT_STORAGE_GB= "free_ext_storage_gb";
 	public static final String RAM_STORAGE_GB= "ram_storage_gb";
+	
+	public static final String NETWORK_PROVIDER = "networkProvider";
+	public static final String ACTIVE_CAMPAIGNS = "activeCampaigns";
+	public static final String ACTIVE_FORM_COUNT = "activeFormCount";
+
+
 
 	
 	private String device_model ;//VARCHAR(255),
@@ -98,6 +104,9 @@ public class DeviceManager extends AbstractDomainObject{
 	private String device_brand;
 	private String device_serial;
 	private String device_id;
+	private String networkProvider;
+    private Integer activeCampaigns;
+    private Integer activeFormCount;
 
 	private String android_version;    
     private Long total_int_storage;
@@ -105,6 +114,7 @@ public class DeviceManager extends AbstractDomainObject{
     private Long total_ext_storage;
     private Long free_ext_storage;
     private Long ram_storage;
+
     
     
 
@@ -315,87 +325,48 @@ public class DeviceManager extends AbstractDomainObject{
 		this.device_id = device_id;
 	}
 
-	
-	// add import if not present
-
-//	@Column(name = "total_int_storage_gb", insertable = false, updatable = false)
 	public BigDecimal getTotal_int_storage_gb() { return total_int_storage_gb; }
 
-//	@Column(name = "free_int_storage_gb", insertable = false, updatable = false)
 	public BigDecimal getFree_int_storage_gb() { return free_int_storage_gb; }
 
-//	@Column(name = "total_ext_storage_gb", insertable = false, updatable = false)
 	public BigDecimal getTotal_ext_storage_gb() { return total_ext_storage_gb; }
 
-//	@Column(name = "free_ext_storage_gb", insertable = false, updatable = false)
 	public BigDecimal getFree_ext_storage_gb() { return free_ext_storage_gb; }
 
-//	@Column(name = "ram_storage_gb", insertable = false, updatable = false)
 	public BigDecimal getRam_storage_gb() { return ram_storage_gb; }
 
-//
-//	public Long getTotal_int_storage_gb() {
-//		return total_int_storage_gb;
-//	}
-//
-//
-//	public void setTotal_int_storage_gb(Long total_int_storage_gb) {
-//		this.total_int_storage_gb = total_int_storage_gb;
-//	}
-//
-//
-//	public Long getFree_int_storage_gb() {
-//		return free_int_storage_gb;
-//	}
-//
-//
-//	public void setFree_int_storage_gb(Long free_int_storage_gb) {
-//		this.free_int_storage_gb = free_int_storage_gb;
-//	}
-//
-//
-//	public Long getTotal_ext_storage_gb() {
-//		return total_ext_storage_gb;
-//	}
-//
-//
-//	public void setTotal_ext_storage_gb(Long total_ext_storage_gb) {
-//		this.total_ext_storage_gb = total_ext_storage_gb;
-//	}
-//
-//
-//	public Long getFree_ext_storage_gb() {
-//		return free_ext_storage_gb;
-//	}
-//
-//
-//	public void setFree_ext_storage_gb(Long free_ext_storage_gb) {
-//		this.free_ext_storage_gb = free_ext_storage_gb;
-//	}
-//
-//
-//	public Long getRam_storage_gb() {
-//		return ram_storage_gb;
-//	}
-//
-//
-//	public void setRam_storage_gb(Long ram_storage_gb) {
-//		this.ram_storage_gb = ram_storage_gb;
-//	}
-//	
-	
+
+	public String getNetworkProvider() {
+		return networkProvider;
+	}
+
+
+	public void setNetworkProvider(String networkProvider) {
+		this.networkProvider = networkProvider;
+	}
+
+
+	public Integer getActiveCampaigns() {
+		return activeCampaigns;
+	}
+
+
+	public void setActiveCampaigns(Integer activeCampaigns) {
+		this.activeCampaigns = activeCampaigns;
+	}
+
+
+	public Integer getActiveFormCount() {
+		return activeFormCount;
+	}
+
+
+	public void setActiveFormCount(Integer activeFormCount) {
+		this.activeFormCount = activeFormCount;
+	}
 	
 	
 
-//
-//	public User getUser_id() {
-//		return user_id;
-//	}
-//
-//
-//	public void setUser_id(User user_id) {
-//		this.user_id = user_id;
-//	}
 
 
 }

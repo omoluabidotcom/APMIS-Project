@@ -99,7 +99,7 @@ public class PopulationDataResource  extends EntityDtoResource {
 			}
 			List<PopulationDataDto> result = FacadeProvider.getPopulationDataFacade()
 					.fetchPopulationDataSelectionByUserDistricts(resultx);
-			System.out.println("  ==========================111111111ccccvv" + result);
+			System.out.println("  ==========================111111111ccccvvpopdataif" );
 
 			return result;
 			
@@ -108,20 +108,18 @@ public class PopulationDataResource  extends EntityDtoResource {
 			
 			Set<UserRole> roles = FacadeProvider.getUserFacade().getCurrentUser().getUserRoles();
 			
-			System.out.println("  ==========================22221111ccccvv" + resultx);
+			System.out.println("  ==========================22221111ccccvvpodataei" );
 			
 			for(String districtUUid : retListx) {
 				resultx.add(districtUUid);
 
 			}
-//			resultx.add(rdtox.getUuid());
-			
-			System.out.println("  ==========================cccccc22221111ccccvv" + resultx);
+			System.out.println("  ==========================cccccc22221111ccccvv");
 
 
 			List<PopulationDataDto> result = FacadeProvider.getPopulationDataFacade()
 					.fetchPopulationDataSelectionByUserDistricts(resultx);
-			System.out.println("  ==========================22221111ccccvv" + result);
+			System.out.println("  ==========================22221111ccccvv" );
 
 			return result;
 			

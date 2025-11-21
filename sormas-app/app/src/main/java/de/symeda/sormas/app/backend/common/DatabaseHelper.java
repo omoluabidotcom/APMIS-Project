@@ -193,7 +193,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	// any time you make changes to your database objects, you may have to increase the database version
 
 
-	public static final int DATABASE_VERSION = 352;
+	public static final int DATABASE_VERSION = 354;
 
 	private static DatabaseHelper instance = null;
 
@@ -3399,10 +3399,44 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 					);
 
 
-					System.out.println("Database====== 351 createdddd ===================yyyyyyuuuuiiiipppp===================");
+
+
+				case 352:
+					currentVersion = 352;
+
+					getDao(Campaign.class).executeRaw(
+							"ALTER TABLE campaigns add column preCampStartDate BIGINT;"
+					);
+					getDao(Campaign.class).executeRaw(
+							"ALTER TABLE campaigns add column preCampEndDate BIGINT;"
+					);
+
+					getDao(Campaign.class).executeRaw(
+							"ALTER TABLE campaigns add column postCampStartDate BIGINT;"
+					);
+					getDao(Campaign.class).executeRaw(
+							"ALTER TABLE campaigns add column postCampEndDate BIGINT;"
+					);
+
+
+					System.out.println("Database====== 352 createdddd ===================yyyyyyuuuuiiiipppp===================");
 
 
 				// CRITICAL INFORMATION : Only break after the last query case
+
+
+				case 353:
+					currentVersion = 353;
+
+					getDao(DeviceInfo.class).executeRaw(
+							"ALTER TABLE device_info add column networkProvider text;"
+					);
+					getDao(DeviceInfo.class).executeRaw(
+							"ALTER TABLE device_info add column activeCampaigns INTEGER;"
+					);
+					getDao(DeviceInfo.class).executeRaw(
+							"ALTER TABLE device_info add column activeFormCount INTEGER;"
+					);
 					break;
 
 

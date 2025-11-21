@@ -1280,6 +1280,8 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                             if (!exprx) {
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangeOnly(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), minx, maxz, false, onError);
                             } else {
+//                                dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangexOnlyExpressionNew(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage, true);
+
                                 dynamicField = CampaignFormDataFragmentUtils.createControlTextEditFieldRangexOnlyExpression(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant(), errorMessage);
                                 isRangeandExpression = true;
                             }
@@ -1437,7 +1439,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
 
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
-                            CampaignFormDataFragmentUtils.handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
+                            CampaignFormDataFragmentUtils.handleExpressionNewForm(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable, true);
                             expressionMap.put(campaignFormElement, dynamicField);
                         }
                     } else if (type == CampaignFormElementType.LINEBREAK) {

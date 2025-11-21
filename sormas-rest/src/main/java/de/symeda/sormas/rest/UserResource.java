@@ -116,7 +116,7 @@ public class UserResource extends EntityDtoResource {
 	@POST
 	@Path("/push")
 	public List<PushResult> postCampaignFormData(@Valid List<UserDto> dtos) {
-		System.out.println("Request recieved on user pusdh ====================");
+		System.out.println(" =");
 		return savePushedDto(dtos, FacadeProvider.getUserFacade()::saveUserFcmMobile);// .getCampaignFormDataFacade()::saveCampaignFormDataMobile);
 	}
 }

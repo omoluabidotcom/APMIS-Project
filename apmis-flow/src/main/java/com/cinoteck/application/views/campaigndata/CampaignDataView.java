@@ -2328,11 +2328,11 @@ public class CampaignDataView extends VerticalLayout
 					if (e.getValue() != null) {
 						
 
-						if(FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(e.getValue().getCampaign(), e.getValue().getUuid()).size() > 0) {
+						if(FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(criteria.getCampaign().getUuid(), criteria.getCampaignFormMeta().getUuid()).size() > 0) {
 							
-						CampaignFormMetaExpiryDto expiryDto = FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(e.getValue().getCampaign(), e.getValue().getUuid()).get(0);
+						CampaignFormMetaExpiryDto expiryDto = FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(criteria.getCampaign().getUuid(), criteria.getCampaignFormMeta().getUuid()).get(0);
 
-						CampaignDto campaign = FacadeProvider.getCampaignFacade().getByUuid(e.getValue().getCampaign()); //campaignz.getValue().getUuid());						
+						CampaignDto campaign = FacadeProvider.getCampaignFacade().getByUuid(criteria.getCampaign().getUuid()); //campaignz.getValue().getUuid());						
 
 						if(checkFormValidityByPhase(e.getValue().getFormType().toString().toLowerCase(), campaign, expiryDto)) {
 							CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
@@ -2379,12 +2379,12 @@ public class CampaignDataView extends VerticalLayout
 			grid.setSelectionMode(Grid.SelectionMode.SINGLE);
 			grid.asSingleSelect().addValueChangeListener(e -> {
 				
-				if(FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(e.getValue().getCampaign(), e.getValue().getUuid()).size() > 0) {
+				if(FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(criteria.getCampaign().getUuid(), criteria.getCampaignFormMeta().getUuid()).size() > 0) {
 
 					
-				CampaignFormMetaExpiryDto expiryDto = FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(e.getValue().getCampaign(), e.getValue().getUuid()).get(0);
+				CampaignFormMetaExpiryDto expiryDto = FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(criteria.getCampaign().getUuid(), criteria.getCampaignFormMeta().getUuid()).get(0);
 
-				CampaignDto campaign = FacadeProvider.getCampaignFacade().getByUuid(e.getValue().getCampaign()); //campaignz.getValue().getUuid());						
+				CampaignDto campaign = FacadeProvider.getCampaignFacade().getByUuid(criteria.getCampaign().getUuid()); //campaignz.getValue().getUuid());						
 
 				if(checkFormValidityByPhase(e.getValue().getFormType().toString().toLowerCase(), campaign, expiryDto)) {
 					CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()

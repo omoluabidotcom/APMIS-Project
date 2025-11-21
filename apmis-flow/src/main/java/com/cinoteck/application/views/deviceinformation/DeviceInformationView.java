@@ -17,6 +17,7 @@ import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -42,6 +43,9 @@ public class DeviceInformationView extends VerticalLayout {
 	Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
 	List<DeviceManagerDto> dataProvider;
 	GridListDataView<DeviceManagerDto> dataView;
+	
+	Paragraph countRowItems;
+
 
 	public DeviceInformationView() {
 
@@ -117,6 +121,13 @@ public class DeviceInformationView extends VerticalLayout {
 		searchField.setWidth("10%");
 		searchField.setClearButtonVisible(true);
 		
+		countRowItems = new Paragraph();
+		countRowItems.setId("rowCount");
+		if(dataProvider != null) {
+			countRowItems.setText("Rows: " + fetchDevicesInfoData().size());
+	
+		}
+		
 		searchField.addValueChangeListener(e -> {
 			resetFilters.setVisible(true);
 			String term = e.getValue() == null ? "" : e.getValue().trim().toLowerCase();
@@ -130,10 +141,14 @@ public class DeviceInformationView extends VerticalLayout {
 					dataView.setFilter(item -> {
 						String u = item.getUserName() == null ? "" : item.getUserName().toLowerCase();
 						String l = item.getUserLocation() == null ? "" : item.getUserLocation().toLowerCase();
-						return u.contains(term) || l.contains(term);
+						String modelSearctTerm = item.getDeviceModel() == null ? "" : item.getDeviceModel().toLowerCase();
+
+						return u.contains(term) || l.contains(term) || modelSearctTerm.contains(term);
 					});
 				}
 			}
+			
+			 updateRowCount();
 		});
 
 		layout.add(searchField);
@@ -141,6 +156,9 @@ public class DeviceInformationView extends VerticalLayout {
 
 		layout.add(resetFilters);
 		layout.add(exportDevicesInfo);
+		
+		relevancelayout.add(countRowItems);
+
 
 		searchField.addValueChangeListener(e -> {
 
@@ -165,6 +183,12 @@ public class DeviceInformationView extends VerticalLayout {
 
 		return vlayout;
 	}
+	
+	private void updateRowCount() {
+	    if (dataView != null) {
+	        countRowItems.setText("Rows: " + dataView.getItemCount());
+	    }
+	}
 
 	private void configureGrid() {
 
@@ -181,6 +205,10 @@ public class DeviceInformationView extends VerticalLayout {
 		
 		grid.addColumn(DeviceManagerDto::getUserLocation).setHeader(I18nProperties.getCaption("Location"))
 				.setSortable(true).setResizable(true).setTooltipGenerator(e -> I18nProperties.getCaption("Location"));
+		
+		grid.addColumn(DeviceManagerDto::getAndroidVersion).setHeader(I18nProperties.getCaption("Android Version"))
+		.setSortable(true).setResizable(true).setTooltipGenerator(e -> I18nProperties.getCaption("Android Version"));
+		
 		grid.addColumn(DeviceManagerDto::getApkVersion).setHeader(I18nProperties.getCaption("APK Version"))
 				.setResizable(true).setSortable(true)
 				.setTooltipGenerator(e -> I18nProperties.getCaption("APK Version"));
@@ -205,6 +233,8 @@ public class DeviceInformationView extends VerticalLayout {
 			});
 		}
 
+		
+		updateRowCount();
 		add(grid);
 
 		GridExporter<DeviceManagerDto> exporter = GridExporter.createFor(grid);

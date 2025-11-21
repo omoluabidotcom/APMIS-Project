@@ -56,6 +56,10 @@ public class Campaign extends PseudonymizableAdo {
 	public static final String DESCRIPTION = "description";
 	public static final String START_DATE = "startDate";
 	public static final String END_DATE = "endDate";
+	public static final String PRE_START_DATE = "preCampStartDate";
+	public static final String PRE_END_DATE = "preCampEndDate";
+	public static final String POST_START_DATE = "postCampStartDate";
+	public static final String POST_END_DATE = "postCampEndDate";
 	public static final String CREATING_USER = "creatingUser";
 	public static final String CAMPAIGN_FORM_METAS = "campaignFormMetas";
 	public static final String CAMPAIGN_DASHBOARD_ELEMENTS = "dashboardElements";
@@ -73,6 +77,18 @@ public class Campaign extends PseudonymizableAdo {
 
 	@DatabaseField(dataType = DataType.DATE_LONG, canBeNull = true)
 	private Date endDate;
+
+	@DatabaseField(dataType = DataType.DATE_LONG, canBeNull = true)
+	private Date preCampStartDate;
+
+	@DatabaseField(dataType = DataType.DATE_LONG, canBeNull = true)
+	private Date preCampEndDate;
+
+	@DatabaseField(dataType = DataType.DATE_LONG, canBeNull = true)
+	private Date postCampStartDate;
+
+	@DatabaseField(dataType = DataType.DATE_LONG, canBeNull = true)
+	private Date postCampEndDate;
 
 	@DatabaseField(foreign = true, foreignAutoRefresh = true)
 	private User creatingUser;
@@ -117,6 +133,38 @@ public class Campaign extends PseudonymizableAdo {
 
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
+	}
+
+	public Date getPreCampStartDate() {
+		return preCampStartDate;
+	}
+
+	public void setPreCampStartDate(Date preCampStartDate) {
+		this.preCampStartDate = preCampStartDate;
+	}
+
+	public Date getPreCampEndDate() {
+		return preCampEndDate;
+	}
+
+	public void setPreCampEndDate(Date preCampEndDate) {
+		this.preCampEndDate = preCampEndDate;
+	}
+
+	public Date getPostCampStartDate() {
+		return postCampStartDate;
+	}
+
+	public void setPostCampStartDate(Date postCampStartDate) {
+		this.postCampStartDate = postCampStartDate;
+	}
+
+	public Date getPostCampEndDate() {
+		return postCampEndDate;
+	}
+
+	public void setPostCampEndDate(Date postCampEndDate) {
+		this.postCampEndDate = postCampEndDate;
 	}
 
 	public User getCreatingUser() {

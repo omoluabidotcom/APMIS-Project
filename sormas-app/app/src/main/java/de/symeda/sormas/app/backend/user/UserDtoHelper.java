@@ -47,7 +47,7 @@ public class UserDtoHelper extends AdoDtoHelper<User, UserDto> {
 
 	@Override
 	protected Class<UserDto> getDtoClass() {
-		throw new UnsupportedOperationException();
+		return UserDto.class;
 	}
 
 	@Override
@@ -59,11 +59,6 @@ public class UserDtoHelper extends AdoDtoHelper<User, UserDto> {
 	protected Call<List<UserDto>> pullByUuids(List<String> uuids) throws NoConnectionException {
 		return RetroProvider.getUserFacade().pullByUuids(uuids);
 	}
-
-//	@Override
-//	protected Call<List<PushResult>> pushAll(List<UserDto> userDtos) throws NoConnectionException {
-//		throw new UnsupportedOperationException("Can't change users in app");
-//	}
 
 	@Override
 	protected Call<List<PushResult>> pushAll(List<UserDto> userDtos) throws NoConnectionException {

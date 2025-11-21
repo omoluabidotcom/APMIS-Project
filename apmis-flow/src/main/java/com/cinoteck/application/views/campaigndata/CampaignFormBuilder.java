@@ -281,24 +281,7 @@ List<AreaReferenceDto> selectedAreas = FacadeProvider.getAreaFacade()
 System.out.println("222dtodtodtodtodtodtodtodtodtodtodtodtodtodto------------------------" + FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), userProvider.getUser().getLanguage().toString()).size());
 
 		if(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), userProvider.getUser().getLanguage().toString()).size() > 0) {
-//		if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-//			cbArea.setItems(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Pashto"));
-////			cbArea.setItems(FacadeProvider.getAreaFacade().getAllActiveAsReferencePashto());
-//		} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-//			cbArea.setItems(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Dari"));
-////			cbArea.setItems(FacadeProvider.getAreaFacade().getAllActiveAsReferenceDari());
-//		} else {
-//			for(AreaReferenceDto dto : FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "English")) {
-//				System.out.println("dtodtodtodtodtodtodtodtodtodtodtodtodtodto------------------------");
-//				areaNasmesExtract.add(dto.getCaption());
-//			}
-//			
-//			for (String nameInQuestion : areaNasmesExtract) {
-//				cbArea.setItems(FacadeProvider.getAreaFacade().getByName(nameInQuestion, false));
-//			}
-//		}
-		
-
+ 
 if (!selectedAreas.isEmpty()) {
     String lang = userProvider.getUser().getLanguage().toString();
 
@@ -1069,29 +1052,7 @@ if (!selectedAreas.isEmpty()) {
 							}
 						}
 
-//				        textField.addInputListener(ec -> {
-//				        	if (textField.getValue().length() == 13) {				             
-//				        		String inputValue = textField.getValue();
-//				        	
-//				                // Remove any existing formatting
-//				                String cleanInput = inputValue.replace("-", "").replace(".", "");
-//				                System.out.println("Input changed ===");
-//
-////				                if (textField.getValue().length() == 13) {
-//				                    // Format properly and store only the numeric value to avoid double formatting
-//				                    String formattedExample = cleanInput.substring(0, 4) + "-" + 
-//				                        cleanInput.substring(4, 8) + "-" + 
-//				                        cleanInput.substring(8);
-////				                    textField.setHelperText("Valid E-Tazkira format: " + formattedExample);
-//				                    
-//				                    setFieldValue(textField, type, formattedExample, optionsValues, formElement.getDefaultvalue(), false, null);
-////				                } else if (!inputValue.isEmpty()) {
-////				                    // Show warning if not empty and not 13 digits
-////				                    textField.setHelperText("E-Tazkira should be 13 digits");
-////				                }
-//				        	}
-//				        });
-
+ 
 						// Add listener for new input
 						textField.addValueChangeListener(e -> {
 							textField.addInputListener(ex -> {
@@ -1143,6 +1104,8 @@ if (!selectedAreas.isEmpty()) {
 					numberField.setMin(0);
 					numberField.setId(formElement.getId());
 					numberField.setSizeFull();
+					numberField.setAllowedCharPattern("[0-9.]*"); // allow digits and one decimal point
+
 
 //					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 //					vertical.add(numberField);
@@ -1294,6 +1257,15 @@ if (!selectedAreas.isEmpty()) {
 					}
 
 					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
+					
+					numberField.addValueChangeListener(e -> {
+				        if (e.getValue() != null && e.getValue() < 0) {
+//				        	integerField.setValue(0.0); // Reset to 0 if negative
+				        	numberField.setInvalid(true);
+				        	numberField.setErrorMessage("Negative values are not allowed");
+				        }
+				    });
+					
 					vertical.add(numberField);
 					fields.put(formElement.getId(), numberField);
 
@@ -1383,6 +1355,8 @@ if (!selectedAreas.isEmpty()) {
 					integerField.setStepButtonsVisible(true);
 					integerField.setSizeFull();
 					integerField.setMin(0);
+					integerField.setAllowedCharPattern("[0-9.]*"); // allow digits and one decimal point
+
 
 					setFieldValue(integerField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 
@@ -1420,18 +1394,6 @@ if (!selectedAreas.isEmpty()) {
 								validationMessageArgs.put("max", constrainsVal.getMax());
 							}
 
-							// needed
-							// field.addValidator(
-							// new NumberValidator(I18nProperties.getValidationError(validationMessageTag,
-							// validationMessageArgs), minValue, maxValue));
-
-//							((TextField) field).addValidator(new NumberNumericValueValidator(
-//									caption.toUpperCase() + ": "
-//											+ 
-//											
-//											I18nProperties.getValidationError(validationMessageTag,
-//													validationMessageArgs),
-//									constrainsVal.getMin(), constrainsVal.getMax(), true, isOnError));
 
 						} else {
 
@@ -1448,6 +1410,14 @@ if (!selectedAreas.isEmpty()) {
 					} else {
 						integerField.setRequiredIndicatorVisible(formElement.isImportant());
 					}
+					
+					integerField.addValueChangeListener(e -> {
+				        if (e.getValue() != null && e.getValue() < 0) {
+//				        	integerField.setValue(0.0); // Reset to 0 if negative
+				        	integerField.setInvalid(true);
+				        	integerField.setErrorMessage("Negative values are not allowed");
+				        }
+				    });
 
 				} else if (type == CampaignFormElementType.DECIMAL) {
 					NumberField numberField = new NumberField();
@@ -1507,6 +1477,14 @@ if (!selectedAreas.isEmpty()) {
 					} else {
 						numberField.setRequiredIndicatorVisible(formElement.isImportant());
 					}
+					
+					numberField.addValueChangeListener(e -> {
+				        if (e.getValue() != null && e.getValue() < 0) {
+//				        	integerField.setValue(0.0); // Reset to 0 if negative
+				        	numberField.setInvalid(true);
+				        	numberField.setErrorMessage("Negative values are not allowed");
+				        }
+				    });
 
 				} else if (type == CampaignFormElementType.TEXTBOX) {
 					TextArea textArea = new TextArea();
@@ -1950,39 +1928,6 @@ if (!selectedAreas.isEmpty()) {
 				((IntegerField) field).setValue(null);
 			}
 
-//			if (value != null) {
-//
-//			    if (value.toString().equals("")) {
-//			        // Set empty value to null
-//			        ((IntegerField) field).setValue(null);
-//			    } else {
-//			        try {
-//			            // Parse the value to a Double to check for decimal or whole number
-//			            double numericValue = Double.parseDouble(value.toString());
-//
-//			            // If it's a whole number (e.g., ends with .0), convert to an integer
-//			            if (numericValue % 1 == 0) {
-//			                ((IntegerField) field).setValue((int) numericValue); // Set whole number
-//			            } else {
-//			                // Value is a decimal, round or truncate as per your requirements
-//			                ((IntegerField) field).setValue((int) numericValue); // Truncate decimal part
-//			            }
-//			        } catch (NumberFormatException e) {
-//			            // Handle cases where the value is not a valid number
-//			            System.err.println("Value is not a valid number: " + value);
-//			            ((IntegerField) field).setValue(null); // Set to null for invalid input
-//			        }
-//			    }
-//			} else if (defaultvalue != null) {
-//				((IntegerField) field).setValue(Integer.parseInt(defaultvalue));
-//			} else {
-//				((IntegerField) field).setValue(null);
-//			}
-
-			// ((IntegerField) field).setValue(value != null ?
-			// Integer.parseInt(value.toString()) : defaultvalue != null ?
-			// Integer.parseInt(defaultvalue) : null);
-
 			break;
 		case TEXT:
 
@@ -2058,24 +2003,6 @@ if (!selectedAreas.isEmpty()) {
 			}
 			break;
 
-//		case NUMBER:
-//
-//			if (value != null) {
-//				String cvalue = value.toString().replace("null", "").trim();
-//				if (cvalue.equals("") || cvalue.equals("null")) {
-//
-////					logger.debug(cvalue + "|))))))))))))))))))))))))))):setting empty value to in |NUMBER nulll --- not sure");
-//					((NumberField) field).setValue(null);
-//				} else {
-//
-//					((NumberField) field).setValue(Double.parseDouble(cvalue));
-//				}
-//
-//			} else if (defaultvalue != null) {
-//				((NumberField) field).setValue(Double.parseDouble(defaultvalue));
-//			}
-//
-//			break;
 
 		case DECIMAL:
 			boolean isExxxpression = false;
@@ -2129,35 +2056,7 @@ if (!selectedAreas.isEmpty()) {
 			;
 			((TextArea) field).setValue(value != null ? value.toString() : null);
 			break;
-//		case DATE:
-//			if (value != null) {
-//
-//				try {
-//
-//					String vc = value + "";
-//
-////					logger.debug(vc.isEmpty() + "@@@=" + vc.equals("") + "==" + vc != "" + "@@ date to parse |"
-////							+ value + "|");
-//
-//					if (vc != "" || !vc.isEmpty() || !vc.equals("")) {
-//						Date dst = vc.contains("00:00:00") ? dateFormatter(value) : dateFormatterLongAndMobile(value);
-//
-//						LocalDate value_Date = dst.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-//						((DatePicker) field).setValue(value_Date);
-//					}
-//
-//				} catch (ConversionException e) {
-//					// TODO Auto-generated catch block
-//					((DatePicker) field).setValue(null);
-//					// e.printStackTrace();
-//				} catch (ParseException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//			}
-//			;
-//			break;
-
+ 
 		case DATE:
 			if (value != null) {
 				try {
@@ -2206,18 +2105,7 @@ if (!selectedAreas.isEmpty()) {
 		case DROPDOWN:
 
 			final HashMap<String, String> data_ = (HashMap<String, String>) options;
-
-			// logger.debug(data_+ " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ : "+value);
-
-//			if (value != null) {
-//
-//				if (value.equals(true)) {
-//					((ComboBox) field).setEnabled(true);
-//				} else if (value.equals(false)) {
-//					((ComboBox) field).setEnabled(false);
-//				}
-//			}
-//			;
+ 
 
 			if (defaultvalue != null) {
 				// String dxz = options.get(defaultvalue);
@@ -2642,6 +2530,29 @@ if (!selectedAreas.isEmpty()) {
 			}
 		}).collect(Collectors.toList());
 	}
+	
+	private void checkForNegativeValuesSimple() {
+	    for (Map.Entry<String, Component> entry : fields.entrySet()) {
+	        Component component = entry.getValue();
+	        
+	        if (component instanceof NumberField) {
+	            NumberField field = (NumberField) component;
+	            if (field.getValue() != null && field.getValue() < 0) {
+	                field.setInvalid(true);
+	                field.setErrorMessage("Negative values are not allowed");
+	                hasErrorFormValues(8);
+	            }
+	        } else if (component instanceof IntegerField) {
+	            IntegerField field = (IntegerField) component;
+	            if (field.getValue() != null && field.getValue() < 0) {
+	                field.setInvalid(true);
+	                field.setErrorMessage("Negative values are not allowed");
+	                hasErrorFormValues(8);
+	            }
+	        }
+	        // Add similar checks for other numeric field types if needed
+	    }
+	}
 
 	private boolean validateAndSave() {
 		hasErrorFormValuesReset();
@@ -2698,6 +2609,10 @@ if (!selectedAreas.isEmpty()) {
 			}
 
 		});
+		
+	    checkForNegativeValuesSimple();
+
+	    
 		return invalidForm;
 	}
 

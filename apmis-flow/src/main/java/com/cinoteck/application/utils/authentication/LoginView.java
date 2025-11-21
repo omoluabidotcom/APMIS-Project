@@ -87,8 +87,7 @@ public class LoginView extends FlexLayout implements BeforeEnterObserver {
 		loginForm.setI18n(createLoginI18n());
 		loginForm.addLoginListener(this::login);
 		loginForm.addForgotPasswordListener(event -> {
-			com.vaadin.flow.component.page.Page page = UI.getCurrent().getPage();
-			page.executeJs("window.location.href = 'http://afghanistan-apmis.com/forgot-password'");
+		    UI.getCurrent().navigate("passwordresetview");
 		});
 
 //		Router router = RouteConfiguration.forSessionScope().getRouter();

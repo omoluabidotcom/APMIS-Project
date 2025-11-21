@@ -11460,18 +11460,25 @@ INSERT INTO schema_version (version_number, comment) VALUES (488, 'Implementing 
 
 ALTER TABLE campaigns
 ADD COLUMN precampstartdate TIMESTAMP NULL,
-ADD COLUMN precampenddate TIMESTAMP NULL;
+ADD COLUMN precampenddate TIMESTAMP NULL,
 ADD COLUMN postcampstartdate TIMESTAMP NULL,
 ADD COLUMN postcampenddate TIMESTAMP NULL;
 
 ALTER TABLE campaigns_history
 ADD COLUMN precampstartdate TIMESTAMP NULL,
-ADD COLUMN precampenddate TIMESTAMP NULL;
+ADD COLUMN precampenddate TIMESTAMP NULL,
 ADD COLUMN postcampstartdate TIMESTAMP NULL,
 ADD COLUMN postcampenddate TIMESTAMP NULL;
 
+ALTER TABLE device_manager 
+ADD COLUMN networkProvider varchar NULL,
+ADD COLUMN activeCampaigns int8 NULL,
+ADD COLUMN activeFormCount int8 NULL;
 
-INSERT INTO schema_version (version_number, comment) VALUES (489, 'Implementing Pre Campaign Na Post Campaign STart Date');
+
+INSERT INTO schema_version (version_number, comment) VALUES (489, 'Implementing Pre Campaign Na Post Campaign STart Date' );
+
+
 
 
 

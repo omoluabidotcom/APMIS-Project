@@ -124,6 +124,11 @@ public class DeviceInfoDtoHelper extends AdoDtoHelper<DeviceInfo, DeviceManagerD
         target.setExternalStorageTotal(source.getExternalStorageTotal());
         target.setExternalStorageFree(source.getExternalStorageFree());
         target.setRamTotal(source.getRamTotal());
+        target.setNetworkProvider(source.getNetworkProvider());
+        target.setActiveFormCount(source.getActiveFormCount());
+        target.setActiveCampaigns(source.getActiveCampaigns());
+
+
 
         // Battery Information
         target.setBatteryLevel(source.getBatteryLevel());
@@ -149,11 +154,6 @@ public class DeviceInfoDtoHelper extends AdoDtoHelper<DeviceInfo, DeviceManagerD
 //        target.setUser(DatabaseHelper.getUserDao().getByReferenceDto(source.getUser()));
         target.setUserName(source.getUserName());
 
-
-        // Timestamps
-//        target.setLoginTimestamp(source.getLoginTimestamp() != null ? source.getLoginTimestamp() : new Date());
-//        target.setLastUpdated(source.getLastUpdated() != null ? source.getLastUpdated() : new Date());
-
         //APPVERSION AND USER LOCATION
         target.setApkVersion(source.getApkVersion());
         target.setUserLocation(source.getUserLocation());
@@ -169,6 +169,8 @@ public class DeviceInfoDtoHelper extends AdoDtoHelper<DeviceInfo, DeviceManagerD
         target.setAndroidVersion(source.getAndroidVersion());
 //        target.setApiLevel(source.getApiLevel());
 //        target.setDeviceId(source.getDeviceId());
+
+
 
         // Storage Information
         target.setInternalStorageTotal(source.getInternalStorageTotal());
@@ -196,6 +198,10 @@ public class DeviceInfoDtoHelper extends AdoDtoHelper<DeviceInfo, DeviceManagerD
 
         target.setApkVersion(source.getApkVersion());
         target.setUserLocation(source.getUserLocation());
+
+        target.setNetworkProvider(source.getNetworkProvider());
+        target.setActiveFormCount(source.getActiveFormCount());
+        target.setActiveCampaigns(source.getActiveCampaigns());
 
         // Timestamps
 //        target.setLoginTimestamp(source.getLoginTimestamp());

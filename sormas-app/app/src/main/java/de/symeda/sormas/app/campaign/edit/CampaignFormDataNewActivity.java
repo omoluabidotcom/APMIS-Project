@@ -31,6 +31,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -227,6 +228,26 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
                 }
         }
+        if (campaignFormDataToSave.getFormDate() != null) {
+            Date date = campaignFormDataToSave.getFormDate();
+
+            Calendar cal = Calendar.getInstance();
+
+            int hour = cal.get(Calendar.HOUR_OF_DAY);
+            int minute = cal.get(Calendar.MINUTE);
+            int second = cal.get(Calendar.SECOND);
+            int milli = cal.get(Calendar.MILLISECOND);
+
+// now apply that to your date
+            cal.setTime(date);
+            cal.set(Calendar.HOUR_OF_DAY, hour);
+            cal.set(Calendar.MINUTE, minute);
+            cal.set(Calendar.SECOND, second);
+            cal.set(Calendar.MILLISECOND, milli);
+
+            campaignFormDataToSave.setFormDate(cal.getTime());
+        }
+
 
 
 
@@ -257,6 +278,7 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
             }
             }
         }
+
         campaignFormDataToSave.setFormValues(filledFormValues);
 
 

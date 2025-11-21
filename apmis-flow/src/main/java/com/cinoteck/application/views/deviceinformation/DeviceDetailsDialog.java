@@ -164,11 +164,14 @@ public class DeviceDetailsDialog extends Dialog {
         deviceInfo.add(androidIcon, deviceDetails);
         
         // IMEI and Serial Number
+        HorizontalLayout userNameLayout = createInfoRow("Username:", deviceManagerDto.getUserName());
+        
+        
         HorizontalLayout snLayout = createInfoRow("SN:", deviceManagerDto.getDeviceId());
         
         
         VerticalLayout deviceDetail = new VerticalLayout();
-        deviceDetail.add(snLayout);
+        deviceDetail.add(userNameLayout, snLayout);
         
         HorizontalLayout deviceInfoLayout = new HorizontalLayout();
         deviceInfoLayout.setWidthFull();
@@ -294,7 +297,7 @@ public class DeviceDetailsDialog extends Dialog {
         HorizontalLayout performanceRow = new HorizontalLayout();
         performanceRow.setWidthFull();
         performanceRow.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        
+         
         
      // CPU Usage 
         VerticalLayout cpuUsageLayout = new VerticalLayout();
@@ -373,7 +376,7 @@ public class DeviceDetailsDialog extends Dialog {
         
 
         
-        HorizontalLayout currentLocation = createLocationRow(VaadinIcon.MAP_MARKER, "Current Location", deviceManagerDto.getUserLocation());
+        HorizontalLayout currentLocation = createLocationRow(VaadinIcon.MAP_MARKER, "Assigned Location", deviceManagerDto.getUserLocation());
 //        HorizontalLayout lastLocation = createLocationRow(VaadinIcon.MAP_MARKER, "Last known location", "Badaskan");
         
         section.add(title,  currentLocation);
@@ -398,10 +401,12 @@ public class DeviceDetailsDialog extends Dialog {
 
         
 
-        HorizontalLayout networkStrength = createNetworkRow(VaadinIcon.SIGNAL, "Network Strength", "Strong", "#4CAF50");
+        HorizontalLayout networkStrength = createNetworkRow(VaadinIcon.SIGNAL, "Network Provider", deviceManagerDto.getNetworkProvider() != null ? deviceManagerDto.getNetworkProvider() : "", "#4CAF50");
         HorizontalLayout wifiStatus = new HorizontalLayout();
+       
+        
         if(deviceManagerDto.getWifiConnected()) {
-        wifiStatus  = createNetworkRow(VaadinIcon.SIGNAL, "Wi-Fi", "Connected", "#F44336");
+        wifiStatus  = createNetworkRow(VaadinIcon.SPARK_LINE, "Wi-Fi", "Connected", "#4CAF50");
         }else {
         wifiStatus  = createNetworkRow(VaadinIcon.SIGNAL, "Wi-Fi", "Disonnected", "#F44336");
         }
@@ -447,7 +452,7 @@ public class DeviceDetailsDialog extends Dialog {
         Icon chargingIcon = new Icon(VaadinIcon.BOLT);
         chargingIcon.setColor("#FF9800");
         
-        Span chargingText = new Span("Charging");
+        Span chargingText = new Span("Not Charging");
         chargingText.getStyle().set("font-weight", "500");
         
         HorizontalLayout chargingStatusTextLayout = new HorizontalLayout();
@@ -469,7 +474,7 @@ public class DeviceDetailsDialog extends Dialog {
         return section;
     }
     
-    private VerticalLayout createSystemInformation(DeviceManagerDto deviceManagerDto) {
+    private VerticalLayout createDeviceSystemInformationC(DeviceManagerDto deviceManagerDto) {
         VerticalLayout section = new VerticalLayout();
         section.setSpacing(true);
         section.setPadding(true);
@@ -497,13 +502,56 @@ public class DeviceDetailsDialog extends Dialog {
         return section;
     }
     
+    private VerticalLayout createSystemInformation(DeviceManagerDto deviceManagerDto) {
+        VerticalLayout section = new VerticalLayout();
+        section.setSpacing(true);
+        section.setPadding(true);
+        section.getStyle().set("border", "1px solid #e0e0e0");
+        section.getStyle().set("border-radius", "8px");
+        section.getStyle().set("margin-bottom", "15px");
+        section.getStyle().set("padding", "20px !important");
+        section.getStyle().set("height", "30%");
+
+
+        
+        H4 title = new H4("System Information");
+        title.getStyle().set("color", "#2d5a3d");
+        title.getStyle().set("margin-top", "0");
+        title.getStyle().set("font-size", "13px !important");
+
+        
+        Hr horizontalLine = new Hr();
+        
+        HorizontalLayout itemsLayout = new HorizontalLayout();
+        
+        
+        VerticalLayout itemsLayoutChild1 = new VerticalLayout();
+
+        HorizontalLayout androidVersion = createInfoRow("Android Version", deviceManagerDto.getAndroidVersion());
+        HorizontalLayout apkVersion = createInfoRow("APK Version", deviceManagerDto.getApkVersion());
+        
+        itemsLayoutChild1.add(androidVersion,apkVersion);
+        
+        VerticalLayout itemsLayoutChild2 = new VerticalLayout();
+        HorizontalLayout campaignCount = createInfoRow("Active Synced Campaign", deviceManagerDto.getActiveCampaigns() != null ? deviceManagerDto.getActiveCampaigns().toString() : "Not Synced");
+        HorizontalLayout formCount = createInfoRow("Form Count", deviceManagerDto.getActiveFormCount() != null ? deviceManagerDto.getActiveFormCount().toString() : "Not Synced");
+        
+        itemsLayoutChild2.add(campaignCount,formCount);
+
+        itemsLayout.setWidthFull();
+        itemsLayout.add(itemsLayoutChild1 , itemsLayoutChild2);
+        
+        section.add(title, horizontalLine, itemsLayout);
+        return section;
+    }
+    
     private void createFooter(DeviceManagerDto deviceManagerDto) {
         HorizontalLayout footer = new HorizontalLayout();
         footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         footer.setPadding(true);
-        footer.getStyle().set("border-top", "1px solid #e0e0e0");
-        footer.getStyle().set("background-color", "#f5f5f5");
+//        footer.getStyle().set("border-top", "1px solid #e0e0e0");
+//        footer.getStyle().set("background-color", "#f5f5f5");
         
         Button closeBtn = new Button("Close");
         closeBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
@@ -516,12 +564,7 @@ public class DeviceDetailsDialog extends Dialog {
         Button viewDeviceLogs = new Button("Error Logs", new Icon(VaadinIcon.REFRESH));
         viewDeviceLogs.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        
-//        Button viewDeviceLog = new Button("Error Log", new Icon(VaadinIcon.REFRESH));
-//        viewDeviceLog.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        
-
-        
+       
         viewDeviceLogs.addClickListener(e -> {
             if (errorLogDialog == null) {
                 errorLogDialog = new Dialog();
@@ -548,25 +591,6 @@ public class DeviceDetailsDialog extends Dialog {
             }
             errorLogDialog.open();
         });
-
-//        viewDeviceLogs.addClickListener(e -> {
-//            Dialog errorLogDialog = new Dialog();
-//            errorLogDialog.setHeaderTitle("Error Log");
-//            errorLogDialog.setWidth("800px");
-//            errorLogDialog.setHeight("600px");
-//            
-//            Grid<DeviceErrorManagerDto> errorGrid = new Grid<DeviceErrorManagerDto>();
-//            errorGrid =  configureLogsGrid(deviceManagerDto);
-//            errorLogDialog.add(errorGrid);
-//
-//            // Footer with close button
-//            Button closeButton = new Button("Close", event -> errorLogDialog.close());
-//            closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//            errorLogDialog.getFooter().add(closeButton);
-//            
-//            errorLogDialog.open();
-//        });
-//        
         
 
         // Helper method to build error log content with Eclipse-style formatting
@@ -581,7 +605,7 @@ public class DeviceDetailsDialog extends Dialog {
         Button remoteSupport = new Button("Remote support", new Icon(VaadinIcon.HEADPHONES));
         remoteSupport.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         
-        actionButtons.add(viewDeviceLogs,  remoteSupport);
+        actionButtons.add(viewDeviceLogs);
         
         footer.add(closeBtn, actionButtons);
         add(footer);
