@@ -119,6 +119,7 @@
          	<property name="hibernate.transaction.jta.platform" value="org.hibernate.service.jta.platform.internal.SunOneJtaPlatform"/>
 			<property name="hibernate.show_sql" value="false" />
 			<property name="hibernate.format_sql" value="false" />
+			<property name="javax.persistence.query.timeout" value="180000" />
          	<!-- don't validate on release, otherwise the automatic db update won't work
          	<property name="hibernate.hbm2ddl.auto" value="validate"/>
          	 -->

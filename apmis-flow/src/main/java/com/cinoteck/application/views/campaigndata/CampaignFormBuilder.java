@@ -1420,28 +1420,85 @@ if (!selectedAreas.isEmpty()) {
 				    });
 
 				} else if (type == CampaignFormElementType.DECIMAL) {
+					
 					NumberField numberField = new NumberField();
-					numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-					numberField.setClassName("customTextWrap");
+				    numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+				    numberField.setClassName("customTextWrap");
+				    numberField.setWidth("240px");
+				    numberField.setId(formElement.getId());
+				    numberField.setSizeFull();
+				    numberField.setReadOnly(false);
+				    numberField.setMin(0);
+				    
+				    setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
+				    vertical.add(numberField);
+				    fields.put(formElement.getId(), numberField);
 
-					numberField.setWidth("240px");
-//					bigDecimalField.setValue(new BigDecimal("948205817.472950487"));
-					numberField.setId(formElement.getId());
-					numberField.setSizeFull();
-					numberField.setReadOnly(false);
-					numberField.setMin(0);
-					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
-					vertical.add(numberField);
-					fields.put(formElement.getId(), numberField);
+				    String validationMessageTag = "";
+				    Map<String, Object> validationMessageArgs = new HashMap<>();
+				  
+				    if (campaignFormElementOptions.isExpression()) {
+				        if (!fieldIsRequired) {				           
+				        }
+				        campaignFormElementOptions.setExpression(false);				       
+				    } else {				       
+				        if (campaignFormElementOptions.getMin() != null || campaignFormElementOptions.getMax() != null) {
+				            
+				            if (campaignFormElementOptions.getMin() != null) {
+				                numberField.setMin(campaignFormElementOptions.getMin().doubleValue());				               
+				            }
+				            if (campaignFormElementOptions.getMax() != null) {
+				                numberField.setMax(campaignFormElementOptions.getMax().doubleValue());				                
+				            }
+				          
+				            if (campaignFormElementOptions.getMin() == null) {
+				                validationMessageTag = Validations.numberTooBig;
+				                validationMessageArgs.put("value", campaignFormElementOptions.getMax());				                
+				            } else if (campaignFormElementOptions.getMax() == null) {
+				                validationMessageTag = Validations.numberTooSmall;
+				                validationMessageArgs.put("value", campaignFormElementOptions.getMin());				                
+				            } else {
+				                validationMessageTag = Validations.numberNotInRange;
+				                validationMessageArgs.put("min", campaignFormElementOptions.getMin());
+				                validationMessageArgs.put("max", campaignFormElementOptions.getMax());				                
+				            }
+				            				            
+				            final Double minValue = numberField.getMin();
+				            final Double maxValue = numberField.getMax();
+				            final String errorMsg = I18nProperties.getValidationError(
+				                validationMessageTag, validationMessageArgs);
+				            
+				            numberField.addValueChangeListener(e -> {
+				                Double val = e.getValue();
+				                if (val != null) {
+				                    boolean isInvalid = false;
+				                    
+				                    if (minValue != null && val < minValue) {
+				                        isInvalid = true;				                        
+				                    }
+				                    if (maxValue != null && val > maxValue) {
+				                        isInvalid = true;				                        
+				                    }
+				                    
+				                    if (isInvalid) {
+				                        numberField.setInvalid(true);
+				                        numberField.setErrorMessage(errorMsg);				                        
+				                    } else {
+				                        numberField.setInvalid(false);
+				                        numberField.setErrorMessage(null);				                       
+				                    }
+				                } else {
+				                    numberField.setInvalid(false);				                    
+				                }
+				            });				            
+				        }
+				    }
 
-					String validationMessageTag = "";
-					Map<String, Object> validationMessageArgs = new HashMap<>();
-
+				
 					if (constrainsVal.isExpression()) {
 
 						if (!fieldIsRequired) {
-							// ApmisNotification notification = new ApmisNotification("Application
-							// submitted!");
+
 						}
 
 						constrainsVal.setExpression(false);
@@ -1485,6 +1542,75 @@ if (!selectedAreas.isEmpty()) {
 				        	numberField.setErrorMessage("Negative values are not allowed");
 				        }
 				    });
+//=======
+//				    if (dependingOnId != null && dependingOnValues != null) {
+//				        setVisibilityDependency(numberField, dependingOnId, dependingOnValues, type,
+//				                formElement.isImportant());
+//				    } else {
+//				        numberField.setRequiredIndicatorVisible(formElement.isImportant());
+//				    }
+				    
+//					NumberField numberField = new NumberField();
+//					numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+//					numberField.setClassName("customTextWrap");
+//
+//					numberField.setWidth("240px");
+////					bigDecimalField.setValue(new BigDecimal("948205817.472950487"));
+//					numberField.setId(formElement.getId());
+//					numberField.setSizeFull();
+//					numberField.setReadOnly(false);
+//					numberField.setMin(0);
+//					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
+//					vertical.add(numberField);
+//					fields.put(formElement.getId(), numberField);
+//
+//					String validationMessageTag = "";
+//					Map<String, Object> validationMessageArgs = new HashMap<>();
+//
+//					if (constrainsVal.isExpression()) {
+//
+//						if (!fieldIsRequired) {
+//							// ApmisNotification notification = new ApmisNotification("Application
+//							// submitted!");
+//						}
+//
+//						constrainsVal.setExpression(false);
+//
+//					} else {
+//
+//						if (constrainsVal.getMin() != null || constrainsVal.getMax() != null) {
+//
+//							numberField.setMin(constrainsVal.getMin());
+//							numberField.setMax(constrainsVal.getMax());
+//
+//							System.out.println();
+//							if (constrainsVal.getMin() == null) {
+//								validationMessageTag = Validations.numberTooBig;
+//								validationMessageArgs.put("value", constrainsVal.getMax());
+//							} else if (constrainsVal.getMax() == null) {
+//								validationMessageTag = Validations.numberTooSmall;
+//								validationMessageArgs.put("value", constrainsVal.getMin());
+//							} else {
+//								validationMessageTag = Validations.numberNotInRange;
+//								validationMessageArgs.put("min", constrainsVal.getMin());
+//								validationMessageArgs.put("max", constrainsVal.getMax());
+//								validationMessageArgs.put("invalid", true);
+//								
+//							}
+//
+//						} else {
+//
+//						}
+//					}
+//
+//					if (dependingOnId != null && dependingOnValues != null) {
+//						// needed
+//						setVisibilityDependency(numberField, dependingOnId, dependingOnValues, type,
+//								formElement.isImportant());
+//					} else {
+//						numberField.setRequiredIndicatorVisible(formElement.isImportant());
+//					}
+//>>>>>>> branch 'development' of https://github.com/omoluabidotcom/APMIS-Project.git
 
 				} else if (type == CampaignFormElementType.TEXTBOX) {
 					TextArea textArea = new TextArea();
@@ -2005,42 +2131,51 @@ if (!selectedAreas.isEmpty()) {
 
 
 		case DECIMAL:
-			boolean isExxxpression = false;
-			if (defaultErrorMsgr != null) {
-				if (defaultErrorMsgr.toString().endsWith("..")) {
-					isExxxpression = true;
-					defaultErrorMsgr = defaultErrorMsgr.toString().equals("..") ? null
-							: defaultErrorMsgr.toString().replace("..", "");
-				}
-			}
+			boolean isExpression = false;
 
-			if (isExxxpression && isErrored && value == null) {
+		    if (defaultErrorMsgr != null && defaultErrorMsgr.toString().endsWith("..")) {
+		        isExpression = true;
+		        defaultErrorMsgr = defaultErrorMsgr.toString().equals("..") ? null
+		                : defaultErrorMsgr.toString().replace("..", "");		      
+		    }
 
-				Object tempz = defaultErrorMsgr != null ? defaultErrorMsgr
-						: "Data entered not a decimal or calculated decimal!";
-				String lb = field.getElement().getProperty("label");
+		    NumberField decimalField = (NumberField) field;
+			  
+//		    if (options != null) {		    	
+//		        if (options.containsKey("min")) {
+//		            decimalField.setMin(Double.parseDouble(options.get("min")));		            
+//		        }
+//		        if (options.containsKey("max")) {
+//		            decimalField.setMax(Double.parseDouble(options.get("max")));		            
+//		        }
+//		    }
 
-				// clear the input
-				// field.getElement().executeJs("this.inputElement.value = ''");
+		    // Show error but DO NOT continue processing
+		    if (isExpression && isErrored && value == null) {
 
-				field.getElement().setProperty("invalid", true);
-				field.getElement().setProperty("label", lb == null ? "" : lb);
-				field.getElement().setProperty("errorMessage",
-						defaultErrorMsgr != null ? defaultErrorMsgr.toString() : "Decimal Error!");
-			}
+		        decimalField.setInvalid(true);
+		        decimalField.setErrorMessage(defaultErrorMsgr != null
+		                ? defaultErrorMsgr.toString()
+		                : "Decimal value is not within the allowed range");		       
+		        return;
+		    }
 
-			if (value != null) {
-				if (value.toString().equals("")) {
-					((NumberField) field).setValue(0.0);
-				} else {
-					((NumberField) field).setValue(Double.parseDouble(value.toString()));
-				}
-			} else if (defaultvalue != null) {
-				((NumberField) field).setValue(Double.parseDouble(value.toString()));
-			} else {
-				((NumberField) field).setValue(null);
-			}
-			break;
+		    if (value != null) {
+		        String v = value.toString().trim();
+
+		        if (v.equals("")) {
+		            decimalField.setValue(null);		           
+		        } else {
+		            decimalField.setValue(Double.parseDouble(v));		        
+		        }
+
+		    } else if (defaultvalue != null) {
+		        // ORIGINAL BUG: you used value instead of defaultvalue
+		        decimalField.setValue(Double.parseDouble(defaultvalue));		        
+		    } else {
+		        decimalField.setValue(null);		       
+		    }
+		    break;
 		case TEXTBOX:
 
 			if (value != null) {
@@ -2594,7 +2729,10 @@ if (!selectedAreas.isEmpty()) {
 					hasErrorFormValues(6);
 					formField.getElement().setProperty("invalid", true);
 				} else {
-					formField.getElement().setProperty("invalid", false);
+//					formField.getElement().setProperty("invalid", false);
+					if (!formField.getElement().getProperty("invalid", false)) {
+	                    formField.getElement().setProperty("invalid", false);
+	                }
 				}
 			}
 
@@ -2939,14 +3077,21 @@ if (!selectedAreas.isEmpty()) {
 							// return;
 						}
 
-					} else if (e.getType().toString().equals("decimal")) {					
-						setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
-//								!Double.isFinite((double) value) ? 0
-//										: value.toString().endsWith(".0") ? value.toString().replace(".0", "")
-//												: Precision.round((double) value, 2),
-								Double.valueOf(String.format("%.1f", Double.valueOf(value.toString()))), null, null,
-								false,
-								e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() : null);
+					} else if (e.getType().toString().equals("decimal")) {																						
+						
+						if (value.toString().equals("0")) {
+							setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
+									Double.valueOf(String.format("%.1f", Double.valueOf(value.toString()))), null, null,
+									false,
+									e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() : null);						
+						} else {
+
+							Boolean isErrored = value.toString().endsWith(".0");							
+							setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
+									Double.valueOf(String.format("%.1f", Double.valueOf(value.toString()))), null, null,
+									isErrored,
+									e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() : null);
+						}
 					} else if (valueType.isAssignableFrom(Double.class)) {
 						// logger.debug("yes double detected "+Double.isFinite((double) value) +"
 						// = "+ value);

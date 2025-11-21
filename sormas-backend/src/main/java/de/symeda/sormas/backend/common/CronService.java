@@ -26,6 +26,9 @@ import javax.annotation.security.RunAs;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +51,7 @@ import de.symeda.sormas.backend.labmessage.LabMessageFacadeEjb.LabMessageFacadeE
 import de.symeda.sormas.backend.report.WeeklyReportFacadeEjb.WeeklyReportFacadeEjbLocal;
 import de.symeda.sormas.backend.systemevent.SystemEventFacadeEjb.SystemEventFacadeEjbLocal;
 import de.symeda.sormas.backend.task.TaskFacadeEjb.TaskFacadeEjbLocal;
+import de.symeda.sormas.backend.util.ModelConstants;
 
 @Singleton
 @RunAs(UserRole._SYSTEM)
@@ -57,6 +61,9 @@ public class CronService {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
+	@PersistenceContext(unitName = ModelConstants.PERSISTENCE_UNIT_NAME)
+	private EntityManager em;
+	
 //	@EJB
 //	private ConfigFacadeEjbLocal configFacade;
 //	@EJB
@@ -95,6 +102,39 @@ public class CronService {
 
 		logger.debug("running analytics updates finished. {} proccessed, {} s", 0, DateHelper.durationSeconds(timeStart));
 	}
+	
+	@Schedule(hour = "0", minute = "0", second = "0", persistent = false)
+    @Transactional
+    public void refreshFlwDuplicateAnalysisView() {
+        try {
+            long startTime = System.currentTimeMillis();
+            
+            logger.info("Starting MV refresh - current row count: {}", getCurrentRowCount());
+            
+            em.createNativeQuery(
+                "REFRESH MATERIALIZED VIEW CONCURRENTLY mv_flw_duplicate_error_analysis"
+            ).executeUpdate();
+            
+            long duration = System.currentTimeMillis() - startTime;
+            long newRowCount = getCurrentRowCount();
+            
+            logger.info("MV refresh completed in {}ms. New row count: {}", duration, newRowCount);
+            
+            // Alert if refresh takes too long
+            if (duration > 300000) { // 5 minutes
+            	logger.warn("MV refresh took longer than expected: {}ms", duration);
+            }
+            
+        } catch (Exception e) {
+        	logger.error("MV refresh failed", e);
+        }
+    }
+    
+    private long getCurrentRowCount() {
+        return ((Number) em.createNativeQuery(
+            "SELECT COUNT(*) FROM mv_flw_duplicate_error_analysis"
+        ).getSingleResult()).longValue();
+    }
 //
 ////	@Schedule(hour = "*", minute = "*/2", second = "0", persistent = false)
 ////	public void checkAndUpdateAnalysis {
