@@ -229,8 +229,9 @@ public class CampaignFormDataFragmentUtils {
                     if (expressionValue != null) {
                         if (type == CampaignFormElementType.YES_NO) {
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, expressionValue, true, YesNo.class, null);
-                        } else if (type == CampaignFormElementType.RANGE) {                        
+                        } else if (type == CampaignFormElementType.RANGE) {
                             String valudex = valuex.equals("0") ? null : valuex.endsWith(".0") ? valuex.replace(".0", "") : valuex;
+                            System.out.println(valuex + " valuexvaluexvaluexrangeeeeeeeeeeeeeeeeeee " + valudex);
                             if(orginalValue != null){
                                 if(!orginalValue.toString().equals(valudex)){
                                     if(!(orginalValue.toString().isEmpty() && valudex == null)){
@@ -289,44 +290,51 @@ public class CampaignFormDataFragmentUtils {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, formatted);
 
                         } else if (type == CampaignFormElementType.DECIMAL) {
-                            String valudex = valuex.equals("0") ? null : valuex.endsWith(".0") ? valuex.replace(".0", "") : valuex;
+                            String currentFieldValue = ((ControlDecimalEditField) dynamicField).getValue();
+
+                            if (currentFieldValue != null && currentFieldValue.endsWith(".")) {
+                                return;
+                            }
+
                             if(orginalValue != null){
-                                if(!orginalValue.toString().equals(valudex)){
-                                    if(!(orginalValue.toString().isEmpty() && valudex == null)){
+                                String currentValue = orginalValue.toString();
+                                String newValue = expressionValue.toString();
 
-                                        String rawInput = ((ControlDecimalEditField) dynamicField).getValue();
-                                        String sanitized = rawInput != null ? rawInput.replaceAll("[^0-9.]", "") : "";
-
-                                        // Prevent multiple dots
-                                        int firstDot = sanitized.indexOf('.');
-                                        if (firstDot != -1) {
-                                            sanitized = sanitized.substring(0, firstDot + 1) +
-                                                    sanitized.substring(firstDot + 1).replace(".", "");
+                                if (newValue.contains(".") && !newValue.endsWith(".0")) {
+                                    if(!currentValue.equals(newValue)){
+                                        if(!(currentValue.isEmpty() && newValue.equals("0"))){
+                                            ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, newValue);
                                         }
-
-                                        if (!sanitized.equals(rawInput)) {
-                                            ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField,
-                                                    sanitized.isEmpty() ? null : sanitized);
+                                    }
+                                } else {
+                                    String valudex = valuex.equals("0") ? null : valuex.endsWith(".0") ? valuex.replace(".0", "") : valuex;
+                                    if(!currentValue.equals(valudex)){
+                                        if(!(currentValue.isEmpty() && valudex == null)){
+                                            ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, valudex);
                                         }
                                     }
                                 }
-                            }else {
-                                if(valudex != null){
+                            } else {
+                                String newValue = expressionValue.toString();
+
+                                if (newValue.contains(".") && (newValue.endsWith(".") || newValue.split("\\.")[1].length() < 2)) {
+                                    ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, newValue);
+                                } else {
                                     try {
-                                        double num = Double.parseDouble(expressionValue.toString());
-                                        if (num != 0) {
-                                            if (num == Math.floor(num)) {
-                                                valudex = String.valueOf((int) num); // Whole number
-                                            } else {
-                                                valudex = String.format("%.2f", num); // Decimal to 2 dp
-                                            }
-                                        }else{
-                                            valudex = String.valueOf((int) num); // Whole number
+                                        double num = Double.parseDouble(newValue);
+                                        String valudex;
+                                        if (num == 0) {
+                                            valudex = String.valueOf((int) num);
+                                        } else if (num == Math.floor(num)) {
+                                            valudex = String.valueOf((int) num);
+                                        } else {
+                                            valudex = String.format("%.2f", num);
                                         }
+                                        ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, valudex);
                                     } catch (NumberFormatException e) {
-                                        valudex = valuex; // fallback for non-numeric input
-                                    }                                   
-                                    ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, valudex);                                }
+                                        ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, newValue);
+                                    }
+                                }
                             }
                         } else if (expressionValue.getClass().isAssignableFrom(Boolean.class)) {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, (Double) (!Double.isFinite((double) expressionValue) ? 0 : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : df.format((double) expressionValue)));
@@ -558,6 +566,7 @@ public class CampaignFormDataFragmentUtils {
 
                         } else if (type == CampaignFormElementType.DECIMAL) {
                             String valudex = valuex;
+                            System.out.println("handleExpressionhandleExpressionhandleExpressionhandleExpression");
 //                            if (!valudex.isEmpty()) {
 //                                    ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex.endsWith(".0") ? valudex.replace(".0","") : valudex);
 //                                }
