@@ -472,7 +472,7 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 		grid.addColumn(this::communityConfig).setHeader("Cluster").setSortable(false).setResizable(true);
 		grid.addColumn(this::formAccessConfig).setHeader("Form Access").setSortable(false).setResizable(true);
 		grid.addColumn(MessageDto.CREATED_BY).setHeader("Created By").setSortable(false).setResizable(true);
-		grid.addColumn(MessageDto.CHG_DATE).setHeader("Change Date").setSortable(false).setResizable(true);
+		grid.addColumn(MessageDto.CHG_DATE).setHeader("Broadcast Date").setSortable(false).setResizable(true);
 
 		grid.setVisible(true);
 		grid.setWidthFull();
