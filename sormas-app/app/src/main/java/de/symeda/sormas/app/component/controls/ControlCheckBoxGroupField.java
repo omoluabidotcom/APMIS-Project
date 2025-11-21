@@ -63,12 +63,9 @@ private Context storedContext;
 
 	// Constructors
 	public ControlCheckBoxGroupField(Context context) {
-
 		super(context);
 		this.storedContext = context;
 		this.selectedElements = new HashSet<>();
-
-
 	}
 
 	public ControlCheckBoxGroupField(Context context, AttributeSet attrs) {
@@ -99,7 +96,6 @@ private Context storedContext;
 			for (int i = 0; i < items.size(); i++) {
 				Item item = items.get(i);
 				// Use the enum value as key, display text as value (same pattern as setOptions)
-
 				System.out.println( item.getValue().toString() + "1455555item.getValue().toString()  " + item.getKey());
 				addItem(item.getValue().toString(), i, item.getKey());
 			}
