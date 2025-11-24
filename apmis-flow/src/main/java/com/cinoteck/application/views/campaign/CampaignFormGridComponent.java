@@ -88,9 +88,13 @@ public class CampaignFormGridComponent extends VerticalLayout {
 	}
 
 	private int getDaysExpiredEditable(CampaignFormMetaReferenceDto item) {
+ 
+//		return FacadeProvider.getCampaignFacade().getCampaignFormExp(item.getUuid(), capaingDto.getUuid());
 		return FacadeProvider.getCampaignFacade().getCampaignFormExp(item.getUuid(), capaingDto.getUuid());
-	}
 
+	}
+	
+ 
 	private Component getContent(CampaignDto capaingDto, List<CampaignFormMetaReferenceDto> savedCampaignFormMetas) {
 //		System.out.println(capaingDto + "0------HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
 		if(capaingDto != null) {
@@ -181,9 +185,13 @@ public class CampaignFormGridComponent extends VerticalLayout {
 				if (isFormUUidInList) {
 					daysExpire.clear();
 					daysExpire.setValue(
-							FacadeProvider.getCampaignFacade().getCampaignFormExp(e.getValue().getUuid(),capaingDto.getUuid() ));
+ 
+//							FacadeProvider.getCampaignFacade().getCampaignFormExp(e.getValue().getUuid(),capaingDto.getUuid() ));
+					FacadeProvider.getCampaignFacade().getCampaignFormExp(e.getValue().getUuid(),capaingDto.getUuid()));
+
 				} else {
-					daysExpire.clear();
+					
+ 					daysExpire.clear();
 					daysExpire.setValue(
 							FacadeProvider.getCampaignFacade().getDefaultCampaignFormExp(e.getValue().getUuid()));
 				}
@@ -269,27 +277,46 @@ public class CampaignFormGridComponent extends VerticalLayout {
 
 				String uuidWithHyphens = truncatedUUID.toString();
 
-				Date startDate = capaingDto.getStartDate();
-				long differenceInMilliseconds = startDate.getTime();
-				long millisecondsInOneDay = 24 * 60 * 60 * 1000; // 24 hours * 60 minutes * 60 seconds * 1000
-																	// milliseconds
-				long daysexpiredinMilliseconds = daysExpire.getValue().longValue() * millisecondsInOneDay;
-				Date newDate = new Date(startDate.getTime() + differenceInMilliseconds);
+ 
+				Date startDate =  null ;
+				long differenceInMilliseconds ;
+				CampaignFormMetaWithExpReferenceDto camFormExp = new CampaignFormMetaWithExpReferenceDto();
+				
+				for(CampaignFormMetaReferenceDto cc : savedCampaignFormMetas) {
+					
+					System.out.println("Form Ytpeeeeeeeeeeeee1111111111111111111111111111" + cc.getFormType());
+					if(cc.getFormType().equalsIgnoreCase("pre-campaign")){
+						startDate = capaingDto.getPreCampStartDate();
+						differenceInMilliseconds = startDate.getTime();
+						
+					}else if (cc.getFormType().equalsIgnoreCase("intra-campaign")) {
+						startDate = capaingDto.getStartDate();
+						differenceInMilliseconds = startDate.getTime();
+					}else if(cc.getFormType().equalsIgnoreCase("post-campaign")) {
+						startDate = capaingDto.getPostCampStartDate();
+						differenceInMilliseconds = startDate.getTime();
+					}else {
+						startDate = capaingDto.getStartDate();
+						differenceInMilliseconds = startDate.getTime();
+					}
+					Date newDate = new Date(startDate.getTime() + differenceInMilliseconds);
+					System.out.println("DATEEEEEEEEEEEEEEEEEEEE1111111111" +  startDate);
+					
+					camFormExp.setCampaignId(capaingDto.getUuid());
+					camFormExp.setFormId(forms.getValue().getUuid());
+					camFormExp.setDaysExpired(daysExpire.getValue().longValue());
+					camFormExp.setDate(newDate);
+					camFormExp.setUuid(uuidWithHyphens.toUpperCase());				
 
-				CampaignFormMetaWithExpReferenceDto camFormExp = new CampaignFormMetaWithExpReferenceDto();// capaingDto.getUuid(),
-																											// forms.getValue().getUuid(),
-//						daysExpire.getValue().longValue(), newDate , uuidWithHyphens.toUpperCase());
-				camFormExp.setCampaignId(capaingDto.getUuid());
-				camFormExp.setFormId(forms.getValue().getUuid());
-				camFormExp.setDaysExpired(daysExpire.getValue().longValue());
-				camFormExp.setDate(newDate);
-				camFormExp.setUuid(uuidWithHyphens.toUpperCase());
+					capaingDto.getCampaignFormMetaExpiry().add(camFormExp);
 
+				}
+ 
 				newCampForm.setCaption(forms.getValue().toString());
 				newCampForm.setDaysExpired(daysExpire.getValue());
 
 				capaingDto.getCampaignFormMetas().add(newCampForm);
-				capaingDto.getCampaignFormMetaExpiry().add(camFormExp);
+ 
 				capaingDto.setCampaignFormMetaExpiryDto(capaingDto.getCampaignFormMetaExpiry());
 
 				allCampaignFormMetas.removeAll(capaingDto.getCampaignFormMetas());
@@ -300,6 +327,7 @@ public class CampaignFormGridComponent extends VerticalLayout {
 				grid.setItems(capaingDto.getCampaignFormMetas(campaignPhase));
 
 			} else {
+ 
 				System.out.println(((Button) e.getSource()).getText()
 						+ " Text buttton when addd ELSEEEEEEEEEEEEEEEEEEE IFFFFFFFFFF");
 				if (formBeenEdited != null) {
@@ -323,32 +351,45 @@ public class CampaignFormGridComponent extends VerticalLayout {
 
 					String uuidWithHyphens = truncatedUUID.toString();
 
-					Date startDate = capaingDto.getStartDate();
-					long differenceInMilliseconds = startDate.getTime();
-					long millisecondsInOneDay = 24 * 60 * 60 * 1000; // 24 hours * 60 minutes * 60 seconds * 1000
-																		// milliseconds
-					long daysexpiredinMilliseconds = daysExpire.getValue().longValue() * millisecondsInOneDay;
-					Date newDate = new Date(startDate.getTime() + differenceInMilliseconds);
+ 
+					Date startDate =  null ;
+					long differenceInMilliseconds ;
+					CampaignFormMetaWithExpReferenceDto camFormExp_i = new CampaignFormMetaWithExpReferenceDto();
+					
+					for(CampaignFormMetaReferenceDto cc : savedCampaignFormMetas) {
+						
+						System.out.println("Form Ytpeeeeeeeeeeeee1111111111111111111111111111" + cc.getFormType());
+						if(cc.getFormType().equalsIgnoreCase("pre-campaign")){
+							startDate = capaingDto.getPreCampStartDate();
+							differenceInMilliseconds = startDate.getTime();
+							
+						}else if (cc.getFormType().equalsIgnoreCase("intra-campaign")) {
+							startDate = capaingDto.getStartDate();
+							differenceInMilliseconds = startDate.getTime();
+						}else if(cc.getFormType().equalsIgnoreCase("post-campaign")) {
+							startDate = capaingDto.getPostCampStartDate();
+							differenceInMilliseconds = startDate.getTime();
+						}else {
+							startDate = capaingDto.getStartDate();
+							differenceInMilliseconds = startDate.getTime();
+						}
+						Date newDate = new Date(startDate.getTime() + differenceInMilliseconds);
+						System.out.println("DATEEEEEEEEEEEEEEEEEEEE1111111111" +  startDate);
+						
+						camFormExp_i.setCampaignId(capaingDto.getUuid());
+						camFormExp_i.setFormId(forms.getValue().getUuid());
+						camFormExp_i.setDaysExpired(daysExpire.getValue().longValue());
+						camFormExp_i.setDate(newDate);
+						camFormExp_i.setUuid(uuidWithHyphens.toUpperCase());				
 
-					CampaignFormMetaWithExpReferenceDto camFormExp_i = new CampaignFormMetaWithExpReferenceDto();// capaingDto.getUuid(),
-																													// forms.getValue().getUuid(),
-//					daysExpire.getValue().longValue(), newDate , uuidWithHyphens.toUpperCase());
-					camFormExp_i.setCampaignId(capaingDto.getUuid());
-					camFormExp_i.setFormId(forms.getValue().getUuid());
-					camFormExp_i.setDaysExpired(daysExpire.getValue().longValue());
-					camFormExp_i.setDate(newDate);
-					camFormExp_i.setUuid(uuidWithHyphens.toUpperCase());
-//					CampaignFormMetaWithExpReferenceDto camFormExp_i = new CampaignFormMetaWithExpReferenceDto(capaingDto.getUuid(), forms.getValue().getUuid(),
-//							daysExpire.getValue().longValue(),null , null);
+						capaingDto.getCampaignFormMetaExpiry().add(camFormExp_i);
 
-//					CampaignFormMetaWithExpReferenceDto camFormExp_i = new CampaignFormMetaWithExpReferenceDto(capaingDto.getUuid(), forms.getValue().getUuid(),
-//							daysExpire.getValue().longValue(), null , null);
-
+					}
+		
 					if (camFormExp_.size() > 0)
-						capaingDto.getCampaignFormMetaExpiry().remove(camFormExp_.get(0));
+					capaingDto.getCampaignFormMetaExpiry().remove(camFormExp_.get(0));
 
-					capaingDto.getCampaignFormMetaExpiry().add(camFormExp_i);
-					capaingDto.setCampaignFormMetaExpiryDto(capaingDto.getCampaignFormMetaExpiry());
+ 					capaingDto.setCampaignFormMetaExpiryDto(capaingDto.getCampaignFormMetaExpiry());
 
 					grid.setItems(capaingDto.getCampaignFormMetas(campaignPhase));
 					getSavedElements();
@@ -356,6 +397,7 @@ public class CampaignFormGridComponent extends VerticalLayout {
 					Notification.show(I18nProperties.getString(Strings.campaignUpdated));
 				} else {
 
+ 
 					System.out.println(
 							((Button) e.getSource()).getText() + " Text buttton when addd ELSEEEEEEEEEEEEEEEEEEE");
 					CampaignFormMetaReferenceDto newCampForm = forms.getValue();
@@ -363,33 +405,44 @@ public class CampaignFormGridComponent extends VerticalLayout {
 					String fullUUID = uuid.toString(); // Get full UUID with dashes
 					String truncatedUUID = fullUUID.substring(0, Math.min(fullUUID.length(), 36));
 
-					String uuidWithHyphens = truncatedUUID.toString();
-					Date startDate = capaingDto.getStartDate();
-					long differenceInMilliseconds = startDate.getTime();
-					long millisecondsInOneDay = 24 * 60 * 60 * 1000; // 24 hours * 60 minutes * 60 seconds * 1000
-																		// milliseconds
-					long daysexpiredinMilliseconds = daysExpire.getValue().longValue() * millisecondsInOneDay;
-					Date newDate = new Date(startDate.getTime() + differenceInMilliseconds);
-//
+					String uuidWithHyphens = truncatedUUID.toString(); 
+					Date startDate =  null ;
+					long differenceInMilliseconds ;
+					CampaignFormMetaWithExpReferenceDto camFormExp = new CampaignFormMetaWithExpReferenceDto();
+					
+					for(CampaignFormMetaReferenceDto cc : savedCampaignFormMetas) {
+						
+						System.out.println("Form Ytpeeeeeeeeeeeee1111111111111111111111111111" + cc.getFormType());
+						if(cc.getFormType().equalsIgnoreCase("pre-campaign")){
+							startDate = capaingDto.getPreCampStartDate();
+							differenceInMilliseconds = startDate.getTime();
+							
+						}else if (cc.getFormType().equalsIgnoreCase("intra-campaign")) {
+							startDate = capaingDto.getStartDate();
+							differenceInMilliseconds = startDate.getTime();
+						}else if(cc.getFormType().equalsIgnoreCase("post-campaign")) {
+							startDate = capaingDto.getPostCampStartDate();
+							differenceInMilliseconds = startDate.getTime();
+						}else {
+							startDate = capaingDto.getStartDate();
+							differenceInMilliseconds = startDate.getTime();
+						}
+						Date newDate = new Date(startDate.getTime() + differenceInMilliseconds);
+						System.out.println("DATEEEEEEEEEEEEEEEEEEEE1111111111" +  startDate);
+						
+						camFormExp.setCampaignId(capaingDto.getUuid());
+						camFormExp.setFormId(forms.getValue().getUuid());
+						camFormExp.setDaysExpired(daysExpire.getValue().longValue());
+						camFormExp.setDate(newDate);
+						camFormExp.setUuid(uuidWithHyphens.toUpperCase());				
 
-					CampaignFormMetaWithExpReferenceDto camFormExp = new CampaignFormMetaWithExpReferenceDto();// capaingDto.getUuid(),
-					// forms.getValue().getUuid(),
-//daysExpire.getValue().longValue(), newDate , uuidWithHyphens.toUpperCase());
-					camFormExp.setCampaignId(capaingDto.getUuid());
-					camFormExp.setFormId(forms.getValue().getUuid());
-					camFormExp.setDaysExpired(daysExpire.getValue().longValue());
-					camFormExp.setDate(newDate);
-					camFormExp.setUuid(uuidWithHyphens.toUpperCase());
-//					CampaignFormMetaWithExpReferenceDto camFormExp = new CampaignFormMetaWithExpReferenceDto(
-//							capaingDto.getUuid(), forms.getValue().getUuid(), daysExpire.getValue().longValue(), null,
-//							null);
+						capaingDto.getCampaignFormMetaExpiry().add(camFormExp);
 
-//					CampaignFormMetaWithExpReferenceDto camFormExp = new CampaignFormMetaWithExpReferenceDto(capaingDto.getUuid(), forms.getValue().getUuid(),
-//							daysExpire.getValue().longValue(), null , null);
-//					
-//					CampaignFormMetaWithExpReferenceDto camFormExp = new CampaignFormMetaWithExpReferenceDto(capaingDto.getUuid(), forms.getValue().getUuid(),
-//							daysExpire.getValue().longValue());
+					}
+						
+					System.out.println("DATEEEEEEEEEEEEEEEEEEEE333333333" +  startDate);
 
+ 
 					newCampForm.setCaption(forms.getValue().toString());
 					newCampForm.setDaysExpired(daysExpire.getValue());
 

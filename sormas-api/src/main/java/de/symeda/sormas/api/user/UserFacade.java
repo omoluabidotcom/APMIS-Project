@@ -18,6 +18,10 @@
 package de.symeda.sormas.api.user;
 
 import java.sql.Timestamp;
+<<<<<<< HEAD
+=======
+import java.time.LocalDateTime;
+>>>>>>> team_collaboration
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -145,5 +149,16 @@ public interface UserFacade {
 	
 	public Date checkUsersActiveStatusByUsernameandActiveStatus(String username);
 	
+ 
+	boolean getUserByEmail(String useremail);
+	
+	boolean getUserByUserNameAndEmail(String username, String useremail);
+	
+	public void registerGeneratedToken(LocalDateTime expirationDate, String token, UserDto user);
+	
+	public UserDto getUserByResetToken(String resetToken);
+	
+	public boolean isTokenStillValid(String resetToken, LocalDateTime currentDateTime);
+ 
 //	public Date getPreviousLoginDateByUsername(String username);
 }

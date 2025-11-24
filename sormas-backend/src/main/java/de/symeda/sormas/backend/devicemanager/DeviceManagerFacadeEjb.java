@@ -106,6 +106,11 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
         target.setWifi_connected(source.getWifiConnected());	        
         target.setNetwork_strength(source.getNetworkStrength());
         target.setDevice_id(source.getDeviceId());
+
+        target.setNetworkProvider(source.getNetworkProvider());
+        target.setActiveCampaigns(source.getActiveCampaigns());
+        target.setActiveFormCount(source.getActiveFormCount());
+
         
 //        target.setTotal_int_storage_gb(source.getInternalStorageTotalGb());
 //        target.setFree_int_storage_gb(source.getInternalStorageFreeGb());
@@ -158,7 +163,15 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
         target.setExternalStorageTotalGb(source.getTotal_ext_storage_gb());
         target.setExternalStorageFreeGb(source.getFree_ext_storage_gb());
         target.setRamTotalGb(source.getRam_storage_gb());
+ 
+        
+        target.setNetworkProvider(source.getNetworkProvider());
+        target.setActiveCampaigns(source.getActiveCampaigns());
+        target.setActiveFormCount(source.getActiveFormCount());
 
+
+
+ 
 //        if (source.getUser_id() != null) {
 //            target.setUser(new UserReferenceDto(source.getUser_id().getUuid(), source.getUser_id().getFirstName(), source.getUser_id().getLastName()));
 //        } else {

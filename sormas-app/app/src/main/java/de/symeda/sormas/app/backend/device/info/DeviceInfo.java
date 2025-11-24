@@ -63,6 +63,10 @@ public class DeviceInfo extends AbstractDomainObject {
     public static final String WIFI_CONNECTED = "wifiConnected";
     public static final String NETWORK_STRENGTH = "networkStrength";
 
+    public static final String NETWORK_PROVIDER = "networkProvider";
+    public static final String ACTIVE_CAMPAIGNS = "activeCampaigns";
+    public static final String ACTIVE_FORM_COUNT = "activeFormCount";
+ 
     // User and Login Information
     public static final String USER = "user";
     public static final String USER_LOCATION = "user_location";
@@ -148,7 +152,18 @@ public class DeviceInfo extends AbstractDomainObject {
     @Column(name = "user_name")
     private String userName;
 
+ 
+    @Column
+    private  String networkProvider;
 
+    @Column
+    private  Integer activeCampaigns;
+
+    @Column
+    private  Integer activeFormCount;
+
+
+ 
     // Enums
 //    public enum BatteryStatus {
 //        UNKNOWN, CHARGING, DISCHARGING, NOT_CHARGING, FULL
@@ -344,7 +359,33 @@ public class DeviceInfo extends AbstractDomainObject {
         this.userName = userName;
     }
 
-    @Override
+ 
+    public String getNetworkProvider() {
+        return networkProvider;
+    }
+
+    public void setNetworkProvider(String networkProvider) {
+        this.networkProvider = networkProvider;
+    }
+
+    public Integer getActiveCampaigns() {
+        return activeCampaigns;
+    }
+
+    public void setActiveCampaigns(Integer activeCampaigns) {
+        this.activeCampaigns = activeCampaigns;
+    }
+
+
+    public Integer getActiveFormCount() {
+        return activeFormCount;
+    }
+
+    public void setActiveFormCount(Integer activeFormCount) {
+        this.activeFormCount = activeFormCount;
+    }
+
+     @Override
     public String getI18nPrefix() {
         return I18N_PREFIX;
     }

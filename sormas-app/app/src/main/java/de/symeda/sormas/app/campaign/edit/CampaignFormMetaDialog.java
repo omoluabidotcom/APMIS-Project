@@ -21,7 +21,9 @@ package de.symeda.sormas.app.campaign.edit;
 import static android.view.View.GONE;
 
 import android.content.Context;
-
+ 
+import android.os.DeadSystemException;
+ 
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.FragmentActivity;
 
@@ -135,20 +137,31 @@ public class CampaignFormMetaDialog extends FormDialog {
     @Override
     protected void onPositiveClick() {
 
-        System.out.println("Positvite ccallback clicked -------------------------");
-        setLiveValidationDisabled(false);
+ 
+
         try {
+            System.out.println("Positvite ccallback clicked -------------------------");
+            setLiveValidationDisabled(false);
+
             FragmentValidator.validate(getContext(), contentBinding);
-        } catch (ValidationException e) {
-            NotificationHelper.showDialogNotification(CampaignFormMetaDialog.this, ERROR, e.getMessage());
+        } catch (ValidationException  e) {
+             NotificationHelper.showDialogNotification(CampaignFormMetaDialog.this, ERROR, e.getMessage());
 
             System.out.println("META DIALOG  Fragment Error Logged--------------------");
 
             ErrorReportingHelper.logAndStoreDeviceError( "New Form : " + e.getMessage(), e); // replaced sendCaughtException
 
             return;
-        }
+ 
+        }catch (RuntimeException e) {
+            NotificationHelper.showDialogNotification(CampaignFormMetaDialog.this, ERROR, e.getMessage());
 
+            System.out.println("META DIALOG  Fragment Error Logged--------------------");
+
+            ErrorReportingHelper.logAndStoreDeviceError( "New Form : " + e.getMessage(), e); // replaced sendCaughtException
+
+            return;        }
+ 
         super.setCloseOnPositiveButtonClick(true);
         super.onPositiveClick();
     }

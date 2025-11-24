@@ -68,7 +68,14 @@ public class DeviceManagerDto extends EntityDto {
 	public static final String TOTAL_EXT_STORAGE_GB= "total_ext_storage_gb";
 	public static final String FREE_EXT_STORAGE_GB= "free_ext_storage_gb";
 	public static final String RAM_STORAGE_GB= "ram_storage_gb";
+ 
+	
+	public static final String NETWORK_PROVIDER = "networkProvider";
+	
+	public static final String ACTIVE_CAMPAIGNS = "activeCampaigns";
+	public static final String ACTIVE_FORM_COUNT = "activeFormCount";
 
+ 
 
 
 	
@@ -105,7 +112,14 @@ public class DeviceManagerDto extends EntityDto {
 
 	private DistrictReferenceDto district;
 	private CommunityReferenceDto cluster;
+ 
+	
+	private String networkProvider;
+	
+    private Integer activeCampaigns;
+    private Integer activeFormCount;
 
+ 
 
 	
 	public DeviceManagerDto() {
@@ -319,19 +333,7 @@ public class DeviceManagerDto extends EntityDto {
 		this.deviceId = deviceId;
 	}
 	
-	
-
-	//	public UserReferenceDto getUser() {
-//		return user;
-//	}
-//
-//
-//	public void setUser(UserReferenceDto user) {
-//		this.user = user;
-//	}
-
-	// getters/setters (change types)
-	// Optionally, do NOT expose setters if you want them strictly read-only externally.
+ 
 	public BigDecimal getInternalStorageTotalGb() { return internalStorageTotalGb; }
 	public void setInternalStorageTotalGb(BigDecimal v) { this.internalStorageTotalGb = v; }
 
@@ -346,6 +348,39 @@ public class DeviceManagerDto extends EntityDto {
 
 	public BigDecimal getRamTotalGb() { return ramTotalGb; }
 	public void setRamTotalGb(BigDecimal v) { this.ramTotalGb = v; }
+ 
+	
+	
+
+	public String getNetworkProvider() {
+		return networkProvider;
+	}
+
+
+	public void setNetworkProvider(String networkProvider) {
+		this.networkProvider = networkProvider;
+	}
+	
+
+	public Integer getActiveCampaigns() {
+		return activeCampaigns;
+	}
+
+
+	public void setActiveCampaigns(Integer activeCampaigns) {
+		this.activeCampaigns = activeCampaigns;
+	}
+
+
+	public Integer getActiveFormCount() {
+		return activeFormCount;
+	}
+
+
+	public void setActiveFormCount(Integer activeFormCount) {
+		this.activeFormCount = activeFormCount;
+	}
+ 
 
 	@Override
 	public String toString() {

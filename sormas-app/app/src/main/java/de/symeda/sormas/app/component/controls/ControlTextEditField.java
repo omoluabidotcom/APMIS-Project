@@ -513,10 +513,7 @@ String onChangeData = "";
                         }
                     }
                 } else if (isRange && isExpression && isRequired){
-//                     if(beforeData.length() > 0 && onChangeData.length() == 0) {
-//                        enableErrorState("Number not in provided range!");
-//                    }
-                    System.out.println("111111111111111111111111111111111-==================");
+ 
                     try {
                         if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
                             int beforeDatavalxx = Integer.parseInt(beforeData.toString());
@@ -540,10 +537,9 @@ String onChangeData = "";
                                 enableErrorState("Invalid number");
                             }
                         }
-//                        input.setError("Please enter a valid number22");
-//                        enableErrorState("1111111111111111111111-=====Number not in provided range! i.e min:------------------");
-                    }
-                    System.out.println("111111111111111111111111111111111-==================cccccc");
+ 
+            }
+                     System.out.println("111111111111111111111111111111111-==================cccccc");
                 }else if(isRange && isExpression && !isRequired){
                     System.out.println("elselrange but not expressiom alxx111111111111111111111111111111111-==================" );
                     try {
@@ -564,33 +560,13 @@ String onChangeData = "";
                                 enableErrorState("Invalid number");
                             }
                         }
-//                        input.setError("Please enter a valid numbejr");
-//                        enableErrorState("else1111111111111111111111-=====Number not in provided range! i.e min:------------------");
-                    }
+ 
+                   }
                 }
-//                if (isRange && isExpression && isRequired) {
-//                    if (!text.isEmpty()) {
-//                        try {
-//                            Integer.parseInt(text);
-//                            // ✅ If parsing works, clear error
-//                            input.setError(null);
-//                            clearErrorState();
-//                        } catch (NumberFormatException e) {
-//                            input.setError("Please enter a valid number");
-//                            enableErrorState("Invalid number");
-//                        }
-//                    }
-//                }
-
-
-
-
-
             }
         });
 
-//
-      addValueChangedListener(new ValueChangeListener() {
+       addValueChangedListener(new ValueChangeListener() {
 
 
           @Override
