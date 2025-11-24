@@ -65,8 +65,9 @@ public class FlwErrorAnalysisView extends VerticalLayout  {
 
 	private UserProvider userProvider = new UserProvider();
 	
-	private void refreshGridData() {
-//		int numberOfRows = FacadeProvider.getCampaignFormDataFacade().prepareAllCompletionAnalysis();
+ 
+	private void refreshGridData() {		
+ //		int numberOfRows = FacadeProvider.getCampaignFormDataFacade().prepareAllCompletionAnalysis();
 		dataProvider = DataProvider.fromFilteringCallbacks(
 				query -> FacadeProvider.getCampaignFormDataFacade()
 						.getFlwDuplicateErrorAnalysis(criteria, query.getOffset(), query.getLimit(),

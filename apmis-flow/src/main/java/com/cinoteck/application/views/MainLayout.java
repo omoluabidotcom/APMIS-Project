@@ -339,11 +339,13 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 			nav.addItem(new AppNavItem("Notification", MessagingView.class, VaadinIcon.SERVER, "navitem"));
 		}
 		
+ 
+		if ((userProvider.getUser().getUserRoles().contains(UserRole.ADMIN))) {
 		nav.addItem(new AppNavItem("Device Management", DeviceInformationView.class, VaadinIcon.CLUSTER,
 				"navitem"));
-
-
-		if (userProvider.getUser().getUserRoles().contains(UserRole.REST_USER)) {
+		}
+		
+ 		if (userProvider.getUser().getUserRoles().contains(UserRole.REST_USER)) {
 			UserDto user = FacadeProvider.getUserFacade().getByUserName(userProvider.getUser().getUserName());
 			if (user.getArea() != null) {
 				messageCriteria.area(user.getArea());

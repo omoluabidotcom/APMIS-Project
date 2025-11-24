@@ -2,8 +2,12 @@ package com.cinoteck.application.views.utils;
 
 import com.cinoteck.application.utils.authentication.AccessControl;
 import com.cinoteck.application.utils.authentication.AccessControlFactory;
+ 
+//import com.cinoteck.application.utils.authentication.ForgotPasswordView;
 import com.cinoteck.application.utils.authentication.LoginView;
 import com.cinoteck.application.utils.authentication.ResetPasswordView;
+import com.cinoteck.application.utils.authentication.UpdatePasswordView;
+import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 //import org.vaadin.example.bookstore.authentication.AccessControl;
@@ -35,8 +39,13 @@ public class APMISInitListener implements VaadinServiceInitListener {
 				if (!accessControl.isUserSignedIn()) {
 					if (ResetPasswordView.class.equals(enterEvent.getNavigationTarget())) {
 						enterEvent.rerouteTo(ResetPasswordView.class);
-					} else if (!LoginView.class.equals(enterEvent.getNavigationTarget())) {
-						enterEvent.rerouteTo(LoginView.class);
+ 
+					}
+					else if (UpdatePasswordView.class.equals(enterEvent.getNavigationTarget())) {
+						enterEvent.rerouteTo(UpdatePasswordView.class);
+					}
+					else if (!LoginView.class.equals(enterEvent.getNavigationTarget())) {
+ 						enterEvent.rerouteTo(LoginView.class);
 					}
 
 				} else if (accessControl.isUserSignedIn() && LoginView.class.equals(enterEvent.getNavigationTarget())) {
@@ -45,4 +54,5 @@ public class APMISInitListener implements VaadinServiceInitListener {
 			});
 		});
 	}
-}
+ 
+ }

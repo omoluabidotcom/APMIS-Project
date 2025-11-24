@@ -180,8 +180,9 @@ public class UserDao extends AbstractAdoDao<User> {
 			if (user != null) {
 				user.setToken(token);
 //				user.setChangeDate(new Date());
-//				user.setModified(true);
-				dao.update(user);
+ 
+				user.setModified(true);
+ 				dao.update(user);
 			} else {
 				throw new RuntimeException("User not found with username: " + username);
 			}

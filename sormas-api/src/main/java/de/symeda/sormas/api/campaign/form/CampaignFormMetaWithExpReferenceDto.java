@@ -40,14 +40,24 @@ public class CampaignFormMetaWithExpReferenceDto extends ReferenceDto {
 	public static final String EXPIRATION = "expiryDay";
 	public static final String CAMPAIGN_ID = "campaignId";
 	public static final String END_DATE = "endDate";
-//	public static final String UUID = "uuid";
+ 
+	public static final String PRE_CAMP_EXPIRATION = "preCampExpiryDay";
+	public static final String PRE_CAMP_END_DATE = "preCampEndDate";
+	public static final String POST_CAMP_EXPIRATION = "postCampExpiryDay";
+	public static final String POST_CAMP_END_DATE = "postCampEndDate";
+ //	public static final String UUID = "uuid";
 
 
 	private String formId;
 	private String campaignId;
 	private Long daysExpired;
 	private Date date;
-//	private String uuid;
+ 
+	private Long preCampDaysExpired;
+	private Date preCampDate;
+	private Long postCampDaysExpired;
+	private Date postCampDate;
+ //	private String uuid;
 
 
 	public CampaignFormMetaWithExpReferenceDto() {
@@ -56,8 +66,31 @@ public class CampaignFormMetaWithExpReferenceDto extends ReferenceDto {
 	public CampaignFormMetaWithExpReferenceDto(String uuid) {
         this.setUuid(uuid);
     }
+ 
+	public CampaignFormMetaWithExpReferenceDto(String formId, String campaignId, Long expiryDay, Date date, Long preCampExpiryDay, Date preCampDate,Long postCampExpiryDay, Date postCampDate,  String uuid) {
+		this.formId = formId;
+		this.campaignId = campaignId;
+		this.daysExpired = expiryDay;
+		this.date = date;
+		this.preCampDaysExpired = preCampExpiryDay;
+		this.preCampDate = preCampDate;
+		this.postCampDaysExpired = postCampExpiryDay;
+		this.postCampDate = postCampDate;
+		setUuid(uuid);
+	}
 	
-	public CampaignFormMetaWithExpReferenceDto(String formId, String campaignId, Long expiryDay, Date date, String uuid) {
+	
+	public CampaignFormMetaWithExpReferenceDto(String formId, String campaignId, Long expiryDay, Date date, Long preCampExpiryDay, Date preCampDate, String uuid) {
+		this.formId = formId;
+		this.campaignId = campaignId;
+		this.daysExpired = expiryDay;
+		this.date = date;
+		this.preCampDaysExpired = preCampExpiryDay;
+		this.preCampDate = preCampDate;
+		setUuid(uuid);
+	}
+	
+ 	public CampaignFormMetaWithExpReferenceDto(String formId, String campaignId, Long expiryDay, Date date, String uuid) {
 		// TODO Auto-generated constructor stub
 
 		this.formId = formId;
@@ -114,7 +147,37 @@ public class CampaignFormMetaWithExpReferenceDto extends ReferenceDto {
 	public void setDate(Date date) {
 		this.date = date;
 	}
-	
-	
+  
+	public Long getPreCampDaysExpired() {
+		return preCampDaysExpired;
+	}
 
+	public void setPreCampDaysExpired(Long preCampDaysExpired) {
+		this.preCampDaysExpired = preCampDaysExpired;
+	}
+
+	public Date getPreCampDate() {
+		return preCampDate;
+	}
+
+	public void setPreCampDate(Date preCampDate) {
+		this.preCampDate = preCampDate;
+	}
+
+	public Long getPostCampDaysExpired() {
+		return postCampDaysExpired;
+	}
+
+	public void setPostCampDaysExpired(Long postCampDaysExpired) {
+		this.postCampDaysExpired = postCampDaysExpired;
+	}
+
+	public Date getPostCampDate() {
+		return postCampDate;
+	}
+
+	public void setPostCampDate(Date postCampDate) {
+		this.postCampDate = postCampDate;
+	}
+	
 }

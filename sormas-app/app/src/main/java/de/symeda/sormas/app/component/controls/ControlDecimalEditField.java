@@ -285,7 +285,7 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
                     InputType.TYPE_NUMBER_FLAG_DECIMAL |
                     InputType.TYPE_NUMBER_FLAG_SIGNED);
         } else {
-            System.out.println("falseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee " + isIntegerFlag);
+ 
             input.setInputType(inputType);
         }
         setSingleLine(singleLine);
@@ -334,48 +334,87 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
                 onValueChanged();
 
                 if (isDecimal && minValue != null && maxValue != null) {
+ 
+
                     if (minValue != null && maxValue != null && input.getText() != null) {
-                        if (!input.getText().toString().equals("") || !input.getText().toString().isEmpty()) {
+                        String inputText = input.getText().toString();
+                        if (!inputText.equals("") && !inputText.isEmpty() && !inputText.equals(".") && !inputText.endsWith(".")) {
                             try{
-                                int valxx = Integer.parseInt(input.getText().toString());
-                                if (valxx >= minValue && valxx <= maxValue) {
-                                    // Valid range
+                                double valxx = Double.parseDouble(inputText);
+
+                                if (valxx >= Double.parseDouble(minValue.toString())  && valxx <= Double.parseDouble(maxValue.toString())) {
+                                    // Clear error when valid
+                                    input.setError(null);
+                                    disableErrorState();
+                                    hasError = false;
                                 } else if (warnOnError) {
                                     NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                    hasError = true;
                                 } else {
                                     input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
-                                    setErrorIfEmptyRange();
+//                                    setErrorIfEmptyRange();
                                     enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                    hasError = true;
                                 }
 
                             }catch(NumberFormatException e ){
-                                if(warnOnError){
-                                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
-                                } else {
-//                                    input.setError("Number not in provided range! i.e min: " + minValue + " and max: 333333333333333" + maxValue);
-//                                    setErrorIfEmptyRange();
-//                                    enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: 4444444444444444444" + maxValue);
+                                if (!inputText.endsWith(".")) {
+                                    if(warnOnError){
+                                        NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Please enter a valid decimal");
+                                        hasError = true;  // ← Add this
+                                    } else {
+                                        input.setError("Please enter a valid decimal");
+//                                        setErrorIfEmptyRange();
+                                        enableErrorState("Please enter a valid decimal");
+                                        hasError = true;
+                                    }
                                 }
                             }
-
                         }
                     }
-                } else if (isDecimal && isExpression && isRequired){
-                    System.out.println("111111111111111111111111111111111-==================");
-                    try {
+
+//                    if (minValue != null && maxValue != null && input.getText() != null) {
+//                        if (!input.getText().toString().equals("") || !input.getText().toString().isEmpty()) {
+//                            try{
+//                                int valxx = Integer.parseInt(input.getText().toString());
+//                                if (valxx >= minValue && valxx <= maxValue) {
+//                                    // Valid range
+//                                } else if (warnOnError) {
+//                                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+//                                } else {
+//                                    input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+//                                    setErrorIfEmptyRange();
+//                                    enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+//                                }
+//
+//                            }catch(NumberFormatException e ){
+//                                if(warnOnError){
+//                                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+//                                } else {
+////                                    input.setError("Number not in provided range! i.e min: " + minValue + " and max: 333333333333333" + maxValue);
+////                                    setErrorIfEmptyRange();
+////                                    enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: 4444444444444444444" + maxValue);
+//                                }
+//                            }
+//
+//                        }
+//                    }
+                } else if (isDecimal && isExpression && isRequired) {
+                     try {
                         if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
                             int beforeDatavalxx = Integer.parseInt(beforeData.toString());
                             int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
-                            System.out.println(beforeDatavalxx + "valxx111111111111111111111111111111111-==================" + onChangeDatavalxx);
+ 
                             if (beforeData.length() > 0 && onChangeData.length() == 0) {
                                 enableErrorState("Number not in provided range!");
                             }
                         }
                     }catch (NumberFormatException e){
                         if(beforeData.length() > 0 && onChangeData.length() == 0){
-                            input.setError("Please enter a valid number");
-                            enableErrorState("Invalid number");
-                        }else if (beforeData.length() > 0 &&  onChangeData.length() > 0) {
+ 
+                            input.setError("Please enter a valid decimal");
+                            enableErrorState("Invalid decimal");
+                         }else if (beforeData.length() > 0 &&  onChangeData.length() > 0) {
                             try {
                                 Integer.parseInt(text);
                                 // ✅ If parsing works, clear error
@@ -387,14 +426,13 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
                             }
                         }
                     }
-                    System.out.println("111111111111111111111111111111111-==================cccccc");
+ 
                 }else if(isDecimal && isExpression && !isRequired){
-                    System.out.println("elselrange but not expressiom alxx111111111111111111111111111111111-==================" );
-                    try {
+                     try {
                         if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
                             int beforeDatavalxx = Integer.parseInt(beforeData.toString());
                             int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
-                            System.out.println(beforeDatavalxx +  "elsevalxx111111111111111111111111111111111-==================" + onChangeDatavalxx);
+ 
                         }
                     }catch (NumberFormatException e){
                         if (!text.isEmpty()) {

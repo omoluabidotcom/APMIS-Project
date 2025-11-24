@@ -140,9 +140,16 @@ public class CampaignForm extends VerticalLayout {
 
 	TextField campaignName = new TextField(I18nProperties.getCaption(Captions.Campaign_name));
 	ComboBox round = new ComboBox<>(I18nProperties.getCaption(Captions.round));
+ 
+	
+	DatePicker preCampaignstartDate = new DatePicker(I18nProperties.getCaption("Pre-Campaign " + Captions.Campaign_startDate));
+	DatePicker preCampaignendDate = new DatePicker(I18nProperties.getCaption("Pre-Campaign " +Captions.Campaign_endDate));
 	DatePicker startDate = new DatePicker(I18nProperties.getCaption(Captions.Campaign_startDate));
 	DatePicker endDate = new DatePicker(I18nProperties.getCaption(Captions.Campaign_endDate));
-	TextField creatingUser = new TextField(I18nProperties.getCaption(Captions.Campaign_creatingUser));
+	DatePicker postCampaignstartDate = new DatePicker(I18nProperties.getCaption("Post-Campaign " + Captions.Campaign_startDate));
+	DatePicker postCampaignendDate = new DatePicker(I18nProperties.getCaption("Post-Campaign " +Captions.Campaign_endDate));
+	
+ 	TextField creatingUser = new TextField(I18nProperties.getCaption(Captions.Campaign_creatingUser));
 	TextField creatingUuid = new TextField(I18nProperties.getCaption(Captions.uuid));
 	TextField campaaignYear = new TextField(I18nProperties.getCaption(Captions.campaignYear));
 
@@ -235,6 +242,69 @@ public class CampaignForm extends VerticalLayout {
 	}
 
 	private boolean validateDates() {
+
+		LocalDate preCampaignsstartDateValue = preCampaignstartDate.getValue();
+		LocalDate preCampaignsendDateValue = preCampaignendDate.getValue();
+		
+		if (preCampaignsstartDateValue == null || preCampaignsendDateValue == null) {
+
+			Notification notification = new Notification();
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+//			notification.setPosition(Position.MIDDLE_CENTER);
+			Button closeButton = new Button(new Icon("lumo", "cross"));
+			closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+			closeButton.getElement().setAttribute("aria-label", "Close");
+			closeButton.addClickListener(event -> {
+				notification.close();
+			});
+
+			Paragraph text = new Paragraph(
+					"Please Check the Input Data : Enter a valid Pre-Campaign Start Date and End Date to continue.");
+
+			HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+			layout.setAlignItems(Alignment.CENTER);
+
+			notification.add(layout);
+			notification.open();
+
+//			saveChanges.setTooltipText("Please Check the Input Data for Errors");
+			saveChanges.setEnabled(false);
+//
+			return false;
+		}
+		
+		if (preCampaignsstartDateValue.isAfter(preCampaignsendDateValue)) {
+			preCampaignstartDate.setInvalid(true);
+			preCampaignendDate.setInvalid(true);
+
+			Notification notification = new Notification();
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+//			notification.setPosition(Position.MIDDLE_CENTER);
+			Button closeButton = new Button(new Icon("lumo", "cross"));
+			closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+			closeButton.getElement().setAttribute("aria-label", "Close");
+			closeButton.addClickListener(event -> {
+				notification.close();
+			});
+
+			Paragraph text = new Paragraph(
+					"Please Check the Input Data : Pre-Campaign End Date has to be after or on the same day as Pre-Campaign Start Date.");
+
+			HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+			layout.setAlignItems(Alignment.CENTER);
+
+			notification.add(layout);
+			notification.open();
+			saveChanges.setEnabled(false);
+//			saveChanges.setTooltipText("Please Check the Input Data for Errors");
+//			startDate.setHelperText("Please Check the Input Data : End Date has to be after or on the same day as Start Date.");
+//			endDate.setHelperText("Please Check the Input Data : End Date has to be after or on the same day as Start Date.");
+
+			return false; // Start date is after end date
+		}
+
+		
+		
 		LocalDate startDateValue = startDate.getValue();
 		LocalDate endDateValue = endDate.getValue();
 
@@ -295,9 +365,74 @@ public class CampaignForm extends VerticalLayout {
 			return false; // Start date is after end date
 		}
 
+		LocalDate postCampaignsstartDateValue = postCampaignstartDate.getValue();
+		LocalDate postCampaignsendDateValue = postCampaignendDate.getValue();
+		
+		if (postCampaignsstartDateValue == null || postCampaignsendDateValue == null) {
+
+			Notification notification = new Notification();
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+//			notification.setPosition(Position.MIDDLE_CENTER);
+			Button closeButton = new Button(new Icon("lumo", "cross"));
+			closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+			closeButton.getElement().setAttribute("aria-label", "Close");
+			closeButton.addClickListener(event -> {
+				notification.close();
+			});
+
+			Paragraph text = new Paragraph(
+					"Please Check the Input Data : Enter a valid Post-Campaign Start Date and End Date to continue.");
+
+			HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+			layout.setAlignItems(Alignment.CENTER);
+
+			notification.add(layout);
+			notification.open();
+
+//			saveChanges.setTooltipText("Please Check the Input Data for Errors");
+			saveChanges.setEnabled(false);
+//
+			return false;
+		}
+		
+		if (postCampaignsstartDateValue.isAfter(postCampaignsendDateValue)) {
+			postCampaignstartDate.setInvalid(true);
+			postCampaignendDate.setInvalid(true);
+
+			Notification notification = new Notification();
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+//			notification.setPosition(Position.MIDDLE_CENTER);
+			Button closeButton = new Button(new Icon("lumo", "cross"));
+			closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+			closeButton.getElement().setAttribute("aria-label", "Close");
+			closeButton.addClickListener(event -> {
+				notification.close();
+			});
+
+			Paragraph text = new Paragraph(
+					"Please Check the Input Data : Pre-Campaign End Date has to be after or on the same day as Pre-Campaign Start Date.");
+
+			HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+			layout.setAlignItems(Alignment.CENTER);
+
+			notification.add(layout);
+			notification.open();
+			saveChanges.setEnabled(false);
+//			saveChanges.setTooltipText("Please Check the Input Data for Errors");
+//			startDate.setHelperText("Please Check the Input Data : End Date has to be after or on the same day as Start Date.");
+//			endDate.setHelperText("Please Check the Input Data : End Date has to be after or on the same day as Start Date.");
+
+			return false; // Start date is after end date
+		}
+
 		// Clear invalid state if dates are valid
+	
+		preCampaignstartDate.setInvalid(false);
+		preCampaignendDate.setInvalid(false);
 		startDate.setInvalid(false);
 		endDate.setInvalid(false);
+		postCampaignstartDate.setInvalid(false);
+		postCampaignendDate.setInvalid(false);
 
 		saveChanges.setEnabled(true);
 
@@ -349,14 +484,37 @@ public class CampaignForm extends VerticalLayout {
 		System.out.println(round.getValue() + "ROUND VALUE BAWSED OFF BINDER ");
 //		}
 
+		
+		binderx.forField(preCampaignstartDate).withConverter(new LocalDateToDateConverter()).bind(CampaignDto::getPreCampStartDate,
+				CampaignDto::setPreCampStartDate);
+
+		binderx.forField(preCampaignendDate).withConverter(new LocalDateToDateConverter()).bind(CampaignDto::getPreCampEndDate,
+				CampaignDto::setPreCampEndDate);
+ 
 		binderx.forField(startDate).withConverter(new LocalDateToDateConverter()).bind(CampaignDto::getStartDate,
 				CampaignDto::setStartDate);
 
-		binderx.forField(endDate).withConverter(new LocalDateToDateConverter()).bind(CampaignDto::getEndDate,
-				CampaignDto::setEndDate);
+		binderx.forField(endDate).withConverter(new LocalDateToDateConverter()).bind(CampaignDto::getEndDate, CampaignDto::setEndDate);
+
+		
+		binderx.forField(postCampaignstartDate).withConverter(new LocalDateToDateConverter()).bind(CampaignDto::getPostCampStartDate,
+				CampaignDto::setPostCampStartDate);
+
+		binderx.forField(postCampaignendDate).withConverter(new LocalDateToDateConverter()).bind(CampaignDto::getPostCampEndDate,
+				CampaignDto::setPostCampEndDate);
 
 		if (formData != null) {
 			DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("d. M. yyyy");
+			
+			if (formData.getPreCampStartDate() != null) {
+				LocalDate timestamp = formData.getPreCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+				LocalDate localDatex = formData.getPreCampEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+				String formString = timestamp.format(dateTimeFormatter);
+				LocalDate localDate = LocalDate.parse(formString, dateTimeFormatter);
+				preCampaignstartDate.setValue(localDate);
+				preCampaignendDate.setValue(localDatex);
+			}
+			
 			if (formData.getStartDate() != null) {
 				LocalDate timestamp = formData.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 				LocalDate localDatex = formData.getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -366,8 +524,37 @@ public class CampaignForm extends VerticalLayout {
 				endDate.setValue(localDatex);
 			}
 
+			
+			if (formData.getPostCampStartDate() != null) {
+				LocalDate timestamp = formData.getPostCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+				LocalDate localDatex = formData.getPostCampEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+				String formString = timestamp.format(dateTimeFormatter);
+				LocalDate localDate = LocalDate.parse(formString, dateTimeFormatter);
+				postCampaignstartDate.setValue(localDate);
+				postCampaignendDate.setValue(localDatex);
+			}
+
 		}
-		startDate.addValueChangeListener(e -> {
+		
+		preCampaignstartDate.addValueChangeListener(e -> {
+			LocalDate selectedDate = e.getValue();
+			int selectedYear = selectedDate.getYear();
+			String selectedYearAsString = Integer.toString(selectedYear);
+
+			if (preCampaignendDate.getValue() != null) {
+				validateDates();
+//				campaaignYear.setValue(selectedYearAsString);
+				// System.out.println(selectedYearAsString + "Selected Yearaaaaaaaaaaa: " +
+				// selectedYear);
+
+			} else if (formData == null || formData != null) {
+//				campaaignYear.setValue(selectedYearAsString);
+
+				// System.out.println(selectedYearAsString + "Selected Year: " + selectedYear);
+			}
+		});
+		
+ 		startDate.addValueChangeListener(e -> {
 			LocalDate selectedDate = e.getValue();
 			int selectedYear = selectedDate.getYear();
 			String selectedYearAsString = Integer.toString(selectedYear);
@@ -384,14 +571,45 @@ public class CampaignForm extends VerticalLayout {
 				// System.out.println(selectedYearAsString + "Selected Year: " + selectedYear);
 			}
 		});
+ 
+		postCampaignstartDate.addValueChangeListener(e -> {
+			LocalDate selectedDate = e.getValue();
+			int selectedYear = selectedDate.getYear();
+			String selectedYearAsString = Integer.toString(selectedYear);
 
-		endDate.addValueChangeListener(e -> {
+			if (postCampaignendDate.getValue() != null) {
+				validateDates();
+//				campaaignYear.setValue(selectedYearAsString);
+				// System.out.println(selectedYearAsString + "Selected Yearaaaaaaaaaaa: " +
+				// selectedYear);
+
+			} else if (formData == null || formData != null) {
+//				campaaignYear.setValue(selectedYearAsString);
+
+				// System.out.println(selectedYearAsString + "Selected Year: " + selectedYear);
+			}
+		});
+		
+ 		endDate.addValueChangeListener(e -> {
 			if (startDate.getValue() != null) {
 				validateDates();
 
 			}
 		});
+ 
+		preCampaignendDate.addValueChangeListener(e -> {
+			if (preCampaignstartDate.getValue() != null) {
+				validateDates();
 
+			}
+		});
+		postCampaignendDate.addValueChangeListener(e -> {
+			if (postCampaignstartDate.getValue() != null) {
+				validateDates();
+
+			}
+		});
+ 
 		binderx.forField(description).asRequired(I18nProperties.getString(Strings.campaignDescriptionRequired)).bind(
 				CampaignDto::getDescription,
 
@@ -436,21 +654,8 @@ public class CampaignForm extends VerticalLayout {
 						POST_CAMPAIGN, userLanguage),
 				campaignDto, POST_CAMPAIGN);
 
-//		comp1 = new CampaignDashboardGridElementComponent(
-//				this.campaignDto == null ? Collections.emptyList()
-//						: new ArrayList<>(campaignDto.getCampaignDashboardElements(PRE_CAMPAIGN)),
-//				getListDashboardFromType(PRE_CAMPAIGN), campaignDto, PRE_CAMPAIGN);
-//
-//		compp2 = new CampaignDashboardGridElementComponent(
-//				this.campaignDto == null ? Collections.emptyList()
-//						: new ArrayList<>(campaignDto.getCampaignDashboardElements(INTRA_CAMPAIGN)),
-//				getListDashboardFromType(INTRA_CAMPAIGN), campaignDto, INTRA_CAMPAIGN);
-//
-//		comppp2 = new CampaignDashboardGridElementComponent(
-//				this.campaignDto == null ? Collections.emptyList()
-//						: new ArrayList<>(campaignDto.getCampaignDashboardElements(POST_CAMPAIGN)),
-//				getListDashboardFromType(POST_CAMPAIGN), campaignDto, POST_CAMPAIGN);
-
+ 
+ 
 		VerticalLayout tab2 = new VerticalLayout();
 
 		tabsheet.add(I18nProperties.getCaption(Captions.preCampaignForms), tab1);
@@ -822,8 +1027,9 @@ public class CampaignForm extends VerticalLayout {
 		FormLayout formL = new FormLayout();
 		HorizontalLayout header = new HorizontalLayout();
 		header.add(creatingUser, creatingUuid, campaaignYear);
-		formL.add(header, campaignName, round, startDate, endDate, description);
-
+ 
+		formL.add(header, campaignName, round, preCampaignstartDate, preCampaignendDate, startDate, endDate, postCampaignstartDate, postCampaignendDate, description);
+ 
 		formL.setColspan(header, 2);
 		formL.setColspan(description, 2);
 		formL.setColspan(hort, 2);
@@ -1496,14 +1702,12 @@ public class CampaignForm extends VerticalLayout {
 					Notification.show("Please Select a District");
 				}
 			}
-//			reconfigureTreeGrid();
+ 
 
-//			treeGrid.removeAllColumns()
 		});
 
-		formx.add(regionFilter, provinceFilter, districtFilter, popData0_4, popDataAge5_10, districtModality,
-				districtStatus);
-		formx.setColspan(regionFilter, 1);
+		formx.add(regionFilter, provinceFilter, districtFilter, popData0_4, popDataAge5_10, districtModality, districtStatus);
+ 		formx.setColspan(regionFilter, 1);
 		formx.setColspan(provinceFilter, 1);
 		formx.setColspan(districtFilter, 1);
 		formx.setColspan(popData0_4, 1);
@@ -1527,103 +1731,7 @@ public class CampaignForm extends VerticalLayout {
 
 		deleteButton.addClickListener(delete -> {
 			if (!deletelist.isEmpty()) {
-//				ConfirmDialog confirmationDialog = new ConfirmDialog();
-//				confirmationDialog.setHeader("Delete Population Data");
-//				confirmationDialog.setText("Are you sure you want to delete the population data for "
-//						+ deletelist.size() + " selected districts?");
-//				confirmationDialog.setCancelable(true);
-//				confirmationDialog.setRejectable(false);
-//				confirmationDialog.setConfirmText("Delete");
-//				confirmationDialog.setCancelText("Cancel");
-
-//				confirmationDialog.addConfirmListener(event -> {
-//					try {
-//
-//						String creating = creatingUuid.getValue();
-//						for (String treeData : populationDataUuid) {
-////						
-//							try {
-//
-//								FacadeProvider.getPopulationDataFacade().deletePopulationDataByUUId(
-//										treeData, "", creating);
-//
-//							} finally {
-//								Notification.show("Deleted " + treeData + "Population Age Group "
-//										+ treeData);
-//							}
-//
-//						}
-//
-//					} catch (Exception e) {
-//						Notification.show("Error deleting population data: " + e.getMessage(), 10000,
-//								Notification.Position.MIDDLE);
-//					} finally {
-//						Notification.show(
-//								"Population data deleted successfully. Please re-open the Campaign Basics form to recieve updated Population Data Table.",
-//								5000, Notification.Position.MIDDLE);
-////						Notification.show("Population data deleted successfully.");
-//						treeGrid.getDataProvider().refreshAll();
-//						deletelist.clear();
-//						confirmationDialog.close();
-//					}
-//				});
-
-//				confirmationDialog.addConfirmListener(event -> {
-//					try {
-//						List<Long> districtIDs = new ArrayList<>();
-//						for (CampaignTreeGridDto treeData : deletelist) {
-//							districtIDs.add(treeData.getId());
-//
-//						}
-//
-//						FacadeProvider.getPopulationDataFacade().deletePopulationDataByDistrict(districtIDs,
-//								creatingUuid.getValue());
-//
-//					} catch (Exception e) {
-//						Notification.show("Error deleting population data: " + e.getMessage(), 10000,
-//								Notification.Position.MIDDLE);
-//					} finally {
-//						Notification.show("Population data deleted successfully. Please re-open the Campaign Basics form to recieve updated Population Data Table." , 5000,
-//								Notification.Position.MIDDLE);
-////						Notification.show("Population data deleted successfully.");
-//						treeGrid.getDataProvider().refreshAll();
-//						deletelist.clear();
-//						confirmationDialog.close();
-//					}
-//				});
-
-//				confirmationDialog.open();
-
-				// Create the dialog box
-//				Dialog ageGroupSelectionDialog = new Dialog();
-//				ageGroupSelectionDialog.setHeaderTitle("Please Select the Age Group Data You Would Like to Delete");
-//
-//				// Create a RadioButtonGroup to ensure only one selection at a time
-//				RadioButtonGroup<String> ageGroupRadio = new RadioButtonGroup<>();
-//				ageGroupRadio.setLabel("Select Age Group");
-//				ageGroupRadio.setItems("AGE_0_4", "AGE_5_10");
-//
-//				// Add the RadioButtonGroup to a layout
-//				VerticalLayout layout = new VerticalLayout(ageGroupRadio);
-//				ageGroupSelectionDialog.add(layout);
-
-				// Create the confirm button
-//				Button confirmAgeGroupSelection = new Button("Confirm");
-//				Button canvcelAgeGroupSelection = new Button("Cancel");
-//
-//				canvcelAgeGroupSelection.addClassName("red-cancel-button");
-//
-//				canvcelAgeGroupSelection.addClickListener(e -> {
-//					treeGrid.deselectAll();
-//					deletelist = new ArrayList<>();
-//					ageGroupSelectionDialog.close();
-//
-//				});
-
-//				confirmAgeGroupSelection.addClickListener(confirm -> {
-//					String selectedAgeGroup = ageGroupRadio.getValue(); // Get the selected value
-//
-//					if (selectedAgeGroup != null) {
+ 
 						// Open a confirmation dialog to confirm deletion
 						ConfirmDialog confirmationDialog = new ConfirmDialog();
 						confirmationDialog.setHeader("Delete Population Data");
@@ -1685,18 +1793,7 @@ public class CampaignForm extends VerticalLayout {
 					}
 				});
 				
-//				HorizontalLayout lay = new HorizontalLayout();
-//				lay.add(confirmAgeGroupSelection, canvcelAgeGroupSelection);
-//
-//				ageGroupSelectionDialog.add(lay);
-//				// Open the dialog
-//				ageGroupSelectionDialog.open();
-
-//			} else {
-//				Notification.show("Please select at least one district to delete.");
-//			}
-//		});
-
+ 
 		vert.add(buttonLay, formx, buttonAfterLay);
 
 		return vert;
@@ -2013,12 +2110,9 @@ public class CampaignForm extends VerticalLayout {
 					List<DistrictDto> district_ = FacadeProvider.getDistrictFacade()
 							.getAllActiveAsReferenceAndPopulationDari(regions_x.getRegionId(), campaignDto);
 					ArrayList arr = new ArrayList<>();
-//					for (DistrictDto district_x : district_) {
-//						arr.add(new CampaignTreeGridDtoImpl(district_x.getName(), district_x.getPopulationData(),
-//								district_x.getRegionId(), district_x.getRegionUuid_(), district_x.getUuid_(),
-//								"district", district_x.getSelectedPopulationData()));
-//					}
-					for (DistrictDto district_x : district_) {
+ 
+
+ 					for (DistrictDto district_x : district_) {
 
 						if (district_x.getPopulationData() != null) {
 							arr.add(new CampaignTreeGridDtoImpl(district_x.getName(), district_x.getPopulationData(),
@@ -2031,10 +2125,7 @@ public class CampaignForm extends VerticalLayout {
 													? district_x.getPopulationData5_10()
 													: 0L))));
 						} else {
-//							arr.add(new CampaignTreeGridDtoImpl(district_x.getName(), district_x.getPopulationData(),
-//									district_x.getRegionId(), district_x.getRegionUuid_(), district_x.getUuid_(),
-//									"district", district_x.getSelectedPopulationData(), district_x.getDistrictModality(),
-//									district_x.getDistrictStatus(), district_x.getAgeGroup()));	
+ 
 						}
 
 					}
@@ -2132,7 +2223,12 @@ public class CampaignForm extends VerticalLayout {
 			formDatac = new CampaignDto();
 			formDatac.setUuid(creatingUuid.getValue());
 			formDatac.setCreatingUser(user);
-			LocalDate localDate = startDate.getValue();
+ 
+			LocalDate preCampaignlocalDate = preCampaignstartDate.getValue();
+			Date preCampaignstartdate = Date.from(preCampaignlocalDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+			LocalDate preCampaignendxDate = preCampaignendDate.getValue();
+			Date preCampaignendxDatex = Date.from(preCampaignendxDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+ 			LocalDate localDate = startDate.getValue();
 			Date startdate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 			LocalDate endxDate = endDate.getValue();
 			Date endxDatex = Date.from(endxDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
@@ -2140,39 +2236,18 @@ public class CampaignForm extends VerticalLayout {
 
 			formDatac.setName(campaignName.getValue());
 			formDatac.setRound(round.getValue().toString());
-			formDatac.setStartDate(startdate);
+ 
+			formDatac.setPreCampStartDate(preCampaignstartdate);
+			formDatac.setPreCampEndDate(preCampaignendxDatex);
+ 			formDatac.setStartDate(startdate);
 			formDatac.setEndDate(endxDatex);
 			formDatac.setDescription(description.getValue());
 			formDatac.setCampaignStatus(formDatac.campaignStatus = "Closed");
 
-//			List<CampaignDashboardElement> preCampaigngridData = comp1.getGridData();
-//			List<CampaignDashboardElement> intraCampaigngridData = compp2.getGridData();
-//			List<CampaignDashboardElement> postCampaigngridData = comppp2.getGridData();
-
+ 
 			List<CampaignDashboardElement> superList = new ArrayList<>();
 
-			// Add items from preCampaigngridData if they are not null
-//			for (CampaignDashboardElement item : preCampaigngridData) {
-//				if (item != null) {
-//					superList.add(item);
-//				}
-//			}
-//
-//			// Add items from intraCampaigngridData if they are not null
-//			for (CampaignDashboardElement item : intraCampaigngridData) {
-//				if (item != null) {
-//					superList.add(item);
-//				}
-//			}
-//
-//			// Add items from postCampaigngridData if they are not null
-//			for (CampaignDashboardElement item : postCampaigngridData) {
-//				if (item != null) {
-//					superList.add(item);
-//				}
-//			}
-
-			List<CampaignFormMetaReferenceDto> preCampaignFormgridData = preCampaignFormGridComponent
+ 			List<CampaignFormMetaReferenceDto> preCampaignFormgridData = preCampaignFormGridComponent
 					.getSavedElements();
 
 			List<CampaignFormMetaReferenceDto> intraCampaignFormgridData = intraCampaignFormGridComponent
@@ -2208,12 +2283,7 @@ public class CampaignForm extends VerticalLayout {
 			formDatac.setCampaignFormMetas(superSet);
 			formDatac.setCampaignFormMetaExpiryDto(formMetatExpirySet);
 
-			// Do the facade save stuff for population list here
-
-//			FacadeProvider.getPopulationDataFacade().savePopulationList(campaignDto.getPopulationdata());
-//				
-//				Notification.show(String.format(I18nProperties.getString(Strings.messageCampaignSaved), campaignDto.getName()));
-//				
+ 
 
 			fireEvent(new SaveEvent(this, formDatac));
 			UI.getCurrent().getPage().reload();
