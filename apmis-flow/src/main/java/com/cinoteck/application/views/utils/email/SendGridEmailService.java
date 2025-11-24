@@ -39,44 +39,6 @@ public class SendGridEmailService {
     }
 
 
-//    public SendGridEmailService() {
-//        // Prefer environment variables; fall back to system properties
-////        this.apiKey = "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"; //apmis apikey
-//        this.apiKey = "REDACTED";
-//        		
-////        		firstNonBlank(
-////            System.getenv("SENDGRID_API_KEY"),
-////            System.getProperty("sendgrid.api.key")
-////        );
-//        if (this.apiKey == null) {
-//            throw new IllegalStateException("SendGrid API key not configured. Set SENDGRID_API_KEY or -Dsendgrid.api.key.");
-//        }
-//
-//        // Optional: override these via env or system properties
-////        this.fromEmail = "verification@afghanistan-apmis.com";
-//        this.fromEmail = "salamioluwasegun.a@gmail.com";
-//
-////        		firstNonBlank(
-//        
-////            System.getenv("MAIL_FROM_EMAIL"),
-////            System.getProperty("mail.from.email"),
-////            "no-reply@your-domain.com"
-////        );
-//        this.fromName = "APMIS Support";
-//        		
-////        		firstNonBlank(
-////            System.getenv("MAIL_FROM_NAME"),
-////            System.getProperty("mail.from.name"),
-////            "APMIS Support"
-////        );
-//        this.appBaseUrl = "https://afghanistan-apmis.com";
-////        		firstNonBlank(
-////            System.getenv("APP_BASE_URL"),
-////            System.getProperty("app.base.url"),
-////            "https://your-app.example.com"
-////        );
-//    }
-//
 
     
     public void sendPasswordResetToken(String toEmail, String token) throws IOException {
