@@ -210,9 +210,9 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 
 		Span versionadd = new Span();
 
-		String releaseDate = FacadeProvider.getInfoFacade().getApmisReleaseDate();
+		String releaseDate = "01/01/2025";//FacadeProvider.getInfoFacade().getApmisReleaseDate();
 
-		String webAppVersionNumber = FacadeProvider.getInfoFacade().getWebAppVersionNumber();
+		String webAppVersionNumber = "4.0.95";//FacadeProvider.getInfoFacade().getWebAppVersionNumber();
 
 		versionadd.getElement().setProperty("innerHTML",
 				"<p>" + I18nProperties.getCaption(Captions.apmisVersionNumber) + ": " + webAppVersionNumber + "</p> <p>"
