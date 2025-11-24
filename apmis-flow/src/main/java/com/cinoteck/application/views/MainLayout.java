@@ -24,6 +24,7 @@ import com.cinoteck.application.views.campaign.CampaignsView;
 import com.cinoteck.application.views.campaigndata.CampaignDataView;
 import com.cinoteck.application.views.configurations.ConfigurationsView;
 import com.cinoteck.application.views.dashboard.AnalyticsDashboardView;
+import com.cinoteck.application.views.deviceinformation.DeviceInformationView;
 //import com.cinoteck.application.views.dashboard.NewDashboardView;
 import com.cinoteck.application.views.myaccount.MyAccountView;
 //import com.cinoteck.application.views.pivot.PivotTableView;
@@ -337,6 +338,10 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 				&& userProvider.hasUserRight(UserRight.PUSH_NOTIFICATION_ACCESS)) {
 			nav.addItem(new AppNavItem("Notification", MessagingView.class, VaadinIcon.SERVER, "navitem"));
 		}
+		
+		nav.addItem(new AppNavItem("Device Management", DeviceInformationView.class, VaadinIcon.CLUSTER,
+				"navitem"));
+
 
 		if (userProvider.getUser().getUserRoles().contains(UserRole.REST_USER)) {
 			UserDto user = FacadeProvider.getUserFacade().getByUserName(userProvider.getUser().getUserName());

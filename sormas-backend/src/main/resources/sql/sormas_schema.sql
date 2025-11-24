@@ -11338,7 +11338,119 @@ $function$
 INSERT INTO schema_version (version_number, comment) VALUES (486, 'Updating FLW Analysis Query');
 
 
+ALTER TABLE public.messagestemplate ADD column title varchar;
 
+ALTER TABLE public.messages ADD column title varchar;
+
+ALTER TABLE public.messages ADD COLUMN messagecategory varchar NULL;
+
+INSERT INTO schema_version (version_number, comment) VALUES (487, 'Updating Notification #870 & #869');
+
+
+
+CREATE TABLE public.device_manager (
+	id int8 NOT NULL,
+	"uuid" varchar(255) NOT NULL,
+	device_model varchar(100) NOT NULL,
+	device_brand varchar(50) NOT NULL,
+	device_serial varchar(100) NULL,
+	android_version varchar(20) NOT NULL,
+	user_name varchar(100) NULL,
+	user_location varchar(100) NULL,
+	user_id int8 NULL,
+	apk_version varchar(20) NOT NULL,
+	total_int_storage int8 NULL,
+	free_int_storage int8 NULL,
+	total_ext_storage int8 NULL,
+	free_ext_storage int8 NULL,
+	ram_storage int8 NULL,
+	total_int_storage_gb numeric(10, 2) GENERATED ALWAYS AS ((total_int_storage::numeric / 1073741824.0)) STORED NULL,
+	free_int_storage_gb numeric(10, 2) GENERATED ALWAYS AS ((free_int_storage::numeric / 1073741824.0)) STORED NULL,
+	total_ext_storage_gb numeric(10, 2) GENERATED ALWAYS AS ((total_ext_storage::numeric / 1073741824.0)) STORED NULL,
+	free_ext_storage_gb numeric(10, 2) GENERATED ALWAYS AS ((free_ext_storage::numeric / 1073741824.0)) STORED NULL,
+	ram_storage_gb numeric(10, 2) GENERATED ALWAYS AS ((ram_storage::numeric / 1073741824.0)) STORED NULL,
+	battery_level int4 NULL,
+	charging_status bool DEFAULT false NULL,
+	battery_status varchar(20) DEFAULT 'UNKNOWN'::character varying NULL,
+	wifi_connected bool DEFAULT false NULL,
+	network_strength int4 NULL,
+	creationdate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	changedate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	device_id varchar(255) NULL,
+	CONSTRAINT chk_battery_level CHECK (((battery_level >= 0) AND (battery_level <= 100))),
+	CONSTRAINT chk_network_strength CHECK (((network_strength >= 0) AND (network_strength <= 5))),
+	CONSTRAINT device_manager_pkey PRIMARY KEY (id),
+	CONSTRAINT device_manager_uuid_key UNIQUE (uuid)
+);
+CREATE INDEX idx_device_manager_user_device ON public.device_manager USING btree (user_name, device_id);
+
+
+CREATE OR REPLACE FUNCTION public.delete_old_device_info()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    -- Delete any existing records with same user_name and device_id
+    DELETE FROM public.device_manager
+    WHERE user_name = NEW.user_name 
+      AND device_id = NEW.device_id
+      AND id != NEW.id;
+    
+    -- Update changedate on insert
+    NEW.changedate = CURRENT_TIMESTAMP;
+    
+    RETURN NEW;
+END;
+$function$
+;
+
+-- Table Triggers
+
+create trigger before_insert_device_info before
+insert
+    on
+    public.device_manager for each row execute function delete_old_device_info();
+    
+    
+    
+CREATE TABLE public.devices_error_manager (
+	id int8 NOT NULL,
+	"uuid" varchar(255) NOT NULL,
+	errormessage text NOT NULL,
+	stacktrace text NULL,
+	deviceid varchar(255) NULL,
+	username varchar(100) NULL,
+	erroraction varchar(255) NULL,
+	lastupdated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	creationdate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	changedate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT devices_error_pkey PRIMARY KEY (id),
+	CONSTRAINT devices_error_username_deviceid_unique UNIQUE (username, deviceid)
+);
+
+CREATE OR REPLACE FUNCTION public.delete_old_device_error()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    DELETE FROM public.devices_error_manager
+    WHERE username = NEW.username 
+      AND deviceid = NEW.deviceid
+      AND uuid != NEW.uuid;
+    RETURN NEW;
+END;
+$function$
+;
+
+-- Table Triggers
+
+create trigger before_insert_device_error before
+insert
+    on
+    public.devices_error_manager for each row execute function delete_old_device_error();
+
+    
+    INSERT INTO schema_version (version_number, comment) VALUES (488, 'Implementing Device Info and Device Error');
 
 
 

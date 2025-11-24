@@ -76,4 +76,8 @@ public interface CommunityFacade extends GeoLocationFacade<CommunityDto, Communi
 	
 	List<CommunityHistoryExtractDto> getClustersHistory(String uuid);
 	
+	List<CommunityHistoryExtractDto> getClusterDataChangeHistory();
+	
+	List<CommunityHistoryExtractDto> getClusterDataChangeHistory(CommunityCriteriaNew criteria);
+
 }

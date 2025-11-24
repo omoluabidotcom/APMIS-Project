@@ -43,13 +43,17 @@ import de.symeda.sormas.app.util.NavigationHelper;
 public class EnterPinActivity extends AppCompatActivity implements NotificationContext {
 
 	public static final String CALLED_FROM_SETTINGS = "calledFromSettings";
+	public static final String REINITIALIZE_APP = "reinitializeApp";
 
 	private boolean calledFromSettings;
+	private boolean reinitializeApp;
+
 	private String lastEnteredPIN;
 	private boolean confirmedCurrentPIN;
 	private boolean triedAgain;
 	private EditText[] pinFields;
 	private ProgressDialog progressDialog = null;
+	private ProgressDialog reInitializeprogressDialog;
 
 	private ActivityEnterPinLayoutBinding binding;
 
@@ -63,6 +67,10 @@ public class EnterPinActivity extends AppCompatActivity implements NotificationC
 			if (params.containsKey(CALLED_FROM_SETTINGS)) {
 				calledFromSettings = params.getBoolean(CALLED_FROM_SETTINGS);
 			}
+
+			if (params.containsKey(REINITIALIZE_APP)) {
+				reinitializeApp = params.getBoolean(REINITIALIZE_APP);
+			}
 		}
 
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
@@ -71,10 +79,16 @@ public class EnterPinActivity extends AppCompatActivity implements NotificationC
 		//progressDialog = SynchronizeDataAsync.callWithProgressDialog(SynchronizeDataAsync.SyncMode.Changes, EnterPinActivity.this, null);
 	}
 
+
+
 	@Override
 	protected void onDestroy() {
 		if (progressDialog != null && progressDialog.isShowing()) {
 			progressDialog.dismiss();
+		}
+
+		if (reInitializeprogressDialog != null && reInitializeprogressDialog.isShowing()) {
+			reInitializeprogressDialog.dismiss();
 		}
 
 		super.onDestroy();
@@ -304,7 +318,23 @@ public class EnterPinActivity extends AppCompatActivity implements NotificationC
 						onResume();
 					}
 				}
-			} else {
+			}
+			else if(reinitializeApp) {
+				// Process the login if the PIN is correct, otherwise display an error message and restart the activity
+				if (enteredPIN.equals(savedPIN)) {
+					ConfigProvider.setAccessGranted(true);
+					NotificationHelper.showNotification(binding, NotificationType.SUCCESS, R.string.message_pin_correct_loading_to_reinitialize);
+
+					showReinitializeLoadingDialog();
+
+					finish();
+				} else {
+					NotificationHelper.showNotification(binding, NotificationType.ERROR, R.string.message_pin_wrong);
+					triedAgain = true;
+					onResume();
+				}
+			}
+			else {
 				// Process the login if the PIN is correct, otherwise display an error message and restart the activity
 				if (enteredPIN.equals(savedPIN)) {
 					ConfigProvider.setAccessGranted(true);
@@ -318,6 +348,103 @@ public class EnterPinActivity extends AppCompatActivity implements NotificationC
 			}
 		}
 	}
+
+
+	private void showReinitializeLoadingDialog() {
+		reInitializeprogressDialog = new ProgressDialog(this);
+		reInitializeprogressDialog.setTitle("Reinitializing App");
+		reInitializeprogressDialog.setMessage("Syncing device information and error logs...");
+		reInitializeprogressDialog.setCancelable(false);
+		reInitializeprogressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		reInitializeprogressDialog.show();
+
+
+
+		// Sync device info and error logs in background
+		new Thread(() -> {
+			try {
+			de.symeda.sormas.app.rest.SynchronizeDataAsync.syncDeviceInfoAndErrorLogsOnly();
+
+			runOnUiThread(() -> {
+						if (!isFinishing() && !isDestroyed()) {
+							reInitializeprogressDialog.setMessage("Sync completed. Clearing database and restarting...");
+
+							// Add a small delay to show the completion message
+							new android.os.Handler().postDelayed(() -> {
+								if (!isFinishing() && !isDestroyed()) {
+									reInitializeprogressDialog.dismiss();
+									clearDatabaseAndRestart();
+								}
+							}, 1000);
+						}
+					});
+
+			} catch (Exception e) {
+				// Run UI operations on main thread
+				runOnUiThread(() -> {
+					reInitializeprogressDialog.setMessage("Sync failed, but proceeding with reinitialization: " + e.getMessage());
+
+					// Add a small delay to show the error message
+					new android.os.Handler().postDelayed(() -> {
+						reInitializeprogressDialog.dismiss();
+						clearDatabaseAndRestart();
+					}, 2000);
+				});
+			}
+		}).start();
+	}
+
+
+
+	private void performReinitializeAction() {
+		// Show progress notification
+		NotificationHelper.showNotification(binding, NotificationType.INFO, R.string.message_pin_correct_loading_to_reinitialize);
+
+		// Sync device info and error logs in background
+		new Thread(() -> {
+			try {
+				// Import the SynchronizeDataAsync class
+				de.symeda.sormas.app.rest.SynchronizeDataAsync.syncDeviceInfoAndErrorLogsOnly();
+
+				// Run UI operations on main thread
+				runOnUiThread(() -> {
+					NotificationHelper.showNotification(binding, NotificationType.SUCCESS, "Sync completed. Clearing database and restarting...");
+					clearDatabaseAndRestart();
+				});
+			} catch (Exception e) {
+				// Run UI operations on main thread
+				runOnUiThread(() -> {
+					NotificationHelper.showNotification(binding, NotificationType.WARNING, "Sync failed, but proceeding with reinitialization: " + e.getMessage());
+					clearDatabaseAndRestart();
+				});
+			}
+		}).start();
+	}
+
+	private void clearDatabaseAndRestart() {
+		try {
+			de.symeda.sormas.app.backend.common.DatabaseHelper.dropDatabase();
+			de.symeda.sormas.app.backend.config.ConfigProvider.clearUserLogin();
+			de.symeda.sormas.app.backend.config.ConfigProvider.clearPin();
+			de.symeda.sormas.app.backend.common.DatabaseHelper.clearConfigTable();
+
+			// Restart the app by launching LoginActivity
+			Intent intent = new Intent(this, LoginActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+			startActivity(intent);
+
+			// Finish current activity
+			finish();
+
+		} catch (Exception e) {
+			if(!isFinishing() && !isDestroyed()){
+				NotificationHelper.showNotification(binding, NotificationType.ERROR,
+						"Error during reinitialization: " + e.getMessage());
+			}
+
+		}
+	}
+
 
 	public void backToSettings(View view) {
 		NavigationHelper.goToSettings(view.getContext());

@@ -93,6 +93,7 @@ public class SettingsFragment extends BaseLandingFragment {
 		binding.settingsServerUrl.setValue(ConfigProvider.getServerRestUrl());
 		binding.changePin.setOnClickListener(v -> changePIN());
 		binding.resynchronizeData.setOnClickListener(v -> repullData());
+		binding.reinitializeData.setOnClickListener(v -> reInitializeData());
 		binding.showSyncLog.setOnClickListener(v -> openSyncLog());
 		binding.logout.setOnClickListener(v -> logout());
 		binding.kexLbds.setOnClickListener(v -> kexLbds());
@@ -203,6 +204,34 @@ public class SettingsFragment extends BaseLandingFragment {
 
 	public void repullData() {
 		checkAndShowUnsynchronizedChangesDialog(() -> showRepullDataConfirmationDialog(), "SYNC");
+	}
+
+
+	public void reInitializeData() {
+		showReinitialisationConfirmationDialog(() -> showRepullDataConfirmationDialog());
+	}
+
+
+
+	private void showReinitialisationConfirmationDialog(Callback confirmedCallback) {
+//		if (SynchronizeDataAsync.hasAnyUnsynchronizedData()) {
+			final ConfirmationDialog reinitializeAppDialog = new ConfirmationDialog(
+					getActivity(),
+					R.string.heading_reinitialize_app,
+					R.string.message_reinitialize_app_confirmation);
+
+//			reinitializeAppDialog.setPositiveCallback(confirmedCallback::call);
+
+		reinitializeAppDialog.setPositiveCallback(() -> {
+			// Open Enter PIN view with reinitialize flag
+			Intent intent = new Intent(getActivity(), EnterPinActivity.class);
+			intent.putExtra(EnterPinActivity.REINITIALIZE_APP, true);
+			startActivity(intent);
+		});
+			reinitializeAppDialog.show();
+//		} else {
+//			confirmedCallback.call();
+//		}
 	}
 
 	private void checkAndShowUnsynchronizedChangesDialog(Callback confirmedCallback, String wordToType) {

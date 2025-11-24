@@ -463,6 +463,7 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 		grid.setSizeFull();
 		grid.setColumnReorderingAllowed(true);
 
+		grid.addColumn(MessageDto::getTitle).setHeader("Message Subject").setSortable(false).setResizable(true);
 		grid.addColumn(MessageDto.MESSAGE_CONTENT).setHeader("Message Content").setSortable(false).setResizable(true);
 		grid.addColumn(this::rolesConfig).setHeader("User Roles").setSortable(false).setResizable(true);
 		grid.addColumn(this::areaConfig).setHeader("Region").setSortable(false).setResizable(true);
@@ -471,7 +472,8 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 		grid.addColumn(this::communityConfig).setHeader("Cluster").setSortable(false).setResizable(true);
 		grid.addColumn(this::formAccessConfig).setHeader("Form Access").setSortable(false).setResizable(true);
 		grid.addColumn(MessageDto.CREATED_BY).setHeader("Created By").setSortable(false).setResizable(true);
-		
+		grid.addColumn(MessageDto.CHG_DATE).setHeader("Change Date").setSortable(false).setResizable(true);
+
 		grid.setVisible(true);
 		grid.setWidthFull();
 		grid.setAllRowsVisible(true);
@@ -521,14 +523,21 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 			}
 		});
 		Dialog dialog = new Dialog();
+		
+		Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), e -> dialog.close());
+		closeButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+		dialog.getHeader().add(closeButton);
+		
+		dialog.add(closeButton);
 		dialog.add(messagingLayout);
 		dialog.setHeaderTitle("New Message");
 		dialog.setSizeFull();
 		dialog.open();
-		dialog.setCloseOnEsc(false);
-		dialog.setCloseOnOutsideClick(false);
+		dialog.setCloseOnEsc(true);
+		dialog.setCloseOnOutsideClick(true);
 		dialog.setModal(true);
 		dialog.setClassName("new-message");
+				
 	}
 
 	public void editMessage(MessageDto messageDto) {
@@ -544,14 +553,21 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 			}
 		});
 		Dialog dialog = new Dialog();
+		
+		Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), e -> dialog.close());
+		closeButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+		dialog.getHeader().add(closeButton);
+		
+		dialog.add(closeButton);
 		dialog.add(messagingLayout);
 		dialog.setHeaderTitle("Edit Message");
 		dialog.setSizeFull();
 		dialog.open();
-		dialog.setCloseOnEsc(false);
-		dialog.setCloseOnOutsideClick(false);
+		dialog.setCloseOnEsc(true);
+		dialog.setCloseOnOutsideClick(true);
 		dialog.setModal(true);
 		dialog.setClassName("edit-message");
+		
 	}
 	
 	public void scheduleMessage(MessageScheduleDto messageScheduleDto) {

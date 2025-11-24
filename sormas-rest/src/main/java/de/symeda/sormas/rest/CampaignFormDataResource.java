@@ -43,6 +43,8 @@ public class CampaignFormDataResource extends EntityDtoResource {
 	@POST
 	@Path("/push")
 	public List<PushResult> postCampaignFormData(@Valid List<CampaignFormDataDto> dtos) {
+		System.out.println("FORMDATE FROM MOBILE ");     // extract the name field
+		dtos.stream().map(CampaignFormDataDto::getFormDate).forEach(System.out::println);
 		return savePushedDto(dtos, FacadeProvider.getCampaignFormDataFacade()::saveCampaignFormDataMobile);
 	}
 

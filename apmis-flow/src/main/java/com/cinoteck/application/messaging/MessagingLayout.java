@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,8 +45,10 @@ import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
+import de.symeda.sormas.api.messaging.MessageCategory;
 import de.symeda.sormas.api.messaging.MessageDto;
 import de.symeda.sormas.api.messaging.MessageTemplateDto;
+import de.symeda.sormas.api.messaging.MessageUtil;
 import de.symeda.sormas.api.user.FormAccess;
 import de.symeda.sormas.api.user.UserReferenceDto;
 import de.symeda.sormas.api.user.UserRole;
@@ -70,6 +73,7 @@ public class MessagingLayout extends VerticalLayout {
 	MultiSelectComboBox<RegionReferenceDto> regionSelector;
 	MultiSelectComboBox<DistrictReferenceDto> districtSelector;
 	MultiSelectComboBox<CommunityReferenceDto> communitySelector;
+	private ComboBox<MessageCategory> messageCategory;	
 
 	List<AreaReferenceDto> regions = FacadeProvider.getAreaFacade().getAllActiveAsReference();
 	List<RegionReferenceDto> provinces = FacadeProvider.getRegionFacade().getAllActiveAsReference();
@@ -91,6 +95,7 @@ public class MessagingLayout extends VerticalLayout {
 	private boolean isNew = false;
 		
 	private ComboBox<String> templateCombo = new ComboBox<String>("Message Template");
+	Map<String, MessageUtil> listofMain;
 
 	public MessagingLayout(MessageDto messageDto_, boolean isNew) {
 
@@ -104,10 +109,22 @@ public class MessagingLayout extends VerticalLayout {
 		}
 		
 		List<MessageTemplateDto> listOfMessageTemplate = FacadeProvider.getMessageFacade().getIndexListForMessageTemplate(null, null, null, null);
-		List<String> listofMain = listOfMessageTemplate.stream().map(MessageTemplateDto::getMessageContent).collect(Collectors.toList());;		
-		templateCombo.setItems(listofMain);
+		listofMain = listOfMessageTemplate.stream().collect(Collectors.toMap( 
+				dto -> dto.getTitle() != null 
+//				|| !dto.getTitle().isEmpty() 
+				? dto.getTitle() 
+						: "No Title", 
+				this::getMessageUtil ));		
+		
+		templateCombo.setItems(listofMain.keySet());
 		
 		configureFields();
+	}
+
+	private MessageUtil getMessageUtil(MessageTemplateDto messageTemplateDto) {		
+		MessageUtil messageUtil = new MessageUtil(messageTemplateDto.getMessageContent(), messageTemplateDto.getCreatingUser(), messageTemplateDto.isArchived(),
+				messageTemplateDto.getMessageCategory(), messageTemplateDto.getChgDate());
+		return messageUtil;
 	}
 
 	public void discardChanges() {
@@ -120,7 +137,7 @@ public class MessagingLayout extends VerticalLayout {
 
 	public void configureFields() {
 
-		TextField titleField = new TextField("Title");
+		TextField titleField = new TextField("Message Subject");
 		TextArea messageContent = new TextArea("Message Content");
 		MultiSelectComboBox<UserRole> userRoles = new MultiSelectComboBox<UserRole>("User roles");
 		ComboBox<UserType> userType = new ComboBox<UserType>("User Type");
@@ -133,6 +150,9 @@ public class MessagingLayout extends VerticalLayout {
 		MultiSelectComboBox<CommunityReferenceDto> communitySelector = new MultiSelectComboBox<CommunityReferenceDto>(
 				"Cluster");
 
+		ComboBox<MessageCategory> messageCategory = new ComboBox<>("Message category");
+		messageCategory.setItems(MessageCategory.values());
+		messageCategory.setClearButtonVisible(true);
 		List<UserType> userTypeConfig = new ArrayList<>();
 
 		userTypeConfig.add(UserType.COMMON_USER);
@@ -153,9 +173,15 @@ public class MessagingLayout extends VerticalLayout {
 		formAccessSelector.setItems(FormAccess.values());
 		formAccessSelector.setClearButtonVisible(true);
 
+		binder.forField(titleField).asRequired("Message Subject is Required").bind(MessageDto::getTitle,
+				MessageDto::setTitle);
+		
 		binder.forField(messageContent).asRequired("Message Content is Required").bind(MessageDto::getMessageContent,
 				MessageDto::setMessageContent);
 
+		binder.forField(messageCategory).asRequired("Message Category is Required").bind(MessageDto::getMessageCategory,
+				MessageDto::setMessageCategory);
+		
 		binder.forField(userRoles).asRequired("User Role is Required").bind(MessageDto::getUserRoles,
 				MessageDto::setUserRoles);
 
@@ -169,33 +195,59 @@ public class MessagingLayout extends VerticalLayout {
 
 		binder.forField(communitySelector).bind(MessageDto::getCommunity, MessageDto::setCommunity);
 
-		formLayout.add(templateCombo, messageContent, userRoles, formAccessSelector, areaSelector, regionSelector, districtSelector,
+		formLayout.add(templateCombo, titleField, messageContent, messageCategory, userRoles, formAccessSelector, areaSelector, regionSelector, districtSelector,
 				communitySelector);
 		formLayout.setColspan(pushNotificationHeader, 2);
 
 		final HorizontalLayout hr = new HorizontalLayout();
 		formLayout.setColspan(messageContent, 2);
 		messageContent.setHeight("300px");
-
+		
 		Icon discardIcon = new Icon(VaadinIcon.CLOSE_CIRCLE_O);
 		Button discardChanges = new Button("Discard Changes", discardIcon);
 
 		Icon saveIcon = new Icon(VaadinIcon.CHECK_CIRCLE_O);
 		Button saved = new Button("Send", saveIcon);
-		hr.add(discardChanges, saved);
+		
+		Icon reSendIcon = new Icon(VaadinIcon.CHECK_CIRCLE_O);
+		Button reSend = new Button("Resend", reSendIcon);
+		
+		if(!isNew) {
+			saved.setVisible(isNew);
+			reSend.setVisible(!isNew);
+			
+			titleField.setEnabled(isNew); 
+			messageContent.setEnabled(isNew); 
+			messageCategory.setEnabled(isNew);  
+			userRoles.setEnabled(isNew);  
+			formAccessSelector.setEnabled(isNew);  
+			areaSelector.setEnabled(isNew);  
+			regionSelector.setEnabled(isNew);  
+			districtSelector.setEnabled(isNew); 
+			communitySelector.setEnabled(isNew); 
+		} else {
+			saved.setVisible(true);
+			reSend.setVisible(false);
+		}
+		
+		hr.add(discardChanges, saved, reSend);
 		add(formLayout, hr);
 
 		discardChanges.addClickListener(e -> discardChanges());
 
 		templateCombo.addValueChangeListener(e -> {
-			messageContent.setValue(templateCombo.getValue());
+			System.out.println("listofMain.get(templateCombo.getValue()).getMessageContent() " + listofMain.get(templateCombo.getValue()).getMessageContent());
+			titleField.setValue(templateCombo.getValue());
+			messageContent.setValue(listofMain.get(templateCombo.getValue()).getMessageContent());
 		});
 		
 		messageContent.addValueChangeListener(e -> {
 			templateCombo.setVisible(false);
 		});
+		
 		saved.addClickListener(e -> {
-			if (messageContent.getValue() != null && !messageContent.isEmpty()) {
+			if (messageContent.getValue() != null && !messageContent.isEmpty() && messageCategory.getValue() != null
+					&& userRoles.getValue() != null) {
 				if(binder.getBean() != null) {
 				preView(binder.getBean());
 				} else {
@@ -214,7 +266,7 @@ public class MessagingLayout extends VerticalLayout {
 					notification.close();
 				});
 
-				Paragraph text = new Paragraph("Message cannot be left Empty");
+				Paragraph text = new Paragraph("Required field cannot be left Empty");
 
 				HorizontalLayout layout = new HorizontalLayout(text, closeButton);
 				layout.setAlignItems(Alignment.CENTER);
@@ -222,6 +274,23 @@ public class MessagingLayout extends VerticalLayout {
 				notification.add(layout);
 				notification.open();
 			}
+		});
+		
+		reSend.addClickListener(e -> {
+			
+			MessageDto messageDtoResend = new MessageDto().build();
+			messageDtoResend.setArea(binder.getBean().getArea());
+			messageDtoResend.setCommunity(binder.getBean().getCommunity());
+			messageDtoResend.setDistrict(binder.getBean().getDistrict());
+			messageDtoResend.setMessageCategory(binder.getBean().getMessageCategory());
+			messageDtoResend.setFormAccess(binder.getBean().getFormAccess());
+			messageDtoResend.setMessageCategory(binder.getBean().getMessageCategory());
+			messageDtoResend.setMessageContent(binder.getBean().getMessageContent());
+			messageDtoResend.setRegion(binder.getBean().getRegion());
+			messageDtoResend.setUserRoles(binder.getBean().getUserRoles());
+			messageDtoResend.setTitle(binder.getBean().getTitle());
+			
+			validateAndSave(messageDtoResend);
 		});
 
 		savePreviewButton.addClickListener(e -> {
@@ -311,6 +380,40 @@ public class MessagingLayout extends VerticalLayout {
 			});
 
 			Paragraph text = new Paragraph("Unable to Create a Message at the Moment");
+
+			HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+			layout.setAlignItems(Alignment.CENTER);
+
+			notification.add(layout);
+			notification.open();
+		}
+	}
+	
+	public void validateAndSave(MessageDto messageDto) {
+
+		if (binder.validate().isOk()) {
+
+//			messageDto = binder.getBean();
+			messageDto.setChgDate(Timestamp.from(Instant.now()));
+			messageDto.setCreatingUser(userProvider.getUser().getUserName());
+			fireEvent(new SaveEvent(this, messageDto));
+
+			Notification notification = new Notification("New Message Sent", 3000, Position.MIDDLE);
+			notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+			notification.open();
+			UI.getCurrent().getPage().reload();
+		} else {
+			Notification notification = new Notification();
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			notification.setPosition(Position.MIDDLE);
+			Button closeButton = new Button(new Icon("lumo", "cross"));
+			closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+			closeButton.getElement().setAttribute("aria-label", "Close");
+			closeButton.addClickListener(event -> {
+				notification.close();
+			});
+
+			Paragraph text = new Paragraph("Unable to Rebroadcast this Message at the Moment");
 
 			HorizontalLayout layout = new HorizontalLayout(text, closeButton);
 			layout.setAlignItems(Alignment.CENTER);

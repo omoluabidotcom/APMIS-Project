@@ -92,6 +92,10 @@ import de.symeda.sormas.app.backend.contact.Contact;
 import de.symeda.sormas.app.backend.contact.ContactDao;
 import de.symeda.sormas.app.backend.customizableenum.CustomizableEnumValue;
 import de.symeda.sormas.app.backend.customizableenum.CustomizableEnumValueDao;
+import de.symeda.sormas.app.backend.device.errorLog.DeviceErrorLog;
+import de.symeda.sormas.app.backend.device.errorLog.DeviceErrorLogDao;
+import de.symeda.sormas.app.backend.device.info.DeviceInfo;
+import de.symeda.sormas.app.backend.device.info.DeviceInfoDao;
 import de.symeda.sormas.app.backend.disease.DiseaseConfiguration;
 import de.symeda.sormas.app.backend.disease.DiseaseConfigurationDao;
 import de.symeda.sormas.app.backend.epidata.EpiData;
@@ -189,7 +193,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	// any time you make changes to your database objects, you may have to increase the database version
 
 
-	public static final int DATABASE_VERSION = 350;
+	public static final int DATABASE_VERSION = 352;
 
 	private static DatabaseHelper instance = null;
 
@@ -269,6 +273,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.clearTable(connectionSource, CampaignFormMetaWithExp.class);
 			TableUtils.clearTable(connectionSource, PopulationData.class);
 			TableUtils.clearTable(connectionSource, CampaignFormMetaRegion.class);
+			TableUtils.clearTable(connectionSource, DeviceInfo.class);
+			TableUtils.clearTable(connectionSource, DeviceErrorLog.class);
+
 
 
 
@@ -356,6 +363,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.clearTable(connectionSource, CampaignFormMetaWithExp.class);
 			TableUtils.clearTable(connectionSource, PopulationData.class);
 			TableUtils.clearTable(connectionSource, CampaignFormMetaRegion.class);
+			TableUtils.clearTable(connectionSource, DeviceInfo.class);
+			TableUtils.clearTable(connectionSource, DeviceErrorLog.class);
+
 
 
 
@@ -480,6 +490,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, PopulationData.class);
 			TableUtils.createTable(connectionSource, CampaignFormMetaRegion.class);
 			TableUtils.createTable(connectionSource, LbdsSync.class);
+			TableUtils.createTable(connectionSource, DeviceInfo.class);
+			TableUtils.createTable(connectionSource, DeviceErrorLog.class);
+
 			updatePatchForTriggers();
 		} catch (SQLException e) {
 			Log.e(DatabaseHelper.class.getName(), "Can't build database", e);
@@ -3254,11 +3267,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 							"ALTER TABLE campaignformdata ADD COLUMN recordversion BIGINT DEFAULT 1;"
 					);
 
-//				case 348:
-//					currentVersion = 348;
-//					getDao(User.class).executeRaw(
-//							"ALTER TABLE users ADD COLUMN userFormAccess varchar(255);");
-//
+
 				case 348:
 					currentVersion = 348;
 
@@ -3290,7 +3299,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 					getDao(PopulationData.class).executeRaw("DROP TABLE IF EXISTS populationdata;");
 					getDao(CampaignFormMetaRegion.class).executeRaw("DROP TABLE IF EXISTS campaignformmeta_area;");
 
-					System.out.println("----------gggggggggggggggggggggggguuuuuuuuuuuuuuuuuuuuuuuuuuuuuu");
 					getDao(CampaignFormMetaRegion.class).executeRaw(
 							"CREATE TABLE IF NOT EXISTS campaignformmeta_area ("
 									+ "	snapshot SMALLINT DEFAULT 0, area_id VARCHAR NOT NULL, "
@@ -3322,7 +3330,80 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 									+ "		selected varchar);");
 
 
-                    break;
+				case 350:
+					currentVersion = 350;
+					// Migration: This assumes case 350 was already executed
+					// If you need to preserve data, you'll need a more complex migration
+
+					// Option 1: Drop and recreate (loses data)
+					getDao(DeviceInfo.class).executeRaw("DROP TABLE IF EXISTS device_info;");
+
+					// Then recreate with correct schema (same as fixed case 350 above)
+					getDao(DeviceInfo.class).executeRaw(
+							"CREATE TABLE IF NOT EXISTS device_info ( "
+									+ "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+									+ "uuid VARCHAR(36) NOT NULL UNIQUE, "
+									+ "creationDate BIGINT NOT NULL, "
+									+ "changeDate BIGINT NOT NULL, "
+									+ "localChangeDate BIGINT NOT NULL, "
+									+ "lastOpenedDate BIGINT NOT NULL, "
+									+ "modified SMALLINT DEFAULT 0, "
+									+ "snapshot SMALLINT DEFAULT 0, "
+									+ "user_id BIGINT, "
+									+ "deviceBrand VARCHAR(255), "
+									+ "deviceId VARCHAR(255), "
+									+ "deviceModel VARCHAR(255), "
+									+ "deviceSerial VARCHAR(255), "
+									+ "androidVersion VARCHAR(50), "
+									+ "apiLevel INTEGER, "
+									+ "internalStorageTotal BIGINT, "
+									+ "internalStorageFree BIGINT, "
+									+ "externalStorageTotal BIGINT, "
+									+ "externalStorageFree BIGINT, "
+									+ "ramTotal BIGINT, "
+									+ "batteryLevel INTEGER, "
+									+ "networkType VARCHAR(50), "
+									+ "wifiConnected SMALLINT, "
+									+ "networkStrength INTEGER, "
+									+ "loginTimestamp BIGINT NOT NULL, "
+									+ "lastUpdated BIGINT NOT NULL, "
+									+ "user_location VARCHAR(255), "
+									+ "apk_version VARCHAR(50), "
+									+ "user_name VARCHAR(255), "
+									+ "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+									+ ");");
+
+				case 351:
+					currentVersion = 351;
+
+					System.out.println("Database 351 creating =====================yyyyyyuuuuiiiipppp=================");
+					getDao(DeviceErrorLog.class).executeRaw("DROP TABLE IF EXISTS device_error;");
+
+
+					getDao(DeviceErrorLog.class).executeRaw(
+							"CREATE TABLE IF NOT EXISTS device_error ( " +
+									"id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+									"uuid VARCHAR(36) NOT NULL UNIQUE, " +
+									"creationDate BIGINT NOT NULL, " +
+									"changeDate BIGINT NOT NULL, " +
+									"localChangeDate BIGINT NOT NULL, " +
+									"modified SMALLINT DEFAULT 0, " +
+									"snapshot SMALLINT DEFAULT 0, " +
+									"lastOpenedDate BIGINT, " +
+									"errorMessage TEXT NOT NULL, " +
+									"stackTrace TEXT, " +
+									"deviceId TEXT, " +
+									"userName TEXT, " +
+									"errorAction TEXT, " +
+									"lastUpdated BIGINT NOT NULL );"
+					);
+
+
+					System.out.println("Database====== 351 createdddd ===================yyyyyyuuuuiiiipppp===================");
+
+
+				// CRITICAL INFORMATION : Only break after the last query case
+					break;
 
 
 				default:
@@ -3343,13 +3424,52 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 				"CREATE TRIGGER prevent_duplicate_on_admin_forms\n" +
 						"BEFORE INSERT ON campaignFormData\n" +
 						"WHEN EXISTS (SELECT *\n" +
-						"                 FROM campaignFormData rec_info\n" +
-						"                 WHERE rec_info.campaign_id=NEW.campaign_id AND rec_info.campaignFormMeta_id=NEW.campaignFormMeta_id AND rec_info.community_id = NEW.community_id AND rec_info.formCategory = NEW.formCategory AND rec_info.formCategory = 'ADMIN'" +
-						"            )\n" +
+						" FROM campaignFormData rec_info\n" +
+						" WHERE rec_info.campaign_id=NEW.campaign_id AND rec_info.campaignFormMeta_id=NEW.campaignFormMeta_id AND rec_info.community_id = NEW.community_id AND rec_info.formCategory = NEW.formCategory AND rec_info.formCategory = 'ADMIN'" +
+						" )\n" +
 						"BEGIN\n" +
 						"UPDATE campaignFormData SET formValues = NEW.formValues, uuid = NEW.uuid;\n" +
 						"SELECT RAISE (ABORT, \"We cannot accept another form on this Cluster, Please edit the previous data submitted\");\n" +
 						"END;");
+
+//		getDao(DeviceErrorLog.class).executeRaw(
+//				"CREATE TRIGGER IF NOT EXISTS prevent_duplicate_on_error_logs " +
+//						"BEFORE INSERT ON device_error " +
+//						"WHEN EXISTS (SELECT 1 FROM device_error rec_info " +
+//						"             WHERE rec_info.userName = NEW.userName AND rec_info.deviceId = NEW.deviceId) " +
+//						"BEGIN " +
+//						"  UPDATE device_error " +
+//						"     SET errorMessage = NEW.errorMessage, " +
+//						"         uuid = NEW.uuid, " +
+//						"         stackTrace = NEW.stackTrace, " +
+//						"         errorAction = NEW.errorAction, " +
+//						"         lastUpdated = NEW.lastUpdated, " +
+//						"         changeDate = CAST(ROUND((julianday('now') - 2440587.5)*86400000) As INTEGER) " +
+//						"   WHERE userName = NEW.userName AND deviceId = NEW.deviceId; " +
+//						"  SELECT RAISE(IGNORE); " +
+//						"END;"
+//		);
+//
+//		// Drop old upsert trigger if it exists
+//		getDao(DeviceErrorLog.class).executeRaw(
+//				"DROP TRIGGER IF EXISTS prevent_duplicate_on_error_logs;"
+//		);
+
+// Cap logs per (userName, deviceId) to 20 newest: delete older ones before insert
+		getDao(DeviceErrorLog.class).executeRaw(
+				"CREATE TRIGGER IF NOT EXISTS cap_device_error_logs_20 " +
+						"BEFORE INSERT ON device_error " +
+						"BEGIN " +
+						"  DELETE FROM device_error " +
+						"   WHERE id IN ( " +
+						"     SELECT id FROM device_error " +
+						"      WHERE userName = NEW.userName AND deviceId = NEW.deviceId " +
+						"      ORDER BY lastUpdated DESC, id DESC " +
+						"      LIMIT -1 OFFSET 19 " + // keep 19 existing; the new row becomes #20
+						"   ); " +
+						"END;"
+		);
+
 //		getDao(CampaignFormData.class).executeRaw(
 //				"CREATE TRIGGER prevent_duplicate_onupdatetable\n" +
 //						"BEFORE UPDATE ON campaignFormData\n" +
@@ -3903,6 +4023,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, CampaignFormData.class, true);
 			TableUtils.dropTable(connectionSource, CampaignFormMetaRegion.class, true);
 			TableUtils.dropTable(connectionSource, PopulationData.class, true);
+			TableUtils.dropTable(connectionSource, DeviceInfo.class, true);
+
 
 			TableUtils.dropTable(connectionSource, LbdsSync.class, true);
 
@@ -4037,6 +4159,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 					dao = (AbstractAdoDao<ADO>) new PopulationDataDao((Dao<PopulationData, Long>) innerDao);
 				}else if (type.equals(CampaignFormMetaRegion.class)) {
 					dao = (AbstractAdoDao<ADO>) new CampaignFormMetaRegionDao((Dao<CampaignFormMetaRegion, Long>) innerDao);
+				}else if (type.equals(DeviceInfo.class)) {
+					dao = (AbstractAdoDao<ADO>) new DeviceInfoDao((Dao<DeviceInfo, Long>) innerDao);
+				}else if (type.equals(DeviceErrorLog.class)) {
+					dao = (AbstractAdoDao<ADO>) new DeviceErrorLogDao((Dao<DeviceErrorLog, Long>) innerDao);
 				}
 				else {
 					throw new UnsupportedOperationException(type.toString());
@@ -4323,6 +4449,14 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	public static CampaignFormMetaRegionDao getCampaignFormMetaRegionDao() {
 
 		return (CampaignFormMetaRegionDao) getAdoDao(CampaignFormMetaRegion.class);
+	}
+	public static DeviceInfoDao getDeviceInfoDao() {
+
+		return (DeviceInfoDao) getAdoDao(DeviceInfo.class);
+	}
+
+	public static DeviceErrorLogDao getDeviceErrorLogDao() {
+		return (DeviceErrorLogDao) getAdoDao(DeviceErrorLog.class);
 	}
 
 	/**

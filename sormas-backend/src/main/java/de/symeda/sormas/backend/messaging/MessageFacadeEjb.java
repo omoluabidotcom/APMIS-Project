@@ -99,7 +99,9 @@ public class MessageFacadeEjb implements MessageFacade {
 		MessageDto target = new MessageDto();
 		DtoHelper.fillDto(target, source);
 
+		target.setTitle(source.getTitle());
 		target.setMessageContent(source.getMessageContent());
+		target.setMessageCategory(source.getMessageCategory());
 		target.setUserRoles(new HashSet<UserRole>(source.getUserRoles()));
 		target.setFormAccess(new HashSet<FormAccess>(source.getFormAccess()));
 		target.setArea(AreaFacadeEjb.toReferenceDto(source.getArea()));
@@ -123,6 +125,7 @@ public class MessageFacadeEjb implements MessageFacade {
 		MessageTemplateDto target = new MessageTemplateDto();
 		DtoHelper.fillDto(target, source);
 
+		target.setTitle(source.getTitle());
 		target.setMessageContent(source.getMessageContent());
 		target.setMessageCategory(source.getMessageCategory());
 		target.setArchived(source.isArchived());
@@ -162,7 +165,9 @@ public class MessageFacadeEjb implements MessageFacade {
 		Message target = (Message) DtoHelper.fillOrBuildEntity(source, messageService.getByUuid(source.getUuid()),
 				Message::new, checkChangeDate);
 
+		target.setTitle(source.getTitle());
 		target.setMessageContent(source.getMessageContent());
+		target.setMessageCategory(source.getMessageCategory());
 		target.setUserRoles(new HashSet<UserRole>(source.getUserRoles()));
 //		target.setUsertype(source.getUserTypes());
 		target.setFormAccess(new HashSet<FormAccess>(source.getFormAccess()));
@@ -180,6 +185,7 @@ public class MessageFacadeEjb implements MessageFacade {
 		MessagesTemplate target = (MessagesTemplate) DtoHelper.fillOrBuildEntity(source,
 				messageServiceTemplate.getByUuid(source.getUuid()), MessagesTemplate::new, checkChangeDate);
 
+		target.setTitle(source.getTitle());
 		target.setMessageContent(source.getMessageContent());
 		target.setCreatingUser(userService.getByUserName(source.getCreatingUser()));
 		target.setMessageCategory(source.getMessageCategory());
