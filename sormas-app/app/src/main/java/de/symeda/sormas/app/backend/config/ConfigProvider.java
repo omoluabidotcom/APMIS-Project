@@ -94,8 +94,8 @@ public final class ConfigProvider {
 	private static String LBDS_KEYSTORE_ALIAS_SORMAS_PRIVATE_KEY_AES_SECRET = "LBDS_PRIVATE_KEY_AES_SECRET";
 	private static String LBDS_KEYSTORE_ALIAS_AES_SECRET = "LBDS_AES_SECRET";
 
-	public static String APPVERSIONNUMBER = "1.0.40";
-	public static String APPRELEASEDATE = "07 Oct, 2025";
+	public static String APPVERSIONNUMBER = "1.0.41";
+	public static String APPRELEASEDATE = "21 Nov, 2025";
 
 	private static final String FULL_COUNTRY_LOCALE_PATTERN = "[a-zA-Z]*-[a-zA-Z]*";
 
