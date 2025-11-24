@@ -40,29 +40,24 @@ public class CampaignFormMetaWithExpReferenceDto extends ReferenceDto {
 	public static final String EXPIRATION = "expiryDay";
 	public static final String CAMPAIGN_ID = "campaignId";
 	public static final String END_DATE = "endDate";
-<<<<<<< HEAD
-=======
+ 
 	public static final String PRE_CAMP_EXPIRATION = "preCampExpiryDay";
 	public static final String PRE_CAMP_END_DATE = "preCampEndDate";
 	public static final String POST_CAMP_EXPIRATION = "postCampExpiryDay";
 	public static final String POST_CAMP_END_DATE = "postCampEndDate";
->>>>>>> team_collaboration
-//	public static final String UUID = "uuid";
+ //	public static final String UUID = "uuid";
 
 
 	private String formId;
 	private String campaignId;
 	private Long daysExpired;
 	private Date date;
-<<<<<<< HEAD
-=======
-	
+ 
 	private Long preCampDaysExpired;
 	private Date preCampDate;
 	private Long postCampDaysExpired;
 	private Date postCampDate;
->>>>>>> team_collaboration
-//	private String uuid;
+ //	private String uuid;
 
 
 	public CampaignFormMetaWithExpReferenceDto() {
@@ -71,9 +66,7 @@ public class CampaignFormMetaWithExpReferenceDto extends ReferenceDto {
 	public CampaignFormMetaWithExpReferenceDto(String uuid) {
         this.setUuid(uuid);
     }
-	
-<<<<<<< HEAD
-=======
+ 
 	public CampaignFormMetaWithExpReferenceDto(String formId, String campaignId, Long expiryDay, Date date, Long preCampExpiryDay, Date preCampDate,Long postCampExpiryDay, Date postCampDate,  String uuid) {
 		this.formId = formId;
 		this.campaignId = campaignId;
@@ -97,8 +90,7 @@ public class CampaignFormMetaWithExpReferenceDto extends ReferenceDto {
 		setUuid(uuid);
 	}
 	
->>>>>>> team_collaboration
-	public CampaignFormMetaWithExpReferenceDto(String formId, String campaignId, Long expiryDay, Date date, String uuid) {
+ 	public CampaignFormMetaWithExpReferenceDto(String formId, String campaignId, Long expiryDay, Date date, String uuid) {
 		// TODO Auto-generated constructor stub
 
 		this.formId = formId;
@@ -155,9 +147,7 @@ public class CampaignFormMetaWithExpReferenceDto extends ReferenceDto {
 	public void setDate(Date date) {
 		this.date = date;
 	}
-<<<<<<< HEAD
-=======
-
+  
 	public Long getPreCampDaysExpired() {
 		return preCampDaysExpired;
 	}
@@ -190,8 +180,4 @@ public class CampaignFormMetaWithExpReferenceDto extends ReferenceDto {
 		this.postCampDate = postCampDate;
 	}
 	
->>>>>>> team_collaboration
-	
-	
-
 }

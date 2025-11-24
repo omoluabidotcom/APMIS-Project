@@ -18,10 +18,8 @@
 package de.symeda.sormas.api.user;
 
 import java.sql.Timestamp;
-<<<<<<< HEAD
-=======
+ 
 import java.time.LocalDateTime;
->>>>>>> team_collaboration
 import java.util.Date;
 import java.util.List;
 import java.util.Set;

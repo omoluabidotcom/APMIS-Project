@@ -15,14 +15,12 @@ public class CampaignIndexDto implements Serializable {
 	public static final String NAME = "name";
 	public static final String START_DATE = "startDate";
 	public static final String END_DATE = "endDate";
-<<<<<<< HEAD
-=======
+ 
 	public static final String PRE_CAMP_START_DATE = "preCampStartDate";
 	public static final String PRE_CAMP_END_DATE = "preCampEndDate";
 	public static final String POST_CAMP_START_DATE = "postCampStartDate";
 	public static final String POST_CAMP_END_DATE = "postCampEndDate";
->>>>>>> team_collaboration
-	public static final String CAMPAIGN_STATUS = "campaignStatus";
+ 	public static final String CAMPAIGN_STATUS = "campaignStatus";
 	public static final String ARCHIVE = "archived";
 
 
@@ -32,14 +30,12 @@ public class CampaignIndexDto implements Serializable {
 	private String campaignYear;
 	private Date startDate;
 	private Date endDate;
-<<<<<<< HEAD
-=======
+ 
 	private Date preCampStartDate;
 	private Date preCampEndDate;
 	private Date postCampStartDate;
 	private Date postCampEndDate;
->>>>>>> team_collaboration
-	private String campaignStatus;
+ 	private String campaignStatus;
 	private String archived;
 
 	
@@ -53,8 +49,7 @@ public class CampaignIndexDto implements Serializable {
 //		this.endDate = endDate;
 //		this.campaignStatus = campaignStatus == true ? "Open" : "Closed" ;
 //	}
-<<<<<<< HEAD
-=======
+ 
 	public CampaignIndexDto(String uuid, String name, boolean campaignStatus, String cluster,  String campaignYear, Date startDate, Date endDate, Date preCampStartDate, Date preCampEndDate,  Date postCampStartDate, Date postCampEndDate, boolean archived) {
 		this.uuid = uuid;
 		this.name = name;
@@ -84,8 +79,7 @@ public class CampaignIndexDto implements Serializable {
 		this.archived = archived == true ? "Archived" : "Active" ;
 
 	}
->>>>>>> team_collaboration
-	
+ 	
 	public CampaignIndexDto(String uuid, String name, boolean campaignStatus, String cluster,  String campaignYear, Date startDate, Date endDate, boolean archived) {
 		this.uuid = uuid;
 		this.name = name;
@@ -162,8 +156,7 @@ public class CampaignIndexDto implements Serializable {
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
 	}
-<<<<<<< HEAD
-=======
+ 
 
 	public Date getPreCampStartDate() {
 		return preCampStartDate;
@@ -199,5 +192,4 @@ public class CampaignIndexDto implements Serializable {
 	
 	
 	
->>>>>>> team_collaboration
-}
+ }

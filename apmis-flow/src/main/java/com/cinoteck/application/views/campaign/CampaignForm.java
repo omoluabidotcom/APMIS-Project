@@ -494,7 +494,7 @@ public class CampaignForm extends VerticalLayout {
 		binderx.forField(startDate).withConverter(new LocalDateToDateConverter()).bind(CampaignDto::getStartDate,
 				CampaignDto::setStartDate);
 
-		binderx.forField(endDate).withConverter(new LocalDateToDateConverter()).bind(CampaignDto::getEndDate,
+		binderx.forField(endDate).withConverter(new LocalDateToDateConverter()).bind(CampaignDto::getEndDate, CampaignDto::setEndDate);
 
 		
 		binderx.forField(postCampaignstartDate).withConverter(new LocalDateToDateConverter()).bind(CampaignDto::getPostCampStartDate,

@@ -36,17 +36,13 @@ public class CampaignDto extends EntityDto {
 	public static final String NAME = "name";
 	public static final String ROUND = "round";
 	public static final String DESCRIPTION = "description";
-<<<<<<< HEAD
-	public static final String START_DATE = "startDate";
-	public static final String END_DATE = "endDate";
-=======
+ 
 	public static final String PRE_CAMPAIGN_START_DATE = "preCampStartDate";
 	public static final String PRE_CAMPAIGN_END_DATE = "preCampEndDate";
 	public static final String START_DATE = "startDate";
 	public static final String END_DATE = "endDate";
 	public static final String POST_CAMPAIGN_START_DATE = "postCampStartDate";
 	public static final String POST_CAMPAIGN_END_DATE = "postCampEndDate";
->>>>>>> team_collaboration
 	public static final String CAMPAIGN_YEAR = "campaignYear";
 	public static final String CREATING_USER = "creatingUser";
 	public static final String CREATING_USER_NAME = "creatingusername";
@@ -55,28 +51,7 @@ public class CampaignDto extends EntityDto {
 	public static final String CAMPAIGN_AREAS = "areas";
 	public static final String CAMPAIGN_STATUS = "campaignStatus";
 	public static final String CAMPAIGNEXPIRY = "campaignFormMetaExpiryDto";
-<<<<<<< HEAD
-
-	@Size(max = FieldConstraints.CHARACTER_LIMIT_SMALL, message = Validations.textTooLong)
-	private String name;
-	private String round;
-	// private String campaignTypes;
-	public String campaignStatus;
-
-	@Size(max = FieldConstraints.CHARACTER_LIMIT_BIG, message = Validations.textTooLong)
-	private String description;
-	private Date startDate;
-	private Date endDate;
-	private String campaignYear;
-	private UserReferenceDto creatingUser;
-	private Set<CampaignFormMetaReferenceDto> campaignFormMetas;
-
-	public String creatingusername;
-	public Boolean published;
-
-=======
-	
-	
+ 
 	@Size(max = FieldConstraints.CHARACTER_LIMIT_SMALL, message = Validations.textTooLong)
 	private String name;
 	private String round;
@@ -94,22 +69,17 @@ public class CampaignDto extends EntityDto {
 	private Set<CampaignFormMetaReferenceDto> campaignFormMetas;
 	public String creatingusername;
 	public Boolean published;
->>>>>>> team_collaboration
+
+
 	private Set<AreaReferenceDto> areas = new HashSet<AreaReferenceDto>();
 	private Set<RegionReferenceDto> region = new HashSet<RegionReferenceDto>();
 	private Set<DistrictReferenceDto> districts = new HashSet<DistrictReferenceDto>();
 	private Set<CommunityReferenceDto> community = new HashSet<CommunityReferenceDto>();
-<<<<<<< HEAD
-
+ 
 	@Transient
 	private Set<CampaignFormMetaWithExpReferenceDto> campaignFormMetaExpiry = new HashSet<CampaignFormMetaWithExpReferenceDto>(); 
 	private Set<PopulationDataDto> populationdata = new HashSet<PopulationDataDto>();
-
-=======
-	@Transient
-	private Set<CampaignFormMetaWithExpReferenceDto> campaignFormMetaExpiry = new HashSet<CampaignFormMetaWithExpReferenceDto>(); 
-	private Set<PopulationDataDto> populationdata = new HashSet<PopulationDataDto>();
->>>>>>> team_collaboration
+ 
 	@Valid
 	private List<CampaignDashboardElement> campaignDashboardElements;
 	private boolean archived;
@@ -150,15 +120,7 @@ public class CampaignDto extends EntityDto {
 		this.round = round;
 	}
 
-<<<<<<< HEAD
-	/*
-	 * public String getCampaignTypes() { return campaignTypes; }
-	 * 
-	 * public void setCampaignTypes(String campaignTypes) { this.campaignTypes =
-	 * campaignTypes; }
-	 */
-=======
->>>>>>> team_collaboration
+ 
 	public String getDescription() {
 		return description;
 	}
@@ -302,11 +264,7 @@ public class CampaignDto extends EntityDto {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
-<<<<<<< HEAD
-	
-	
-
-=======
+ 
 
 	public Date getPreCampStartDate() {
 		return preCampStartDate;
@@ -341,5 +299,4 @@ public class CampaignDto extends EntityDto {
 	}
 	
 	
->>>>>>> team_collaboration
-}
+ }
