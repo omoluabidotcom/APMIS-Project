@@ -377,6 +377,8 @@ System.out.println(isConnected() + "connecting +++++++++"+connecting);
 		connectAsync(activity.getApplicationContext(), matchExactVersion, (result, versionCompatible) -> {
 			System.out.println(activity.toString() +"+++++++ travcking error 1 +++++++++"+result.getResultStatus());
 			if (result.getResultStatus().isSuccess()) {
+
+				System.out.println("result.getResultStatus().isSuccess()------");
 				callback.accept(true);
 			} else {
 				System.out.println(result.getError() + "+++++ travcking error 2 +++++++++"+result.getResultStatus());

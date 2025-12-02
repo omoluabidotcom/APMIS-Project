@@ -21,6 +21,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -32,12 +33,21 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 
+import com.google.firebase.perf.FirebasePerformance;
+import com.google.firebase.perf.metrics.Trace;
+
 import de.symeda.sormas.app.R;
+import de.symeda.sormas.app.backend.common.DaoException;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
 import de.symeda.sormas.app.core.NotificationContext;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
 import de.symeda.sormas.app.core.notification.NotificationType;
 import de.symeda.sormas.app.databinding.ActivityEnterPinLayoutBinding;
+import de.symeda.sormas.app.rest.NoConnectionException;
+import de.symeda.sormas.app.rest.RetroProvider;
+import de.symeda.sormas.app.rest.ServerCommunicationException;
+import de.symeda.sormas.app.rest.ServerConnectionException;
+import de.symeda.sormas.app.rest.SynchronizeDataAsync;
 import de.symeda.sormas.app.util.NavigationHelper;
 
 public class EnterPinActivity extends AppCompatActivity implements NotificationContext {
@@ -78,8 +88,6 @@ public class EnterPinActivity extends AppCompatActivity implements NotificationC
 		// sync will be done by other activities anyway...
 		//progressDialog = SynchronizeDataAsync.callWithProgressDialog(SynchronizeDataAsync.SyncMode.Changes, EnterPinActivity.this, null);
 	}
-
-
 
 	@Override
 	protected void onDestroy() {
@@ -324,10 +332,15 @@ public class EnterPinActivity extends AppCompatActivity implements NotificationC
 				if (enteredPIN.equals(savedPIN)) {
 					ConfigProvider.setAccessGranted(true);
 					NotificationHelper.showNotification(binding, NotificationType.SUCCESS, R.string.message_pin_correct_loading_to_reinitialize);
+try {
+	showReinitializeLoadingDialog();
+}catch (Exception e){
+	Log.e(getClass().getName(), "Exception from dialog initialization", e);
+	NotificationHelper.showNotification(binding, NotificationType.ERROR,
+			"Failed to initialize reinitialization dialog: " + e.getMessage());
 
-					showReinitializeLoadingDialog();
-
-					finish();
+}
+//					finish();
 				} else {
 					NotificationHelper.showNotification(binding, NotificationType.ERROR, R.string.message_pin_wrong);
 					triedAgain = true;
@@ -349,76 +362,129 @@ public class EnterPinActivity extends AppCompatActivity implements NotificationC
 		}
 	}
 
-
 	private void showReinitializeLoadingDialog() {
+		if (isFinishing() || isDestroyed()) {
+			Log.e(getClass().getName(), "Cannot show dialog - activity is finishing or destroyed");
+			return;
+		}
+
 		reInitializeprogressDialog = new ProgressDialog(this);
-		reInitializeprogressDialog.setTitle("Reinitializing App");
-		reInitializeprogressDialog.setMessage("Syncing device information and error logs...");
+		reInitializeprogressDialog.setTitle("Checking Connection");
+		reInitializeprogressDialog.setMessage("Verifying network connectivity...");
 		reInitializeprogressDialog.setCancelable(false);
 		reInitializeprogressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		reInitializeprogressDialog.show();
+
+		try {
+			reInitializeprogressDialog.show();
+		} catch (Exception e) {
+			Log.e(getClass().getName(), "Failed to show dialog", e);
+			throw e;
+		}
+
+		// Check connection and synchronize using the same pattern as LoginActivity
+		RetroProvider.connectAsyncHandled(this, true, true, result -> {
+			if (Boolean.TRUE.equals(result)) {
+				// Connection successful, update UI and start sync
+				runOnUiThread(() -> {
+
+					System.out.println("Syncronizing data ");
+					reInitializeprogressDialog.setTitle("Reinitializing App");
+					reInitializeprogressDialog.setMessage("Synchronizing APMIS error logs with server. This may take a while, please wait...");
+				});
+
+				// Start synchronization
+				System.out.println("Syncronizing data  calll ");
 
 
+				SynchronizeDataAsync.call(SynchronizeDataAsync.SyncMode.Changes, getApplicationContext(), (syncFailed, syncFailedMessage) -> {
 
-		// Sync device info and error logs in background
-		new Thread(() -> {
-			try {
-			de.symeda.sormas.app.rest.SynchronizeDataAsync.syncDeviceInfoAndErrorLogsOnly();
+					// Always disconnect after sync
+					RetroProvider.disconnect();
 
-			runOnUiThread(() -> {
-						if (!isFinishing() && !isDestroyed()) {
-							reInitializeprogressDialog.setMessage("Sync completed. Clearing database and restarting...");
+					System.out.println("Dosconnecting sync ------");
 
-							// Add a small delay to show the completion message
-							new android.os.Handler().postDelayed(() -> {
-								if (!isFinishing() && !isDestroyed()) {
-									reInitializeprogressDialog.dismiss();
-									clearDatabaseAndRestart();
-								}
-							}, 1000);
+
+					runOnUiThread(() -> {
+//						if (reInitializeprogressDialog != null && reInitializeprogressDialog.isShowing()) {
+//							reInitializeprogressDialog.dismiss();
+//						}
+						if (!syncFailed) {
+							// Sync successful, proceed with database clearing and restart
+							System.out.println("Syncronizing did not fail ");
+
+
+							if (!isFinishing() && !isDestroyed() && reInitializeprogressDialog != null && reInitializeprogressDialog.isShowing()) {
+								reInitializeprogressDialog.setTitle("Sync Completed");
+								reInitializeprogressDialog.setMessage("✓ Device information and error logs synchronized successfully!");
+
+								// Wait 7 seconds before proceeding to database clearing
+								new android.os.Handler().postDelayed(() -> {
+									if (!isFinishing() && !isDestroyed() && reInitializeprogressDialog != null) {
+										// Update dialog for database clearing phase
+										reInitializeprogressDialog.setTitle("Clearing Database");
+										reInitializeprogressDialog.setMessage("Removing local data and preparing for restart...");
+
+										// Wait another 7 seconds before actually clearing
+										new android.os.Handler().postDelayed(() -> {
+											if (!isFinishing() && !isDestroyed() && reInitializeprogressDialog != null) {
+												reInitializeprogressDialog.setTitle("Almost Done");
+												reInitializeprogressDialog.setMessage("✓ Database cleared successfully! Restarting app...");
+
+												// Final delay before restart
+												new android.os.Handler().postDelayed(() -> {
+													if (!isFinishing() && !isDestroyed() && reInitializeprogressDialog != null) {
+														reInitializeprogressDialog.dismiss();
+														clearDatabaseAndRestart();
+													}
+												}, 7000); // 7 seconds
+											}
+										}, 7000); // 7 seconds
+									}
+								}, 7000); // 7 seconds
+							}
+
+//							clearDatabaseAndRestart();
+						} else {
+							// Sync failed
+							NotificationHelper.showNotification(EnterPinActivity.this, NotificationType.ERROR,
+									syncFailedMessage != null ? syncFailedMessage : getString(R.string.error_synchronization));
 						}
 					});
-
-			} catch (Exception e) {
-				// Run UI operations on main thread
+				});
+			} else {
+				// Connection failed
 				runOnUiThread(() -> {
-					reInitializeprogressDialog.setMessage("Sync failed, but proceeding with reinitialization: " + e.getMessage());
-
-					// Add a small delay to show the error message
-					new android.os.Handler().postDelayed(() -> {
+					if (reInitializeprogressDialog != null && reInitializeprogressDialog.isShowing()) {
 						reInitializeprogressDialog.dismiss();
-						clearDatabaseAndRestart();
-					}, 2000);
+					}
+					showConnectionErrorWithRetry();
 				});
 			}
-		}).start();
+		});
 	}
 
+	private void showConnectionErrorWithRetry() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Connection Error");
+		builder.setMessage("No network connection available. Please check your internet connection and try again.");
+		builder.setCancelable(false);
 
+		// Try Again button
+		builder.setPositiveButton("Try Again", (dialog, which) -> {
+			dialog.dismiss();
+			// Retry the reinitialization process
+			showReinitializeLoadingDialog();
+		});
 
-	private void performReinitializeAction() {
-		// Show progress notification
-		NotificationHelper.showNotification(binding, NotificationType.INFO, R.string.message_pin_correct_loading_to_reinitialize);
+		// Cancel button
+		builder.setNegativeButton("Cancel", (dialog, which) -> {
+			dialog.dismiss();
+			NotificationHelper.showNotification(binding, NotificationType.INFO,
+					"Reinitialization cancelled. You can try again later.");
+		});
 
-		// Sync device info and error logs in background
-		new Thread(() -> {
-			try {
-				// Import the SynchronizeDataAsync class
-				de.symeda.sormas.app.rest.SynchronizeDataAsync.syncDeviceInfoAndErrorLogsOnly();
-
-				// Run UI operations on main thread
-				runOnUiThread(() -> {
-					NotificationHelper.showNotification(binding, NotificationType.SUCCESS, "Sync completed. Clearing database and restarting...");
-					clearDatabaseAndRestart();
-				});
-			} catch (Exception e) {
-				// Run UI operations on main thread
-				runOnUiThread(() -> {
-					NotificationHelper.showNotification(binding, NotificationType.WARNING, "Sync failed, but proceeding with reinitialization: " + e.getMessage());
-					clearDatabaseAndRestart();
-				});
-			}
-		}).start();
+		AlertDialog dialog = builder.create();
+		dialog.show();
 	}
 
 	private void clearDatabaseAndRestart() {
@@ -437,14 +503,13 @@ public class EnterPinActivity extends AppCompatActivity implements NotificationC
 			finish();
 
 		} catch (Exception e) {
-			if(!isFinishing() && !isDestroyed()){
+			if (!isFinishing() && !isDestroyed()) {
+				Log.e(getClass().getName(), "Error during database clearing", e);
 				NotificationHelper.showNotification(binding, NotificationType.ERROR,
 						"Error during reinitialization: " + e.getMessage());
 			}
-
 		}
 	}
-
 
 	public void backToSettings(View view) {
 		NavigationHelper.goToSettings(view.getContext());
