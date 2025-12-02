@@ -77,6 +77,11 @@ public class CampaignFormGridComponent extends VerticalLayout {
 
 //		grid.addColumn(CampaignFormMetaReferenceDto::getDaysExpired)
 //				.setHeader(I18nProperties.getCaption(Captions.expiry) + " (default)");
+		
+		grid.addColumn(CampaignFormMetaReferenceDto::getFormVersion)
+		.setHeader(I18nProperties.getCaption("Form Version (may not update until saved)"));
+
+		
 		grid.addColumn(this::getDaysExpiredEditable)
 				.setHeader(I18nProperties.getCaption(Captions.expiry) + " custom days (may not update until saved)");
 
