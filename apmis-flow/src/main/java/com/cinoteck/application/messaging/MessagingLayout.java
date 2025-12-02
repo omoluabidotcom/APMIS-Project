@@ -212,25 +212,29 @@ public class MessagingLayout extends VerticalLayout {
 		Icon reSendIcon = new Icon(VaadinIcon.CHECK_CIRCLE_O);
 		Button reSend = new Button("Resend", reSendIcon);
 		
+		Button reSendFacade = new Button("Resend", reSendIcon);
+		
 		if(!isNew) {
 			saved.setVisible(isNew);
-			reSend.setVisible(!isNew);
+			reSendFacade.setVisible(!isNew);
+			reSend.setVisible(false);
 			
-//			titleField.setEnabled(isNew); 
-//			messageContent.setEnabled(isNew); 
-//			messageCategory.setEnabled(isNew);  
-//			userRoles.setEnabled(isNew);  
-//			formAccessSelector.setEnabled(isNew);  
-//			areaSelector.setEnabled(isNew);  
-//			regionSelector.setEnabled(isNew);  
-//			districtSelector.setEnabled(isNew); 
-//			communitySelector.setEnabled(isNew); 
+			titleField.setEnabled(isNew); 
+			messageContent.setEnabled(isNew); 
+			messageCategory.setEnabled(isNew);  
+			userRoles.setEnabled(isNew);  
+			formAccessSelector.setEnabled(isNew);  
+			areaSelector.setEnabled(isNew);  
+			regionSelector.setEnabled(isNew);  
+			districtSelector.setEnabled(isNew); 
+			communitySelector.setEnabled(isNew); 
 		} else {
 			saved.setVisible(true);
+			reSendFacade.setVisible(false);
 			reSend.setVisible(false);
 		}
 		
-		hr.add(discardChanges, saved, reSend);
+		hr.add(discardChanges, saved, reSend, reSendFacade);
 		add(formLayout, hr);
 
 		discardChanges.addClickListener(e -> discardChanges());
@@ -291,6 +295,24 @@ public class MessagingLayout extends VerticalLayout {
 			messageDtoResend.setTitle(binder.getBean().getTitle());
 			
 			validateAndSave(messageDtoResend);
+		});
+		
+		reSendFacade.addClickListener(e -> {
+			
+			if(reSendFacade.isVisible()) {
+				reSend.setVisible(true);
+				reSendFacade.setVisible(false);
+				
+				titleField.setEnabled(true); 
+				messageContent.setEnabled(true); 
+				messageCategory.setEnabled(true);  
+				userRoles.setEnabled(true);  
+				formAccessSelector.setEnabled(true);  
+				areaSelector.setEnabled(true);  
+				regionSelector.setEnabled(true);  
+				districtSelector.setEnabled(true); 
+				communitySelector.setEnabled(true); 
+			} 
 		});
 
 		savePreviewButton.addClickListener(e -> {

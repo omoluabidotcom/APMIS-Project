@@ -61,6 +61,7 @@ import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.lang.ref.WeakReference;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -240,12 +241,11 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 					public void onComplete(@NonNull Task<String> task) {
 						if (task.isSuccessful() && task.getResult() != null) {
 							String token = task.getResult();
-							Log.i("FCM Token========", token);
 							if(token != null && !token.isEmpty()) {
 								User user = ConfigProvider.getUser();
 								if(user != null) {
-									DatabaseHelper.getUserDao().updateFcmToken(user.getUserName(), token);
-									System.out.println("insideeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+									DatabaseHelper.getFCMTokenDao().updateFcmToken(user.getUserName(), token);
+                                    System.out.println("insideeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee ");
 								}
 							}
 						} else {

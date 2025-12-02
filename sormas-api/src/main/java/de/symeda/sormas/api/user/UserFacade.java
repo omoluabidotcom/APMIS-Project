@@ -25,9 +25,6 @@ import java.util.Set;
 import javax.ejb.Remote;
 import javax.validation.Valid;
 
-import org.springframework.scheduling.annotation.Scheduled;
-
-import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
 import de.symeda.sormas.api.common.Page;
 import de.symeda.sormas.api.infrastructure.ConfigurationChangeLogCriteria;
 import de.symeda.sormas.api.infrastructure.ConfigurationChangeLogDto;

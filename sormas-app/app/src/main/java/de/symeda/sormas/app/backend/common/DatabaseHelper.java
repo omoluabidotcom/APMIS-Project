@@ -71,6 +71,8 @@ import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaRegion;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaRegionDao;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaWithExp;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaWithExpDao;
+import de.symeda.sormas.app.backend.campaign.usertoken.FCMToken;
+import de.symeda.sormas.app.backend.campaign.usertoken.FCMTokenDao;
 import de.symeda.sormas.app.backend.caze.Case;
 import de.symeda.sormas.app.backend.caze.CaseDao;
 import de.symeda.sormas.app.backend.caze.maternalhistory.MaternalHistory;
@@ -189,7 +191,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	// any time you make changes to your database objects, you may have to increase the database version
 
 
-	public static final int DATABASE_VERSION = 350;
+	public static final int DATABASE_VERSION = 351;
 
 	private static DatabaseHelper instance = null;
 
@@ -274,6 +276,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 			if (clearInfrastructure) {
 				TableUtils.clearTable(connectionSource, User.class);
+				TableUtils.clearTable(connectionSource, FCMToken.class);
 				TableUtils.clearTable(connectionSource, UserRoleConfig.class);
 				TableUtils.clearTable(connectionSource, DiseaseConfiguration.class);
 				TableUtils.clearTable(connectionSource, CustomizableEnumValue.class);
@@ -361,6 +364,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 			if (clearUserInfrastructure) {
 				TableUtils.clearTable(connectionSource, User.class);
+				TableUtils.clearTable(connectionSource, FCMToken.class);
 				TableUtils.clearTable(connectionSource, UserRoleConfig.class);
 
 			}
@@ -439,6 +443,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, CustomizableEnumValue.class);
 			TableUtils.createTable(connectionSource, FeatureConfiguration.class);
 			TableUtils.createTable(connectionSource, User.class);
+			TableUtils.createTable(connectionSource, FCMToken.class);
 			TableUtils.createTable(connectionSource, Person.class);
 			TableUtils.createTable(connectionSource, PersonContactDetail.class);
 			TableUtils.createTable(connectionSource, Case.class);
@@ -3321,7 +3326,20 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 									+" creationDate BIGINT NOT NULL ,"
 									+ "		selected varchar);");
 
-
+				case 350:
+					currentVersion = 350;
+					getDao(FCMToken.class).executeRaw("CREATE TABLE IF NOT EXISTS fcmtokens (" +
+							"id INTEGER PRIMARY KEY,  " +
+							"snapshot SMALLINT DEFAULT 0,  " +
+							"uuid varchar NOT NULL, " +
+							"creationDate BIGINT NOT NULL, " +
+							"changeDate BIGINT NOT NULL, " +
+							"localChangeDate BIGINT, " +
+							"modified SMALLINT DEFAULT 0, " +
+							"lastOpenedDate BIGINT, " +
+							"username varchar NOT NULL, " +
+							"token varchar " +
+							");");
                     break;
 
 
@@ -3903,6 +3921,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, CampaignFormData.class, true);
 			TableUtils.dropTable(connectionSource, CampaignFormMetaRegion.class, true);
 			TableUtils.dropTable(connectionSource, PopulationData.class, true);
+			TableUtils.dropTable(connectionSource, FCMToken.class, true);
 
 			TableUtils.dropTable(connectionSource, LbdsSync.class, true);
 
@@ -4037,6 +4056,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 					dao = (AbstractAdoDao<ADO>) new PopulationDataDao((Dao<PopulationData, Long>) innerDao);
 				}else if (type.equals(CampaignFormMetaRegion.class)) {
 					dao = (AbstractAdoDao<ADO>) new CampaignFormMetaRegionDao((Dao<CampaignFormMetaRegion, Long>) innerDao);
+				} else if (type.equals(FCMToken.class)) {
+					dao = (AbstractAdoDao<ADO>) new FCMTokenDao((Dao<FCMToken, Long>) innerDao);
 				}
 				else {
 					throw new UnsupportedOperationException(type.toString());
@@ -4205,6 +4226,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	public static UserDao getUserDao() {
 		return (UserDao) getAdoDao(User.class);
+	}
+
+	public static FCMTokenDao getFCMTokenDao() {
+		return (FCMTokenDao) getAdoDao(FCMToken.class);
 	}
 
 	public static UserRoleConfigDao getUserRoleConfigDao() {
