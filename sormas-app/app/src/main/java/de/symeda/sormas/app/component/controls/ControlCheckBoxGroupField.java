@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
@@ -57,9 +58,9 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 	// Add this field to store the pending value
 	private Object pendingValue = null;
 	private boolean optionsSet = false;
-private Context storedContext;
-	private static Map<String, String> optionvaluex = new HashMap<>();
+	private Context storedContext;
 
+	private Set<String> validOptionKeys = new HashSet<>();
 
 	// Constructors
 	public ControlCheckBoxGroupField(Context context) {
@@ -113,6 +114,10 @@ private Context storedContext;
 		// Clear existing items first
 		removeAllItems();
 
+		validOptionKeys.clear();
+		validOptionKeys.addAll(optionsValue.keySet());
+
+
 		int index = 0;
 		for (Map.Entry<String, String> entry : optionsValue.entrySet()) {
 			String key = entry.getKey();    // This is the value we want to store
@@ -134,6 +139,10 @@ private Context storedContext;
 		if (selectedElements == null) {
 			selectedElements = new HashSet<>();
 		}
+
+		validOptionKeys.clear();
+		validOptionKeys.addAll(optionsValue.keySet());
+
 		initializeContainers();
 		removeAllItems();
 		int index = 0;
@@ -456,12 +465,47 @@ private Context storedContext;
 	}
 
 
+//	@Override
+//	protected Object getFieldValue() {
+//		List<String> selectedList = new ArrayList<>(selectedElements);
+//		System.out.println("getFieldValue() returning: " + selectedList);
+//		return selectedList;
+//	}
+
 	@Override
 	protected Object getFieldValue() {
 		List<String> selectedList = new ArrayList<>(selectedElements);
-		System.out.println("getFieldValue() returning: " + selectedList);
+
+		// Filter out invalid values that are not part of the configured options
+		if (!validOptionKeys.isEmpty()) {
+			selectedList = selectedList.stream()
+					.filter(validOptionKeys::contains)
+					.collect(Collectors.toList());
+
+			// Update selectedElements to remove invalid entries
+			selectedElements.retainAll(validOptionKeys);
+		}
+
+		System.out.println("getFieldValue() returning (filtered): " + selectedList);
 		return selectedList;
 	}
+
+	@Override
+	public boolean setErrorIfEmpty() {
+		if (!required || !isEnabled()) {
+			return false;
+		}
+
+		// For checkbox groups, check if no checkboxes are selected
+		List<String> selectedList = new ArrayList<>(selectedElements);
+		if (selectedList.isEmpty()) {
+			enableErrorState(R.string.validation_error_required);
+			return true;
+		}
+
+		return false;
+	}
+
 
 	@Override
 	public void setEnabled(boolean enabled) {
@@ -526,14 +570,6 @@ private Context storedContext;
 		view.setFieldValue(flattened);
 	}
 
-
-
-	@BindingAdapter(value = {"value"})
-	public static void setValue(ControlCheckBoxGroupField view, Object value) {
-		System.out.println("BindingAdapter - valuebbb: " + value);
-		view.setFieldValue( value);
-	}
-
 	@BindingAdapter("value")
 	public static void setValue(ControlCheckBoxGroupField view, Set<?> value) {
 		if (value != null) {
@@ -544,7 +580,18 @@ private Context storedContext;
 
 	@Override
 	protected void changeVisualState(VisualState state) {
-		// TODO: Implement error state changes
+		// Handle label color changes like other fields
+		if (groupLabel != null) {
+			int labelColor = getResources().getColor(state.getLabelColor());
+			groupLabel.setTextColor(labelColor);
+		}
+
+		if (state == VisualState.ERROR) {
+			setBackgroundColor(getResources().getColor(android.R.color.holo_red_light) & 0x33FFFFFF); // Semi-transparent red
+		} else {
+			setBackgroundColor(Color.TRANSPARENT);
+		}
+
 		switch (state) {
 			case ERROR:
 				// Show error indicators

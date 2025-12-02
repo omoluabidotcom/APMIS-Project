@@ -25,8 +25,7 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
-
+import java.util.Date; 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1565,8 +1564,7 @@ if(criteria.getUserLanguage() != null) {
 //		return resultData;
 //	}
 	
-	
-
+	 
 //	@Override
 //	public List<CampaignFormDataIndexDto> getFlwDuplicateErrorAnalysis(CampaignFormDataCriteria criteria, Integer first, Integer max,
 //	        List<SortProperty> sortProperties) {

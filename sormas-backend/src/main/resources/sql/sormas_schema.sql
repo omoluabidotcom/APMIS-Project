@@ -11346,59 +11346,6 @@ ALTER TABLE public.messages ADD COLUMN messagecategory varchar NULL;
 
 INSERT INTO schema_version (version_number, comment) VALUES (487, 'Updating Notification #870 & #869');
 
-
-CREATE MATERIALIZED VIEW public.mv_flw_duplicate_error_analysis
-TABLESPACE pg_default
-AS WITH duplicate_tazkiras AS (
-         SELECT elem.value ->> 'value'::text AS tazkira_value
-           FROM campaignformdata cfd_1
-             CROSS JOIN LATERAL json_array_elements(cfd_1.formvalues) elem(value)
-          WHERE (elem.value ->> 'id'::text) = 'TazkiraNo'::text AND (elem.value ->> 'value'::text) IS NOT NULL AND (elem.value ->> 'value'::text) <> ''::text
-          GROUP BY (elem.value ->> 'value'::text)
-         HAVING count(*) > 1
-        ), filtered_campaign_ids AS (
-         SELECT unnest(string_to_array(array_to_string(array_agg(flwduplicateerrorreport.id), ','::text), ','::text))::bigint AS campaign_id
-           FROM flwduplicateerrorreport
-          GROUP BY flwduplicateerrorreport.value
-         HAVING count(*) > 1
-        )
- SELECT cfd.id AS campaignformdata_id,
-    camp.uuid AS campaign_uuid,
-    a.uuid AS area_uuid,
-    a.name AS area,
-    r.uuid AS region_uuid,
-    r.name AS region,
-    d.uuid AS district_uuid,
-    d.name AS district,
-    f1.value ->> 'value'::text AS firstname,
-    f2.value ->> 'value'::text AS title,
-    f3.value ->> 'value'::text AS tazkiranumber,
-        CASE
-            WHEN dt.tazkira_value IS NOT NULL THEN 'Error: Duplicate Tazkira number'::text
-            ELSE 'No Error'::text
-        END AS error_status,
-    cfd.changedate AS last_modified
-   FROM campaignformdata cfd
-     JOIN filtered_campaign_ids fci ON cfd.id = fci.campaign_id
-     LEFT JOIN campaignformmeta cfm ON cfd.campaignformmeta_id = cfm.id
-     LEFT JOIN region r ON cfd.region_id = r.id
-     LEFT JOIN areas a ON cfd.area_id = a.id
-     LEFT JOIN district d ON cfd.district_id = d.id
-     LEFT JOIN campaigns camp ON cfd.campaign_id = camp.id
-     CROSS JOIN LATERAL json_array_elements(cfd.formvalues) f3(value)
-     LEFT JOIN LATERAL ( SELECT elem.value
-           FROM json_array_elements(cfd.formvalues) elem(value)
-          WHERE (elem.value ->> 'id'::text) = 'FirstName'::text
-         LIMIT 1) f1 ON true
-     LEFT JOIN LATERAL ( SELECT elem.value
-           FROM json_array_elements(cfd.formvalues) elem(value)
-          WHERE (elem.value ->> 'id'::text) = 'Title'::text
-         LIMIT 1) f2 ON true
-     LEFT JOIN LATERAL json_array_elements(cfm.campaignformelements) meta(value) ON true
-     LEFT JOIN duplicate_tazkiras dt ON (f3.value ->> 'value'::text) = dt.tazkira_value
-  WHERE (f3.value ->> 'id'::text) = 'TazkiraNo'::text AND (f3.value ->> 'id'::text) = (meta.value ->> 'id'::text)
-WITH DATA;
-
 CREATE TABLE public.device_manager (
 	id int8 NOT NULL,
 	uuid varchar(255) NOT NULL,
@@ -11432,9 +11379,7 @@ CREATE TABLE public.device_manager (
 	CONSTRAINT chk_network_strength CHECK (((network_strength >= 0) AND (network_strength <= 5))),
 	CONSTRAINT device_manager_pkey PRIMARY KEY (id),
 	CONSTRAINT device_manager_uuid_key UNIQUE (uuid)
-);
-CREATE INDEX idx_device_manager_user_device ON public.device_manager USING btree (user_name, device_id);
-
+); 
 
 CREATE OR REPLACE FUNCTION public.delete_old_device_info()
  RETURNS trigger
@@ -11502,8 +11447,6 @@ BEGIN
 END;
 $function$
 ;
-
-
 
 create trigger before_insert_device_error before
 insert

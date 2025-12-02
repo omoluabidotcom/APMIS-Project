@@ -208,7 +208,7 @@ public class SettingsFragment extends BaseLandingFragment {
 
 
 	public void reInitializeData() {
-		showReinitialisationConfirmationDialog(() -> showRepullDataConfirmationDialog());
+		showReinitialisationConfirmationDialog(() -> showReinitializeConfirmationDialog());
 	}
 
 
@@ -249,6 +249,39 @@ public class SettingsFragment extends BaseLandingFragment {
 			confirmedCallback.call();
 		}
 	}
+
+	private void showReinitializeConfirmationDialog() {
+		final ConfirmationDialog confirmationDialog =
+				new ConfirmationDialog(getActivity(), R.string.heading_confirmation_dialog, R.string.info_resync_duration);
+
+		confirmationDialog.setPositiveCallback(() -> {
+			// Collect unsynchronized changes
+			final List<Case> modifiedCases = DatabaseHelper.getCaseDao().getModifiedEntities();
+			getBaseActivity().synchronizeData(SynchronizeDataAsync.SyncMode.Reinitialize, true, true, null, new Callback() {
+
+				@Override
+				public void call() {
+					// Add deleted entities that had unsynchronized changes to sync log
+					for (Case caze : modifiedCases) {
+						if (DatabaseHelper.getCaseDao().queryUuidReference(caze.getUuid()) == null) {
+							DatabaseHelper.getSyncLogDao()
+									.createWithParentStack(caze.toString(), getResources().getString(R.string.caption_changed_data_lost));
+						}
+					}
+
+				}
+			}, new Callback() {
+
+				@Override
+				public void call() {
+					DatabaseHelper.clearTables(true, true);
+				}
+			});
+		});
+
+		confirmationDialog.show();
+	}
+
 
 	private void showRepullDataConfirmationDialog() {
 		final ConfirmationDialog confirmationDialog =
