@@ -1,6 +1,7 @@
 package de.symeda.sormas.app.backend.campaign.usertoken;
 
 import com.j256.ormlite.dao.Dao;
+ 
 import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.Where;
@@ -37,10 +38,7 @@ public class FCMTokenDao extends AbstractAdoDao<FCMToken> {
 
             if (fcmtoken != null) {
                 fcmtoken.setToken(token);
-//				user.setChangeDate(new Date());
-//				user.setModified(true);
-                dao.update(fcmtoken);
-                System.out.println("NOTNULLLLLLLLLLLNULLLLLLLLLLLLLLLLLLLLLLLLL 111111111111111");
+                dao.update(fcmtoken); 
             } else {
                 FCMToken fcmToken = new FCMToken();
                 fcmToken.setUserName(username.toLowerCase());
@@ -57,11 +55,7 @@ public class FCMTokenDao extends AbstractAdoDao<FCMToken> {
                 fcmToken.setSnapshot(false);
 
                 dao.create(fcmToken);
-//                fcmToken.
-
-                dao.create(fcmToken);
-                System.out.println("NOTNULLLLLLLLLLLNULLLLLLLLLLLLLLLLLLLLLLLLL 22222222222222222");
-//                throw new RuntimeException("FCM Token not found with username: " + username);
+                dao.create(fcmToken);         
             }
         } catch (SQLException e) {
             throw new RuntimeException("Failed to update FCM Token for user: " + username, e);
@@ -83,5 +77,4 @@ public class FCMTokenDao extends AbstractAdoDao<FCMToken> {
 
         dao.createOrUpdate(token);
     }
-
 }

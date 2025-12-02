@@ -31,7 +31,9 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
+ 
+import java.util.Calendar;
+ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -183,7 +185,10 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         for(CampaignFormDataEntry campaignFormDataEntry : formValues) {
             if (campaignFormDataEntry.getId() != null && campaignFormDataEntry.getValue() != null) {
                 String value = campaignFormDataEntry.getValue().toString();
-               if(campaignFormDataEntry.getId().toString().equalsIgnoreCase("villagecode")
+
+                System.out.println(campaignFormDataEntry.getId() + "Village code Value detected -------" + value);
+
+                if(campaignFormDataEntry.getId().toString().equalsIgnoreCase("villageCode")
                || campaignFormDataEntry.getId().toString().equalsIgnoreCase("tazkiraNo")
                || campaignFormDataEntry.getId().toString().equalsIgnoreCase("phone")){
                    System.out.println("Village code Value detected -------");
@@ -199,6 +204,9 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
                        // not a number, leave value as is
                    }
                }
+
+                System.out.println(campaignFormDataEntry.getId() + "before setting v Village code Value detected -------" + value);
+
                 campaignFormDataEntry.setValue(value);
                 filledFormValues.add(campaignFormDataEntry);
                 if (campaignFormDataEntry.getId().equalsIgnoreCase("LotNo")) {
@@ -221,8 +229,26 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
                 }
         }
+ 
+        if (campaignFormDataToSave.getFormDate() != null) {
+            Date date = campaignFormDataToSave.getFormDate();
 
+            Calendar cal = Calendar.getInstance();
 
+            int hour = cal.get(Calendar.HOUR_OF_DAY);
+            int minute = cal.get(Calendar.MINUTE);
+            int second = cal.get(Calendar.SECOND);
+            int milli = cal.get(Calendar.MILLISECOND);
+
+// now apply that to your date
+            cal.setTime(date);
+            cal.set(Calendar.HOUR_OF_DAY, hour);
+            cal.set(Calendar.MINUTE, minute);
+            cal.set(Calendar.SECOND, second);
+            cal.set(Calendar.MILLISECOND, milli);
+
+            campaignFormDataToSave.setFormDate(cal.getTime());
+        }
 
         List<String> listLotNo = new ArrayList();
         List<String> listLotClusterNo = new ArrayList();
@@ -251,6 +277,7 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
             }
             }
         }
+ 
         campaignFormDataToSave.setFormValues(filledFormValues);
 
 
@@ -259,9 +286,15 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
         if(campaignFormDataToSave.getFormDate() == null){
             saveChecker = false;
-//            NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number");
-
+        }else{
+            if(campaignFormDataToSave.getCommunity() == null){
+                if (!campaignFormMeta.isDistrictentry()){
+                    saveChecker = false;
+                }
+            }
         }
+
+
 
         if (saveChecker) {
             saveTask = new SavingAsyncTask(getRootView(), campaignFormDataToSave) {
@@ -288,8 +321,10 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
             if(campaignFormDataToSave.getFormDate() == null){
                 NotificationHelper.showNotification(this, ERROR, "Form Date cannot be left Empty.");
 
+            }else if(campaignFormDataToSave.getCommunity() == null){
+                NotificationHelper.showNotification(this, ERROR, "Cluster cannot be left Empty. Please select a cluster to proceed.");
             }else{
-                NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number");
+                NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number.");
 
             }
             return;

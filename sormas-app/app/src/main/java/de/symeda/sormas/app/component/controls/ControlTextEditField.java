@@ -313,49 +313,49 @@ public class ControlTextEditField extends ControlPropertyEditField<String> {
             );
         }
 //// After setting LengthFilter
-//        InputFilter[] existing = input.getFilters();
-//        boolean isNumeric = (input.getInputType() & InputType.TYPE_CLASS_NUMBER) == InputType.TYPE_CLASS_NUMBER;
-//        boolean allowDecimal = (input.getInputType() & InputType.TYPE_NUMBER_FLAG_DECIMAL) != 0;
-//
-//        if (isNumeric) {
-//            InputFilter symbolBlocker = new InputFilter() {
-//                @Override
-//                public CharSequence filter(CharSequence source, int start, int end,
-//                                           Spanned dest, int dstart, int dend) {
-//                    if (start == end) return null;
-//
-//                    StringBuilder sb = new StringBuilder(dest);
-//                    sb.replace(dstart, dend, source.subSequence(start, end).toString());
-//                    String newText = sb.toString();
-//
-//                    if (newText.isEmpty()) return null;
-//
-//                    if (!allowDecimal) {
-//                        if (!newText.matches("\\d*")) {
-//                            return "";
-//                        }
-//                        if (newText.length() > 1 && newText.startsWith("0")) {
-//                            return "";
-//                        }
-//                        return null;
-//                    }
-//                    // Decimal: digits, optional single dot, optional digits; no lone dots
-//                    // Valid examples: "1", "0", "12.", "12.3", "0.45"
-//                    // Invalid: ".", "..", "1..2", "1.2.3", "abc"
-//                    if (!newText.matches("\\d+(?:\\.\\d*)?")) {
-//                        return "";
-//                    }
-//                    //Reject "09", "0123", etc. but allow "0.xxx"
-//                    if (newText.length() > 1 && newText.startsWith("0") && !newText.startsWith("0.")) {
-//                        return "";
-//                    }
-//                    return null;                }
-//            };
-//            InputFilter[] merged = new InputFilter[existing.length + 1];
-//            System.arraycopy(existing, 0, merged, 0, existing.length);
-//            merged[existing.length] = symbolBlocker;
-//            input.setFilters(merged);
-//        }
+        InputFilter[] existing = input.getFilters();
+        boolean isNumeric = (input.getInputType() & InputType.TYPE_CLASS_NUMBER) == InputType.TYPE_CLASS_NUMBER;
+        boolean allowDecimal = (input.getInputType() & InputType.TYPE_NUMBER_FLAG_DECIMAL) != 0;
+
+        if (isNumeric) {
+            InputFilter symbolBlocker = new InputFilter() {
+                @Override
+                public CharSequence filter(CharSequence source, int start, int end,
+                                           Spanned dest, int dstart, int dend) {
+                    if (start == end) return null;
+
+                    StringBuilder sb = new StringBuilder(dest);
+                    sb.replace(dstart, dend, source.subSequence(start, end).toString());
+                    String newText = sb.toString();
+
+                    if (newText.isEmpty()) return null;
+
+                    if (!allowDecimal) {
+                        if (!newText.matches("\\d*")) {
+                            return "";
+                        }
+                        if (newText.length() > 1 && newText.startsWith("0")) {
+                            return "";
+                        }
+                        return null;
+                    }
+                    // Decimal: digits, optional single dot, optional digits; no lone dots
+                    // Valid examples: "1", "0", "12.", "12.3", "0.45"
+                    // Invalid: ".", "..", "1..2", "1.2.3", "abc"
+                    if (!newText.matches("\\d+(?:\\.\\d*)?")) {
+                        return "";
+                    }
+                    //Reject "09", "0123", etc. but allow "0.xxx"
+                    if (newText.length() > 1 && newText.startsWith("0") && !newText.startsWith("0.")) {
+                        return "";
+                    }
+                    return null;                }
+            };
+            InputFilter[] merged = new InputFilter[existing.length + 1];
+            System.arraycopy(existing, 0, merged, 0, existing.length);
+            merged[existing.length] = symbolBlocker;
+            input.setFilters(merged);
+        }
         required = isRequired;
 
         CharSequence valx = input.getText();
@@ -513,10 +513,7 @@ String onChangeData = "";
                         }
                     }
                 } else if (isRange && isExpression && isRequired){
-//                     if(beforeData.length() > 0 && onChangeData.length() == 0) {
-//                        enableErrorState("Number not in provided range!");
-//                    }
-                    System.out.println("111111111111111111111111111111111-==================");
+ 
                     try {
                         if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
                             int beforeDatavalxx = Integer.parseInt(beforeData.toString());
@@ -533,7 +530,6 @@ String onChangeData = "";
                         }else if (beforeData.length() > 0 &&  onChangeData.length() > 0) {
                             try {
                                 Integer.parseInt(text);
-                                // ✅ If parsing works, clear error
                                 input.setError(null);
                                 disableErrorState();
                             } catch (NumberFormatException eX) {
@@ -541,10 +537,9 @@ String onChangeData = "";
                                 enableErrorState("Invalid number");
                             }
                         }
-//                        input.setError("Please enter a valid number22");
-//                        enableErrorState("1111111111111111111111-=====Number not in provided range! i.e min:------------------");
-                    }
-                    System.out.println("111111111111111111111111111111111-==================cccccc");
+ 
+            }
+                     System.out.println("111111111111111111111111111111111-==================cccccc");
                 }else if(isRange && isExpression && !isRequired){
                     System.out.println("elselrange but not expressiom alxx111111111111111111111111111111111-==================" );
                     try {
@@ -565,33 +560,13 @@ String onChangeData = "";
                                 enableErrorState("Invalid number");
                             }
                         }
-//                        input.setError("Please enter a valid numbejr");
-//                        enableErrorState("else1111111111111111111111-=====Number not in provided range! i.e min:------------------");
-                    }
+ 
+                   }
                 }
-//                if (isRange && isExpression && isRequired) {
-//                    if (!text.isEmpty()) {
-//                        try {
-//                            Integer.parseInt(text);
-//                            // ✅ If parsing works, clear error
-//                            input.setError(null);
-//                            clearErrorState();
-//                        } catch (NumberFormatException e) {
-//                            input.setError("Please enter a valid number");
-//                            enableErrorState("Invalid number");
-//                        }
-//                    }
-//                }
-
-
-
-
-
             }
         });
 
-//
-      addValueChangedListener(new ValueChangeListener() {
+       addValueChangedListener(new ValueChangeListener() {
 
 
           @Override
@@ -717,21 +692,7 @@ String onChangeData = "";
             view.setFieldValue("");
             return;
         }else{
-            try {
-                double num = Double.parseDouble(text);
-                if (num == Math.floor(num)) {
-                    // Whole number, no decimals
-                    text = String.valueOf((int) num);
-                } else {
-                    // Show with 2 decimal places
-                    text = String.format("%.2f", num);
-                }
-            } catch (NumberFormatException e) {
-                // If not a number, leave as-is
-            }
             view.setFieldValue(text);
-            return;
-
         }
     }
 

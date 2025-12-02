@@ -20,6 +20,9 @@ package de.symeda.sormas.backend.user;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.sql.Timestamp;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -745,8 +748,9 @@ public class UserFacadeEjb implements UserFacade {
 //		TypedQuery<User> query = em.createQuery(cq);
 //		String sql = query.unwrap(org.hibernate.query.Query.class).getQueryString();
 //      System.out.println("-------------sql ------" +  sql);
-		return QueryHelper.getResultList(em, cq, first, max, UserFacadeEjb::toDto); 
-	}
+ 
+		return QueryHelper.getResultList(em, cq, first, max, UserFacadeEjb::toDto);
+ 	}
 
 	@Override
 	public long count(UserCriteria userCriteria) {
@@ -765,8 +769,9 @@ public class UserFacadeEjb implements UserFacade {
 			cq.where(filter);
 		}
 
-		 cq.select(cb.countDistinct(root));
-		return em.createQuery(cq).getSingleResult();
+ 
+		cq.select(cb.countDistinct(root));
+ 		return em.createQuery(cq).getSingleResult();
 	}
 
 	private User fromDto(UserDto source, boolean checkChangeDate) {
@@ -808,7 +813,7 @@ public class UserFacadeEjb implements UserFacade {
 		target.setUserRoles(new HashSet<UserRole>(source.getUserRoles()));
 		target.setFormAccess(new HashSet<FormAccess>(source.getFormAccess()));
 		target.setNotificationlastopendate(source.getNotificationlastopendate());
-		
+ 
 		return target;
 	}
 
@@ -834,14 +839,14 @@ public class UserFacadeEjb implements UserFacade {
 		passwordResetEvent.fire(new PasswordResetEvent(userService.getByUuid(uuid)));
 		return resetPassword;
 	}
-	
+ 
 	@Override
 	public String createMemorablePassword(String uuid) {
 		String resetPassword = userService.createMemorablePassword(uuid);
 		passwordResetEvent.fire(new PasswordResetEvent(userService.getByUuid(uuid)));
 		return resetPassword;
 	}
-		
+ 
 
 	@Override
 	public boolean setCustomPassword(String uuid, String customPassword) {
@@ -849,8 +854,7 @@ public class UserFacadeEjb implements UserFacade {
 		passwordResetEvent.fire(new PasswordResetEvent(userService.getByUuid(uuid)));
 		return resetPassword;
 	}
-	
-
+ 
 	@Override
 	public UserDto getCurrentUser() {
 		return toDto(userService.getCurrentUser());
@@ -1005,10 +1009,9 @@ public class UserFacadeEjb implements UserFacade {
 	public List<UserActivitySummaryDto> getUsersActivityByModule(String module) {
 		// TODO Auto-generated method stub
 		final String joinBuilder =
-
-				"select u.action_logged, action_module, us.username, u.creationdate \n" 
-				+ "from usersactivity u \n"
-						+ "left outer join users us ON u.creatinguser_id = us.id \n" + "where u.action_module ilike '"
+ 
+				"select u.action_logged, action_module, us.username, u.creationdate \n" + "from usersactivity u \n"
+ 						+ "left outer join users us ON u.creatinguser_id = us.id \n" + "where u.action_module ilike '"
 						+ module + "' ORDER BY u.creationdate DESC";
 
 		System.out.println("=====seriesDataQuery======== " + joinBuilder);
@@ -1023,13 +1026,12 @@ public class UserFacadeEjb implements UserFacade {
 		System.out.println("starting....");
 
 		resultData.addAll(resultList.stream()
-				.map((result) -> 
-				new UserActivitySummaryDto(result[0] != null ? (String) result[0].toString() : "",
-						
-						result[1] != null ? (String) result[1].toString()  : "", 
-								result[2] != null ? (String) result[2].toString()  : "", 
-										(Date) result[3]) )
-				.collect(Collectors.toList()));
+ 
+				.map((result) -> new UserActivitySummaryDto(result[0] != null ? (String) result[0].toString() : "",
+
+						result[1] != null ? (String) result[1].toString() : "",
+						result[2] != null ? (String) result[2].toString() : "", (Date) result[3]))
+ 				.collect(Collectors.toList()));
 
 		return resultData;
 	}
@@ -1171,7 +1173,7 @@ public class UserFacadeEjb implements UserFacade {
 		userUpdateEvent.fire(new UserUpdateEvent(user));
 
 	}
-	
+ 
 	@Override
 	public void updateNotificationLastOpenedDate(Timestamp notificationLastOpenedDate, String username) {
 		User user = userService.getByUserName(username);
@@ -1201,7 +1203,85 @@ public class UserFacadeEjb implements UserFacade {
 		em.createNativeQuery(joinBuilder).executeUpdate();
 
 	}
-//
+ 
+	public boolean getUserByEmail(String userEmail) {
+		String sqlQuery = "SELECT EXISTS (SELECT 1 FROM users WHERE useremail = :email)";
+
+		Boolean emailExists = (Boolean) em.createNativeQuery(sqlQuery).setParameter("email", userEmail)
+				.getSingleResult();
+
+		return emailExists != null && emailExists;
+	}
+
+	public boolean getUserByUserNameAndEmail(String userName, String userEmail) {
+		String sqlQuery = "SELECT EXISTS (SELECT 1 FROM users WHERE username ilike :userName and useremail ilike :email)";
+
+		Boolean userNameExists = (Boolean) em.createNativeQuery(sqlQuery).setParameter("userName", userName)
+				.setParameter("email", userEmail).getSingleResult();
+
+		return userNameExists != null && userNameExists;
+	}
+
+	public void registerGeneratedToken(LocalDateTime expirationDate, String token, UserDto user) {
+		try {
+			String findUserIdQuery = "SELECT id FROM users WHERE username = :username";
+	        Query findUserQuery = em.createNativeQuery(findUserIdQuery);
+	        findUserQuery.setParameter("username", user.getUserName());
+	        
+	        Object result = findUserQuery.getSingleResult();
+	        Long userId = ((Number) result).longValue();
+	        
+	        
+			String insertQuery = "INSERT INTO password_reset_token (expiration_date, token, user_id) "
+					+ "VALUES (:expirationDate, :token, :userId)";
+
+			em.createNativeQuery(insertQuery).setParameter("expirationDate", expirationDate)
+					.setParameter("token", token).setParameter("userId", userId) // use the ID, not the object itself
+					.executeUpdate();
+
+			System.out.println("Token inserted successfully for user ID: " + user.getUserEmail());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("Error while inserting password reset token: " + e.getMessage());
+		}
+	}
+
+	@Override
+	public UserDto getUserByResetToken(String resetToken) {
+		try {
+			String sql = "SELECT u.username, u.useremail, u.firstname, u.lastname, u.uuid FROM users u "
+					+ "INNER JOIN password_reset_token prt ON prt.user_id = u.id WHERE prt.token = :token";
+
+			Query query = em.createNativeQuery(sql);
+			query.setParameter("token", resetToken);
+
+			@SuppressWarnings("unchecked")
+			List<Object[]> results = query.getResultList();
+
+			if (results.isEmpty()) {
+				return null; // No matching token found
+			}
+
+			Object[] row = results.get(0);
+
+			// Map to your DTO
+			UserDto userDto = new UserDto();
+			userDto.setUserName((String) row[0]);// setId(((Number) row[0]).longValue());
+			userDto.setUserEmail((String) row[1]);
+			userDto.setFirstName((String) row[2]);
+			userDto.setLastName((String) row[3]);
+			userDto.setUuid((String) row[4]);
+
+			return userDto;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("Error fetching user by reset token: " + e.getMessage(), e);
+		}
+	}
+
+ //
 //	@Override
 //	public Date checkUsersActiveStatusByUsernameandActiveStatus(String username) {
 //		// Use a parameterized query to prevent SQL injection
@@ -1216,39 +1296,79 @@ public class UserFacadeEjb implements UserFacade {
 //		return seriesDataQuery.getSingleResult();
 //
 //	}
+ 
+	@Override
+	public Date checkUsersActiveStatusByUsernameandActiveStatus(String username) {
+		String getLastLoginDateQuery = "SELECT u.lastlogindate FROM users u WHERE LOWER(u.username) = LOWER(:username)";
+
+		try {
+			Query query = em.createNativeQuery(getLastLoginDateQuery).setParameter("username", username);
+
+			Object result = query.getSingleResult();
+
+			if (result instanceof Date) {
+				return (Date) result;
+			} else if (result instanceof java.sql.Timestamp) {
+				return new Date(((java.sql.Timestamp) result).getTime());
+			} else {
+
+				System.err
+						.println("Unexpected result type: " + (result != null ? result.getClass().getName() : "null"));
+				return null;
+			}
+		} catch (NoResultException e) {
+			// No result found for the given username
+			System.err.println("Unexpected result type: No result found for the given username.");
+
+			return null;
+		} catch (Exception e) {
+			// Log the exception
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	
 	@Override
-    public Date checkUsersActiveStatusByUsernameandActiveStatus(String username) {
-        String getLastLoginDateQuery = "SELECT u.lastlogindate FROM users u WHERE LOWER(u.username) = LOWER(:username)";
-        
-        try {
-            Query query = em.createNativeQuery(getLastLoginDateQuery)
-                            .setParameter("username", username);
-            
-            Object result = query.getSingleResult();
-            
-            if (result instanceof Date) {
-                return (Date) result;
-            } else if (result instanceof java.sql.Timestamp) {
-                return new Date(((java.sql.Timestamp) result).getTime());
-            } else {
-             
-                System.err.println("Unexpected result type: " + (result != null ? result.getClass().getName() : "null"));
-                return null;
-            }
-        } catch (NoResultException e) {
-            // No result found for the given username
-            System.err.println("Unexpected result type: No result found for the given username.");
+	public boolean isTokenStillValid(String resetToken, LocalDateTime currentDateTime) {
+	    String checkTokenValidityQuery = "SELECT expiration_date FROM password_reset_token WHERE token = :token";
 
-            return null;
-        } catch (Exception e) {
-            // Log the exception
-            e.printStackTrace();
-            return null;
-        }
-    }
-	
-//	@Override
+	    try {
+	        Query query = em.createNativeQuery(checkTokenValidityQuery)
+	                .setParameter("token", resetToken);
+
+	        Object result = query.getSingleResult();
+
+	        if (result == null) {
+	            return false; // No token found
+	        }
+
+	        LocalDateTime expirationDateTime;
+	        if (result instanceof java.sql.Timestamp) {
+	            expirationDateTime = ((java.sql.Timestamp) result).toLocalDateTime();
+	        } else if (result instanceof java.util.Date) {
+	            expirationDateTime = ((java.util.Date) result).toInstant()
+	                    .atZone(ZoneId.systemDefault())
+	                    .toLocalDateTime();
+	        } else {
+	            System.err.println("Unexpected result type: " + result.getClass().getName());
+	            return false;
+	        }
+
+	        // Check if the current date-time is before the expiration date-time
+	        return currentDateTime.isBefore(expirationDateTime);
+
+	    } catch (NoResultException e) {
+	        System.err.println("No token found for value: " + resetToken);
+	        return false;
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+	}
+
+
+ //	@Override
 //    public Date getPreviousLoginDateByUsername(String username) {
 //        String getPreviousLoginDateQuery = "SELECT u.previouslogindate FROM users u WHERE LOWER(u.username) = LOWER(:username)";
 //        
@@ -1278,5 +1398,5 @@ public class UserFacadeEjb implements UserFacade {
 //            return null;
 //        }
 //    }
-	
+ 
 }

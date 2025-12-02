@@ -46,6 +46,8 @@ import de.symeda.sormas.app.backend.clinicalcourse.ClinicalVisitDtoHelper;
 import de.symeda.sormas.app.backend.common.DaoException;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
+import de.symeda.sormas.app.backend.device.errorLog.DeviceErrorLogDtoHelper;
+import de.symeda.sormas.app.backend.device.info.DeviceInfoDtoHelper;
 import de.symeda.sormas.app.backend.feature.FeatureConfigurationDtoHelper;
 import de.symeda.sormas.app.backend.infrastructure.InfrastructureHelper;
 import de.symeda.sormas.app.backend.region.AreaDtoHelper;
@@ -165,8 +167,34 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 
 					pullInfrastructure(); // do before missing, because we may have a completely empty database
 					pullMissingAndDeleteInvalidInfrastructure();
+
 					pushNewPullMissingAndDeleteInvalidData();
 					synchronizeChangedData();
+
+					syncModeTrace.stop();
+					break;
+
+				case Reinitialize:
+					System.out.println("_+++++++++----------------------- Reinitialize");
+					syncModeTrace = FirebasePerformance.getInstance().newTrace("syncModeReinitializeTraceAsync");
+					syncModeTrace.start();
+
+//					pullInfrastructure(); // do before missing, because we may have a completely empty database
+//					pullMissingAndDeleteInvalidInfrastructure();
+					if (ConfigProvider.getLastDeletedSyncDate() == null
+							|| DateHelper.getFullDaysBetween(ConfigProvider.getLastDeletedSyncDate(), new Date()) >= 1) {
+
+						pullAndRemoveDeletedUuidsSince(ConfigProvider.getLastDeletedSyncDate());
+					}
+					// pull and remove archived entities when the last time this has been done is more than 24 hours ago
+					if (ConfigProvider.getLastArchivedSyncDate() == null
+							|| DateHelper.getFullDaysBetween(ConfigProvider.getLastArchivedSyncDate(), new Date()) >= 1) {
+
+						pullAndRemoveArchivedUuidsSince(ConfigProvider.getLastArchivedSyncDate());
+					}
+
+
+					syncDeviceInfoAndErrorLogsOnly();
 
 					syncModeTrace.stop();
 					break;
@@ -190,7 +218,12 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 
 			Log.e(getClass().getName(), "Error trying to synchronizing data in mode '" + syncMode + "'", e);
 
+			// Single error log per synchronization failure
 			ErrorReportingHelper.sendCaughtException(e);
+
+			System.out.println("DATA ASYNCY 1  Fragment Error Logged--------------------");
+
+			ErrorReportingHelper.logAndStoreDeviceError("Synchronization Failed - No Connection: " + syncMode.toString(), e);
 
 			syncFailed = true;
 			syncFailedMessage = DatabaseHelper.getContext().getString(R.string.error_server_communication);
@@ -208,6 +241,9 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 				break;
 			case CompleteAndRepull:
 				break;
+				case Reinitialize:
+				newSyncMode = SyncMode.Changes;
+				break;
 			default:
 				throw new IllegalArgumentException(syncMode.toString());
 			}
@@ -215,22 +251,25 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			if (newSyncMode != null) {
 
 				Log.w(getClass().getName(), "Error trying to synchronizing data in mode '" + syncMode + "'", e);
-
 				ErrorReportingHelper.sendCaughtException(e);
-
 				syncMode = newSyncMode;
 				doInBackground(params);
 
 			} else {
-
 				Log.e(getClass().getName(), "Error trying to synchronizing data in mode '" + syncMode + "'", e);
+				            ErrorReportingHelper.sendCaughtException(e);
 
-				ErrorReportingHelper.sendCaughtException(e);
+
+				System.out.println("SYNC 2 Fragment Error Logged--------------------");
+
+				// Single error log per synchronization failure
+				ErrorReportingHelper.logAndStoreDeviceError("Synchronization Failed - Runtime/Dao Exception: " + syncMode.toString(), e);
 
 				syncFailed = true;
 				syncFailedMessage = DatabaseHelper.getContext().getString(R.string.error_synchronization);
 				RetroProvider.disconnect();
 			}
+
 		}
 
 		return null;
@@ -239,24 +278,7 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 	public static boolean hasAnyUnsynchronizedData() {
 		final boolean hasUnsynchronizedCampaignData = !DatabaseHelper.getFeatureConfigurationDao().isFeatureDisabled(FeatureType.CAMPAIGNS)
 			&& (DatabaseHelper.getCampaignFormDataDao().isAnyModified());
-		return
-//				DatabaseHelper.getCaseDao().isAnyModified()
-//			|| DatabaseHelper.getImmunizationDao().isAnyModified()
-//			|| DatabaseHelper.getContactDao().isAnyModified()
-//			|| DatabaseHelper.getPersonDao().isAnyModified()
-//			|| DatabaseHelper.getEventDao().isAnyModified()
-//			|| DatabaseHelper.getEventParticipantDao().isAnyModified()
-//			|| DatabaseHelper.getSampleDao().isAnyModified()
-//			|| DatabaseHelper.getSampleTestDao().isAnyModified()
-//			|| DatabaseHelper.getAdditionalTestDao().isAnyModified()
-//			|| DatabaseHelper.getTaskDao().isAnyModified()
-//			|| DatabaseHelper.getVisitDao().isAnyModified()
-//			|| DatabaseHelper.getWeeklyReportDao().isAnyModified()
-//			|| DatabaseHelper.getAggregateReportDao().isAnyModified()
-//			|| DatabaseHelper.getPrescriptionDao().isAnyModified()
-//			|| DatabaseHelper.getTreatmentDao().isAnyModified()
-//			|| DatabaseHelper.getClinicalVisitDao().isAnyModified() ||
-			 hasUnsynchronizedCampaignData;
+		return hasUnsynchronizedCampaignData ||   DatabaseHelper.getDeviceErrorLogDao().isAnyModified();
 	}
 
 	@AddTrace(name = "synchronizeChangedDataTrace")
@@ -370,9 +392,21 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			if (fcmTokenDtoHelper.pullAndPushEntities())
 				fcmTokenDtoHelper.pullEntities(true);
 
+			final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
+			if (deviceInfoDtoHelper.pullAndPushEntities())
+				deviceInfoDtoHelper.pullEntities(true);
+
+			final DeviceErrorLogDtoHelper deviceErrorLogDtoHelper = new DeviceErrorLogDtoHelper();
+			if (deviceErrorLogDtoHelper.pullAndPushEntities())
+				deviceErrorLogDtoHelper.pullEntities(true);
+
+
+
 			repullData();
 		}
 	}
+
+
 
 	@AddTrace(name = "repullDataTrace")
 	private void repullData() throws DaoException, NoConnectionException, ServerConnectionException, ServerCommunicationException {
@@ -387,11 +421,17 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			final CampaignFormDataDtoHelper campaignFormDataDtoHelper = new CampaignFormDataDtoHelper();
 			final CampaignFormMetaDtoHelper campaignFormMetaDtoHelper = new CampaignFormMetaDtoHelper();
 			final CampaignFormMetaWithExpDtoHelper campaignFormMetaWithExpDtoHelper = new CampaignFormMetaWithExpDtoHelper();
+			final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
+			final DeviceErrorLogDtoHelper deviceErrorLogDtoHelper = new DeviceErrorLogDtoHelper();
+
 
 			campaignDtoHelper.repullEntities();
 			campaignFormMetaDtoHelper.repullEntities();
 			campaignFormDataDtoHelper.repullEntities();
 			campaignFormMetaWithExpDtoHelper.repullEntities();
+			deviceInfoDtoHelper.repullEntities();
+			deviceErrorLogDtoHelper.repullEntities();
+
 		}
 	}
 
@@ -617,12 +657,43 @@ if (1 == 3) {
 			final UserDtoHelper userDtoHelper = new UserDtoHelper();
 			userDtoHelper.pushEntities(true);
 
+
+			final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
+			deviceInfoDtoHelper.pushEntities(true);
+
+
+			final DeviceErrorLogDtoHelper deviceErrorLogDtoHelper = new DeviceErrorLogDtoHelper();
+			deviceErrorLogDtoHelper.pushEntities(true);
+
 			System.out.println("USer Pushhh  concluded ===========================");
 
 
 		}
 
 
+	}
+
+	/**
+	 * Sync only device information and error logs
+	 */
+	@AddTrace(name = "syncDeviceInfoAndErrorLogsOnlyTrace")
+	public void syncDeviceInfoAndErrorLogsOnly() throws DaoException, NoConnectionException, ServerConnectionException, ServerCommunicationException {
+		syncDeviceInfoAndErrorLogsOnlyStatic();
+	}
+
+	public  void syncDeviceInfoAndErrorLogsOnlyStatic() throws DaoException, NoConnectionException, ServerConnectionException, ServerCommunicationException {
+		Log.d(SynchronizeDataAsync.class.getSimpleName(), "syncDeviceInfoAndErrorLogsOnlyTrace");
+
+
+			final CampaignFormDataDtoHelper campaignFormDataDtoHelper = new CampaignFormDataDtoHelper();
+			campaignFormDataDtoHelper.pushEntities(true);
+
+			final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
+			deviceInfoDtoHelper.pushEntities(true);
+
+
+			final DeviceErrorLogDtoHelper deviceErrorLogDtoHelper = new DeviceErrorLogDtoHelper();
+			deviceErrorLogDtoHelper.pushEntities(true);
 	}
 
 	@AddTrace(name = "pullMissingAndDeleteInvalidInfrastructureTrace")
@@ -704,6 +775,9 @@ if (1 == 3) {
 			new PopulationDataDtoHelper().pullMissing(populationDataUuids);
 			new CampaignFormMetaRegionDtoHelper().pullMissing(populationDataUuids);
 
+
+
+
 		}
 	}
 
@@ -737,7 +811,13 @@ if (1 == 3) {
 
 	public enum SyncMode {
 		Changes,
+
 		Complete,
+
+		/**
+		 * used to sync app errors
+		 * resulting from bugs or incompatibilities*/
+		Reinitialize,
 		/**
 		 * Also repulls all non-infrastructure data and users
 		 * Use to handle conflict states resulting out of bugs

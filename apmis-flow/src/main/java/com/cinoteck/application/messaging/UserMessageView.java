@@ -185,8 +185,10 @@ public class UserMessageView extends VerticalLayout {
             .set("font-weight", "500")
             .set("margin-right", "8px");
         
+  
         SimpleDateFormat dateDIsplayFormating = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-        broadcastValue = new Span(messageDto.getChangeDate().toString() != null && !messageDto.getChangeDate().toString().isEmpty() ? dateDIsplayFormating.format(messageDto.getChangeDate()) : "");
+         broadcastValue = new Span(messageDto.getChangeDate().toString() != null && !messageDto.getChangeDate().toString().isEmpty() ? dateDIsplayFormating.format(messageDto.getChangeDate()) : "");
+ 
         broadcastValue.getStyle().set("color", "#333");
         
         Div broadcastDiv = new Div(broadcastLabel, broadcastValue);

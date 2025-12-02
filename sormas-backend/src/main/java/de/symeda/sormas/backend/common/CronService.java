@@ -30,6 +30,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +57,8 @@ import de.symeda.sormas.backend.systemevent.SystemEventFacadeEjb.SystemEventFaca
 import de.symeda.sormas.backend.task.TaskFacadeEjb.TaskFacadeEjbLocal;
 import de.symeda.sormas.backend.util.ModelConstants;
 
+import de.symeda.sormas.backend.util.ModelConstants;
+
 @Singleton
 @RunAs(UserRole._SYSTEM)
 public class CronService {
@@ -60,7 +66,7 @@ public class CronService {
 	public static final int TASK_UPDATE_INTERVAL = 10;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-
+ 
 	@PersistenceContext(unitName = ModelConstants.PERSISTENCE_UNIT_NAME)
 	private EntityManager em;
 	
@@ -101,7 +107,7 @@ public class CronService {
 		campaingDataFacade.checkLastAnalytics();
 
 		logger.debug("running analytics updates finished. {} proccessed, {} s", 0, DateHelper.durationSeconds(timeStart));
-	}
+	} 
 	
 	@Schedule(hour = "0", minute = "0", second = "0", persistent = false)
     @Transactional

@@ -32,6 +32,7 @@ import de.symeda.sormas.app.backend.common.AbstractAdoDao;
 
 public class CampaignDao extends AbstractAdoDao<Campaign> {
 
+ 
     public CampaignDao(Dao<Campaign, Long> innerDao) {
         super(innerDao);
     }
@@ -88,15 +89,12 @@ public class CampaignDao extends AbstractAdoDao<Campaign> {
     public void updateCampaignLastOpenedDate(String campUuid) {
 
         try {
-
+ 
             Date date = new Date();
             long timeMilli = date.getTime();
-
             System.out.println("update campaigns set lastOpenedDate = "+timeMilli+" where uuid = '"+campUuid+"' ------------" );
-
             queryRawSQL("update campaigns set lastOpenedDate = "+timeMilli+" where uuid = '"+campUuid+"'");
-
-         //   return queryBuilder.orderBy(Campaign.START_DATE, false).queryForFirst();
+          //   return queryBuilder.orderBy(Campaign.START_DATE, false).queryForFirst();
         } catch (Exception e) {
             Log.e(getTableName(), "Could not perform getLastStartedCampaign on Campaign");
             throw new RuntimeException(e);

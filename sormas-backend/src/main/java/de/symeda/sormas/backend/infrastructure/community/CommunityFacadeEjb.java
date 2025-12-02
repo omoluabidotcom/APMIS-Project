@@ -1198,7 +1198,7 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 			max = 100;
 			}
 		
-		CriteriaBuilder cb = em.getCriteriaBuilder();
+			CriteriaBuilder cb = em.getCriteriaBuilder();
 			CriteriaQuery<Community> cq = cb.createQuery(Community.class);
 			Root<Community> community = cq.from(Community.class);
 			Join<Community, District> district = community.join(Community.DISTRICT, JoinType.LEFT);
@@ -1267,6 +1267,134 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		return resultData;
 	}
 	
+	
+	@Override
+	public List<CommunityHistoryExtractDto> getClusterDataChangeHistory() {
+
+	    List<CommunityHistoryExtractDto> resultData = new ArrayList<>();
+
+	    StringBuilder queryStringBuilder = new StringBuilder();
+	    queryStringBuilder.append("SELECT comm.uuid, ")
+	            .append("comm.name, comm.district_id, ")
+	            .append("dis.uuid AS districtuuid, dis.name AS districtname, ")
+	            .append("comm.externalid, com.name AS externalname, ")
+	            .append("comm.archived, comm.floating, comm.clusternumber, comm.changedate ")
+	            .append("FROM community comm ")
+	            .append("LEFT OUTER JOIN district dis ON dis.id = comm.district_id ")
+	            .append("LEFT OUTER JOIN community com ON com.id = comm.externalid ")
+
+	            .append("UNION ALL ")
+
+	            .append("SELECT comm_h.uuid, ")
+	            .append("comm_h.name, comm_h.district_id, ")
+	            .append("dis.uuid AS districtuuid, dis.name AS districtname, ")
+	            .append("comm_h.externalid, com.name AS externalname, ")
+	            .append("comm_h.archived, comm_h.floating, comm_h.clusternumber, comm_h.changedate ")
+	            .append("FROM community_history comm_h ")
+	            .append("LEFT OUTER JOIN district dis ON dis.id = comm_h.district_id ")
+	            .append("LEFT OUTER JOIN community com ON com.id = comm_h.externalid ")
+
+	            .append("ORDER BY changedate DESC");
+
+	    String queryString = queryStringBuilder.toString();
+
+	    Query query = em.createNativeQuery(queryString);
+	    @SuppressWarnings("unchecked")
+	    List<Object[]> resultList = query.getResultList();
+
+	    resultData.addAll(resultList.stream()
+	            .map(result -> new CommunityHistoryExtractDto(
+	                    result[0] != null ? (String) result[0] : "",                          // clusterUuid
+	                    result[1] != null ? (String) result[1] : "",                          // clusterName
+	                    result[2] != null ? ((BigInteger) result[2]).longValue() : 0L,        // district_id
+	                    result[3] != null ? (String) result[3] : "",                          // districtuuid
+	                    result[4] != null ? (String) result[4] : "",                          // districtname
+	                    result[5] != null ? ((BigInteger) result[5]).longValue() : 0L,        // externalid
+	                    result[6] != null ? (String) result[6] : "",                          // externalname
+	                    result[7] != null && (Boolean) result[7],                             // archived
+	                    result[8] != null ? result[8].toString() : "",                        // floating (as String)
+	                    result[9] != null ? ((Integer) result[9]) : 0,                        // clusternumber
+	                    result[10] != null ? (Timestamp) result[10] : null                    // changedate (Timestamp, not LocalDateTime)
+	            ))
+	            .collect(Collectors.toList()));
+
+	    return resultData;
+	}
+
+	
+
+public List<CommunityHistoryExtractDto> getClusterDataChangeHistory(CommunityCriteriaNew criteria) {
+
+    List<CommunityHistoryExtractDto> resultData = new ArrayList<>();
+
+    StringBuilder filterBuilder = new StringBuilder();
+
+    // Build dynamic WHERE clause
+    if (criteria != null) {
+        List<String> filters = new ArrayList<>();
+
+        if (criteria.getDistrict() != null && criteria.getDistrict().getUuid() != null) {
+            filters.add("dis.uuid = '" + criteria.getDistrict().getUuid() + "'");
+        }
+
+        if (criteria.getRegion() != null && criteria.getRegion().getUuid() != null) {
+            filters.add("reg.uuid = '" + criteria.getRegion().getUuid() + "'");
+        }
+
+        if (!filters.isEmpty()) {
+            filterBuilder.append(" WHERE ").append(String.join(" AND ", filters));
+        }
+    }
+
+    // Build final query (apply same filter to both main and history tables)
+    String queryString = 
+        "SELECT comm.uuid, " +
+        "comm.name, comm.district_id, " +
+        "dis.uuid AS districtuuid, dis.name AS districtname, " +
+        "comm.externalid, com.name AS externalname, " +
+        "comm.archived, comm.floating, comm.clusternumber, comm.changedate " +
+        "FROM community comm " +
+        "LEFT OUTER JOIN district dis ON dis.id = comm.district_id " +
+        "LEFT OUTER JOIN community com ON com.id = comm.externalid " +
+        "LEFT OUTER JOIN region reg ON reg.id = dis.region_id " +
+        filterBuilder.toString() + " " +
+        "UNION ALL " +
+        "SELECT comm_h.uuid, " +
+        "comm_h.name, comm_h.district_id, " +
+        "dis.uuid AS districtuuid, dis.name AS districtname, " +
+        "comm_h.externalid, com.name AS externalname, " +
+        "comm_h.archived, comm_h.floating, comm_h.clusternumber, comm_h.changedate " +
+        "FROM community_history comm_h " +
+        "LEFT OUTER JOIN district dis ON dis.id = comm_h.district_id " +
+        "LEFT OUTER JOIN community com ON com.id = comm_h.externalid " +
+        "LEFT OUTER JOIN region reg ON reg.id = dis.region_id " +
+        filterBuilder.toString() + " " +
+        "ORDER BY changedate DESC";
+
+    Query query = em.createNativeQuery(queryString);
+
+    @SuppressWarnings("unchecked")
+    List<Object[]> resultList = query.getResultList();
+
+    resultData.addAll(resultList.stream()
+        .map(result -> new CommunityHistoryExtractDto(
+                result[0] != null ? (String) result[0] : "",                          // clusterUuid
+                result[1] != null ? (String) result[1] : "",                          // clusterName
+                result[2] != null ? ((BigInteger) result[2]).longValue() : 0L,        // district_id
+                result[3] != null ? (String) result[3] : "",                          // districtuuid
+                result[4] != null ? (String) result[4] : "",                          // districtname
+                result[5] != null ? ((BigInteger) result[5]).longValue() : 0L,        // externalid
+                result[6] != null ? (String) result[6] : "",                          // externalname
+                result[7] != null && (Boolean) result[7],                             // archived
+                result[8] != null ? result[8].toString() : "",                        // floating
+                result[9] != null ? (Integer) result[9] : 0,                          // clusternumber
+                result[10] != null ? (Timestamp) result[10] : null                    // changedate
+        ))
+        .collect(Collectors.toList()));
+
+    return resultData;
+}
+
 	@Override
 	public List<CommunityDto> getAllCommunities() {
 		CriteriaBuilder cb = em.getCriteriaBuilder();

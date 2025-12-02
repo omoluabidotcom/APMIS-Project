@@ -21,6 +21,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -32,24 +33,37 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 
+import com.google.firebase.perf.FirebasePerformance;
+import com.google.firebase.perf.metrics.Trace;
+
 import de.symeda.sormas.app.R;
+import de.symeda.sormas.app.backend.common.DaoException;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
 import de.symeda.sormas.app.core.NotificationContext;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
 import de.symeda.sormas.app.core.notification.NotificationType;
 import de.symeda.sormas.app.databinding.ActivityEnterPinLayoutBinding;
+import de.symeda.sormas.app.rest.NoConnectionException;
+import de.symeda.sormas.app.rest.RetroProvider;
+import de.symeda.sormas.app.rest.ServerCommunicationException;
+import de.symeda.sormas.app.rest.ServerConnectionException;
+import de.symeda.sormas.app.rest.SynchronizeDataAsync;
 import de.symeda.sormas.app.util.NavigationHelper;
 
 public class EnterPinActivity extends AppCompatActivity implements NotificationContext {
 
 	public static final String CALLED_FROM_SETTINGS = "calledFromSettings";
+	public static final String REINITIALIZE_APP = "reinitializeApp";
 
 	private boolean calledFromSettings;
+	private boolean reinitializeApp;
+
 	private String lastEnteredPIN;
 	private boolean confirmedCurrentPIN;
 	private boolean triedAgain;
 	private EditText[] pinFields;
 	private ProgressDialog progressDialog = null;
+	private ProgressDialog reInitializeprogressDialog;
 
 	private ActivityEnterPinLayoutBinding binding;
 
@@ -63,6 +77,10 @@ public class EnterPinActivity extends AppCompatActivity implements NotificationC
 			if (params.containsKey(CALLED_FROM_SETTINGS)) {
 				calledFromSettings = params.getBoolean(CALLED_FROM_SETTINGS);
 			}
+
+			if (params.containsKey(REINITIALIZE_APP)) {
+				reinitializeApp = params.getBoolean(REINITIALIZE_APP);
+			}
 		}
 
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
@@ -75,6 +93,10 @@ public class EnterPinActivity extends AppCompatActivity implements NotificationC
 	protected void onDestroy() {
 		if (progressDialog != null && progressDialog.isShowing()) {
 			progressDialog.dismiss();
+		}
+
+		if (reInitializeprogressDialog != null && reInitializeprogressDialog.isShowing()) {
+			reInitializeprogressDialog.dismiss();
 		}
 
 		super.onDestroy();
@@ -304,7 +326,28 @@ public class EnterPinActivity extends AppCompatActivity implements NotificationC
 						onResume();
 					}
 				}
-			} else {
+			}
+			else if(reinitializeApp) {
+				// Process the login if the PIN is correct, otherwise display an error message and restart the activity
+				if (enteredPIN.equals(savedPIN)) {
+					ConfigProvider.setAccessGranted(true);
+					NotificationHelper.showNotification(binding, NotificationType.SUCCESS, R.string.message_pin_correct_loading_to_reinitialize);
+try {
+	showReinitializeLoadingDialog();
+}catch (Exception e){
+	Log.e(getClass().getName(), "Exception from dialog initialization", e);
+	NotificationHelper.showNotification(binding, NotificationType.ERROR,
+			"Failed to initialize reinitialization dialog: " + e.getMessage());
+
+}
+//					finish();
+				} else {
+					NotificationHelper.showNotification(binding, NotificationType.ERROR, R.string.message_pin_wrong);
+					triedAgain = true;
+					onResume();
+				}
+			}
+			else {
 				// Process the login if the PIN is correct, otherwise display an error message and restart the activity
 				if (enteredPIN.equals(savedPIN)) {
 					ConfigProvider.setAccessGranted(true);
@@ -315,6 +358,155 @@ public class EnterPinActivity extends AppCompatActivity implements NotificationC
 					triedAgain = true;
 					onResume();
 				}
+			}
+		}
+	}
+
+	private void showReinitializeLoadingDialog() {
+		if (isFinishing() || isDestroyed()) {
+			Log.e(getClass().getName(), "Cannot show dialog - activity is finishing or destroyed");
+			return;
+		}
+
+		reInitializeprogressDialog = new ProgressDialog(this);
+		reInitializeprogressDialog.setTitle("Checking Connection");
+		reInitializeprogressDialog.setMessage("Verifying network connectivity...");
+		reInitializeprogressDialog.setCancelable(false);
+		reInitializeprogressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+
+		try {
+			reInitializeprogressDialog.show();
+		} catch (Exception e) {
+			Log.e(getClass().getName(), "Failed to show dialog", e);
+			throw e;
+		}
+
+		// Check connection and synchronize using the same pattern as LoginActivity
+		RetroProvider.connectAsyncHandled(this, true, true, result -> {
+			if (Boolean.TRUE.equals(result)) {
+				// Connection successful, update UI and start sync
+				runOnUiThread(() -> {
+
+					System.out.println("Syncronizing data ");
+					reInitializeprogressDialog.setTitle("Reinitializing App");
+					reInitializeprogressDialog.setMessage("Synchronizing APMIS error logs with server. This may take a while, please wait...");
+				});
+
+				// Start synchronization
+				System.out.println("Syncronizing data  calll ");
+
+
+				SynchronizeDataAsync.call(SynchronizeDataAsync.SyncMode.Changes, getApplicationContext(), (syncFailed, syncFailedMessage) -> {
+
+					// Always disconnect after sync
+					RetroProvider.disconnect();
+
+					System.out.println("Dosconnecting sync ------");
+
+
+					runOnUiThread(() -> {
+//						if (reInitializeprogressDialog != null && reInitializeprogressDialog.isShowing()) {
+//							reInitializeprogressDialog.dismiss();
+//						}
+						if (!syncFailed) {
+							// Sync successful, proceed with database clearing and restart
+							System.out.println("Syncronizing did not fail ");
+
+
+							if (!isFinishing() && !isDestroyed() && reInitializeprogressDialog != null && reInitializeprogressDialog.isShowing()) {
+								reInitializeprogressDialog.setTitle("Sync Completed");
+								reInitializeprogressDialog.setMessage("✓ Device information and error logs synchronized successfully!");
+
+								// Wait 7 seconds before proceeding to database clearing
+								new android.os.Handler().postDelayed(() -> {
+									if (!isFinishing() && !isDestroyed() && reInitializeprogressDialog != null) {
+										// Update dialog for database clearing phase
+										reInitializeprogressDialog.setTitle("Clearing Database");
+										reInitializeprogressDialog.setMessage("Removing local data and preparing for restart...");
+
+										// Wait another 7 seconds before actually clearing
+										new android.os.Handler().postDelayed(() -> {
+											if (!isFinishing() && !isDestroyed() && reInitializeprogressDialog != null) {
+												reInitializeprogressDialog.setTitle("Almost Done");
+												reInitializeprogressDialog.setMessage("✓ Database cleared successfully! Restarting app...");
+
+												// Final delay before restart
+												new android.os.Handler().postDelayed(() -> {
+													if (!isFinishing() && !isDestroyed() && reInitializeprogressDialog != null) {
+														reInitializeprogressDialog.dismiss();
+														clearDatabaseAndRestart();
+													}
+												}, 7000); // 7 seconds
+											}
+										}, 7000); // 7 seconds
+									}
+								}, 7000); // 7 seconds
+							}
+
+//							clearDatabaseAndRestart();
+						} else {
+							// Sync failed
+							NotificationHelper.showNotification(EnterPinActivity.this, NotificationType.ERROR,
+									syncFailedMessage != null ? syncFailedMessage : getString(R.string.error_synchronization));
+						}
+					});
+				});
+			} else {
+				// Connection failed
+				runOnUiThread(() -> {
+					if (reInitializeprogressDialog != null && reInitializeprogressDialog.isShowing()) {
+						reInitializeprogressDialog.dismiss();
+					}
+					showConnectionErrorWithRetry();
+				});
+			}
+		});
+	}
+
+	private void showConnectionErrorWithRetry() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Connection Error");
+		builder.setMessage("No network connection available. Please check your internet connection and try again.");
+		builder.setCancelable(false);
+
+		// Try Again button
+		builder.setPositiveButton("Try Again", (dialog, which) -> {
+			dialog.dismiss();
+			// Retry the reinitialization process
+			showReinitializeLoadingDialog();
+		});
+
+		// Cancel button
+		builder.setNegativeButton("Cancel", (dialog, which) -> {
+			dialog.dismiss();
+			NotificationHelper.showNotification(binding, NotificationType.INFO,
+					"Reinitialization cancelled. You can try again later.");
+		});
+
+		AlertDialog dialog = builder.create();
+		dialog.show();
+	}
+
+	private void clearDatabaseAndRestart() {
+		try {
+			de.symeda.sormas.app.backend.common.DatabaseHelper.dropDatabase();
+			de.symeda.sormas.app.backend.config.ConfigProvider.clearUserLogin();
+			de.symeda.sormas.app.backend.config.ConfigProvider.clearPin();
+			de.symeda.sormas.app.backend.common.DatabaseHelper.clearConfigTable();
+
+			// Restart the app by launching LoginActivity
+			Intent intent = new Intent(this, LoginActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+			startActivity(intent);
+
+			// Finish current activity
+			finish();
+
+		} catch (Exception e) {
+			if (!isFinishing() && !isDestroyed()) {
+				Log.e(getClass().getName(), "Error during database clearing", e);
+				NotificationHelper.showNotification(binding, NotificationType.ERROR,
+						"Error during reinitialization: " + e.getMessage());
 			}
 		}
 	}

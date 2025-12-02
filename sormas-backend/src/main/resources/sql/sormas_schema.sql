@@ -11346,6 +11346,135 @@ ALTER TABLE public.messages ADD COLUMN messagecategory varchar NULL;
 
 INSERT INTO schema_version (version_number, comment) VALUES (487, 'Updating Notification #870 & #869');
 
+CREATE TABLE public.device_manager (
+	id int8 NOT NULL,
+	uuid varchar(255) NOT NULL,
+	device_model varchar(100) NOT NULL,
+	device_brand varchar(50) NOT NULL,
+	device_serial varchar(100) NULL,
+	android_version varchar(20) NOT NULL,
+	user_name varchar(100) NULL,
+	user_location varchar(100) NULL,
+	user_id int8 NULL,
+	apk_version varchar(20) NOT NULL,
+	total_int_storage int8 NULL,
+	free_int_storage int8 NULL,
+	total_ext_storage int8 NULL,
+	free_ext_storage int8 NULL,
+	ram_storage int8 NULL,
+	total_int_storage_gb numeric(10, 2) GENERATED ALWAYS AS ((total_int_storage::numeric / 1073741824.0)) STORED NULL,
+	free_int_storage_gb numeric(10, 2) GENERATED ALWAYS AS ((free_int_storage::numeric / 1073741824.0)) STORED NULL,
+	total_ext_storage_gb numeric(10, 2) GENERATED ALWAYS AS ((total_ext_storage::numeric / 1073741824.0)) STORED NULL,
+	free_ext_storage_gb numeric(10, 2) GENERATED ALWAYS AS ((free_ext_storage::numeric / 1073741824.0)) STORED NULL,
+	ram_storage_gb numeric(10, 2) GENERATED ALWAYS AS ((ram_storage::numeric / 1073741824.0)) STORED NULL,
+	battery_level int4 NULL,
+	charging_status bool DEFAULT false NULL,
+	battery_status varchar(20) DEFAULT 'UNKNOWN'::character varying NULL,
+	wifi_connected bool DEFAULT false NULL,
+	network_strength int4 NULL,
+	creationdate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	changedate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	device_id varchar(255) NULL,
+	CONSTRAINT chk_battery_level CHECK (((battery_level >= 0) AND (battery_level <= 100))),
+	CONSTRAINT chk_network_strength CHECK (((network_strength >= 0) AND (network_strength <= 5))),
+	CONSTRAINT device_manager_pkey PRIMARY KEY (id),
+	CONSTRAINT device_manager_uuid_key UNIQUE (uuid)
+); 
+
+CREATE OR REPLACE FUNCTION public.delete_old_device_info()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    -- Delete any existing records with same user_name and device_id
+    DELETE FROM public.device_manager
+    WHERE user_name = NEW.user_name 
+      AND device_id = NEW.device_id
+      AND id != NEW.id;
+    
+    -- Update changedate on insert
+    NEW.changedate = CURRENT_TIMESTAMP;
+    
+    RETURN NEW;
+END;
+$function$
+;
+
+-- Table Triggers
+
+create trigger before_insert_device_info before
+insert
+    on
+    public.device_manager for each row execute function delete_old_device_info();
+    
+    
+    
+CREATE TABLE public.devices_error_manager (
+	id int8 NOT NULL,
+	uuid varchar(255) NOT NULL,
+	errormessage text NOT NULL,
+	stacktrace text NULL,
+	deviceid varchar(255) NULL,
+	username varchar(100) NULL,
+	erroraction varchar(255) NULL,
+	lastupdated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	creationdate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	changedate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT devices_error_pkey PRIMARY KEY (id));
+	
+CREATE INDEX idx_devices_error_user_device_lastupdated ON public.devices_error_manager USING btree (username, deviceid, lastupdated DESC, id DESC);
+
+-- Table Triggers
+CREATE OR REPLACE FUNCTION public.cap_device_error_logs()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+  -- delete rows beyond the newest 19; the new row will become #20
+  DELETE FROM public.devices_error_manager d
+   WHERE d.username = NEW.username
+     AND d.deviceid = NEW.deviceid
+     AND d.id IN (
+       SELECT id
+         FROM public.devices_error_manager
+        WHERE username = NEW.username
+          AND deviceid = NEW.deviceid
+        ORDER BY lastupdated DESC, id DESC
+        OFFSET 19
+     );
+  RETURN NEW;
+
+END;
+$function$
+;
+
+create trigger before_insert_device_error before
+insert
+    on
+public.devices_error_manager for each row execute function cap_device_error_logs();
+    
+INSERT INTO schema_version (version_number, comment) VALUES (488, 'Implementing Device Info and Device Error');
+
+ALTER TABLE campaigns
+ADD COLUMN precampstartdate TIMESTAMP NULL,
+ADD COLUMN precampenddate TIMESTAMP NULL,
+ADD COLUMN postcampstartdate TIMESTAMP NULL,
+ADD COLUMN postcampenddate TIMESTAMP NULL;
+
+ALTER TABLE campaigns_history
+ADD COLUMN precampstartdate TIMESTAMP NULL,
+ADD COLUMN precampenddate TIMESTAMP NULL,
+ADD COLUMN postcampstartdate TIMESTAMP NULL,
+ADD COLUMN postcampenddate TIMESTAMP NULL;
+
+ALTER TABLE device_manager 
+ADD COLUMN networkProvider varchar NULL,
+ADD COLUMN activeCampaigns int8 NULL,
+ADD COLUMN activeFormCount int8 NULL;
+
+
+INSERT INTO schema_version (version_number, comment) VALUES (489, 'Implementing Pre Campaign Na Post Campaign STart Date' );
+
 
 CREATE MATERIALIZED VIEW public.mv_flw_duplicate_error_analysis
 TABLESPACE pg_default
@@ -11399,6 +11528,7 @@ AS WITH duplicate_tazkiras AS (
   WHERE (f3.value ->> 'id'::text) = 'TazkiraNo'::text AND (f3.value ->> 'id'::text) = (meta.value ->> 'id'::text)
 WITH DATA;
 
+
 CREATE INDEX idx_mv_flw_area_uuid ON public.mv_flw_duplicate_error_analysis USING btree (area_uuid);
 CREATE INDEX idx_mv_flw_campaign_uuid ON public.mv_flw_duplicate_error_analysis USING btree (campaign_uuid);
 CREATE INDEX idx_mv_flw_composite_filter ON public.mv_flw_duplicate_error_analysis USING btree (campaign_uuid, area_uuid, region_uuid, district_uuid, error_status);
@@ -11411,7 +11541,7 @@ CREATE INDEX idx_mv_flw_sort_firstname ON public.mv_flw_duplicate_error_analysis
 CREATE INDEX idx_mv_flw_sort_region ON public.mv_flw_duplicate_error_analysis USING btree (region, campaignformdata_id);
 CREATE UNIQUE INDEX idx_mv_flw_unique_id ON public.mv_flw_duplicate_error_analysis USING btree (campaignformdata_id);
 
-INSERT INTO schema_version (version_number, comment) VALUES (488, 'Materialized View for FLW Operation performance #811');
+INSERT INTO schema_version (version_number, comment) VALUES (490, 'Materialized View for FLW Operation performance #811');
 
 
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***

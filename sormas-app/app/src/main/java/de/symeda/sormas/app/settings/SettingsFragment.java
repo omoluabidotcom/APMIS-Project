@@ -93,6 +93,7 @@ public class SettingsFragment extends BaseLandingFragment {
 		binding.settingsServerUrl.setValue(ConfigProvider.getServerRestUrl());
 		binding.changePin.setOnClickListener(v -> changePIN());
 		binding.resynchronizeData.setOnClickListener(v -> repullData());
+		binding.reinitializeData.setOnClickListener(v -> reInitializeData());
 		binding.showSyncLog.setOnClickListener(v -> openSyncLog());
 		binding.logout.setOnClickListener(v -> logout());
 		binding.kexLbds.setOnClickListener(v -> kexLbds());
@@ -205,6 +206,34 @@ public class SettingsFragment extends BaseLandingFragment {
 		checkAndShowUnsynchronizedChangesDialog(() -> showRepullDataConfirmationDialog(), "SYNC");
 	}
 
+
+	public void reInitializeData() {
+		showReinitialisationConfirmationDialog(() -> showReinitializeConfirmationDialog());
+	}
+
+
+
+	private void showReinitialisationConfirmationDialog(Callback confirmedCallback) {
+//		if (SynchronizeDataAsync.hasAnyUnsynchronizedData()) {
+			final ConfirmationDialog reinitializeAppDialog = new ConfirmationDialog(
+					getActivity(),
+					R.string.heading_reinitialize_app,
+					R.string.message_reinitialize_app_confirmation);
+
+//			reinitializeAppDialog.setPositiveCallback(confirmedCallback::call);
+
+		reinitializeAppDialog.setPositiveCallback(() -> {
+			// Open Enter PIN view with reinitialize flag
+			Intent intent = new Intent(getActivity(), EnterPinActivity.class);
+			intent.putExtra(EnterPinActivity.REINITIALIZE_APP, true);
+			startActivity(intent);
+		});
+			reinitializeAppDialog.show();
+//		} else {
+//			confirmedCallback.call();
+//		}
+	}
+
 	private void checkAndShowUnsynchronizedChangesDialog(Callback confirmedCallback, String wordToType) {
 		if (SynchronizeDataAsync.hasAnyUnsynchronizedData()) {
 			final ConfirmationInputDialog unsynchronizedChangesDialog = new ConfirmationInputDialog(
@@ -220,6 +249,39 @@ public class SettingsFragment extends BaseLandingFragment {
 			confirmedCallback.call();
 		}
 	}
+
+	private void showReinitializeConfirmationDialog() {
+		final ConfirmationDialog confirmationDialog =
+				new ConfirmationDialog(getActivity(), R.string.heading_confirmation_dialog, R.string.info_resync_duration);
+
+		confirmationDialog.setPositiveCallback(() -> {
+			// Collect unsynchronized changes
+			final List<Case> modifiedCases = DatabaseHelper.getCaseDao().getModifiedEntities();
+			getBaseActivity().synchronizeData(SynchronizeDataAsync.SyncMode.Reinitialize, true, true, null, new Callback() {
+
+				@Override
+				public void call() {
+					// Add deleted entities that had unsynchronized changes to sync log
+					for (Case caze : modifiedCases) {
+						if (DatabaseHelper.getCaseDao().queryUuidReference(caze.getUuid()) == null) {
+							DatabaseHelper.getSyncLogDao()
+									.createWithParentStack(caze.toString(), getResources().getString(R.string.caption_changed_data_lost));
+						}
+					}
+
+				}
+			}, new Callback() {
+
+				@Override
+				public void call() {
+					DatabaseHelper.clearTables(true, true);
+				}
+			});
+		});
+
+		confirmationDialog.show();
+	}
+
 
 	private void showRepullDataConfirmationDialog() {
 		final ConfirmationDialog confirmationDialog =

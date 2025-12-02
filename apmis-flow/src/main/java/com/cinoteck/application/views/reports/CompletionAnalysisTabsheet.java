@@ -1,9 +1,8 @@
 package com.cinoteck.application.views.reports;
-
+ 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Supplier;
-
+import java.util.function.Supplier; 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -16,8 +15,9 @@ import com.vaadin.flow.router.RouterLayout;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.I18nProperties;
 
+ 
 @Route(layout = ReportView.class)
-public class CompletionAnalysisTabsheet extends VerticalLayout implements RouterLayout {
+ public class CompletionAnalysisTabsheet extends VerticalLayout implements RouterLayout {
 
     private static final long serialVersionUID = 1L;
 
@@ -98,4 +98,6 @@ public class CompletionAnalysisTabsheet extends VerticalLayout implements Router
         reportTabsheetLayout.add(tabs);
         add(reportTabsheetLayout, contentContainer);
     }
-}
+ }
+ 
+ 

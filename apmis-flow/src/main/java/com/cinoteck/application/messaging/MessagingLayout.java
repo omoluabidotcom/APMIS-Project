@@ -219,6 +219,7 @@ public class MessagingLayout extends VerticalLayout {
 			reSendFacade.setVisible(!isNew);
 			reSend.setVisible(false);
 			
+
 			titleField.setEnabled(isNew); 
 			messageContent.setEnabled(isNew); 
 			messageCategory.setEnabled(isNew);  

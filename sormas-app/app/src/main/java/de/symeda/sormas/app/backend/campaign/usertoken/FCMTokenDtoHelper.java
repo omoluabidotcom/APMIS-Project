@@ -6,6 +6,7 @@ import de.symeda.sormas.api.PushResult;
 import de.symeda.sormas.api.messaging.FCMTokenDto;
 import de.symeda.sormas.app.backend.common.AdoDtoHelper;
 import de.symeda.sormas.app.rest.NoConnectionException;
+ 
 import de.symeda.sormas.app.rest.RetroProvider;
 import retrofit2.Call;
 
@@ -37,8 +38,7 @@ public class FCMTokenDtoHelper extends AdoDtoHelper<FCMToken, FCMTokenDto> {
     }
 
     @Override
-    protected void fillInnerFromDto(FCMToken target, FCMTokenDto source) {
-    }
+    protected void fillInnerFromDto(FCMToken target, FCMTokenDto source) {}
 
     @Override
     protected void fillInnerFromAdo(FCMTokenDto target, FCMToken source) {

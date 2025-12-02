@@ -26,6 +26,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+ 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -51,6 +53,7 @@ import de.symeda.sormas.app.core.async.AsyncTaskResult;
 import de.symeda.sormas.app.core.async.SavingAsyncTask;
 import de.symeda.sormas.app.core.async.TaskResultHolder;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
+import de.symeda.sormas.app.util.ErrorReportingHelper;
 
 import static de.symeda.sormas.app.core.notification.NotificationType.ERROR;
 import static de.symeda.sormas.app.core.notification.NotificationType.WARNING;
@@ -65,7 +68,13 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
     private Locale currentLocale;
 
     public static void startActivity(Context context, String rootUuid) {
-        BaseActivity.startActivity(context, CampaignFormDataEditActivity.class, buildBundle(rootUuid));
+        try {
+            BaseActivity.startActivity(context, CampaignFormDataEditActivity.class, buildBundle(rootUuid));
+        } catch(Exception e ){
+            System.out.println("eDIT STARTACTIVITY Fragment Error Logged--------------------");
+
+            ErrorReportingHelper.logAndStoreDeviceError( "Edit Form : " + e.getMessage(), e); // replaced sendCaughtException
+        }
     }
 
     @Override
@@ -164,12 +173,41 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
             }
         }
 
-        campaignFormDataToSave.setFormValues(filledFormValues);
+ 
+        if (campaignFormDataToSave.getFormDate() != null) {
+            Date date = campaignFormDataToSave.getFormDate();
+
+            Calendar cal = Calendar.getInstance();
+
+            int hour = cal.get(Calendar.HOUR_OF_DAY);
+            int minute = cal.get(Calendar.MINUTE);
+            int second = cal.get(Calendar.SECOND);
+            int milli = cal.get(Calendar.MILLISECOND);
+
+// now apply that to your date
+            cal.setTime(date);
+            cal.set(Calendar.HOUR_OF_DAY, hour);
+            cal.set(Calendar.MINUTE, minute);
+            cal.set(Calendar.SECOND, second);
+            cal.set(Calendar.MILLISECOND, milli);
+
+
+            campaignFormDataToSave.setFormDate(cal.getTime());
+        }
+
+         campaignFormDataToSave.setFormValues(filledFormValues);
         campaignFormDataToSave.setSoruce(PlatformEnum.MOBILE);
 
         if(campaignFormDataToSave.getFormDate() == null){
             saveChecker = false;
+        }else{
+            if(campaignFormDataToSave.getCommunity() == null){
+                if (!campaignFormMeta.isDistrictentry()){
+                    saveChecker = false;
+                }
+            }
         }
+
         if (saveChecker) {
             saveTask = new SavingAsyncTask(getRootView(), campaignFormDataToSave) {
 
@@ -204,47 +242,13 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
 
         }else {
             if(campaignFormDataToSave.getFormDate() == null){
-NotificationHelper.showNotification(this, ERROR, "Form Date cannot be left Empty.");
-
+                NotificationHelper.showNotification(this, ERROR, "Form Date cannot be left Empty.");
+            }else if(campaignFormDataToSave.getCommunity() == null){
+                NotificationHelper.showNotification(this, ERROR, "Cluster cannot be left Empty. Please select a cluster to proceed.");
             }
 
             }
     }
-
-    void setSetSubHeadingRowCountForCampaign(){
-
-    };
-
-//    public String dateFormatterLongAndMobile(Object value) {
-//        String dateStr = String.valueOf(value);
-//        System.out.println("Date in question: " + dateStr);
-//
-//        String[] inputFormats = {
-//                "yyyy-MM-dd",                   // e.g., 2025-06-25
-//                "MMM dd, yyyy HH:mm:ss a",      // e.g., Jun 25, 2025 10:30:00 AM
-//                "MMM d, yyyy HH:mm:ss",         // e.g., Jun 5, 2025 10:30:00
-//                "MMM d, yyyy HH:mm:ss a",       // e.g., Jun 5, 2025 10:30:00 AM
-//                "dd/MM/yyyy",                   // e.g., 25/06/2025
-//                "EEE MMM dd HH:mm:ss z yyyy"    // e.g., Wed Jun 25 10:30:00 GMT 2025
-//        };
-//
-//        // The desired output format (date only)
-//        DateFormat outputFormatter = new SimpleDateFormat("dd-MM-yyyy");
-//
-//        for (String formatString : inputFormats) {
-//            try {
-//                DateFormat inputFormatter = new SimpleDateFormat(formatString);
-//                Date parsedDate = inputFormatter.parse(dateStr);
-//                String formattedDate = outputFormatter.format(parsedDate);
-//
-//                return formattedDate; // Return date in yyyy-MM-dd format
-//            } catch (ParseException e) {
-//                System.out.println("Failed to parse with format '" + formatString + "': " + e.getMessage());
-//            }
-//        }
-//        System.out.println("Could not parse date----: " + dateStr);
-//        return value.toString();
-//    }
 
     public String dateFormatterLongAndMobile(Object value) {
         if (value == null) return null;
