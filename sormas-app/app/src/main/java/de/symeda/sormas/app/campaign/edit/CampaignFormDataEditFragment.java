@@ -356,7 +356,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
                             List<String> selectedKeys = Collections.singletonList(value);
-                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -433,7 +433,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -500,7 +500,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
                             List<String> selectedKeys = Collections.singletonList(value);
-                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -576,7 +576,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -645,7 +645,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
                             List<String> selectedKeys = Collections.singletonList(value);
-                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -719,7 +719,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -786,7 +786,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
                             List<String> selectedKeys = Collections.singletonList(value);
-                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -879,7 +879,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -945,7 +945,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
                             List<String> selectedKeys = Collections.singletonList(value);
-                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -1017,7 +1017,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -1083,7 +1083,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
                             List<String> selectedKeys = Collections.singletonList(value);
-                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -1155,7 +1155,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -1221,7 +1221,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
                             List<String> selectedKeys = Collections.singletonList(value);
-                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -1293,7 +1293,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -1359,7 +1359,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
                             List<String> selectedKeys = Collections.singletonList(value);
-                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -1431,7 +1431,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -1502,7 +1502,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                         ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                     }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
                             List<String> selectedKeys = Collections.singletonList(value);
-                            dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys);
+                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                     }
                     else if (type == CampaignFormElementType.DECIMAL) {
                         final boolean exprx = expressionx;
@@ -1822,7 +1822,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -1858,7 +1858,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+                                        CampaignFormDataFragmentUtils.handleExpressionSecEdit(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
