@@ -3310,6 +3310,7 @@ public class CampaignDataView extends VerticalLayout
 //								.getAllActiveByDistrict(districtCombo.getValue().getUuid());
 						clusterCombo.clear();
 //						clusterCombo.setItems(communities);
+						allClusters.sort(Comparator.comparing(CommunityReferenceDto::getNumber));
 						clusterCombo.setItems(allClusters);
 						clusterCombo.setEnabled(true);
 					}
@@ -3330,6 +3331,7 @@ public class CampaignDataView extends VerticalLayout
 
 					communities = FacadeProvider.getCommunityFacade()
 							.getAllActiveByDistrict(userProvider.getUser().getDistrict().getUuid());
+					communities.sort(Comparator.comparing(CommunityReferenceDto::getNumber));
 					clusterCombo.setItems(communities);
 					clusterCombo.setEnabled(true);
 
@@ -3338,6 +3340,7 @@ public class CampaignDataView extends VerticalLayout
 
 						communities = FacadeProvider.getCommunityFacade()
 								.getAllActiveByDistrict(userProvider.getUser().getDistrict().getUuid());
+						communities.sort(Comparator.comparing(CommunityReferenceDto::getNumber));
 						clusterCombo.setItems(communities);
 //					clusterCombo.setValue(userProvider.getUser().getCommunity());
 						clusterCombo.setEnabled(false);
@@ -3347,6 +3350,7 @@ public class CampaignDataView extends VerticalLayout
 
 						communities = FacadeProvider.getCommunityFacade()
 								.getAllActiveByDistrict(userProvider.getUser().getDistrict().getUuid());
+						communities.sort(Comparator.comparing(CommunityReferenceDto::getNumber));
 						clusterCombo.setItems(communities);
 //					clusterCombo.setValue(userProvider.getUser().getCommunity());
 						clusterCombo.setEnabled(false);
@@ -3354,6 +3358,7 @@ public class CampaignDataView extends VerticalLayout
 
 						communities = FacadeProvider.getCommunityFacade()
 								.getAllActiveByDistrict(userProvider.getUser().getDistrict().getUuid());
+						communities.sort(Comparator.comparing(CommunityReferenceDto::getNumber));
 						clusterCombo.setItems(communities);
 						clusterCombo.setEnabled(true);
 					}
@@ -3782,6 +3787,7 @@ public class CampaignDataView extends VerticalLayout
 					CommunityReferenceDto dcfv = (CommunityReferenceDto) itm;
 					return dcfv.getNumber() + " | " + dcfv.getCaption();
 				});
+				allClusters.sort(Comparator.comparing(CommunityReferenceDto::getNumber));
 				clusterCombo.setItems(allClusters);
 
 				clusterCombo.setEnabled(true);
