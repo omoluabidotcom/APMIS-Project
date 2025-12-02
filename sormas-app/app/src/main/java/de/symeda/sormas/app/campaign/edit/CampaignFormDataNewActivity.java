@@ -250,9 +250,6 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
             campaignFormDataToSave.setFormDate(cal.getTime());
         }
 
- 
-
-
         List<String> listLotNo = new ArrayList();
         List<String> listLotClusterNo = new ArrayList();
 
@@ -289,9 +286,15 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
         if(campaignFormDataToSave.getFormDate() == null){
             saveChecker = false;
-//            NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number");
-
+        }else{
+            if(campaignFormDataToSave.getCommunity() == null){
+                if (!campaignFormMeta.isDistrictentry()){
+                    saveChecker = false;
+                }
+            }
         }
+
+
 
         if (saveChecker) {
             saveTask = new SavingAsyncTask(getRootView(), campaignFormDataToSave) {
@@ -318,8 +321,10 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
             if(campaignFormDataToSave.getFormDate() == null){
                 NotificationHelper.showNotification(this, ERROR, "Form Date cannot be left Empty.");
 
+            }else if(campaignFormDataToSave.getCommunity() == null){
+                NotificationHelper.showNotification(this, ERROR, "Cluster cannot be left Empty. Please select a cluster to proceed.");
             }else{
-                NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number");
+                NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number.");
 
             }
             return;
