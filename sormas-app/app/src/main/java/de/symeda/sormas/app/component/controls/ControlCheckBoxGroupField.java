@@ -114,7 +114,14 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 		// Clear existing items first
 		removeAllItems();
 
-		validOptionKeys.clear();
+
+//		if(validOptionKeys != null){
+//			validOptionKeys.clear();
+//		}else{
+			validOptionKeys = new HashSet<>();
+//		}
+					validOptionKeys.clear();
+
 		validOptionKeys.addAll(optionsValue.keySet());
 
 
@@ -140,7 +147,10 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 			selectedElements = new HashSet<>();
 		}
 
+		validOptionKeys = new HashSet<>();
+//		}
 		validOptionKeys.clear();
+
 		validOptionKeys.addAll(optionsValue.keySet());
 
 		initializeContainers();

@@ -173,10 +173,7 @@ public class CampaignFormDataFragmentUtils {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, formatted);
 
                         } else if (type == CampaignFormElementType.DECIMAL) {
-<<<<<<< HEAD
 
-=======
->>>>>>> branch 'development' of https://github.com/omoluabidotcom/APMIS-Project.git
                             String currentFieldValue = ((ControlDecimalEditField) dynamicField).getValue();
 
                             if (currentFieldValue != null && currentFieldValue.endsWith(".")) {
