@@ -26,6 +26,9 @@ import javax.annotation.security.RunAs;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -52,6 +55,7 @@ import de.symeda.sormas.backend.labmessage.LabMessageFacadeEjb.LabMessageFacadeE
 import de.symeda.sormas.backend.report.WeeklyReportFacadeEjb.WeeklyReportFacadeEjbLocal;
 import de.symeda.sormas.backend.systemevent.SystemEventFacadeEjb.SystemEventFacadeEjbLocal;
 import de.symeda.sormas.backend.task.TaskFacadeEjb.TaskFacadeEjbLocal;
+import de.symeda.sormas.backend.util.ModelConstants;
 
 import de.symeda.sormas.backend.util.ModelConstants;
 
@@ -62,8 +66,7 @@ public class CronService {
 	public static final int TASK_UPDATE_INTERVAL = 10;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-
-
+ 
 	@PersistenceContext(unitName = ModelConstants.PERSISTENCE_UNIT_NAME)
 	private EntityManager em;
 	
@@ -104,8 +107,8 @@ public class CronService {
 		campaingDataFacade.checkLastAnalytics();
 
 		logger.debug("running analytics updates finished. {} proccessed, {} s", 0, DateHelper.durationSeconds(timeStart));
-	}
-
+	} 
+	
 	@Schedule(hour = "0", minute = "0", second = "0", persistent = false)
     @Transactional
     public void refreshFlwDuplicateAnalysisView() {

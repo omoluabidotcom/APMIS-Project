@@ -106,6 +106,7 @@ public class ReportView extends VerticalLayout implements RouterLayout{
 		
 		reportTabsheetLayout.add(tabs);
 		add(reportTabsheetLayout, contentContainer);
-	} 
+ 	} 
 }
+ 
  

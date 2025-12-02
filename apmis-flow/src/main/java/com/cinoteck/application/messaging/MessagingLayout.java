@@ -217,15 +217,15 @@ public class MessagingLayout extends VerticalLayout {
 			reSend.setVisible(!isNew);
 			
 
-//			titleField.setEnabled(isNew); 
-//			messageContent.setEnabled(isNew); 
-//			messageCategory.setEnabled(isNew);  
-//			userRoles.setEnabled(isNew);  
-//			formAccessSelector.setEnabled(isNew);  
-//			areaSelector.setEnabled(isNew);  
-//			regionSelector.setEnabled(isNew);  
-//			districtSelector.setEnabled(isNew); 
-//			communitySelector.setEnabled(isNew); 
+			titleField.setEnabled(isNew); 
+			messageContent.setEnabled(isNew); 
+			messageCategory.setEnabled(isNew);  
+			userRoles.setEnabled(isNew);  
+			formAccessSelector.setEnabled(isNew);  
+			areaSelector.setEnabled(isNew);  
+			regionSelector.setEnabled(isNew);  
+			districtSelector.setEnabled(isNew); 
+			communitySelector.setEnabled(isNew); 
 		} else {
 			saved.setVisible(true);
 			reSend.setVisible(false);

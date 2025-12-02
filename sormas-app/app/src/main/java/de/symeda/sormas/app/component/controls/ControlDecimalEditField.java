@@ -335,8 +335,7 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
 
                 if (isDecimal && minValue != null && maxValue != null) {
  
-
-                    if (minValue != null && maxValue != null && input.getText() != null) {
+                	if (minValue != null && maxValue != null && input.getText() != null) {
                         String inputText = input.getText().toString();
                         if (!inputText.equals("") && !inputText.isEmpty() && !inputText.equals(".") && !inputText.endsWith(".")) {
                             try{
@@ -400,21 +399,22 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
 //                        }
 //                    }
                 } else if (isDecimal && isExpression && isRequired) {
-                     try {
+                      try {
+ 
                         if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
                             int beforeDatavalxx = Integer.parseInt(beforeData.toString());
-                            int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
- 
+                            int onChangeDatavalxx = Integer.parseInt(onChangeData.toString()); 
                             if (beforeData.length() > 0 && onChangeData.length() == 0) {
                                 enableErrorState("Number not in provided range!");
                             }
                         }
                     }catch (NumberFormatException e){
                         if(beforeData.length() > 0 && onChangeData.length() == 0){
- 
+  
                             input.setError("Please enter a valid decimal");
                             enableErrorState("Invalid decimal");
                          }else if (beforeData.length() > 0 &&  onChangeData.length() > 0) {
+ 
                             try {
                                 Integer.parseInt(text);
                                 // ✅ If parsing works, clear error
@@ -428,7 +428,8 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
                     }
  
                 }else if(isDecimal && isExpression && !isRequired){
-                     try {
+                      try {
+ 
                         if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
                             int beforeDatavalxx = Integer.parseInt(beforeData.toString());
                             int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());

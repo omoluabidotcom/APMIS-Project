@@ -101,6 +101,8 @@ public final class RetroProvider {
 	private FacilityFacadeRetro facilityFacadeRetro;
 	private PointOfEntryFacadeRetro pointOfEntryFacadeRetro;
 	private UserFacadeRetro userFacadeRetro;
+
+	private FCMTokenFacadeRetro fcmTokenFacadeRetro;
 	private TaskFacadeRetro taskFacadeRetro;
 	private ContactFacadeRetro contactFacadeRetro;
 	private VisitFacadeRetro visitFacadeRetro;
@@ -719,6 +721,19 @@ System.out.println(isConnected() + "connecting +++++++++"+connecting);
 			}
 		}
 		return instance.userFacadeRetro;
+	}
+
+	public static FCMTokenFacadeRetro getFCMTokenFacade() throws NoConnectionException {
+		if (instance == null)
+			throw new NoConnectionException();
+		if (instance.fcmTokenFacadeRetro == null) {
+			synchronized ((RetroProvider.class)) {
+				if (instance.fcmTokenFacadeRetro == null) {
+					instance.fcmTokenFacadeRetro = instance.retrofit.create(FCMTokenFacadeRetro.class);
+				}
+			}
+		}
+		return instance.fcmTokenFacadeRetro;
 	}
 
 	public static TaskFacadeRetro getTaskFacade() throws NoConnectionException {

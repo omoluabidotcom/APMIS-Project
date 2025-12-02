@@ -1497,7 +1497,6 @@ if (!selectedAreas.isEmpty()) {
 				            });				            
 				        }
 				    }
-
 				
 					if (constrainsVal.isExpression()) {
 
@@ -1548,76 +1547,6 @@ if (!selectedAreas.isEmpty()) {
 				        	numberField.setErrorMessage("Negative values are not allowed");
 				        }
 				    });
-//=======
-//				    if (dependingOnId != null && dependingOnValues != null) {
-//				        setVisibilityDependency(numberField, dependingOnId, dependingOnValues, type,
-//				                formElement.isImportant());
-//				    } else {
-//				        numberField.setRequiredIndicatorVisible(formElement.isImportant());
-//				    }
-				    
-//					NumberField numberField = new NumberField();
-//					numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-//					numberField.setClassName("customTextWrap");
-//
-//					numberField.setWidth("240px");
-////					bigDecimalField.setValue(new BigDecimal("948205817.472950487"));
-//					numberField.setId(formElement.getId());
-//					numberField.setSizeFull();
-//					numberField.setReadOnly(false);
-//					numberField.setMin(0);
-//					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
-//					vertical.add(numberField);
-//					fields.put(formElement.getId(), numberField);
-//
-//					String validationMessageTag = "";
-//					Map<String, Object> validationMessageArgs = new HashMap<>();
-//
-//					if (constrainsVal.isExpression()) {
-//
-//						if (!fieldIsRequired) {
-//							// ApmisNotification notification = new ApmisNotification("Application
-//							// submitted!");
-//						}
-//
-//						constrainsVal.setExpression(false);
-//
-//					} else {
-//
-//						if (constrainsVal.getMin() != null || constrainsVal.getMax() != null) {
-//
-//							numberField.setMin(constrainsVal.getMin());
-//							numberField.setMax(constrainsVal.getMax());
-//
-//							System.out.println();
-//							if (constrainsVal.getMin() == null) {
-//								validationMessageTag = Validations.numberTooBig;
-//								validationMessageArgs.put("value", constrainsVal.getMax());
-//							} else if (constrainsVal.getMax() == null) {
-//								validationMessageTag = Validations.numberTooSmall;
-//								validationMessageArgs.put("value", constrainsVal.getMin());
-//							} else {
-//								validationMessageTag = Validations.numberNotInRange;
-//								validationMessageArgs.put("min", constrainsVal.getMin());
-//								validationMessageArgs.put("max", constrainsVal.getMax());
-//								validationMessageArgs.put("invalid", true);
-//								
-//							}
-//
-//						} else {
-//
-//						}
-//					}
-//
-//					if (dependingOnId != null && dependingOnValues != null) {
-//						// needed
-//						setVisibilityDependency(numberField, dependingOnId, dependingOnValues, type,
-//								formElement.isImportant());
-//					} else {
-//						numberField.setRequiredIndicatorVisible(formElement.isImportant());
-//					}
-//>>>>>>> branch 'development' of https://github.com/omoluabidotcom/APMIS-Project.git
- 
 
 				} else if (type == CampaignFormElementType.TEXTBOX) {
 					TextArea textArea = new TextArea();
@@ -2183,8 +2112,8 @@ if (!selectedAreas.isEmpty()) {
 		    } else {
 		        decimalField.setValue(null);		       
 		    }
-		    break;
- 
+		    break; 
+		    
 		case TEXTBOX:
 
 			if (value != null) {
@@ -2737,12 +2666,13 @@ if (!selectedAreas.isEmpty()) {
 					formField.getElement().setProperty("invalid", true);
 				} else {
  
+ 
 //					formField.getElement().setProperty("invalid", false);
 					if (!formField.getElement().getProperty("invalid", false)) {
 	                    formField.getElement().setProperty("invalid", false);
 	                }
  
-				}
+			}
 			}
 
 		});
@@ -3104,6 +3034,7 @@ if (!selectedAreas.isEmpty()) {
 									e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() : null);
 						}
  
+
 					} else if (valueType.isAssignableFrom(Double.class)) {
 						// logger.debug("yes double detected "+Double.isFinite((double) value) +"
 						// = "+ value);

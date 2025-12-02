@@ -116,6 +116,7 @@ public class CampaignFormDataFragmentUtils {
                         if (type == CampaignFormElementType.YES_NO) {
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, expressionValue, true, YesNo.class, null);
                         } else if (type == CampaignFormElementType.RANGE) {
+ 
 
                             // IMPROVED: Better handling of range values
                             String valudex = valuex;
@@ -172,7 +173,10 @@ public class CampaignFormDataFragmentUtils {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, formatted);
 
                         } else if (type == CampaignFormElementType.DECIMAL) {
+<<<<<<< HEAD
 
+=======
+>>>>>>> branch 'development' of https://github.com/omoluabidotcom/APMIS-Project.git
                             String currentFieldValue = ((ControlDecimalEditField) dynamicField).getValue();
 
                             if (currentFieldValue != null && currentFieldValue.endsWith(".")) {
@@ -576,6 +580,7 @@ public class CampaignFormDataFragmentUtils {
 
                         } else if (type == CampaignFormElementType.DECIMAL) {
                             String valudex = valuex;
+                            System.out.println("handleExpressionhandleExpressionhandleExpressionhandleExpression");
 //                            if (!valudex.isEmpty()) {
 //                                    ControlTextEditField.setValue((ControlTextEditField) dynamicField, valudex.endsWith(".0") ? valudex.replace(".0","") : valudex);
 //                                }
