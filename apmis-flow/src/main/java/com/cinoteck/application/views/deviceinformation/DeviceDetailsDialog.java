@@ -549,9 +549,7 @@ public class DeviceDetailsDialog extends Dialog {
         section.add(title, horizontalLine, batteryInfoLayout);
         return section;
     }
-    
- 
-   
+       
     private VerticalLayout createDeviceSystemInformationC(DeviceManagerDto deviceManagerDto) {
          VerticalLayout section = new VerticalLayout();
         section.setSpacing(true);
@@ -579,8 +577,7 @@ public class DeviceDetailsDialog extends Dialog {
         section.add(title, horizontalLine, androidVersion, apkVersion);
         return section;
     }
-    
- 
+     
     private VerticalLayout createSystemInformation(DeviceManagerDto deviceManagerDto) {
         VerticalLayout section = new VerticalLayout();
         section.setSpacing(true);
@@ -623,78 +620,7 @@ public class DeviceDetailsDialog extends Dialog {
         section.add(title, horizontalLine, itemsLayout);
         return section;
     }
-//    
-//     private void createFooter(DeviceManagerDto deviceManagerDto) {
-//        HorizontalLayout footer = new HorizontalLayout();
-//        footer.setWidthFull();
-//        footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-//        footer.setPadding(true);
-// 
-////        footer.getStyle().set("border-top", "1px solid #e0e0e0");
-////        footer.getStyle().set("background-color", "#f5f5f5");
-//         
-//        Button closeBtn = new Button("Close");
-//        closeBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
-//        closeBtn.addClickListener(e -> close());
-//        
-//        HorizontalLayout actionButtons = new HorizontalLayout();
-//        actionButtons.setSpacing(true);
-//        
-//        
-//        Button viewDeviceLogs = new Button("Error Logs", new Icon(VaadinIcon.REFRESH));
-//        viewDeviceLogs.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//
-// 
-//       
-//        viewDeviceLogs.addClickListener(e -> {
-//            if (errorLogDialog == null) {
-//                errorLogDialog = new Dialog();
-//                errorLogDialog.setHeaderTitle("Error Log");
-//                errorLogDialog.setWidth("800px");
-//                errorLogDialog.setHeight("600px");
-//
-//                errorGrid = configureLogsGrid(deviceManagerDto); 
-//                errorLogDialog.add(errorGrid);
-//
-//                Button closeButton = new Button("Close", ev -> errorLogDialog.close());
-//                closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//                errorLogDialog.getFooter().add(closeButton);
-//
-//                errorLogDialog.addOpenedChangeListener(ev -> {
-//                    if (!ev.isOpened()) {
-////                      errorLogDialog.getDataProvider().refreshAll();
-//                    }
-//                });
-//            } else {
-//                // refresh items if needed
-//                // errorGrid.setItems(fetchLogs(deviceManagerDto));
-//                errorGrid.getDataProvider().refreshAll();
-//            }
-//            errorLogDialog.open();
-//        });
-//        
-// 
-//
-//        // Helper method to build error log content with Eclipse-style formatting
-//       
-//        
-//        Button requestDataSync = new Button("Request Data sync", new Icon(VaadinIcon.REFRESH));
-//        requestDataSync.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//        
-//        Button latestDiagnostics = new Button("Latest diagnostics", new Icon(VaadinIcon.STETHOSCOPE));
-//        latestDiagnostics.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//        
-//        Button remoteSupport = new Button("Remote support", new Icon(VaadinIcon.HEADPHONES));
-//        remoteSupport.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//        
-// 
-//        actionButtons.add(viewDeviceLogs);
-//         
-//        footer.add(closeBtn, actionButtons);
-//        add(footer);
-//    }
-//    
-    
+
     private Component createFooter(DeviceManagerDto deviceManagerDto) {
         HorizontalLayout footer = new HorizontalLayout();
         footer.setWidthFull();
@@ -1113,14 +1039,21 @@ public class DeviceDetailsDialog extends Dialog {
         
         
         Image icon = new Image();
+  
         if(label.equalsIgnoreCase("Network Provider")) {
         	icon = new Image("images/Shape4.svg", "Android");
         	icon.getStyle().set("width", "30px").set("height", "65px");
              
         }else if(label.equalsIgnoreCase("Wi-Fi")) {
+        	if(status.equalsIgnoreCase("connected")) {
+        		icon = new Image("images/icons8-wi-fi.png", "Wifi On");
+            	icon.getStyle().set("width", "30px").set("height", "30px");
+        	}else {
 
-        	icon = new Image("images/shape5.svg", "Android");
-        	icon.getStyle().set("width", "30px").set("height", "65px");
+            	icon = new Image("images/icons8-wi-fi-off-48.png", "Wifi Off");
+            	icon.getStyle().set("width", "30px").set("height", "30px");
+        	}
+
         }
 
       
