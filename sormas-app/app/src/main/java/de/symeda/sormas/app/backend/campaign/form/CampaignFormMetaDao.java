@@ -19,6 +19,7 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -61,6 +62,26 @@ public class CampaignFormMetaDao extends AbstractAdoDao<CampaignFormMeta> {
             return new ArrayList<>();
         }
     }
+
+
+//    public LocalDate getAllFormPhaseStartDateByPhaseandCampaign(String campaignuuid, String formUuid) {
+//        try {
+//            QueryBuilder<CampaignFormMeta, Long> queryBuilder = this.queryBuilder();  // 'this' is important
+//
+//            queryBuilder.selectColumns("formCategory").distinct();
+//
+//            List<CampaignFormMeta> results = queryBuilder.query();
+//
+//            return results.stream()
+//                    .map(CampaignFormMeta::getFormCategory)
+//                    .filter(Objects::nonNull)
+//                    .collect(Collectors.toList());
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//            return new ArrayList<>();
+//        }
+//    }
 
 
 }

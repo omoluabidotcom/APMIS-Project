@@ -19,6 +19,7 @@ import static de.symeda.sormas.api.campaign.ExpressionProcessorUtils.refreshEval
 import static de.symeda.sormas.api.utils.FieldConstraints.CHARACTER_LIMIT_DEFAULT;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EmptyStackException;
 import java.util.HashMap;
@@ -173,10 +174,7 @@ public class CampaignFormDataFragmentUtils {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, formatted);
 
                         } else if (type == CampaignFormElementType.DECIMAL) {
-<<<<<<< HEAD
 
-=======
->>>>>>> branch 'development' of https://github.com/omoluabidotcom/APMIS-Project.git
                             String currentFieldValue = ((ControlDecimalEditField) dynamicField).getValue();
 
                             if (currentFieldValue != null && currentFieldValue.endsWith(".")) {
@@ -270,12 +268,17 @@ public class CampaignFormDataFragmentUtils {
                         if (type == CampaignFormElementType.YES_NO) {
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, expressionValue, true, YesNo.class, null);
                         } else if (type == CampaignFormElementType.RANGE) {
- 
+
+
                             // IMPROVED: Better handling of range values
                             String valudex = valuex;
-                            System.out.println("type == CampaignFormElementType.RANGE==== " + valuex);
 
-                            System.out.println("NAH ME CAUSE AMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM 222222222222222222222");
+                            boolean isZeroOrEmpty = (valudex == null || valudex.isEmpty() || valudex.equals("") ||
+                                    valudex.equals("-9999"));
+
+
+                            if (!isZeroOrEmpty) {
+
                             try {
                                 double num = Double.parseDouble(valuex);
                                 if (num == Math.floor(num)) {
@@ -284,31 +287,37 @@ public class CampaignFormDataFragmentUtils {
                                     // For range fields, round to integer
                                     valudex = String.valueOf((int) Math.round(num));
                                 }
-                                System.out.println("NAH ME CAUSE AMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM 333333333333333333333333");
                             } catch (NumberFormatException e) {
-
- System.out.println(" NumberFormatExceptiontype == CampaignFormElementType.RANGE==== " + valuex);
                                 valudex = valuex;
-                                System.out.println("NAH ME CAUSE AMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM 44444444444444444444444");
                             }
 
                             if (valudex != null && !valudex.isEmpty() && !valudex.equals("")) {
-                                System.out.println("NAH ME CAUSE AMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM 5555555555555555555555555");
                                 // IMPROVED: Use field-specific update to prevent interference
                                 if (dynamicField instanceof ControlTextEditFieldRange) {
-                                    System.out.println("NAH ME CAUSE AMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM 6666666666666666666666666");
                                     ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, valudex);
-                                    System.out.println("Sysypiytttttttttttttttttttttttt" + dynamicField.getValue());
-                                    System.out.println(dynamicField.getCaption() + "descrptionSysypiytttttttttttttttttttttttt" + dynamicField.getDescription());
-                                    System.out.println("Sysypiytttttttttttttttttttttttt" + dynamicField.getId());
-
-
                                     applyExpressionValue(formElement, formValues, valudex);
 
                                 }
                             }
+
+                        }else{
+                                System.out.println("Expression resulted in zero or empty - allowing user input");
+                                dynamicField.setEnabled(true);
+
+                                if (valuex != null && (valuex.equals("-9999"))) {
+                                    if (dynamicField instanceof ControlTextEditFieldRange) {
+                                        ControlTextEditFieldRange rangeField = (ControlTextEditFieldRange) dynamicField;
+                                        // Clear invalid values
+                                        rangeField.setFieldValueFromExpression("");
+                                        // Also clear the form data entry
+                                        CampaignFormDataEntry entry = getOrCreateCampaignFormDataEntry(formValues, formElement);
+                                        entry.setValue(null);
+                                    }
+                                }
+
+                            }
                         }else if (type == CampaignFormElementType.NUMBER) {
- 
+
 
                             String formatted;
                             try {
@@ -891,10 +900,6 @@ public class CampaignFormDataFragmentUtils {
         formValues.add(newCampaignFomDataEntry);
         return newCampaignFomDataEntry;
     }
-
-
-
-
 
     public static Map<String, String> getUserTranslations(CampaignFormMeta campaignFormMeta) {
         final Map<String, String> userTranslations = new HashMap<>();
@@ -1680,64 +1685,150 @@ public class CampaignFormDataFragmentUtils {
             }
         };
     }
-public static ControlCheckBoxGroupField createControlCheckBoxEditField(
-        CampaignFormElement campaignFormElement,
-        Context context,
-        Map<String, String> userTranslations,
-        Map<String, String> optionValues,
-        List<?> selectedKeys,
-        boolean isRequired) {
 
-    return new ControlCheckBoxGroupField(context) {
-        @Override
-        protected String getPrefixDescription() {
-            return getUserLanguageCaption(userTranslations, campaignFormElement);
-        }
 
-        @Override
-        protected String getPrefixCaption() {
-            return getUserLanguageCaption(userTranslations, campaignFormElement);
-        }
+    public static ControlCheckBoxGroupField createControlMultiSelectCheckBoxEditField(
+            CampaignFormElement campaignFormElement,
+            Context context,
+            Map<String, String> userTranslations,
+            Map<String, String> optionValues,
+            List<?> selectedKeys,
+            boolean isRequired) {
 
-        @Override
-        public int getTextAlignment() {
-            return View.TEXT_ALIGNMENT_VIEW_START;
-        }
-
-        @Override
-        public int getGravity() {
-            return Gravity.CENTER_VERTICAL;
-        }
-
-        @Override
-        protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
-            super.inflateView(context, attrs, defStyle);
-
-            // Initialize the parent field components
-            initLabel();
-            initLabelAndValidationListeners();
-            setLiveValidationDisabled(true);
-
-            // Set the group label text from campaign form element
-            String labelText = getUserLanguageCaption(userTranslations, campaignFormElement);
-            if (labelText != null && !labelText.isEmpty()) {
-                setGroupLabel(labelText);
+        return new ControlCheckBoxGroupField(context) {
+            @Override
+            protected String getPrefixDescription() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
             }
 
-            if (isRequired) {
-                setRequired(true);
+            @Override
+            protected String getPrefixCaption() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
             }
 
-            // IMPORTANT: Set up the checkbox options FIRST
-            if (optionValues != null && !optionValues.isEmpty()) {
-                System.out.println("Setting up options in createControlCheckBoxField: " + optionValues);
-                setOptionsAndValue(optionValues, selectedKeys);
+            @Override
+            public int getTextAlignment() {
+                return View.TEXT_ALIGNMENT_VIEW_START;
             }
-        }
-    };
-}
 
-    public static ControlCheckBoxGroupField createControlCheckBoxField(
+            @Override
+            public int getGravity() {
+                return Gravity.CENTER_VERTICAL;
+            }
+
+            @Override
+            protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
+                super.inflateView(context, attrs, defStyle);
+
+                // Initialize the parent field components
+                initLabel();
+                initLabelAndValidationListeners();
+                setLiveValidationDisabled(false);
+
+                // Set the group label text from campaign form element
+                String labelText = getUserLanguageCaption(userTranslations, campaignFormElement);
+                if (labelText != null && !labelText.isEmpty()) {
+                    setGroupLabel(labelText);
+                }
+
+                if (isRequired) {
+                    setRequired(true);
+                }
+
+                // Set up the checkbox options
+                if (optionValues != null && !optionValues.isEmpty()) {
+                    System.out.println("DEBUG - Options: " + optionValues);
+
+                    // Convert selectedKeys to proper format for the field
+                    List<String> finalSelectedKeys = new ArrayList<>();
+                    if (selectedKeys != null && !selectedKeys.isEmpty()) {
+                        for (Object key : selectedKeys) {
+                            if (key != null) {
+                                String strKey = key.toString().trim();
+                                if (!strKey.isEmpty()) {
+                                    finalSelectedKeys.add(strKey);
+                                }
+                            }
+                        }
+                    }
+
+                    System.out.println("DEBUG - Setting selected keys: " + finalSelectedKeys);
+                    setOptionsAndValue(optionValues, finalSelectedKeys);
+                }
+            }
+
+
+        };
+    }
+//
+//    public static ControlCheckBoxGroupField createControlMultiSelectCheckBoxEditField (
+//        CampaignFormElement campaignFormElement,
+//        Context context,
+//        Map<String, String> userTranslations,
+//        Map<String, String> optionValues,
+//        List<?> selectedKeys,
+//        boolean isRequired) {
+//
+//    return new ControlCheckBoxGroupField(context) {
+//        @Override
+//        protected String getPrefixDescription() {
+//            return getUserLanguageCaption(userTranslations, campaignFormElement);
+//        }
+//
+//        @Override
+//        protected String getPrefixCaption() {
+//            return getUserLanguageCaption(userTranslations, campaignFormElement);
+//        }
+//
+//        @Override
+//        public int getTextAlignment() {
+//            return View.TEXT_ALIGNMENT_VIEW_START;
+//        }
+//
+//        @Override
+//        public int getGravity() {
+//            return Gravity.CENTER_VERTICAL;
+//        }
+//
+//        @Override
+//        protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
+//            super.inflateView(context, attrs, defStyle);
+//
+//            // Initialize the parent field components
+//            initLabel();
+//            initLabelAndValidationListeners();
+//            setLiveValidationDisabled(true);
+//
+//            // Set the group label text from campaign form element
+//            String labelText = getUserLanguageCaption(userTranslations, campaignFormElement);
+//            if (labelText != null && !labelText.isEmpty()) {
+//                setGroupLabel(labelText);
+//            }
+//
+//            if (isRequired) {
+//                setRequired(true);
+//            }
+//
+//            // IMPORTANT: Set up the checkbox options FIRST
+//            if (optionValues != null && !optionValues.isEmpty()) {
+//                System.out.println("Setting up options in createControlCheckBoxField: " + optionValues);
+//                setOptionsAndValue(optionValues, selectedKeys);
+//            }
+//        }
+//
+//        public void handleCampaignFormErrors(String errorMessage, boolean warnOnError) {
+//            if (errorMessage != null && !errorMessage.isEmpty()) {
+//                if (warnOnError) {
+//                    showError("Warning: " + errorMessage);
+//                } else {
+//                    showError(errorMessage);
+//                }
+//            }
+//        }
+//    };
+//}
+
+    public static ControlCheckBoxGroupField createControlMultiSelectCheckBoxField(
             CampaignFormElement campaignFormElement,
             Context context,
             Map<String, String> userTranslations,
@@ -1793,44 +1884,10 @@ public static ControlCheckBoxGroupField createControlCheckBoxEditField(
             }
 
 
-
-//            // Override validation if needed
-//            @Override
-//            public boolean validate() {
-//                boolean isValid = super.validate();
-//
-//                // Add custom validation logic for checkbox group
-//                Object fieldValue = getFieldValue();
-//                if (fieldValue instanceof Set) {
-//                    Set<?> selectedValues = (Set<?>) fieldValue;
-//
-//                    // Example: Check if required field has at least one selection
-//                    // if (isRequired() && selectedValues.isEmpty()) {
-//                    //     showError("Please select at least one option");
-//                    //     return false;
-//                    // }
-//
-//                    // Add any other custom validation rules here
-//                    // Example: minimum/maximum selection constraints
-//                    // if (selectedValues.size() < minSelections) {
-//                    //     showError("Please select at least " + minSelections + " options");
-//                    //     return false;
-//                    // }
-//                }
-//
-//                if (isValid) {
-//                    hideErrors();
-//                }
-//
-//                return isValid;
-//            }
-
             // Handle error messages from campaign form element
             public void handleCampaignFormErrors(String errorMessage, boolean warnOnError) {
                 if (errorMessage != null && !errorMessage.isEmpty()) {
                     if (warnOnError) {
-                        // Show as warning instead of error
-                        // You can customize this based on your warning style
                         showError("Warning: " + errorMessage);
                     } else {
                         showError(errorMessage);
@@ -1922,9 +1979,6 @@ public static ControlCheckBoxGroupField createControlCheckBoxEditField(
             }
         };
     }
-
-
-
 
     public static ControlTextReadField createControlTextReadField(
             CampaignFormElement campaignFormElement,

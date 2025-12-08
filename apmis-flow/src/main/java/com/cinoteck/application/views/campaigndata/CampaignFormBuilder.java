@@ -1747,6 +1747,18 @@ if (!selectedAreas.isEmpty()) {
 					checkboxGroup.setSizeFull();
 					setFieldValue(checkboxGroup, type, value, optionsValues, formElement.getDefaultvalue(), false,
 							null);
+					
+				    checkboxGroup.addValueChangeListener(event -> {
+				        if (checkboxGroup.isInvalid()) {
+				            checkboxGroup.setInvalid(false);
+				        }
+				        // Clear error background when value is selected
+				        if (!event.getValue().isEmpty()) {
+				            checkboxGroup.getElement().getStyle().remove("background");
+				            checkboxGroup.getElement().setProperty("error-background-set", null);
+				        }
+				    });
+				    
 					vertical.add(checkboxGroup);
 					fields.put(formElement.getId(), checkboxGroup);
 
@@ -1883,42 +1895,6 @@ if (!selectedAreas.isEmpty()) {
 			throw new IllegalArgumentException("Unsupported date value type: " + value.getClass());
 		}
 	}
-
-//	
-//	private Date parseDateFromString(Object value) throws ParseException {
-//	    if (value == null) return null;
-//	    
-//	    String dateStr = value.toString().trim();
-//	    if (dateStr.isEmpty()) return null;
-//
-//	    try {
-//	        return new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").parse(dateStr);
-//	    } catch (ParseException e) {
-//	    	
-//	    	try {
-//		        return new SimpleDateFormat("dd-MM-yyyy").parse(dateStr);
-//
-//	    	}catch(ParseException ex) {
-//	            // Fallback to other likely formats
-//		        String[] possibleFormats = {
-//		            "yyyy-MM-dd",          // ISO format
-//		            "MM/dd/yyyy",         // US format
-//		            "EEE MMM dd HH:mm:ss z yyyy"  // Default toString() format
-//		        };
-//		        
-//		        for (String format : possibleFormats) {
-//		            try {
-//		                return new SimpleDateFormat(format).parse(dateStr);
-//		            } catch (ParseException ignored) {
-//		                // Try next format
-//		            }
-//		        }
-//	    	}
-//	
-//	    }
-//	    
-//	    throw new ParseException("Could not parse date: " + dateStr, 0);
-//	}
 
 	public <T extends Component> void setFieldValue(T field, CampaignFormElementType type, Object value,
 			Map<String, String> options, String defaultvalue, Boolean isErrored, Object defaultErrorMsgr) {
@@ -2078,14 +2054,7 @@ if (!selectedAreas.isEmpty()) {
 
 		    NumberField decimalField = (NumberField) field;
 			  
-//		    if (options != null) {		    	
-//		        if (options.containsKey("min")) {
-//		            decimalField.setMin(Double.parseDouble(options.get("min")));		            
-//		        }
-//		        if (options.containsKey("max")) {
-//		            decimalField.setMax(Double.parseDouble(options.get("max")));		            
-//		        }
-//		    }
+ 
 
 		    // Show error but DO NOT continue processing
 		    if (isExpression && isErrored && value == null) {
@@ -2170,6 +2139,8 @@ if (!selectedAreas.isEmpty()) {
 				String strArraxy[] = dcxs.split(",");
 				for (int i = 0; i < strArraxy.length; i++) {
 					((CheckboxGroup) field).select(strArraxy[i]);
+					
+					
 				}
 			}
 			;
@@ -2299,8 +2270,6 @@ if (!selectedAreas.isEmpty()) {
 		String colStyle = colStyles.get(0).toString();
 		return Integer.parseInt(colStyle.substring(colStyle.indexOf("-") + 1)) / 12f * 100;
 	}
-
-//
 
 	private Date dateFormatterLongAndMobile(Object value) {
 
@@ -2658,22 +2627,56 @@ if (!selectedAreas.isEmpty()) {
 			}
 
 			if (((AbstractField) formField).isRequiredIndicatorVisible()) {
-				logger.debug(
-						((AbstractField) formField).getValue() + "++++++++++" + ((AbstractField) formField).getId());
+				logger.debug(((AbstractField) formField).getValue() + "++++++++++" + ((AbstractField) formField).getId());
 
-				if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == "") {
+				if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == "" || 
+						(((AbstractField) formField).getValue() instanceof Set && ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())
+						) {
+					
+					if((((AbstractField) formField).getValue() instanceof Set && ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())){
+					formField.getElement().getStyle().set("background", "#ffe5e5");	
+					}
+					
 					hasErrorFormValues(6);
 					formField.getElement().setProperty("invalid", true);
 				} else {
- 
- 
-//					formField.getElement().setProperty("invalid", false);
-					if (!formField.getElement().getProperty("invalid", false)) {
-	                    formField.getElement().setProperty("invalid", false);
-	                }
- 
+					// Clear error state and background color when field has value
+					if (formField.getElement().getProperty("invalid", false)) {
+						formField.getElement().setProperty("invalid", false);
+					}
+					// Clear background if it was set due to error
+					if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
+						formField.getElement().getStyle().remove("background");
+						formField.getElement().setProperty("error-background-set", null);
+					}
+				}
 			}
-			}
+//			
+//			if (formField instanceof AbstractField) {
+//			    AbstractField<?, ?> field = (AbstractField<?, ?>) formField;
+//
+//			    if (field.isRequiredIndicatorVisible()) {
+//			        Object fieldvalue = field.getValue();
+//			        boolean invalid = false;
+//
+//			        if (fieldvalue == null) {
+//			            invalid = true;
+//			        } else if (fieldvalue instanceof String && ((String) fieldvalue).trim().isEmpty()) {
+//			            invalid = true;
+//			        } else if (fieldvalue instanceof Set && ((Set<?>) fieldvalue).isEmpty()) {
+//			            invalid = true;
+//				        formField.getElement().getStyle().set("background", "#ffe5e5");
+//
+//			        }
+//
+//			        
+//			        if (invalid) {
+//			            hasErrorFormValues(6);
+//			            formField.getElement().setProperty("invalid", true);
+//			        }
+//			    }
+//			}
+
 
 		});
 

@@ -311,6 +311,13 @@ showCustomDialog(
 
                         if (expiryDate != null) {
                             LocalDate expiryLocalDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//
+//                            LocalDate phaseStartDate = DatabaseHelper.getCampaignFormMetaDao().getByReferenceDto() getCampaignFormMetaWithExpDao().getCampaignFormExpiryDateByCampaignIdAndFormId(campaign.getUuid(), campaignFormMeta.getUuid());
+//
+//
+//                            if (currentDate.isBefore()){
+//
+//                            }
                             if (currentDate.isBefore(expiryLocalDate) || expiryLocalDate.isEqual(currentDate)) {
                                 User user = ConfigProvider.getUser();
 
