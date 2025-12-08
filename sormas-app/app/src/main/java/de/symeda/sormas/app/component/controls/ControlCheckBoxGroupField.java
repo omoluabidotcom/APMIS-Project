@@ -52,7 +52,7 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 	// New layout components for vertical structure
 	private LinearLayout dynamicCheckboxesContainer;
 	private TextView groupLabel;
-	private LinearLayout errorIndicatorsLayout;
+//	private LinearLayout errorIndicatorsLayout;
 	Set<String> selectedElements = new HashSet<>();
 
 	// Add this field to store the pending value
@@ -176,22 +176,22 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 		if (groupLabel == null) {
 			groupLabel = this.findViewById(R.id.label);
 		}
-		if (errorIndicatorsLayout == null) {
-			View labelFrame = this.findViewById(R.id.label_frame);
-			if (labelFrame instanceof LinearLayout) {
-				LinearLayout parentLayout = (LinearLayout) labelFrame;
-				for (int i = 0; i < parentLayout.getChildCount(); i++) {
-					View child = parentLayout.getChildAt(i);
-					if (child instanceof LinearLayout) {
-						LinearLayout childLayout = (LinearLayout) child;
-						if (childLayout.findViewById(R.id.required_indicator) != null) {
-							errorIndicatorsLayout = childLayout;
-							break;
-						}
-					}
-				}
-			}
-		}
+//		if (errorIndicatorsLayout == null) {
+//			View labelFrame = this.findViewById(R.id.label_frame);
+//			if (labelFrame instanceof LinearLayout) {
+//				LinearLayout parentLayout = (LinearLayout) labelFrame;
+//				for (int i = 0; i < parentLayout.getChildCount(); i++) {
+//					View child = parentLayout.getChildAt(i);
+//					if (child instanceof LinearLayout) {
+//						LinearLayout childLayout = (LinearLayout) child;
+//						if (childLayout.findViewById(R.id.required_indicator) != null) {
+//							errorIndicatorsLayout = childLayout;
+//							break;
+//						}
+//					}
+//				}
+//			}
+//		}
 
 		if (checkBoxes == null) {
 			checkBoxes = new HashMap<>();
@@ -441,24 +441,24 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 			groupLabel.setText(labelText);
 		}
 	}
-
-	public void showError(String errorMessage) {
-		initializeContainers();
-		if (errorIndicatorsLayout != null) {
-			TextView errorIndicator = errorIndicatorsLayout.findViewById(R.id.error_indicator);
-			if (errorIndicator != null) {
-				errorIndicator.setText(errorMessage);
-				errorIndicator.setVisibility(View.VISIBLE);
-				errorIndicatorsLayout.setVisibility(View.VISIBLE);
-			}
-		}
-	}
-
-	public void hideErrors() {
-		if (errorIndicatorsLayout != null) {
-			errorIndicatorsLayout.setVisibility(View.GONE);
-		}
-	}
+//
+//	public void showError(String errorMessage) {
+//		initializeContainers();
+//		if (errorIndicatorsLayout != null) {
+//			TextView errorIndicator = errorIndicatorsLayout.findViewById(R.id.error_indicator);
+//			if (errorIndicator != null) {
+//				errorIndicator.setText(errorMessage);
+//				errorIndicator.setVisibility(View.VISIBLE);
+//				errorIndicatorsLayout.setVisibility(View.VISIBLE);
+//			}
+//		}
+//	}
+//
+//	public void hideErrors() {
+//		if (errorIndicatorsLayout != null) {
+//			errorIndicatorsLayout.setVisibility(View.GONE);
+//		}
+//	}
 
 	@Override
 	protected void initialize(Context context, AttributeSet attrs, int defStyle) {
@@ -830,12 +830,12 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 		switch (state) {
 			case ERROR:
 				// Show error indicators
-				if (errorIndicatorsLayout != null) {
-					errorIndicatorsLayout.setVisibility(View.VISIBLE);
-				}
+//				if (errorIndicatorsLayout != null) {
+//					errorIndicatorsLayout.setVisibility(View.VISIBLE);
+//				}
 				break;
 			case NORMAL:
-				hideErrors();
+//				hideErrors();
 				break;
 			default:
 				break;

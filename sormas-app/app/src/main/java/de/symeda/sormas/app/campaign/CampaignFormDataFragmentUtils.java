@@ -1885,15 +1885,15 @@ public class CampaignFormDataFragmentUtils {
 
 
             // Handle error messages from campaign form element
-            public void handleCampaignFormErrors(String errorMessage, boolean warnOnError) {
-                if (errorMessage != null && !errorMessage.isEmpty()) {
-                    if (warnOnError) {
-                        showError("Warning: " + errorMessage);
-                    } else {
-                        showError(errorMessage);
-                    }
-                }
-            }
+//            public void handleCampaignFormErrors(String errorMessage, boolean warnOnError) {
+//                if (errorMessage != null && !errorMessage.isEmpty()) {
+//                    if (warnOnError) {
+//                        showError("Warning: " + errorMessage);
+//                    } else {
+//                        showError(errorMessage);
+//                    }
+//                }
+//            }
         };
     }
 
