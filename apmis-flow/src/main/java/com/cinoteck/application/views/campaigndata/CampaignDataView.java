@@ -1,251 +1,4 @@
-//package com.cinoteck.application.views.campaigndata;
-//
-//import java.io.BufferedWriter;
-//import java.io.ByteArrayInputStream;
-//import java.io.IOException;
-//import java.io.OutputStream;
-//import java.io.OutputStreamWriter;
-//import java.io.StringWriter;
-//import java.math.BigDecimal;
-//import java.nio.charset.StandardCharsets;
-//import java.text.NumberFormat;
-//import java.text.SimpleDateFormat;
-// 
-//import java.time.LocalDate;
-//import java.time.ZoneId;
-//import java.time.format.DateTimeFormatter;
-//import java.util.ArrayList;
-//import java.util.Calendar;
-//import java.util.Collection;
-//import java.util.Comparator;
-//import java.util.Date;
-//import java.util.HashSet;
-//import java.util.List;
-//import java.util.Locale;
-//import java.util.Set;
-//import java.util.Timer;
-//import java.util.TimerTask;
-//import java.util.stream.Collectors;
-//import java.util.stream.Stream;
-//
-//import javax.validation.constraints.NotNull;
-//
-//import org.apache.commons.io.output.ByteArrayOutputStream;
-//import org.slf4j.LoggerFactory;
-//
-//import com.cinoteck.application.UserProvider;
-//import com.cinoteck.application.UserProvider.HasUserProvider;
-//import com.cinoteck.application.ViewModelProviders;
-//import com.cinoteck.application.ViewModelProviders.HasViewModelProviders;
-//import com.cinoteck.application.views.MainLayout;
-//import com.cinoteck.application.views.utils.DownloadTransposedDaywiseDataUtility;
-//import com.cinoteck.application.views.utils.DownloadTransposedLqasDataUtility;
-//import com.cinoteck.application.views.utils.gridexporter.GridExporter;
-//import com.opencsv.CSVWriter;
-//import com.opencsv.bean.StatefulBeanToCsv;
-//import com.opencsv.bean.StatefulBeanToCsvBuilder;
-//import com.vaadin.flow.component.HtmlComponent;
-//import com.vaadin.flow.component.Text;
-//import com.vaadin.flow.component.UI;
-//import com.vaadin.flow.component.button.Button;
-//import com.vaadin.flow.component.button.ButtonVariant;
-//import com.vaadin.flow.component.checkbox.Checkbox;
-//import com.vaadin.flow.component.combobox.ComboBox;
-//import com.vaadin.flow.component.combobox.MultiSelectComboBox;
-//import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-//import com.vaadin.flow.component.contextmenu.MenuItem;
-//import com.vaadin.flow.component.contextmenu.SubMenu;
-//import com.vaadin.flow.component.dependency.CssImport;
-//import com.vaadin.flow.component.grid.Grid;
-//import com.vaadin.flow.component.grid.Grid.Column;
-//import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
-//import com.vaadin.flow.component.grid.Grid.SelectionMode;
-//import com.vaadin.flow.component.grid.GridMultiSelectionModel;
-//import com.vaadin.flow.component.grid.GridSortOrder;
-//import com.vaadin.flow.component.html.Anchor;
-//import com.vaadin.flow.component.html.Div;
-//import com.vaadin.flow.component.html.Paragraph;
-//import com.vaadin.flow.component.html.Span;
-//import com.vaadin.flow.component.icon.Icon;
-//import com.vaadin.flow.component.icon.VaadinIcon;
-//import com.vaadin.flow.component.menubar.MenuBar;
-//import com.vaadin.flow.component.notification.NotificationVariant;
-//import com.vaadin.flow.component.notification.Notification;
-//import com.vaadin.flow.component.notification.Notification.Position;
-//import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-//import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-//import com.vaadin.flow.component.textfield.TextArea;
-//import com.vaadin.flow.data.provider.DataProvider;
-//import com.vaadin.flow.data.provider.ListDataProvider;
-//import com.vaadin.flow.data.provider.Query;
-//import com.vaadin.flow.data.provider.SortDirection;
-//import com.vaadin.flow.data.renderer.ComponentRenderer;
-//import com.vaadin.flow.data.renderer.NumberRenderer;
-//import com.vaadin.flow.data.selection.MultiSelect;
-//import com.vaadin.flow.router.BeforeEnterEvent;
-//import com.vaadin.flow.router.BeforeEnterObserver;
-//import com.vaadin.flow.router.PageTitle;
-//import com.vaadin.flow.router.Route;
-//import com.vaadin.flow.server.StreamResource;
-//
-//import de.symeda.sormas.api.FacadeProvider;
-//import de.symeda.sormas.api.Language;
-//import de.symeda.sormas.api.MapperUtil;
-//import de.symeda.sormas.api.campaign.CampaignDto;
-//import de.symeda.sormas.api.campaign.CampaignIndexDto;
-//import de.symeda.sormas.api.campaign.CampaignPhase;
-//import de.symeda.sormas.api.campaign.CampaignReferenceDto;
-//import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
-//import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
-//import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
-//import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
-//import de.symeda.sormas.api.campaign.form.CampaignFormElement;
-//import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
-// 
-//import de.symeda.sormas.api.campaign.form.CampaignFormMetaExpiryDto;
-//import de.symeda.sormas.api.campaign.form.CampaignFormMetaHistoryExtractDto;
-//import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
-//import de.symeda.sormas.api.i18n.Captions;
-//import de.symeda.sormas.api.i18n.Descriptions;
-//import de.symeda.sormas.api.i18n.I18nProperties;
-//import de.symeda.sormas.api.infrastructure.area.AreaDto;
-//import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
-//import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
-//import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
-//import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
-//import de.symeda.sormas.api.user.FormAccess;
-//import de.symeda.sormas.api.user.UserRight;
-//import de.symeda.sormas.api.user.UserRole;
-//import de.symeda.sormas.api.user.UserType;
-//import de.symeda.sormas.api.utils.CSVUtils;
-//import de.symeda.sormas.api.utils.SortProperty;
-//
-//@PageTitle("APMIS-Campaign Data")
-//@Route(value = "campaigndata", layout = MainLayout.class)
-//@CssImport(value = "./styles/custom-grid-styles.css", themeFor = "vaadin-grid")
-//@CssImport(value = "./styles/vaadin-text-field.css", themeFor = "vaadin-text-field")
-//@CssImport(value = "./styles/vaadin-number-field.css", themeFor = "vaadin-number-field")
-//
-//public class CampaignDataView extends VerticalLayout
-//		implements HasUserProvider, HasViewModelProviders, BeforeEnterObserver {
-//
-//	private static final long serialVersionUID = 7588118851062483372L;
-//
-//	private Grid<CampaignFormDataIndexDto> grid = new Grid<>(CampaignFormDataIndexDto.class, false);
-//	private CampaignFormDataCriteria criteria;
-//	private CampaignFormMetaDto formMetaReference;
-//	private CampaignFormDataDto campaignFormDatadto;
-//
-//	ComboBox<String> campaignYear = new ComboBox<>();
-//	ComboBox<CampaignReferenceDto> campaignz = new ComboBox<>();
-//	ComboBox<CampaignPhase> campaignPhase = new ComboBox<>();
-//	ComboBox<CampaignFormMetaReferenceDto> campaignFormCombo = new ComboBox<>();
-////	ComboBox<AreaReferenceDto> regionCombo = new ComboBox<>();
-//	MultiSelectComboBox<AreaReferenceDto> regionCombo = new MultiSelectComboBox<>();
-////	ComboBox<RegionReferenceDto> provinceCombo = new ComboBox<>();
-//	MultiSelectComboBox<RegionReferenceDto> provinceCombo = new MultiSelectComboBox<>();
-//
-////	ComboBox<DistrictReferenceDto> districtCombo = new ComboBox<>();
-//	MultiSelectComboBox<DistrictReferenceDto> districtCombo = new MultiSelectComboBox<>();
-//
-//	ComboBox<CommunityReferenceDto> clusterCombo = new ComboBox<>();
-//	ComboBox<String> verifiedStatusCombo = new ComboBox<>();
-//	ComboBox<String> publishedStatusCombo = new ComboBox<>();
-//
-//	ComboBox<CampaignFormElementImportance> importanceSwitcher = new ComboBox<>();
-//	ComboBox<String> timelinessFilter = new ComboBox<>();
-//	Button resetHandler = new Button();
-////	Button applyHandler = new Button();
-//	List<AreaReferenceDto> regions;
-//	List<AreaReferenceDto> regionsx;
-//	List<RegionReferenceDto> provinces;
-//	List<DistrictReferenceDto> districts;
-//	List<CommunityReferenceDto> communities;
-//	List<CampaignFormMetaReferenceDto> campaignForms;
-//	Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
-//	Anchor transposdeDataAnchor = new Anchor("", "Export Transposed Data");
-//	Anchor transposdeDataDictionaryAnchor = new Anchor("", "Export Transposed Data Guide");
-//
-//	CampaignFormDataCriteria transposedDataCriteriaListener = new CampaignFormDataCriteria();
-//
-//	Icon icon = VaadinIcon.UPLOAD_ALT.create();
-//	Paragraph countRowItems;
-//	UserProvider userProvider = new UserProvider();
-//
-//	CampaignFormDataEditForm campaignFormDataEditForm;
-//
-//	Button enterBulkEdit = new Button(I18nProperties.getCaption(Captions.actionEnterBulkEditMode));
-//	Button leaveBulkEdit = new Button(I18nProperties.getCaption(Captions.actionLeaveBulkEditMode));
-//	MenuBar dropdownBulkOperations = new MenuBar();
-//	ConfirmDialog confirmationDialog;
-//	Checkbox checkboxx = new Checkbox();
-//	Button selectAllButton = new Button();
-//	Button selectAllButtonpLACEHOLDER = new Button();
-//	private String exportFileName;
-//	private GridExporter<CampaignFormDataIndexDto> exporter;
-//
-//	private DataProvider<CampaignFormDataIndexDto, CampaignFormDataCriteria> dataProvider;
-//
-//	NumberFormat arabicFormat = NumberFormat.getInstance();
-//
-//	Column<CampaignFormDataIndexDto> clusterNumberColumn, ccodeColumn, formNameColumn, clusterNameColumn,
-//			publishedColumn, verifiedColumn;
-//
-//	ComboBox<CampaignFormMetaReferenceDto> newForm = new ComboBox<>();
-//	ComboBox<CampaignFormMetaReferenceDto> importFormData = new ComboBox<>();
-//
-//	HorizontalLayout actionButtonlayout = new HorizontalLayout();
-//	Button exportTransposedDataButton = new Button();
-//
-//	GridMultiSelectionModel<CampaignFormDataIndexDto> selectionModel;
-//	private Set<CampaignFormDataIndexDto> selectedItems = new HashSet<>();
-//
-//	// Counters for tracking creation
-//	private int transposdeDataAnchorCreationCount = 0;
-//	private int exportTransposedDataButtonCreationCount = 0;
-//	// Initialize a flag to check if the click listener is already attached
-//	boolean isClickListenerAttached;
-//	private boolean callbackRunning = false;
-//	private Timer timer;
-//
-//	private boolean isGridInMultiselectMode = false;
-//
-//	protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
-//
-//	public CampaignDataView() {
-//		languageHandler();
-//		setSizeFull();
-//		setSpacing(false);
-//		criteria = new CampaignFormDataCriteria();
-//		criteria.setUsertype(userProvider.getUser().getUsertype().toString());
-//		criteria.setUsertypeEnum(userProvider.getUser().getUsertype());
-//		createCampaignDataFilter();
-//
-//		configureGrid(criteria);
-////		configureGridDataRestricttion(criteria);
-//		configureColumnStyles(criteria);
-//	}
-//
-//	private String getLabelForEnum(CampaignPhase campaignPhase) {
-//		if (campaignPhase != null) {
-//			switch (campaignPhase) {
-//			case PRE:
-//				return "Pre-Campaign";
-//
-//			case POST:
-//				return "Post-Campaign";
-//
-//			case INTRA:
-//				return "Intra-Campaign";
-//
-//			default:
-//				return campaignPhase.toString();
-//			}
-//		} else {
-//			return "Intra-Campaign";
-//		}
-//
-//	}
+
 //
 //	private void createCampaignDataFilter() {
 //		setMargin(true);
@@ -1296,53 +1049,6 @@
 //	}
 // 
 //	
-//	private boolean checkFormValidityByPhase(String campaignPhase, CampaignDto campaignDto, CampaignFormMetaExpiryDto expiryDto) {
-//	    String phase = campaignPhase;
-//	    Date today = new Date();
-//
-//	    // 🔹 Check if form expired
-//	    if (expiryDto.getEnddate() != null && expiryDto.getEnddate().before(today)) {
-//	        showErrorNotification(
-//	            "This Form has been Closed for Data Entry. Please contact System Administrator."
-//	        );
-//	        return false;
-//	    }
-//
-//	    switch (phase.toLowerCase()) {
-//	        case "pre-campaign":
-//	            if (today.before(campaignDto.getPreCampStartDate())) {
-//	                showErrorNotification(
-//	                    "This Form is not yet open for Data Entry. Please contact System Administrator."
-//	                );
-//	                return false;
-//	            }
-//	            break;
-//
-//	        case "intra-campaign":
-//	            if (today.before(campaignDto.getStartDate())) {
-//	                showErrorNotification(
-//	                    "This Form has been Closed for Data Entry. Please contact System Administrator."
-//	                );
-//	                return false;
-//	            }
-//	            break;
-//
-//	        case "post-campaign":
-//	            if (today.before(campaignDto.getPostCampStartDate())) {
-//	                showErrorNotification(
-//	                    "This Form has been Closed for Data Entry. Please contact System Administrator."
-//	                );
-//	                return false;
-//	            }
-//	            break;
-//
-//	        default:
-//	            // Optional: handle unexpected phases
-//	            break;
-//	    }
-//
-//	    return true;
-//	}
 //
 //
 //	private void showErrorNotification(String message) {
@@ -2443,7 +2149,8 @@
 // 
 //				grid.deselectAll();
 //
-//			});
+//			}
+//			);
 //		}
 //
 //		exporter = GridExporter.createFor(grid);
@@ -2856,7 +2563,6 @@
 //
 //}
 
-
 package com.cinoteck.application.views.campaigndata;
 
 import java.io.BufferedWriter;
@@ -2958,6 +2664,7 @@ import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
+import de.symeda.sormas.api.campaign.form.CampaignFormMetaExpiryDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaHistoryExtractDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.i18n.Captions;
@@ -3161,8 +2868,8 @@ public class CampaignDataView extends VerticalLayout
 		HorizontalLayout rightFloat = new HorizontalLayout();
 		rightFloat.setWidth("100%");
 		rightFloat.setJustifyContentMode(JustifyContentMode.END);
-		level1Filters.add(campaignFormCombo,  regionCombo, provinceCombo, districtCombo,
-				clusterCombo, verifiedStatusCombo, publishedStatusCombo, importanceSwitcher, resetHandler, rightFloat);
+		level1Filters.add(campaignFormCombo, regionCombo, provinceCombo, districtCombo, clusterCombo,
+				verifiedStatusCombo, publishedStatusCombo, importanceSwitcher, resetHandler, rightFloat);
 
 		displayFilters.addClickListener(e -> {
 			I18nProperties.setUserLanguage(userProvider.getUser().getLanguage());
@@ -3580,10 +3287,11 @@ public class CampaignDataView extends VerticalLayout
 						bulkActionsItem.setVisible(false);
 						enterBulkEdit.setVisible(true);
 //						System.out.println("user ca n do bulk peration an is who  ");
-					} else if(userProvider.getUser().getUsertype() == UserType.EOC_USER && campaignPhase.getValue() != null
+					} else if (userProvider.getUser().getUsertype() == UserType.EOC_USER
+							&& campaignPhase.getValue() != null
 							&& userProvider.getUser().getUserRoles().contains(UserRole.EDITOR_USER)) {
-						
-							enterBulkEdit.setVisible(false);						
+
+						enterBulkEdit.setVisible(false);
 					} else {
 						verifiedStatusCombo.setVisible(false);
 						publishedStatusCombo.setVisible(false);
@@ -3630,8 +3338,6 @@ public class CampaignDataView extends VerticalLayout
 			updateRowCount();
 
 		});
-		
-		
 
 		campaignFormCombo.addValueChangeListener(e -> {
 			if (e.getValue() != null) {
@@ -3822,39 +3528,79 @@ public class CampaignDataView extends VerticalLayout
 			}
 
 		});
-		
-		
 
 		newForm.addValueChangeListener(e -> {
 			if (e.getValue() != null && campaignz != null) {
 				boolean isCampaignClosed = FacadeProvider.getCampaignFacade().isClosedd(campaignz.getValue().getUuid());
 
 				if (!isCampaignClosed) {
-					CampaignFormMetaDto formDatax = FacadeProvider.getCampaignFormMetaFacade()
-							.getCampaignFormMetaByUuid(e.getValue().getUuid());
 
-					boolean fff = formDatax.isDistrictentry();
+					if (campaignPhase.getValue() != null) {
 
-					CampaignFormDataEditForm cam = new CampaignFormDataEditForm(e.getValue(), campaignz.getValue(),
-							false, null, grid, fff);
-					// add(cam);
+						if (FacadeProvider.getCampaignFormMetaWithExpFacade()
+								.getFormsWithExpiryByCampaignUuidAndFormUuid(campaignz.getValue().getUuid(),
+										e.getValue().getUuid())
+								.size() > 0) {
 
-					newForm.setValue(null);
+							CampaignFormMetaExpiryDto expiryDto = FacadeProvider.getCampaignFormMetaWithExpFacade()
+									.getFormsWithExpiryByCampaignUuidAndFormUuid(campaignz.getValue().getUuid(),
+											e.getValue().getUuid())
+									.get(0);
+
+							CampaignDto campaign = FacadeProvider.getCampaignFacade()
+									.getByUuid(campaignz.getValue().getUuid());
+
+							if (checkFormValidityByPhase(campaignPhase.getValue().toString().toLowerCase(), campaign,
+									expiryDto)) {
+								CampaignFormMetaDto formDatax = FacadeProvider.getCampaignFormMetaFacade()
+										.getCampaignFormMetaByUuid(e.getValue().getUuid());
+
+								boolean fff = formDatax.isDistrictentry();
+
+								CampaignFormDataEditForm cam = new CampaignFormDataEditForm(e.getValue(),
+										campaignz.getValue(), false, null, grid, fff);
+								// add(cam);
+
+								newForm.setValue(null);
+							}
+						} else {
+							Notification notification = new Notification();
+							notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+							notification.setPosition(Position.TOP_END);
+							Div text = new Div(new Text(
+									"This Form is not available for Data Entry. Please contact System Administrator to Specify Entry Period."),
+									new HtmlComponent("br"),
+									new Text("Close this warning to continue working in APMIS."));
+
+							Button closeButton = new Button(new Icon("lumo", "cross"));
+							closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+//					closeButton.setAriaLabel("Close");
+							closeButton.addClickListener(event -> {
+								notification.close();
+							});
+
+							HorizontalLayout layoutx = new HorizontalLayout(text, closeButton);
+							layoutx.setAlignItems(Alignment.CENTER);
+
+							notification.add(layoutx);
+							notification.open();
+
+						}
+					}
 
 				} else {
 					Notification notification = new Notification();
 					notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 					notification.setPosition(Position.TOP_END);
 					Div text = new Div(new Text(
-					        "This Campaign has been Closed for Data Entry. Please contact System Administrator."),
-					        new HtmlComponent("br"),
-					        new Text("Close this warning to continue working in APMIS."));
+							"This Campaign has been Closed for Data Entry. Please contact System Administrator."),
+							new HtmlComponent("br"), new Text("Close this warning to continue working in APMIS."));
 
 					Button closeButton = new Button(new Icon("lumo", "cross"));
 					closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-//					closeButton.setAriaLabel("Close");
+//				closeButton.setAriaLabel("Close");
 					closeButton.addClickListener(event -> {
-					    notification.close();
+						notification.close();
 					});
 
 					HorizontalLayout layoutx = new HorizontalLayout(text, closeButton);
@@ -3872,33 +3618,76 @@ public class CampaignDataView extends VerticalLayout
 			boolean isCampaignClosed = FacadeProvider.getCampaignFacade().isClosedd(campaignz.getValue().getUuid());
 
 			if (!isCampaignClosed) {
-			if (importFormData.getValue() != null) {
-				ImportCampaignsFormDataDialog dialogx = new ImportCampaignsFormDataDialog(campaignz.getValue(),
-						importFormData.getValue(), campaignUuid);
-				dialogx.open();
+				if (importFormData.getValue() != null) {
+
+					if (e.getValue() != null) {
+
+						if (FacadeProvider.getCampaignFormMetaWithExpFacade()
+								.getFormsWithExpiryByCampaignUuidAndFormUuid(campaignUuid.getUuid(),
+										e.getValue().getUuid())
+								.size() > 0) {
+
+							CampaignFormMetaExpiryDto expiryDto = FacadeProvider.getCampaignFormMetaWithExpFacade()
+									.getFormsWithExpiryByCampaignUuidAndFormUuid(campaignUuid.getUuid(),
+											e.getValue().getUuid())
+									.get(0);
+
+							if (checkFormValidityByPhase(e.getValue().getFormType().toString().toLowerCase(),
+									campaignUuid, expiryDto)) {
+								ImportCampaignsFormDataDialog dialogx = new ImportCampaignsFormDataDialog(
+										campaignz.getValue(), importFormData.getValue(), campaignUuid);
+								dialogx.open();
+
+							}
+
+						} else {
+							Notification notification = new Notification();
+							notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+							notification.setPosition(Position.TOP_END);
+							Div text = new Div(new Text(
+									"This Form is not available for Data Import. Please contact System Administrator to Specify Entry Period."),
+									new HtmlComponent("br"),
+									new Text("Close this warning to continue working in APMIS."));
+
+							Button closeButton = new Button(new Icon("lumo", "cross"));
+							closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+//				closeButton.setAriaLabel("Close");
+							closeButton.addClickListener(event -> {
+								notification.close();
+							});
+
+							HorizontalLayout layoutx = new HorizontalLayout(text, closeButton);
+							layoutx.setAlignItems(Alignment.CENTER);
+
+							notification.add(layoutx);
+							notification.open();
+
+						}
+
+					}
+
+				}
+			} else {
+				Notification notification = new Notification();
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+				notification.setPosition(Position.TOP_END);
+				Div text = new Div(
+						new Text("This Campaign has been Closed for Data Import. Please contact System Administrator."),
+						new HtmlComponent("br"), new Text("Close this warning to continue working in APMIS."));
+
+				Button closeButton = new Button(new Icon("lumo", "cross"));
+				closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+//		closeButton.setAriaLabel("Close");
+				closeButton.addClickListener(event -> {
+					notification.close();
+				});
+
+				HorizontalLayout layoutx = new HorizontalLayout(text, closeButton);
+				layoutx.setAlignItems(Alignment.CENTER);
+
+				notification.add(layoutx);
+				notification.open();
 			}
-		}else {
-			Notification notification = new Notification();
-			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-			notification.setPosition(Position.TOP_END);
-			Div text = new Div(new Text(
-			        "This Campaign has been Closed for Data Import. Please contact System Administrator."),
-			        new HtmlComponent("br"),
-			        new Text("Close this warning to continue working in APMIS."));
-
-			Button closeButton = new Button(new Icon("lumo", "cross"));
-			closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-//			closeButton.setAriaLabel("Close");
-			closeButton.addClickListener(event -> {
-			    notification.close();
-			});
-
-			HorizontalLayout layoutx = new HorizontalLayout(text, closeButton);
-			layoutx.setAlignItems(Alignment.CENTER);
-
-			notification.add(layoutx);
-			notification.open();
-		}
 		});
 
 		// TODO Importance filter switcher should be visible only on the change of form
@@ -3924,16 +3713,14 @@ public class CampaignDataView extends VerticalLayout
 				final boolean onlyImportantFormElements = e.getValue() == CampaignFormElementImportance.IMPORTANT;
 
 				final List<CampaignFormElement> campaignFormElements = formMetaReference.getCampaignFormElements();
-				
-				
 
 				for (CampaignFormElement element : campaignFormElements) {
 					List<MapperUtil> options = new ArrayList<MapperUtil>();
-					if(element.getOptions() != null ) {
+					if (element.getOptions() != null) {
 						options = element.getOptions();
 					}
 					String fieldsType = element.getType();
-					
+
 					if (element.isImportant() && onlyImportantFormElements) {
 						String caption = null;
 						if (caption == null) {
@@ -4081,6 +3868,72 @@ public class CampaignDataView extends VerticalLayout
 	
 
 
+	private boolean checkFormValidityByPhase(String campaignPhase, CampaignDto campaignDto,
+			CampaignFormMetaExpiryDto expiryDto) {
+		String phase = campaignPhase;
+		Date today = new Date();
+
+		
+		
+		//TODO Check if the current date is before the start date 
+	
+
+		switch (phase.toLowerCase()) {
+		case "pre-campaign":
+			if (today.before(campaignDto.getPreCampStartDate())) {
+				showErrorNotification("This Form is not yet open for Data Entry. Please contact System Administrator.");
+				return false;
+			}
+			
+			break;
+
+		case "intra-campaign":
+			if (today.before(campaignDto.getStartDate())) {
+				showErrorNotification("This Form is not yet open for Data Entry. Please contact System Administrator.");
+				return false;
+			}
+			break;
+
+		case "post-campaign":
+			if (today.before(campaignDto.getPostCampStartDate())) {
+				showErrorNotification("This Form is not yet open for Data Entry. Please contact System Administrator.");
+				return false;
+			}
+			break;
+
+		default:
+			// Optional: handle unexpected phases
+			break;
+		}
+		
+		// 🔹 Check if form expired
+		if (expiryDto.getEnddate() != null && expiryDto.getEnddate().before(today)) {
+				showErrorNotification("This Form has been Closed for Data Entry. Please contact System Administrator.");
+					return false;
+		}
+
+		return true;
+	}
+
+	private void showErrorNotification(String message) {
+		Notification notification = new Notification();
+		notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+		notification.setPosition(Notification.Position.TOP_END);
+
+		Div text = new Div(new Text(message), new HtmlComponent("br"),
+				new Text("Close this warning to continue working in APMIS."));
+
+		Button closeButton = new Button(new Icon("lumo", "cross"));
+		closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+		closeButton.addClickListener(event -> notification.close());
+
+		HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+		layout.setAlignItems(Alignment.CENTER);
+
+		notification.add(layout);
+		notification.open();
+	}
+
 	private void configureGridMultiSelect() {
 		selectionModel = (GridMultiSelectionModel<CampaignFormDataIndexDto>) grid
 				.setSelectionMode(Grid.SelectionMode.MULTI);
@@ -4164,7 +4017,6 @@ public class CampaignDataView extends VerticalLayout
 
 		exportTransposedDataButton = new Button("Export Transposed Data");
 
-
 		if (transposdeDataAnchor.getElement().getAttribute("href") != "") {
 			transposdeDataAnchor.setHref("");
 			transposdeDataDictionaryAnchor.setHref("");
@@ -4173,36 +4025,32 @@ public class CampaignDataView extends VerticalLayout
 		CampaignFormDataCriteria transposedDataCriteria = new CampaignFormDataCriteria();
 		transposedDataCriteria = criteria;
 
-		actionButionLayout.add(exportTransposedDataButton, transposdeDataAnchor,
-				transposdeDataDictionaryAnchor);
+		actionButionLayout.add(exportTransposedDataButton, transposdeDataAnchor, transposdeDataDictionaryAnchor);
 
 		if (formName.toString().contains("Day 1")) {
-			
-			exportTransposedDataButton.addClickListener(e->{
+
+			exportTransposedDataButton.addClickListener(e -> {
 				DownloadTransposedDaywiseDataUtility downloadTransposedDaywiseICMDataUtility = new DownloadTransposedDaywiseDataUtility();
-				transposdeDataAnchor.setHref(downloadTransposedDaywiseICMDataUtility.createTransposedDataFromIndexList(
-						criteria, formName, campaignz.getValue().toString()));
-				transposdeDataDictionaryAnchor.setHref(downloadTransposedDaywiseICMDataUtility
-						.createTransposedDataFormExpressions(criteria));	
-				
+				transposdeDataAnchor.setHref(downloadTransposedDaywiseICMDataUtility
+						.createTransposedDataFromIndexList(criteria, formName, campaignz.getValue().toString()));
+				transposdeDataDictionaryAnchor
+						.setHref(downloadTransposedDaywiseICMDataUtility.createTransposedDataFormExpressions(criteria));
+
 				transposdeDataAnchor.getElement().setAttribute("download", true);
 				transposdeDataAnchor.getElement().callJsFunction("click");
 			});
-
-
 
 		} else if (formName.toString().contains("LQAS")) {
-			exportTransposedDataButton.addClickListener(e->{
+			exportTransposedDataButton.addClickListener(e -> {
 				DownloadTransposedLqasDataUtility downloadTransposedLqasDaywiseDataUtility = new DownloadTransposedLqasDataUtility();
-				transposdeDataAnchor.setHref(downloadTransposedLqasDaywiseDataUtility.createTransposedLqasDataFromIndexList(
-						criteria, formName, campaignz.getValue().toString()));
-				transposdeDataDictionaryAnchor.setHref(downloadTransposedLqasDaywiseDataUtility.createTransposedDataFormExpressions(criteria));
-				
+				transposdeDataAnchor.setHref(downloadTransposedLqasDaywiseDataUtility
+						.createTransposedLqasDataFromIndexList(criteria, formName, campaignz.getValue().toString()));
+				transposdeDataDictionaryAnchor.setHref(
+						downloadTransposedLqasDaywiseDataUtility.createTransposedDataFormExpressions(criteria));
+
 				transposdeDataAnchor.getElement().setAttribute("download", true);
 				transposdeDataAnchor.getElement().callJsFunction("click");
 			});
-
-			
 
 		}
 	}
@@ -4245,7 +4093,7 @@ public class CampaignDataView extends VerticalLayout
 								campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid());
 				System.out.println("22222222222222222222222222222222222222");
 			}
-			
+
 			for (FormAccess n : xx) {
 				boolean yn = campaignForms.stream().filter(e -> !e.getFormCategory().equals(null))
 						.filter(ee -> ee.getFormCategory().equals(n)).collect(Collectors.toList()).size() > 0;
@@ -4651,15 +4499,16 @@ public class CampaignDataView extends VerticalLayout
 		System.out.println("Configure grid calllllleddddddddddddd");
 		languageHandler();
 		setMargin(false);
-		
+
 		boolean isActiveFormDistrictLevel = false;
-		
+
 		if (campaignFormCombo.getValue() != null) {
-			CampaignFormMetaDto campaignFormMetaData = FacadeProvider.getCampaignFormMetaFacade().getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
+			CampaignFormMetaDto campaignFormMetaData = FacadeProvider.getCampaignFormMetaFacade()
+					.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
 			isActiveFormDistrictLevel = campaignFormMetaData.isDistrictentry();
 		}
-		
-		System.out.println("District leval for ? ------------" +  isActiveFormDistrictLevel);
+
+		System.out.println("District leval for ? ------------" + isActiveFormDistrictLevel);
 		grid = new Grid<>(CampaignFormDataIndexDto.class, false);
 //		grid.setSelectionMode(SelectionMode.SINGLE);
 		grid.setColumnReorderingAllowed(true);
@@ -4716,12 +4565,12 @@ public class CampaignDataView extends VerticalLayout
 			} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
 				arabicFormat = NumberFormat.getInstance(new Locale("fa"));
 			}
-			
-			String value = "";
-			if(input.getCcode() != null) {
-				value = String.valueOf(arabicFormat.format(input.getCcode() != null ? input.getCcode(): ""));
 
-				}
+			String value = "";
+			if (input.getCcode() != null) {
+				value = String.valueOf(arabicFormat.format(input.getCcode() != null ? input.getCcode() : ""));
+
+			}
 
 			Span label = new Span(value);
 			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
@@ -4736,20 +4585,19 @@ public class CampaignDataView extends VerticalLayout
 			} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
 				arabicFormat = NumberFormat.getInstance(new Locale("fa"));
 			}
-			
-			String value = "";
-			if(input.getClusternumber() != null) {
-				value = String.valueOf(arabicFormat.format(input.getClusternumber() != null ? input.getClusternumber(): ""));
 
-				}
+			String value = "";
+			if (input.getClusternumber() != null) {
+				value = String
+						.valueOf(arabicFormat.format(input.getClusternumber() != null ? input.getClusternumber() : ""));
+
+			}
 			Span label = new Span(value);
 			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
 			return label;
 		});
-		
 
 		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
 
 		if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
 
@@ -4758,22 +4606,24 @@ public class CampaignDataView extends VerticalLayout
 			formNameColumn = grid.addColumn(CampaignFormDataIndexDto.FORM)
 					.setHeader(I18nProperties.getCaption(Captions.campaignCampaignForm)).setSortable(true)
 					.setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getForm());
-			
-			grid.addColumn(e -> e.getFormDate() != null ?  
-			e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader(I18nProperties.getCaption(Captions.date))
-			.setKey("date")
+
+			grid.addColumn(e -> e.getFormDate() != null
+					? e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+					: "").setHeader(I18nProperties.getCaption(Captions.date)).setKey("date")
 //			createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
-			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate() != null ?  
-					e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
-			.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
-			
-			grid.addColumn(e -> e.getChangeDate() != null ?  
-					e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader("Last Modified")
-					.setKey("lastmodified")
-					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getChangeDate() != null ?  
-							e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
+					.setSortable(true).setResizable(true).setAutoWidth(true)
+					.setTooltipGenerator(e -> e.getFormDate() != null ? e.getFormDate().toInstant()
+							.atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
+					.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
+
+			grid.addColumn(e -> e.getChangeDate() != null
+					? e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+					: "").setHeader("Last Modified").setKey("lastmodified").setSortable(true).setResizable(true)
+					.setAutoWidth(true)
+					.setTooltipGenerator(e -> e.getChangeDate() != null ? e.getChangeDate().toInstant()
+							.atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
 					.setFooter("Last Modified");
-			
+
 			grid.addColumn(CampaignFormDataIndexDto.AREA).setHeader(I18nProperties.getCaption(Captions.area))
 					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getArea());
 			grid.addColumn(rCodeRender).setHeader(I18nProperties.getCaption(Captions.Area_externalId)).setSortable(true)
@@ -4789,7 +4639,7 @@ public class CampaignDataView extends VerticalLayout
 			grid.addColumn(dCodeRender).setHeader(I18nProperties.getCaption(Captions.District_externalID))
 					.setSortable(true).setResizable(true).setAutoWidth(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.District_externalID));
-			
+
 //			if(!isActiveFormDistrictLevel) {
 
 			clusterNameColumn = grid.addColumn(CampaignFormDataIndexDto.COMMUNITY)
@@ -4802,9 +4652,9 @@ public class CampaignDataView extends VerticalLayout
 					.setHeader(I18nProperties.getCaption(Captions.Community_externalID)).setSortable(true)
 					.setResizable(true).setAutoWidth(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.Community_externalID));
-			
+
 //			}
-			
+
 			grid.addColumn(CampaignFormDataIndexDto.FORM_TYPE).setHeader(I18nProperties.getCaption(Captions.formPhase))
 					.setSortable(true).setResizable(true).setAutoWidth(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.formPhase));
@@ -4823,23 +4673,25 @@ public class CampaignDataView extends VerticalLayout
 			formNameColumn = grid.addColumn(CampaignFormDataIndexDto.FORM)
 					.setHeader(I18nProperties.getCaption(Captions.campaignCampaignForm)).setSortable(true)
 					.setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getForm());
-			
-			
-			grid.addColumn(e -> e.getFormDate() != null ?  
-			e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader(I18nProperties.getCaption(Captions.date))
-			.setKey("date")
+
+			grid.addColumn(e -> e.getFormDate() != null
+					? e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+					: "").setHeader(I18nProperties.getCaption(Captions.date)).setKey("date")
 //			createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
-			.setComparator(Comparator.comparing(CampaignFormDataIndexDto::getFormDate)).setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate() != null ?  
-					e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
-			.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
-			
-			grid.addColumn(e -> e.getChangeDate() != null ?  
-					e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader("Last Modified")
-					.setKey("lastmodified")
-					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getChangeDate() != null ?  
-							e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
+					.setComparator(Comparator.comparing(CampaignFormDataIndexDto::getFormDate)).setSortable(true)
+					.setResizable(true).setAutoWidth(true)
+					.setTooltipGenerator(e -> e.getFormDate() != null ? e.getFormDate().toInstant()
+							.atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
+					.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
+
+			grid.addColumn(e -> e.getChangeDate() != null
+					? e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+					: "").setHeader("Last Modified").setKey("lastmodified").setSortable(true).setResizable(true)
+					.setAutoWidth(true)
+					.setTooltipGenerator(e -> e.getChangeDate() != null ? e.getChangeDate().toInstant()
+							.atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
 					.setFooter("Last Modified");
-			
+
 			grid.addColumn(CampaignFormDataIndexDto.AREA).setHeader(I18nProperties.getCaption(Captions.area))
 					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getArea());
 			grid.addColumn(rCodeRender).setHeader(I18nProperties.getCaption(Captions.Area_externalId)).setSortable(true)
@@ -4855,7 +4707,7 @@ public class CampaignDataView extends VerticalLayout
 			grid.addColumn(dCodeRender).setHeader(I18nProperties.getCaption(Captions.District_externalID))
 					.setSortable(true).setResizable(true).setAutoWidth(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.District_externalID));
-			
+
 //			if(!isActiveFormDistrictLevel) {
 
 			clusterNameColumn = grid.addColumn(CampaignFormDataIndexDto.COMMUNITY)
@@ -4869,7 +4721,7 @@ public class CampaignDataView extends VerticalLayout
 					.setResizable(true).setAutoWidth(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.Community_externalID));
 //			}
-			
+
 			grid.addColumn(CampaignFormDataIndexDto.FORM_TYPE).setHeader(I18nProperties.getCaption(Captions.formPhase))
 					.setSortable(true).setResizable(true).setAutoWidth(true)
 					.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.formPhase));
@@ -4893,22 +4745,24 @@ public class CampaignDataView extends VerticalLayout
 //							createHeaderComponent(I18nProperties.getCaption(Captions.campaignCampaignForm),I18nProperties.getCaption(Captions.campaignCampaignForm)))
 					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getForm())
 					.setFooter(CampaignFormDataIndexDto.FORM);
-			
-			grid.addColumn(e -> e.getFormDate() != null ?  
-			e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader(I18nProperties.getCaption(Captions.date))
-			.setKey("date")
+
+			grid.addColumn(e -> e.getFormDate() != null
+					? e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+					: "").setHeader(I18nProperties.getCaption(Captions.date)).setKey("date")
 //			createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
-			.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getFormDate() != null ?  
-					e.getFormDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
-			.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
-						
-			grid.addColumn(e -> e.getChangeDate() != null ?  
-					e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "").setHeader("Last Modified")
-					.setKey("lastmodified")
-					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getChangeDate() != null ?  
-							e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
+					.setSortable(true).setResizable(true).setAutoWidth(true)
+					.setTooltipGenerator(e -> e.getFormDate() != null ? e.getFormDate().toInstant()
+							.atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
+					.setFooter(I18nProperties.getCaption(Captions.date).toLowerCase());
+
+			grid.addColumn(e -> e.getChangeDate() != null
+					? e.getChangeDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter)
+					: "").setHeader("Last Modified").setKey("lastmodified").setSortable(true).setResizable(true)
+					.setAutoWidth(true)
+					.setTooltipGenerator(e -> e.getChangeDate() != null ? e.getChangeDate().toInstant()
+							.atZone(ZoneId.systemDefault()).toLocalDate().format(dateFormatter) : "")
 					.setFooter("Last Modified");
-			
+
 			grid.addColumn(CampaignFormDataIndexDto.AREA).setHeader(I18nProperties.getCaption(Captions.area))
 //					createHeaderComponent(I18nProperties.getCaption(Captions.area), I18nProperties.getCaption(Captions.area)))
 					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getArea())
@@ -4945,28 +4799,26 @@ public class CampaignDataView extends VerticalLayout
 						int dcode = e.getDcode();
 						return "" + dcode;
 					});
-			
-//			if(!isActiveFormDistrictLevel) {
-				clusterNameColumn = grid.addColumn(CampaignFormDataIndexDto.COMMUNITY)
-						.setHeader(I18nProperties.getCaption(Captions.community))
-//						createHeaderComponent(I18nProperties.getCaption(Captions.community),I18nProperties.getCaption(Captions.community)))
-						.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getCommunity())
-						.setFooter(I18nProperties.getCaption(Captions.community));
 
-				clusterNumberColumn = grid.addColumn(CampaignFormDataIndexDto.COMMUNITYNUMBER)
-						.setHeader(I18nProperties.getCaption(Captions.clusterNumber))
+//			if(!isActiveFormDistrictLevel) {
+			clusterNameColumn = grid.addColumn(CampaignFormDataIndexDto.COMMUNITY)
+					.setHeader(I18nProperties.getCaption(Captions.community))
+//						createHeaderComponent(I18nProperties.getCaption(Captions.community),I18nProperties.getCaption(Captions.community)))
+					.setSortable(true).setResizable(true).setAutoWidth(true).setTooltipGenerator(e -> e.getCommunity())
+					.setFooter(I18nProperties.getCaption(Captions.community));
+
+			clusterNumberColumn = grid.addColumn(CampaignFormDataIndexDto.COMMUNITYNUMBER)
+					.setHeader(I18nProperties.getCaption(Captions.clusterNumber))
 //								createHeaderComponent(I18nProperties.getCaption(Captions.clusterNumber),I18nProperties.getCaption(Captions.clusterNumber)))
-						.setSortable(true).setResizable(true).setAutoWidth(true)
-						.setTooltipGenerator(e -> e.getClusternumber() == null ? "" : e.getClusternumber().toString())
-						.setFooter(CampaignFormDataIndexDto.COMMUNITYNUMBER);
-				ccodeColumn = grid.addColumn(CampaignFormDataIndexDto.CCODE)
-						.setHeader(I18nProperties.getCaption(Captions.Community_externalID)).setSortable(true)
-						.setResizable(true)
-						.setAutoWidth(true)
-						.setTooltipGenerator(e -> e.getCcode() == null ? "" : e.getCcode().toString())
-						.setFooter(CampaignFormDataIndexDto.CCODE);
+					.setSortable(true).setResizable(true).setAutoWidth(true)
+					.setTooltipGenerator(e -> e.getClusternumber() == null ? "" : e.getClusternumber().toString())
+					.setFooter(CampaignFormDataIndexDto.COMMUNITYNUMBER);
+			ccodeColumn = grid.addColumn(CampaignFormDataIndexDto.CCODE)
+					.setHeader(I18nProperties.getCaption(Captions.Community_externalID)).setSortable(true)
+					.setResizable(true).setAutoWidth(true)
+					.setTooltipGenerator(e -> e.getCcode() == null ? "" : e.getCcode().toString())
+					.setFooter(CampaignFormDataIndexDto.CCODE);
 //			}
-			
 
 			grid.addColumn(CampaignFormDataIndexDto.FORM_TYPE).setHeader(I18nProperties.getCaption(Captions.formPhase))
 //					createHeaderComponent(I18nProperties.getCaption(Captions.formPhase),I18nProperties.getCaption(Captions.formPhase)))
@@ -5000,7 +4852,8 @@ public class CampaignDataView extends VerticalLayout
 								e -> I18nProperties.getCaption("Published Status: ") + e.getPublishedStringValue())
 						.setFooter(CampaignFormDataIndexDto.ISPUBLISHED);
 
-				if (campaignPhase.getValue() != null&& campaignPhase.getValue().toString().equalsIgnoreCase("post-campaign")) {
+				if (campaignPhase.getValue() != null
+						&& campaignPhase.getValue().toString().equalsIgnoreCase("post-campaign")) {
 					publishedColumn.setVisible(true);
 					verifiedColumn.setVisible(true);
 				} else {
@@ -5010,7 +4863,6 @@ public class CampaignDataView extends VerticalLayout
 			}
 		}
 
-		
 		grid.setVisible(true);
 		grid.setWidthFull();
 		grid.setAllRowsVisible(false);
@@ -5022,45 +4874,50 @@ public class CampaignDataView extends VerticalLayout
 
 		if (userProvider.getUser().getUsertype() == UserType.EOC_USER) {
 			boolean isPublished = FacadeProvider.getCampaignFacade().isPublished(campaignz.getValue().getUuid());
-
-//			System.out.println("1111111111111111111" + campaignPhase.getValue() + campaignz.getValue());
-			if (campaignPhase.getValue().toString().equalsIgnoreCase("POST-CAMPAIGN")) {
-//		        newSelectionModel = new GridSelectionModel<CampaignFormDataIndexDto>(Grid.SelectionMode.NONE);
-//				System.out.println("1111111111111111111aaaaaaaaaaaaaa");
+			if (campaignPhase.getValue().toString().equalsIgnoreCase("POST-CAMPAIGN")) { 
 				if (isPublished) {
 					grid.setSelectionMode(Grid.SelectionMode.NONE);
-//					grid.asSingleSelect().addValueChangeListener(e -> {
-//						if (e.getValue() != null) {
-//							CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
-//									.getCampaignFormDataByUuid(e.getValue().getUuid());
-//
-//							CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
-//									.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
-//
-//							CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
-//									campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
-//
-//						}
-//
-//					});
-//					System.out.println("1111111111111111111bbbbbbbbbbbbbbb");
 				}
-
 			} else {
-
-//				System.out.println("1111111111111111111cccccccccccccccccccc");
 				grid.setSelectionMode(Grid.SelectionMode.SINGLE);
 				grid.asSingleSelect().addValueChangeListener(e -> {
 					if (e.getValue() != null) {
-						CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
-								.getCampaignFormDataByUuid(e.getValue().getUuid());
+					if(FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(criteria.getCampaign().getUuid(), criteria.getCampaignFormMeta().getUuid()).size() > 0) {
+						CampaignFormMetaExpiryDto expiryDto = FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(criteria.getCampaign().getUuid(), criteria.getCampaignFormMeta().getUuid()).get(0);
+						CampaignDto campaign = FacadeProvider.getCampaignFacade().getByUuid(criteria.getCampaign().getUuid()); //campaignz.getValue().getUuid());						
 
-						CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
-								.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
+						if(checkFormValidityByPhase(e.getValue().getFormType().toString().toLowerCase(), campaign, expiryDto)) {
+							CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
+									.getCampaignFormDataByUuid(e.getValue().getUuid());
 
-						CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
-								campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
+							CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
+									.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
 
+							CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
+									campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());	
+						}
+					}else {
+						Notification notification = new Notification();
+						notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+						notification.setPosition(Position.TOP_END);
+						Div text = new Div(new Text(
+						        "This Form is not available for Data Entry. Please contact System Administrator to Specify Entry Period."),
+						        new HtmlComponent("br"),
+						        new Text("Close this warning to continue working in APMIS."));
+
+						Button closeButton = new Button(new Icon("lumo", "cross"));
+						closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+//						closeButton.setAriaLabel("Close");
+						closeButton.addClickListener(event -> {
+						    notification.close();
+						});
+
+						HorizontalLayout layoutx = new HorizontalLayout(text, closeButton);
+						layoutx.setAlignItems(Alignment.CENTER);
+
+						notification.add(layoutx);
+						notification.open();	
+					}
 					}
 
 				});
@@ -5069,18 +4926,47 @@ public class CampaignDataView extends VerticalLayout
 
 			grid.setSelectionMode(Grid.SelectionMode.SINGLE);
 			grid.asSingleSelect().addValueChangeListener(e -> {
-				CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
-						.getCampaignFormDataByUuid(e.getValue().getUuid());
+				
+			if(FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(criteria.getCampaign().getUuid(), criteria.getCampaignFormMeta().getUuid()).size() > 0) {
+				CampaignFormMetaExpiryDto expiryDto = FacadeProvider.getCampaignFormMetaWithExpFacade().getFormsWithExpiryByCampaignUuidAndFormUuid(criteria.getCampaign().getUuid(), criteria.getCampaignFormMeta().getUuid()).get(0);
+				CampaignDto campaign = FacadeProvider.getCampaignFacade().getByUuid(criteria.getCampaign().getUuid()); //campaignz.getValue().getUuid());						
 
-				CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
-						.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
+				if(checkFormValidityByPhase(e.getValue().getFormType().toString().toLowerCase(), campaign, expiryDto)) {
+					CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
+							.getCampaignFormDataByUuid(e.getValue().getUuid());
 
-				CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
-						campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
+					CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
+							.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
 
-//				cam.verifyAndPublishButton.setText(I18nProperties.getCaption("Verify & Publish"));
-				System.out.println("2222222222222222222222" + formData.getUuid());
+					CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
+							campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
 
+				} else {
+				Notification notification = new Notification();
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+				notification.setPosition(Position.TOP_END);
+				Div text = new Div(new Text(
+				        "This Form is not available for Data Entry. Please contact System Administrator to Specify Entry Period."),
+				        new HtmlComponent("br"),
+				        new Text("Close this warning to continue working in APMIS."));
+
+				Button closeButton = new Button(new Icon("lumo", "cross"));
+				closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+//				closeButton.setAriaLabel("Close");
+				closeButton.addClickListener(event -> {
+				    notification.close();
+				});
+
+				HorizontalLayout layoutx = new HorizontalLayout(text, closeButton);
+				layoutx.setAlignItems(Alignment.CENTER);
+
+				notification.add(layoutx);
+				notification.open();
+				
+			}
+				
+			}
+ 
 				grid.deselectAll();
 
 			});
@@ -5100,9 +4986,9 @@ public class CampaignDataView extends VerticalLayout
 		anchor.getStyle().set("width", "100px");
 
 		icon.getStyle().set("margin-right", "8px");
-		icon.getStyle().set("font-size", "10px");;
+		icon.getStyle().set("font-size", "10px");
+		;
 		anchor.getElement().insertChild(0, icon.getElement());
-		
 
 		add(grid);
 	}
@@ -5142,12 +5028,11 @@ public class CampaignDataView extends VerticalLayout
 			boolean isDistictLevelData = formData.isDistrictentry();
 
 			if (isDistictLevelData) {
-				if(clusterNameColumn != null) {
+				if (clusterNameColumn != null) {
 					clusterNameColumn.setVisible(false);
 					clusterNumberColumn.setVisible(false);
-					ccodeColumn.setVisible(false);	
+					ccodeColumn.setVisible(false);
 				}
-
 
 			} else {
 				clusterNameColumn.setVisible(true);
@@ -5200,42 +5085,47 @@ public class CampaignDataView extends VerticalLayout
 		grid.setDataProvider(dataProvider);
 	}
 
-	
 	public void addCustomColumn(String property, String caption, String fieldsType, List<MapperUtil> options) {
 		if (!property.toString().contains("readonly")) {
-			grid.addColumn(e -> {				
-	            CampaignFormDataEntry formValue = e.getFormValues().stream()
-	                    .filter(v -> v.getId().equals(property))
-	                    .findFirst()
-	                    .orElse(null);
-	                if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
-	                    if(formValue != null) {	                   
-						return   removeTrailingDecimalFromString(formValue.getValue().toString());//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-						}else {
-							return  "";
+			grid.addColumn(e -> {
+				CampaignFormDataEntry formValue = e.getFormValues().stream().filter(v -> v.getId().equals(property))
+						.findFirst().orElse(null);
+				if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
+					if (formValue != null) {
+						return removeTrailingDecimalFromString(formValue.getValue().toString());// (e.getFormValues().stream().filter(v
+																								// ->
+																								// v.getId().equals(property)).findFirst().orElse(null));
+					} else {
+						return "";
+					}
+				} else if (fieldsType != null && (fieldsType.equalsIgnoreCase("yes_no"))) {
+					if (formValue != null) {
+						if (formValue.toString().equalsIgnoreCase("Yes")
+								|| formValue.toString().equalsIgnoreCase("True")) {
+							return removeTrailingDecimalFromString("Yes");// (e.getFormValues().stream().filter(v ->
+																			// v.getId().equals(property)).findFirst().orElse(null));
+						} else if (formValue.toString().equalsIgnoreCase("No")
+								|| formValue.toString().equalsIgnoreCase("False")) {
+							return removeTrailingDecimalFromString("No");// (e.getFormValues().stream().filter(v ->
+																			// v.getId().equals(property)).findFirst().orElse(null));
+						} else {
+							return "";// (e.getFormValues().stream().filter(v ->
+										// v.getId().equals(property)).findFirst().orElse(null));
 						}
-	                }else if(fieldsType != null && (fieldsType.equalsIgnoreCase("yes_no"))) {
-	                    if(formValue != null) {	
-	                 	if(formValue.toString().equalsIgnoreCase("Yes") || formValue.toString().equalsIgnoreCase("True")) {
-							return   removeTrailingDecimalFromString("Yes");//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-                    	}else if(formValue.toString().equalsIgnoreCase("No") || formValue.toString().equalsIgnoreCase("False")) {
-							return   removeTrailingDecimalFromString("No");//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-                    	}else {
-							return   "";//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-                    	}
-	                 	}else {
-							return  "";
+					} else {
+						return "";
+					}
+				} else if (fieldsType != null && (fieldsType.equalsIgnoreCase("dropdown"))) {
+					String formValueCaption = "";
+					for (MapperUtil valueCaption : options) {
+						if (formValue != null
+								&& formValue.getValue().toString().equalsIgnoreCase(valueCaption.getKey())) {
+							formValueCaption = valueCaption.getCaption();
 						}
-	                }else if(fieldsType != null && (fieldsType.equalsIgnoreCase("dropdown"))) {
-	                	String formValueCaption = "";
-	                	for(MapperUtil valueCaption : options) {
-	                		if(formValue != null  && formValue.getValue().toString().equalsIgnoreCase(valueCaption.getKey())) {
-		                		formValueCaption = valueCaption.getCaption();	
-	                		}
-	                	}
-            		return formValueCaption;
+					}
+					return formValueCaption;
 
-	                }
+				}
 //	                else if(fieldsType != null && (fieldsType.equalsIgnoreCase("checkboxbasic"))) {
 //	                	
 //	                	String formValueCaption = "";
@@ -5248,184 +5138,101 @@ public class CampaignDataView extends VerticalLayout
 //            		return formValueCaption;
 //
 //	                }
-	                else {
-	        			return removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+				else {
+					return removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property))
+							.findFirst().orElse(null));
 
-	                }
-			}).setHeader(caption).setFooter(property).setSortProperty(property).setSortable(false).setResizable(true).setAutoWidth(true)
-			.setTooltipGenerator(e->{
-					CampaignFormDataEntry formValue = e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null);
-		              String value;
+				}
+			}).setHeader(caption).setFooter(property).setSortProperty(property).setSortable(false).setResizable(true)
+					.setAutoWidth(true).setTooltipGenerator(e -> {
+						CampaignFormDataEntry formValue = e.getFormValues().stream()
+								.filter(v -> v.getId().equals(property)).findFirst().orElse(null);
+						String value;
 
-					if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
-		                 if(formValue != null) {
-								System.out.println(formValue.getValue().toString().toLowerCase()  + "  ----------------formValue.getValue().toString().toLowerCase() ");
-								return  value = removeTrailingDecimalFromString(formValue.getValue().toString());//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-							}else {
+						if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
+							if (formValue != null) {
+								System.out.println(formValue.getValue().toString().toLowerCase()
+										+ "  ----------------formValue.getValue().toString().toLowerCase() ");
+								return value = removeTrailingDecimalFromString(formValue.getValue().toString());// (e.getFormValues().stream().filter(v
+																												// ->
+																												// v.getId().equals(property)).findFirst().orElse(null));
+							} else {
 								return value = "";
 							}
-			 	   }else {
-                       value = removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-			 	   }
-				   return caption + " : " + value;
+						} else {
+							value = removeTrailingDecimal(e.getFormValues().stream()
+									.filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+						}
+						return caption + " : " + value;
 					}).setClassNameGenerator(item -> "full-width-column");
 		}
 
 	}
-	
+
 	public void addCustomColumn(String property, String caption, String fieldsType) {
 		if (!property.toString().contains("readonly")) {
-			grid.addColumn(e -> {				
-	            CampaignFormDataEntry formValue = e.getFormValues().stream()
-	                    .filter(v -> v.getId().equals(property))
-	                    .findFirst()
-	                    .orElse(null);
-	                if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
-	                    if(formValue != null) {	                   
-						return   removeTrailingDecimalFromString(formValue.getValue().toString());//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-						}else {
-							return  "";
+			grid.addColumn(e -> {
+				CampaignFormDataEntry formValue = e.getFormValues().stream().filter(v -> v.getId().equals(property))
+						.findFirst().orElse(null);
+				if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
+					if (formValue != null) {
+						return removeTrailingDecimalFromString(formValue.getValue().toString());// (e.getFormValues().stream().filter(v
+																								// ->
+																								// v.getId().equals(property)).findFirst().orElse(null));
+					} else {
+						return "";
+					}
+				} else if (fieldsType != null && (fieldsType.equalsIgnoreCase("yes_no"))) {
+					if (formValue != null) {
+						if (formValue.toString().equalsIgnoreCase("Yes")
+								|| formValue.toString().equalsIgnoreCase("True")) {
+							return removeTrailingDecimalFromString("Yes");// (e.getFormValues().stream().filter(v ->
+																			// v.getId().equals(property)).findFirst().orElse(null));
+						} else if (formValue.toString().equalsIgnoreCase("No")
+								|| formValue.toString().equalsIgnoreCase("False")) {
+							return removeTrailingDecimalFromString("No");// (e.getFormValues().stream().filter(v ->
+																			// v.getId().equals(property)).findFirst().orElse(null));
+						} else {
+							return "";// (e.getFormValues().stream().filter(v ->
+										// v.getId().equals(property)).findFirst().orElse(null));
 						}
-	                }else if(fieldsType != null && (fieldsType.equalsIgnoreCase("yes_no"))) {
-	                    if(formValue != null) {	
-	                 	if(formValue.toString().equalsIgnoreCase("Yes") || formValue.toString().equalsIgnoreCase("True")) {
-							return   removeTrailingDecimalFromString("Yes");//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-                    	}else if(formValue.toString().equalsIgnoreCase("No") || formValue.toString().equalsIgnoreCase("False")) {
-							return   removeTrailingDecimalFromString("No");//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-                    	}else {
-							return   "";//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-                    	}
-	                 	}else {
-							return  "";
-						}
-	                }else if(fieldsType != null && (fieldsType.equalsIgnoreCase("dropdown"))) {
-	                	
-	                System.out.println( fieldsType+ "fieldsType" +  property + "property" +  caption);
-	                	return  "";
-	                }else {
-	        			return removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+					} else {
+						return "";
+					}
+				} else if (fieldsType != null && (fieldsType.equalsIgnoreCase("dropdown"))) {
 
-	                }
-			}).setHeader(caption).setFooter(property).setSortProperty(property).setSortable(false).setResizable(true).setAutoWidth(true)
-			.setTooltipGenerator(e->{
-					CampaignFormDataEntry formValue = e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null);
-		              String value;
+					System.out.println(fieldsType + "fieldsType" + property + "property" + caption);
+					return "";
+				} else {
+					return removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property))
+							.findFirst().orElse(null));
 
-					if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
-		                 if(formValue != null) {
-								System.out.println(formValue.getValue().toString().toLowerCase()  + "  ----------------formValue.getValue().toString().toLowerCase() ");
-								return  value = removeTrailingDecimalFromString(formValue.getValue().toString());//(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-							}else {
+				}
+			}).setHeader(caption).setFooter(property).setSortProperty(property).setSortable(false).setResizable(true)
+					.setAutoWidth(true).setTooltipGenerator(e -> {
+						CampaignFormDataEntry formValue = e.getFormValues().stream()
+								.filter(v -> v.getId().equals(property)).findFirst().orElse(null);
+						String value;
+
+						if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
+							if (formValue != null) {
+								System.out.println(formValue.getValue().toString().toLowerCase()
+										+ "  ----------------formValue.getValue().toString().toLowerCase() ");
+								return value = removeTrailingDecimalFromString(formValue.getValue().toString());// (e.getFormValues().stream().filter(v
+																												// ->
+																												// v.getId().equals(property)).findFirst().orElse(null));
+							} else {
 								return value = "";
 							}
-			 	   }else {
-                       value = removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-			 	   }
-				   return caption + " : " + value;
+						} else {
+							value = removeTrailingDecimal(e.getFormValues().stream()
+									.filter(v -> v.getId().equals(property)).findFirst().orElse(null));
+						}
+						return caption + " : " + value;
 					}).setClassNameGenerator(item -> "full-width-column");
 		}
 
 	}
-	
-	
-//	public void addCustomColumn(String property, String caption, String fieldType) {
-//	    if (!property.toString().contains("readonly")) {
-//	        grid.addColumn(e -> {
-//	            e.getFormValues().stream()
-//	                .filter(v -> v.getId().equals(property))
-//	                .findFirst().orElse(null);
-//
-//	            if (e.getFormValues() == null) return "";
-//
-//	            // If field type is number, return full number string
-//	            if ("number".equalsIgnoreCase(fieldType)) {
-//	                return e.getFormValues(); // Return the raw value
-//	            }
-//
-//	            // Otherwise, do any other formatting
-//	            return removeTrailingDecimal(e.getFormValues().stream().filter(v -> v.getId().equals(property)).findFirst().orElse(null));
-//	        })
-//	        .setHeader(caption)
-//	        .setFooter(property)
-//	        .setSortProperty(property)
-//	        .setSortable(false)
-//	        .setResizable(true)
-//	        .setAutoWidth(true)
-//	        .setTooltipGenerator(
-//					e -> caption + " : "
-//							+ removeTrailingDecimal(e.getFormValues().stream()
-//									.filter(v -> v.getId().equals(property)).findFirst().orElse(null)))
-//	        .setClassNameGenerator(item -> "full-width-column");
-//	    }
-//	}
-
-	
-	
-//	public void addCustomColumn(String property, String caption, String fieldType) {
-//	    if (!property.toString().contains("readonly")) {
-//	        if ("number".equalsIgnoreCase(fieldType)) {
-//	            grid.addColumn(new NumberRenderer<>(
-//	                item -> {
-//	                	CampaignFormDataEntry value = item.getFormValues().stream()
-//	                        .filter(v -> v.getId().equals(property))
-//	                        .findFirst()
-//	                        .orElse(null);
-//	                    if (value == null || value.getValue() == null) return null;
-//
-//	                    try {
-//	                    	
-//	                    	return new BigDecimal(value.getValue().toString());
-//
-////	                        return new BigDecimal(value.getValue());
-//	                    } catch (NumberFormatException e) {
-//	                        return null;
-//	                    }
-//	                },
-//	                NumberFormat.getIntegerInstance()
-//	            ))
-//	            .setHeader(caption)
-//	            .setFooter(property)
-//	            .setSortProperty(property)
-//	            .setSortable(false)
-//	            .setResizable(true)
-//	            .setAutoWidth(true)
-//	            .setTooltipGenerator(item -> {
-//	                CampaignFormDataEntry value = item.getFormValues().stream()
-//	                    .filter(v -> v.getId().equals(property))
-//	                    .findFirst()
-//	                    .orElse(null);
-//	                return caption + " : " + (value != null && value.getValue() != null ? value.getValue() : "");
-//	            })
-//	            .setClassNameGenerator(item -> "full-width-column");
-//
-//	        } else {
-//	            // Non-numeric fields
-//	            grid.addColumn(item -> {
-//	            	CampaignFormDataEntry value = item.getFormValues().stream()
-//	                    .filter(v -> v.getId().equals(property))
-//	                    .findFirst()
-//	                    .orElse(null);
-//	                return removeTrailingDecimal(value);
-//	            })
-//	            .setHeader(caption)
-//	            .setFooter(property)
-//	            .setSortProperty(property)
-//	            .setSortable(false)
-//	            .setResizable(true)
-//	            .setAutoWidth(true)
-//	            .setTooltipGenerator(item -> {
-//	            	CampaignFormDataEntry value = item.getFormValues().stream()
-//	                    .filter(v -> v.getId().equals(property))
-//	                    .findFirst()
-//	                    .orElse(null);
-//	                return caption + " : " + removeTrailingDecimal(value);
-//	            })
-//	            .setClassNameGenerator(item -> "full-width-column");
-//	        }
-//	    }
-//	}
-
-	
 
 	private String removeTrailingDecimal(CampaignFormDataEntry value) {
 		String valueCleaned = value == null ? null : value.toString();
@@ -5434,7 +5241,7 @@ public class CampaignDataView extends VerticalLayout
 		}
 		return valueCleaned;
 	}
-	
+
 	private String removeTrailingDecimalFromString(String value) {
 		String valueCleaned = value == null ? null : value.toString();
 		if (valueCleaned != null && valueCleaned.endsWith(".0")) {
@@ -5443,8 +5250,7 @@ public class CampaignDataView extends VerticalLayout
 		return valueCleaned;
 	}
 
-
-public void updateRowCount() {
+	public void updateRowCount() {
 		languageHandler();
 		int numberOfRows = (int) FacadeProvider.getCampaignFormDataFacade().count(criteria);
 		String newText = I18nProperties.getCaption(Captions.rows) + numberOfRows;
@@ -5458,8 +5264,6 @@ public void updateRowCount() {
 		grid.setVisible(true);
 		removeClassName("editing");
 	}
-
-
 
 	public void languageHandler() {
 

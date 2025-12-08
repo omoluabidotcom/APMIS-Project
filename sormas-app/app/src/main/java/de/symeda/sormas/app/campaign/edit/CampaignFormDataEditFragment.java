@@ -87,8 +87,9 @@ import de.symeda.sormas.app.util.InfrastructureDaoHelper;
 import de.symeda.sormas.app.util.TextViewBindingAdapters;
 import de.symeda.sormas.app.util.YesNo;
 
-import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlCheckBoxEditField;
+import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlMultiSelectCheckBoxEditField;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlCheckBoxField;
+import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlMultiSelectCheckBoxEditField;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlSpinnerFieldEditField;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlDateEditField;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlTextEditField;
@@ -355,8 +356,20 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
-                            List<String> selectedKeys = Collections.singletonList(value);
-                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
+                                List<String> selectedKeys = new ArrayList<>();
+                                if (value != null && !value.trim().isEmpty()) {
+                                    String str = value.trim();
+                                    if (str.startsWith("[") && str.endsWith("]")) {
+                                        str = str.substring(1, str.length() - 1);
+                                    }
+                                    String[] parts = str.split("\\s*,\\s*");
+                                    for (String part : parts) {
+                                        if (!part.trim().isEmpty()) {
+                                            selectedKeys.add(part.trim());
+                                        }
+                                    }
+                                }
+                                dynamicField = createControlMultiSelectCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -498,10 +511,61 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                         } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
-                        }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
-                            List<String> selectedKeys = Collections.singletonList(value);
-                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
-                        }else if (type == CampaignFormElementType.NUMBER) {
+                        }
+
+                        else if (type == CampaignFormElementType.CHECKBOXBASIC) {
+                            List<String> selectedKeys = new ArrayList<>();
+                            if (value != null && !value.trim().isEmpty()) {
+                                String str = value.trim();
+
+                                // First, handle the stored value format
+                                if (str.startsWith("[") && str.endsWith("]")) {
+                                    str = str.substring(1, str.length() - 1);
+                                }
+
+                                // Also handle if it's already a comma-separated string without brackets
+                                String[] parts = str.split("\\s*,\\s*");
+
+                                for (String part : parts) {
+                                    String cleanPart = part.trim();
+                                    // Remove any quotes
+                                    if (cleanPart.startsWith("\"") && cleanPart.endsWith("\"")) {
+                                        cleanPart = cleanPart.substring(1, cleanPart.length() - 1);
+                                    }
+                                    if (!cleanPart.isEmpty()) {
+                                        selectedKeys.add(cleanPart);
+                                    }
+                                }
+
+                                System.out.println("DEBUG - Field: " + campaignFormElement.getId() +
+                                        ", Raw value: " + value +
+                                        ", Parsed keys: " + selectedKeys);
+                            }
+
+                            dynamicField = createControlMultiSelectCheckBoxEditField(campaignFormElement, requireContext(),
+                                    getUserTranslations(campaignFormMeta), optionsValues, selectedKeys,
+                                    campaignFormElement.isImportant());
+                        }
+
+//                        else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
+//                                List<String> selectedKeys = new ArrayList<>();
+//    if (value != null && !value.trim().isEmpty()) {
+//        String str = value.trim();
+//        if (str.startsWith("[") && str.endsWith("]")) {
+//            str = str.substring(1, str.length() - 1);
+//        }
+//        String[] parts = str.split("\\s*,\\s*");
+//        for (String part : parts) {
+//            if (!part.trim().isEmpty()) {
+//                selectedKeys.add(part.trim());
+//            }
+//        }
+//    }
+//                        dynamicField = createControlMultiSelectCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
+//                        }
+
+
+                        else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DECIMAL) {
@@ -644,8 +708,20 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
-                            List<String> selectedKeys = Collections.singletonList(value);
-                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
+                                List<String> selectedKeys = new ArrayList<>();
+    if (value != null && !value.trim().isEmpty()) {
+        String str = value.trim();
+        if (str.startsWith("[") && str.endsWith("]")) {
+            str = str.substring(1, str.length() - 1);
+        }
+        String[] parts = str.split("\\s*,\\s*");
+        for (String part : parts) {
+            if (!part.trim().isEmpty()) {
+                selectedKeys.add(part.trim());
+            }
+        }
+    }
+                         dynamicField = createControlMultiSelectCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -785,8 +861,20 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
-                            List<String> selectedKeys = Collections.singletonList(value);
-                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
+                                List<String> selectedKeys = new ArrayList<>();
+    if (value != null && !value.trim().isEmpty()) {
+        String str = value.trim();
+        if (str.startsWith("[") && str.endsWith("]")) {
+            str = str.substring(1, str.length() - 1);
+        }
+        String[] parts = str.split("\\s*,\\s*");
+        for (String part : parts) {
+            if (!part.trim().isEmpty()) {
+                selectedKeys.add(part.trim());
+            }
+        }
+    }
+                                                        dynamicField = createControlMultiSelectCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -944,8 +1032,20 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
-                            List<String> selectedKeys = Collections.singletonList(value);
-                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
+                                List<String> selectedKeys = new ArrayList<>();
+    if (value != null && !value.trim().isEmpty()) {
+        String str = value.trim();
+        if (str.startsWith("[") && str.endsWith("]")) {
+            str = str.substring(1, str.length() - 1);
+        }
+        String[] parts = str.split("\\s*,\\s*");
+        for (String part : parts) {
+            if (!part.trim().isEmpty()) {
+                selectedKeys.add(part.trim());
+            }
+        }
+    }
+                                                        dynamicField = createControlMultiSelectCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -1082,8 +1182,20 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
-                            List<String> selectedKeys = Collections.singletonList(value);
-                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
+                                List<String> selectedKeys = new ArrayList<>();
+    if (value != null && !value.trim().isEmpty()) {
+        String str = value.trim();
+        if (str.startsWith("[") && str.endsWith("]")) {
+            str = str.substring(1, str.length() - 1);
+        }
+        String[] parts = str.split("\\s*,\\s*");
+        for (String part : parts) {
+            if (!part.trim().isEmpty()) {
+                selectedKeys.add(part.trim());
+            }
+        }
+    }
+                                                        dynamicField = createControlMultiSelectCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -1220,8 +1332,20 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
-                            List<String> selectedKeys = Collections.singletonList(value);
-                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
+                                List<String> selectedKeys = new ArrayList<>();
+    if (value != null && !value.trim().isEmpty()) {
+        String str = value.trim();
+        if (str.startsWith("[") && str.endsWith("]")) {
+            str = str.substring(1, str.length() - 1);
+        }
+        String[] parts = str.split("\\s*,\\s*");
+        for (String part : parts) {
+            if (!part.trim().isEmpty()) {
+                selectedKeys.add(part.trim());
+            }
+        }
+    }
+                                                        dynamicField = createControlMultiSelectCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         }else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -1358,8 +1482,20 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                             ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
                         }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
-                            List<String> selectedKeys = Collections.singletonList(value);
-                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
+                                List<String> selectedKeys = new ArrayList<>();
+    if (value != null && !value.trim().isEmpty()) {
+        String str = value.trim();
+        if (str.startsWith("[") && str.endsWith("]")) {
+            str = str.substring(1, str.length() - 1);
+        }
+        String[] parts = str.split("\\s*,\\s*");
+        for (String part : parts) {
+            if (!part.trim().isEmpty()) {
+                selectedKeys.add(part.trim());
+            }
+        }
+    }
+                                                        dynamicField = createControlMultiSelectCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
                         } else if (type == CampaignFormElementType.NUMBER) {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, campaignFormElement.isImportant());
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, value);
@@ -1500,9 +1636,41 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     } else if (type == CampaignFormElementType.CHECKBOX || type == CampaignFormElementType.RADIO || type == CampaignFormElementType.RADIOBASIC) {
                         dynamicField = createControlCheckBoxField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
                         ControlCheckBoxField.setValue((ControlCheckBoxField) dynamicField, Boolean.valueOf(value));
-                    }else if (type == CampaignFormElementType.CHECKBOXBASIC ) {
-                            List<String> selectedKeys = Collections.singletonList(value);
-                                                        dynamicField = createControlCheckBoxEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), optionsValues, selectedKeys, campaignFormElement.isImportant());
+                    }
+
+                    else if (type == CampaignFormElementType.CHECKBOXBASIC) {
+                        List<String> selectedKeys = new ArrayList<>();
+                        if (value != null && !value.trim().isEmpty()) {
+                            String str = value.trim();
+
+                            // First, handle the stored value format
+                            if (str.startsWith("[") && str.endsWith("]")) {
+                                str = str.substring(1, str.length() - 1);
+                            }
+
+                            // Also handle if it's already a comma-separated string without brackets
+                            String[] parts = str.split("\\s*,\\s*");
+
+                            for (String part : parts) {
+                                String cleanPart = part.trim();
+                                // Remove any quotes
+                                if (cleanPart.startsWith("\"") && cleanPart.endsWith("\"")) {
+                                    cleanPart = cleanPart.substring(1, cleanPart.length() - 1);
+                                }
+                                if (!cleanPart.isEmpty()) {
+                                    selectedKeys.add(cleanPart);
+                                }
+                            }
+
+                            System.out.println("DEBUG - Field: " + campaignFormElement.getId() +
+                                    ", Raw value: " + value +
+                                    ", Parsed keys: " + selectedKeys);
+                        }
+
+                        dynamicField = createControlMultiSelectCheckBoxEditField(campaignFormElement, requireContext(),
+                                getUserTranslations(campaignFormMeta), optionsValues, selectedKeys,
+                                campaignFormElement.isImportant());
+
                     }
                     else if (type == CampaignFormElementType.DECIMAL) {
                         final boolean exprx = expressionx;
@@ -1900,6 +2068,27 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                         });
                     }
 
+
+                    if(type == CampaignFormElementType.CHECKBOXBASIC){
+                        dynamicField.addValueChangedListener(field -> {
+                            final CampaignFormDataEntry campaignFormDataEntry = CampaignFormDataFragmentUtils.getOrCreateCampaignFormDataEntry(formValues, campaignFormElement);
+
+                            // Get the current value from the field
+                            Object fieldValue = field.getValue();
+                            String serializedValue = "";
+
+                            if (fieldValue instanceof List) {
+                                List<String> selectedList = (List<String>) fieldValue;
+                                if (!selectedList.isEmpty()) {
+                                    // Serialize as JSON array-like string
+                                    serializedValue = "[" + String.join(",", selectedList) + "]";
+                                }
+                            }
+
+                            campaignFormDataEntry.setValue(serializedValue);
+                            System.out.println("DEBUG - Field " + campaignFormElement.getId() + " set to: " + serializedValue);
+                        });
+                    }
 
                     final String dependingOn = campaignFormElement.getDependingOn();
                     if (dependingOn != null) {

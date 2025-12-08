@@ -142,12 +142,12 @@ public class CampaignForm extends VerticalLayout {
 	ComboBox round = new ComboBox<>(I18nProperties.getCaption(Captions.round));
  
 	
-	DatePicker preCampaignstartDate = new DatePicker(I18nProperties.getCaption("Pre-Campaign " + Captions.Campaign_startDate));
-	DatePicker preCampaignendDate = new DatePicker(I18nProperties.getCaption("Pre-Campaign " +Captions.Campaign_endDate));
+	DatePicker preCampaignstartDate = new DatePicker("Pre-Campaign Start date");
+	DatePicker preCampaignendDate = new DatePicker("Pre-Campaign End Date");
 	DatePicker startDate = new DatePicker(I18nProperties.getCaption(Captions.Campaign_startDate));
 	DatePicker endDate = new DatePicker(I18nProperties.getCaption(Captions.Campaign_endDate));
-	DatePicker postCampaignstartDate = new DatePicker(I18nProperties.getCaption("Post-Campaign " + Captions.Campaign_startDate));
-	DatePicker postCampaignendDate = new DatePicker(I18nProperties.getCaption("Post-Campaign " +Captions.Campaign_endDate));
+	DatePicker postCampaignstartDate = new DatePicker("Post-Campaign Start date");
+	DatePicker postCampaignendDate = new DatePicker("Post-Campaign End date");
 	
  	TextField creatingUser = new TextField(I18nProperties.getCaption(Captions.Campaign_creatingUser));
 	TextField creatingUuid = new TextField(I18nProperties.getCaption(Captions.uuid));
@@ -241,7 +241,11 @@ public class CampaignForm extends VerticalLayout {
 		return Instant.ofEpochMilli(dateToConvert.getDate()).atZone(ZoneId.systemDefault()).toLocalDate();
 	}
 
-	private boolean validateDates() {
+	
+
+	private boolean validateDatesByPhase(String campaignphase) {
+if(campaignphase.equalsIgnoreCase("pre-campaign")) {
+	
 
 		LocalDate preCampaignsstartDateValue = preCampaignstartDate.getValue();
 		LocalDate preCampaignsendDateValue = preCampaignendDate.getValue();
@@ -303,7 +307,12 @@ public class CampaignForm extends VerticalLayout {
 			return false; // Start date is after end date
 		}
 
-		
+		preCampaignstartDate.setInvalid(false);
+		preCampaignendDate.setInvalid(false);
+	
+}else if(campaignphase.equalsIgnoreCase("intra-campaign")) {
+	
+
 		
 		LocalDate startDateValue = startDate.getValue();
 		LocalDate endDateValue = endDate.getValue();
@@ -364,6 +373,13 @@ public class CampaignForm extends VerticalLayout {
 
 			return false; // Start date is after end date
 		}
+		
+		startDate.setInvalid(false);
+		endDate.setInvalid(false);
+
+}else if(campaignphase.equalsIgnoreCase("intra-campaign")) {
+
+
 
 		LocalDate postCampaignsstartDateValue = postCampaignstartDate.getValue();
 		LocalDate postCampaignsendDateValue = postCampaignendDate.getValue();
@@ -424,15 +440,16 @@ public class CampaignForm extends VerticalLayout {
 
 			return false; // Start date is after end date
 		}
+		
+		postCampaignstartDate.setInvalid(false);
+		postCampaignendDate.setInvalid(false);
+		
+}
 
 		// Clear invalid state if dates are valid
 	
-		preCampaignstartDate.setInvalid(false);
-		preCampaignendDate.setInvalid(false);
-		startDate.setInvalid(false);
-		endDate.setInvalid(false);
-		postCampaignstartDate.setInvalid(false);
-		postCampaignendDate.setInvalid(false);
+
+
 
 		saveChanges.setEnabled(true);
 
@@ -542,7 +559,9 @@ public class CampaignForm extends VerticalLayout {
 			String selectedYearAsString = Integer.toString(selectedYear);
 
 			if (preCampaignendDate.getValue() != null) {
-				validateDates();
+//				validateDates();
+				validateDatesByPhase("pre-campaign");
+
 //				campaaignYear.setValue(selectedYearAsString);
 				// System.out.println(selectedYearAsString + "Selected Yearaaaaaaaaaaa: " +
 				// selectedYear);
@@ -560,7 +579,9 @@ public class CampaignForm extends VerticalLayout {
 			String selectedYearAsString = Integer.toString(selectedYear);
 
 			if (endDate.getValue() != null) {
-				validateDates();
+//				validateDates();
+				validateDatesByPhase("intra-campaign");
+
 				campaaignYear.setValue(selectedYearAsString);
 				// System.out.println(selectedYearAsString + "Selected Yearaaaaaaaaaaa: " +
 				// selectedYear);
@@ -578,7 +599,9 @@ public class CampaignForm extends VerticalLayout {
 			String selectedYearAsString = Integer.toString(selectedYear);
 
 			if (postCampaignendDate.getValue() != null) {
-				validateDates();
+//				validateDates();
+				validateDatesByPhase("post-campaign");
+
 //				campaaignYear.setValue(selectedYearAsString);
 				// System.out.println(selectedYearAsString + "Selected Yearaaaaaaaaaaa: " +
 				// selectedYear);
@@ -592,20 +615,25 @@ public class CampaignForm extends VerticalLayout {
 		
  		endDate.addValueChangeListener(e -> {
 			if (startDate.getValue() != null) {
-				validateDates();
+//				validateDates();
+				validateDatesByPhase("intra-campaign");
 
 			}
 		});
  
 		preCampaignendDate.addValueChangeListener(e -> {
 			if (preCampaignstartDate.getValue() != null) {
-				validateDates();
+//				validateDates();
+				validateDatesByPhase("pre-campaign");
+
 
 			}
 		});
 		postCampaignendDate.addValueChangeListener(e -> {
 			if (postCampaignstartDate.getValue() != null) {
-				validateDates();
+//				validateDates();
+				validateDatesByPhase("post-campaign");
+
 
 			}
 		});
@@ -2232,6 +2260,10 @@ public class CampaignForm extends VerticalLayout {
 			Date startdate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 			LocalDate endxDate = endDate.getValue();
 			Date endxDatex = Date.from(endxDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+			LocalDate postCampaignlocalDate = postCampaignstartDate.getValue();
+			Date postCampaignstartdate = Date.from(postCampaignlocalDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+			LocalDate postCampaignendxDate = postCampaignendDate.getValue();
+			Date postCampaignendxDatex = Date.from(postCampaignendxDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 			formDatac.setCampaignYear(campaaignYear.getValue().toString());
 
 			formDatac.setName(campaignName.getValue());
@@ -2241,6 +2273,8 @@ public class CampaignForm extends VerticalLayout {
 			formDatac.setPreCampEndDate(preCampaignendxDatex);
  			formDatac.setStartDate(startdate);
 			formDatac.setEndDate(endxDatex);
+			formDatac.setPostCampStartDate(postCampaignstartdate);
+			formDatac.setPostCampEndDate(postCampaignendxDatex);
 			formDatac.setDescription(description.getValue());
 			formDatac.setCampaignStatus(formDatac.campaignStatus = "Closed");
 
