@@ -195,7 +195,7 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
             campaignFormDataToSave.setFormDate(cal.getTime());
         }
 
-         campaignFormDataToSave.setFormValues(filledFormValues);
+        campaignFormDataToSave.setFormValues(filledFormValues);
         campaignFormDataToSave.setSoruce(PlatformEnum.MOBILE);
 
         if(campaignFormDataToSave.getFormDate() == null){

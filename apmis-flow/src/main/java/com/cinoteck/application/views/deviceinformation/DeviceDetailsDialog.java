@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.cinoteck.application.UserProvider;
 import com.cinoteck.application.views.utils.gridexporter.GridExporter;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -54,71 +55,142 @@ public class DeviceDetailsDialog extends Dialog {
 	
     
     public DeviceDetailsDialog(DeviceManagerDto deviceManagerDto) {
+    	
         setHeight("94%");
         setWidth("80%");
         setModal(true);
         setDraggable(true);
         setResizable(true);
 
-        createHeader();
-        createContent(deviceManagerDto);
-        createFooter(deviceManagerDto);
+        
+        VerticalLayout container = new VerticalLayout();
+        container.setSizeFull();
+        container.setPadding(false);
+        container.setSpacing(false);
+
+        Component header = createHeader();
+        Component content = createContent(deviceManagerDto);
+        Component footer = createFooter(deviceManagerDto);
+
+        // Content must grow and become scrollable
+        container.add(header, content, footer);
+        container.setFlexGrow(1, content); // pushes footer down
+        content.getElement().getStyle().set("overflow", "auto");
+        
+        add(container);
+
+//        createHeader();
+//        createContent(deviceManagerDto);
+//        createFooter(deviceManagerDto);
     }
+//    
+//    private void createHeader() {
+//        H3 title = new H3("Device Details");
+//        title.getStyle().set("margin", "0");
+//        title.getStyle().set("color", "#2d5a3d");
+//        
+//        Span subtitle = new Span("This page contains all the information of this mobile device.");
+//        subtitle.getStyle().set("color", "#666");
+//        subtitle.getStyle().set("font-size", "14px");
+//        
+//        Button closeButton = new Button(new Icon(VaadinIcon.CLOSE));
+//        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+//        closeButton.addClickListener(e -> close());
+//        closeButton.getStyle().set("position", "absolute");
+//        closeButton.getStyle().set("right", "10px");
+//        closeButton.getStyle().set("top", "10px");
+//        
+//        VerticalLayout headerContent = new VerticalLayout(title, subtitle);
+//        headerContent.setSpacing(false);
+//        headerContent.setPadding(false);
+//        
+//        Div header = new Div(headerContent, closeButton);
+//        header.getStyle().set("position", "relative");
+//        header.getStyle().set("padding", "10px");
+////        header.getStyle().set("border-bottom", "1px solid #e0e0e0");
+//        
+//        add(header);
+//    }
     
-    private void createHeader() {
+    private Component createHeader() {
         H3 title = new H3("Device Details");
         title.getStyle().set("margin", "0");
         title.getStyle().set("color", "#2d5a3d");
-        
+
         Span subtitle = new Span("This page contains all the information of this mobile device.");
         subtitle.getStyle().set("color", "#666");
         subtitle.getStyle().set("font-size", "14px");
-        
+
         Button closeButton = new Button(new Icon(VaadinIcon.CLOSE));
         closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         closeButton.addClickListener(e -> close());
         closeButton.getStyle().set("position", "absolute");
         closeButton.getStyle().set("right", "10px");
         closeButton.getStyle().set("top", "10px");
-        
+
         VerticalLayout headerContent = new VerticalLayout(title, subtitle);
         headerContent.setSpacing(false);
         headerContent.setPadding(false);
-        
+
         Div header = new Div(headerContent, closeButton);
         header.getStyle().set("position", "relative");
         header.getStyle().set("padding", "10px");
-//        header.getStyle().set("border-bottom", "1px solid #e0e0e0");
-        
-        add(header);
+
+        return header; // <-- return instead of add()
     }
-    
-    private void createContent(DeviceManagerDto deviceManagerDto) {
+
+//    
+//    private void createContent(DeviceManagerDto deviceManagerDto) {
+//        HorizontalLayout mainLayout = new HorizontalLayout();
+//        mainLayout.setWidthFull();
+//        mainLayout.getStyle().set("height", "84%");
+//        mainLayout.setSpacing(true);
+//        
+//        // Left Column
+//        VerticalLayout leftColumn = new VerticalLayout();
+//        leftColumn.setWidth("50%");
+//        
+//        leftColumn.add(createDeviceOverview(deviceManagerDto));
+//        leftColumn.add(createStorageInformation(deviceManagerDto));
+//        leftColumn.add(createLocationInformation(deviceManagerDto));
+//        
+//        // Right Column
+//        VerticalLayout rightColumn = new VerticalLayout();
+//        rightColumn.setWidth("50%");
+//        
+//        rightColumn.add(createNetworkInformation(deviceManagerDto));
+//        rightColumn.add(createBatteryInformation(deviceManagerDto));
+//        rightColumn.add(createSystemInformation(deviceManagerDto));
+//        
+//        mainLayout.add(leftColumn, rightColumn);
+//        add(mainLayout);
+//    }
+//    
+    private Component createContent(DeviceManagerDto deviceManagerDto) {
         HorizontalLayout mainLayout = new HorizontalLayout();
         mainLayout.setWidthFull();
-        mainLayout.getStyle().set("height", "84%");
         mainLayout.setSpacing(true);
-        
-        // Left Column
+
         VerticalLayout leftColumn = new VerticalLayout();
         leftColumn.setWidth("50%");
-        
+
         leftColumn.add(createDeviceOverview(deviceManagerDto));
         leftColumn.add(createStorageInformation(deviceManagerDto));
         leftColumn.add(createLocationInformation(deviceManagerDto));
-        
-        // Right Column
+
         VerticalLayout rightColumn = new VerticalLayout();
         rightColumn.setWidth("50%");
-        
+
         rightColumn.add(createNetworkInformation(deviceManagerDto));
         rightColumn.add(createBatteryInformation(deviceManagerDto));
         rightColumn.add(createSystemInformation(deviceManagerDto));
-        
+
         mainLayout.add(leftColumn, rightColumn);
-        add(mainLayout);
+
+        mainLayout.setSizeFull();
+        return mainLayout; // <-- return instead of add()
     }
-    
+
     private VerticalLayout createDeviceOverview(DeviceManagerDto deviceManagerDto) {
         VerticalLayout section = new VerticalLayout();
         section.setSpacing(true);
@@ -551,29 +623,95 @@ public class DeviceDetailsDialog extends Dialog {
         section.add(title, horizontalLine, itemsLayout);
         return section;
     }
+//    
+//     private void createFooter(DeviceManagerDto deviceManagerDto) {
+//        HorizontalLayout footer = new HorizontalLayout();
+//        footer.setWidthFull();
+//        footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+//        footer.setPadding(true);
+// 
+////        footer.getStyle().set("border-top", "1px solid #e0e0e0");
+////        footer.getStyle().set("background-color", "#f5f5f5");
+//         
+//        Button closeBtn = new Button("Close");
+//        closeBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
+//        closeBtn.addClickListener(e -> close());
+//        
+//        HorizontalLayout actionButtons = new HorizontalLayout();
+//        actionButtons.setSpacing(true);
+//        
+//        
+//        Button viewDeviceLogs = new Button("Error Logs", new Icon(VaadinIcon.REFRESH));
+//        viewDeviceLogs.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+//
+// 
+//       
+//        viewDeviceLogs.addClickListener(e -> {
+//            if (errorLogDialog == null) {
+//                errorLogDialog = new Dialog();
+//                errorLogDialog.setHeaderTitle("Error Log");
+//                errorLogDialog.setWidth("800px");
+//                errorLogDialog.setHeight("600px");
+//
+//                errorGrid = configureLogsGrid(deviceManagerDto); 
+//                errorLogDialog.add(errorGrid);
+//
+//                Button closeButton = new Button("Close", ev -> errorLogDialog.close());
+//                closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+//                errorLogDialog.getFooter().add(closeButton);
+//
+//                errorLogDialog.addOpenedChangeListener(ev -> {
+//                    if (!ev.isOpened()) {
+////                      errorLogDialog.getDataProvider().refreshAll();
+//                    }
+//                });
+//            } else {
+//                // refresh items if needed
+//                // errorGrid.setItems(fetchLogs(deviceManagerDto));
+//                errorGrid.getDataProvider().refreshAll();
+//            }
+//            errorLogDialog.open();
+//        });
+//        
+// 
+//
+//        // Helper method to build error log content with Eclipse-style formatting
+//       
+//        
+//        Button requestDataSync = new Button("Request Data sync", new Icon(VaadinIcon.REFRESH));
+//        requestDataSync.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+//        
+//        Button latestDiagnostics = new Button("Latest diagnostics", new Icon(VaadinIcon.STETHOSCOPE));
+//        latestDiagnostics.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+//        
+//        Button remoteSupport = new Button("Remote support", new Icon(VaadinIcon.HEADPHONES));
+//        remoteSupport.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+//        
+// 
+//        actionButtons.add(viewDeviceLogs);
+//         
+//        footer.add(closeBtn, actionButtons);
+//        add(footer);
+//    }
+//    
     
-     private void createFooter(DeviceManagerDto deviceManagerDto) {
+    private Component createFooter(DeviceManagerDto deviceManagerDto) {
         HorizontalLayout footer = new HorizontalLayout();
         footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        footer.setPadding(true);
- 
-//        footer.getStyle().set("border-top", "1px solid #e0e0e0");
-//        footer.getStyle().set("background-color", "#f5f5f5");
-         
+        footer.getStyle().set("padding", "0px !important");
+//        footer.setPadding(true);
+
         Button closeBtn = new Button("Close");
         closeBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
         closeBtn.addClickListener(e -> close());
-        
+
         HorizontalLayout actionButtons = new HorizontalLayout();
         actionButtons.setSpacing(true);
-        
-        
+
         Button viewDeviceLogs = new Button("Error Logs", new Icon(VaadinIcon.REFRESH));
         viewDeviceLogs.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
- 
-       
         viewDeviceLogs.addClickListener(e -> {
             if (errorLogDialog == null) {
                 errorLogDialog = new Dialog();
@@ -581,47 +719,24 @@ public class DeviceDetailsDialog extends Dialog {
                 errorLogDialog.setWidth("800px");
                 errorLogDialog.setHeight("600px");
 
-                errorGrid = configureLogsGrid(deviceManagerDto); 
+                errorGrid = configureLogsGrid(deviceManagerDto);
                 errorLogDialog.add(errorGrid);
 
                 Button closeButton = new Button("Close", ev -> errorLogDialog.close());
                 closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
                 errorLogDialog.getFooter().add(closeButton);
-
-                errorLogDialog.addOpenedChangeListener(ev -> {
-                    if (!ev.isOpened()) {
-//                      errorLogDialog.getDataProvider().refreshAll();
-                    }
-                });
             } else {
-                // refresh items if needed
-                // errorGrid.setItems(fetchLogs(deviceManagerDto));
                 errorGrid.getDataProvider().refreshAll();
             }
             errorLogDialog.open();
         });
-        
- 
 
-        // Helper method to build error log content with Eclipse-style formatting
-       
-        
-        Button requestDataSync = new Button("Request Data sync", new Icon(VaadinIcon.REFRESH));
-        requestDataSync.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        
-        Button latestDiagnostics = new Button("Latest diagnostics", new Icon(VaadinIcon.STETHOSCOPE));
-        latestDiagnostics.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        
-        Button remoteSupport = new Button("Remote support", new Icon(VaadinIcon.HEADPHONES));
-        remoteSupport.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        
- 
         actionButtons.add(viewDeviceLogs);
-         
         footer.add(closeBtn, actionButtons);
-        add(footer);
+
+        return footer; // ✅ return instead of add()
     }
-    
+
     
 	private List<DeviceErrorManagerDto> fetchDevicesErrorData(DeviceManagerDto deviceManagerDto) {
  

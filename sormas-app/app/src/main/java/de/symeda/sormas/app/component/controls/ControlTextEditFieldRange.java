@@ -150,7 +150,8 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
                         changeVisualState(VisualState.FOCUSED);
                         imm.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT);
                         // Prevent the content from being automatically selected
-                        input.setSelection(input.getText().length(), input.getText().length());
+//                        input.setSelection(input.getText().length(), input.getText().length());
+                        input.selectAll();
                         if (onClickListener != null) {
                             input.setOnClickListener(onClickListener);
                         }
@@ -190,6 +191,12 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
                         imm.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT);
                         //// Prevent the content from being automatically selected
                         //input.setSelection(input.getText().length(), input.getText().length());
+                        String currentText = input.getText().toString();
+                        if (!currentText.isEmpty()) {
+                            input.selectAll();
+                        } else {
+                            input.setSelection(input.getText().length());
+                        }
                     } else {
                         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                     }
@@ -220,55 +227,52 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     protected void setFieldValue(String value) {
         System.out.println("Setfieldvalueeeeeeeeeeeee11111");
         if (isUpdatingText) {
-
             System.out.println("Setfieldvalueeeeeeeeeeeee222");
-
             return;
         }
-
         // Check if value is actually different
-        String currentValue = input.getText().toString();
+        String currentValue = input.getText() != null ? input.getText().toString() : "";
 
         // Handle null values and empty strings consistently
-        String newValue = (value == null) ? "" : value;
-        String current = (currentValue == null) ? "" : currentValue;
-        if (current.equals(newValue)) {
-            return; // No change needed
-        }else{
+        String newValue = (value == null) ? "" : value.trim();
 
+        if (currentValue.equals("0") && newValue.isEmpty()) {
+            System.out.println("Allowing zero to be cleared by user");
         }
 
-
-        System.out.println("Setfieldvalueeeeeeeeeeeee333333");
-
+        if (currentValue.equals(newValue)) {
+            System.out.println("No change needed - values are equal");
+            return; // No change needed
+        }
 
         isUpdatingText = true;
+
+
         try {
             // Remove listener before setText to prevent TextWatcher from triggering
             if (textWatcher != null) {
                 input.removeTextChangedListener(textWatcher);
             }
-
-            if (newValue.equals("0")) {
-                input.setText("0");
-            } else {
-//                input.setText("");
-                input.setText(newValue);
+            // Set the text - allow empty values
+            input.setText(newValue);
+            // Set cursor position
+            if (!newValue.isEmpty()) {
+                input.setSelection(newValue.length());
             }
-//            input.setText(null);
 
-            // IMPORTANT: Reset error state when value is set programmatically
-            if (newValue.isEmpty() || "0".equals(newValue)) {
                 input.setError(null);
                 disableErrorState();
                 System.out.println("SETFIELDVALUEEEEEEEEEEEEEEEEE 7777777777777777777777");
-            }
+
 
             // Re-add listener after setText
             if (textWatcher != null) {
                 input.addTextChangedListener(textWatcher);
                 System.out.println("SETFIELDVALUEEEEEEEEEEEEEEEEE 888888888888888888888888888");
             }
+
+            onValueChanged();
+
         } finally {
             isUpdatingText = false;
         }
@@ -284,6 +288,15 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
             isUpdatingText = false;
         }
      }
+
+    public void clearZeroValue() {
+        if (isUpdatingText) return;
+
+        String currentValue = getValue();
+        if (currentValue != null && currentValue.equals("0")) {
+            setFieldValue("");
+        }
+    }
 
 
     @Override
@@ -650,10 +663,11 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
             // Clean the value
             String cleanedText = text.replaceAll("[^0-9]", "");
             System.out.println("SETTTTTTTTTTTTTTINGGGGGGGGGGGGGGGGG 333333333333333333333333333333");
-            // Handle "0" specifically - allow it but don't prevent clearing
+
             if (cleanedText.equals("0")) {
                 view.setFieldValue("0");
                 System.out.println("SETTTTTTTTTTTTTTINGGGGGGGGGGGGGGGGG 4444444444444444444444444444");
+
             } else if (!cleanedText.isEmpty()) {
                 // Remove leading zeros for other numbers
                 System.out.println("SETTTTTTTTTTTTTTINGGGGGGGGGGGGGGGGG 55555555555555555555555");
