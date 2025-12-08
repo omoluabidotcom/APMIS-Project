@@ -38,6 +38,10 @@ import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaDtoHelper;
 
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaRegionDtoHelper;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaWithExpDtoHelper;
+import de.symeda.sormas.app.backend.campaign.usertoken.FCMTokenDtoHelper;
+import de.symeda.sormas.app.backend.caze.CaseDtoHelper;
+import de.symeda.sormas.app.backend.classification.DiseaseClassificationDtoHelper;
+import de.symeda.sormas.app.backend.clinicalcourse.ClinicalVisitDtoHelper;
 
 import de.symeda.sormas.app.backend.common.DaoException;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
@@ -384,9 +388,9 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			if (populationDataDtoHelper.pullAndPushEntities())
 				populationDataDtoHelper.pullEntities(true);
 
-			final UserDtoHelper userDtoHelper = new UserDtoHelper();
-			if (userDtoHelper.pullAndPushEntities())
-				userDtoHelper.pullEntities(true);
+			final FCMTokenDtoHelper fcmTokenDtoHelper = new FCMTokenDtoHelper();
+			if (fcmTokenDtoHelper.pullAndPushEntities())
+				fcmTokenDtoHelper.pullEntities(true);
 
 			final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
 			if (deviceInfoDtoHelper.pullAndPushEntities())

@@ -176,7 +176,6 @@ public class CampaignFormDataFragmentUtils {
                         } else if (type == CampaignFormElementType.DECIMAL) {
 
                             String currentFieldValue = ((ControlDecimalEditField) dynamicField).getValue();
-
                             if (currentFieldValue != null && currentFieldValue.endsWith(".")) {
                                 return;
                             }
@@ -333,7 +332,7 @@ public class CampaignFormDataFragmentUtils {
                             ControlTextEditField.setValue((ControlTextEditField) dynamicField, formatted);
 
                         } else if (type == CampaignFormElementType.DECIMAL) {
- 
+
                             String currentFieldValue = ((ControlDecimalEditField) dynamicField).getValue();
 
                             if (currentFieldValue != null && currentFieldValue.endsWith(".")) {

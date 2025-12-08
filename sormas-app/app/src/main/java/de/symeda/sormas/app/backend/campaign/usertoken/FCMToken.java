@@ -6,10 +6,9 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 
 import de.symeda.sormas.app.backend.common.AbstractDomainObject;
-import de.symeda.sormas.app.backend.user.User;
 
-@Entity(name = User.TABLE_NAME)
-@DatabaseTable(tableName = User.TABLE_NAME)
+@Entity(name = FCMToken.TABLE_NAME)
+@DatabaseTable(tableName = FCMToken.TABLE_NAME)
 public class FCMToken extends AbstractDomainObject{
 
     private static final long serialVersionUID = -629432640970159872L;
@@ -41,5 +40,10 @@ public class FCMToken extends AbstractDomainObject{
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    @Override
+    public String getI18nPrefix() {
+        return I18N_PREFIX;
     }
 }
