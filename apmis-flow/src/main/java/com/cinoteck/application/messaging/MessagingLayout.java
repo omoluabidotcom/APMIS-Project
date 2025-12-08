@@ -220,15 +220,26 @@ public class MessagingLayout extends VerticalLayout {
 			reSend.setVisible(false);
 			
 
-			titleField.setEnabled(isNew); 
-			messageContent.setEnabled(isNew); 
-			messageCategory.setEnabled(isNew);  
-			userRoles.setEnabled(isNew);  
-			formAccessSelector.setEnabled(isNew);  
-			areaSelector.setEnabled(isNew);  
-			regionSelector.setEnabled(isNew);  
-			districtSelector.setEnabled(isNew); 
-			communitySelector.setEnabled(isNew); 
+//			titleField.setEnabled(isNew); 
+//			messageContent.setEnabled(isNew); 
+//			messageCategory.setEnabled(isNew);  
+//			userRoles.setEnabled(isNew);  
+//			formAccessSelector.setEnabled(isNew);  
+//			areaSelector.setEnabled(isNew);  
+//			regionSelector.setEnabled(isNew);  
+//			districtSelector.setEnabled(isNew); 
+//			communitySelector.setEnabled(isNew); 
+			
+			titleField.setReadOnly(!isNew);
+			messageContent.setReadOnly(!isNew);
+			messageCategory.setReadOnly(!isNew);
+			userRoles.setReadOnly(!isNew);
+			formAccessSelector.setReadOnly(!isNew);
+			areaSelector.setReadOnly(!isNew);
+			regionSelector.setReadOnly(!isNew);
+			districtSelector.setReadOnly(!isNew);
+			communitySelector.setReadOnly(!isNew);
+
 		} else {
 			saved.setVisible(true);
 			reSendFacade.setVisible(false);
@@ -302,17 +313,17 @@ public class MessagingLayout extends VerticalLayout {
 			
 			if(reSendFacade.isVisible()) {
 				reSend.setVisible(true);
-				reSendFacade.setVisible(false);
+				reSendFacade.setVisible(false);				
 				
-				titleField.setEnabled(true); 
-				messageContent.setEnabled(true); 
-				messageCategory.setEnabled(true);  
-				userRoles.setEnabled(true);  
-				formAccessSelector.setEnabled(true);  
-				areaSelector.setEnabled(true);  
-				regionSelector.setEnabled(true);  
-				districtSelector.setEnabled(true); 
-				communitySelector.setEnabled(true); 
+				titleField.setReadOnly(false);
+				messageContent.setReadOnly(false);
+				messageCategory.setReadOnly(false);
+				userRoles.setReadOnly(false);
+				formAccessSelector.setReadOnly(false);
+				areaSelector.setReadOnly(false);
+				regionSelector.setReadOnly(false);
+				districtSelector.setReadOnly(false);
+				communitySelector.setReadOnly(false);
 			} 
 		});
 
