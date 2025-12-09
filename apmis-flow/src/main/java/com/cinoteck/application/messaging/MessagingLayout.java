@@ -219,17 +219,6 @@ public class MessagingLayout extends VerticalLayout {
 			reSendFacade.setVisible(!isNew);
 			reSend.setVisible(false);
 			
-
-//			titleField.setEnabled(isNew); 
-//			messageContent.setEnabled(isNew); 
-//			messageCategory.setEnabled(isNew);  
-//			userRoles.setEnabled(isNew);  
-//			formAccessSelector.setEnabled(isNew);  
-//			areaSelector.setEnabled(isNew);  
-//			regionSelector.setEnabled(isNew);  
-//			districtSelector.setEnabled(isNew); 
-//			communitySelector.setEnabled(isNew); 
-			
 			titleField.setReadOnly(!isNew);
 			messageContent.setReadOnly(!isNew);
 			messageCategory.setReadOnly(!isNew);
