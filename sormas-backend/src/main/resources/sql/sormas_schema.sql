@@ -11381,6 +11381,9 @@ CREATE TABLE public.device_manager (
 	CONSTRAINT device_manager_uuid_key UNIQUE (uuid)
 ); 
 
+GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.device_manager TO sormas_user;
+
+
 CREATE OR REPLACE FUNCTION public.delete_old_device_info()
  RETURNS trigger
  LANGUAGE plpgsql
@@ -11421,6 +11424,9 @@ CREATE TABLE public.devices_error_manager (
 	creationdate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
 	changedate timestamp DEFAULT CURRENT_TIMESTAMP NULL,
 	CONSTRAINT devices_error_pkey PRIMARY KEY (id));
+	
+	GRANT UPDATE, SELECT, DELETE, REFERENCES, INSERT, TRIGGER, TRUNCATE ON TABLE public.devices_error_manager TO sormas_user;
+
 	
 CREATE INDEX idx_devices_error_user_device_lastupdated ON public.devices_error_manager USING btree (username, deviceid, lastupdated DESC, id DESC);
 
@@ -11475,73 +11481,6 @@ ADD COLUMN activeFormCount int8 NULL;
 
 INSERT INTO schema_version (version_number, comment) VALUES (489, 'Implementing Pre Campaign Na Post Campaign STart Date' );
 
-
-CREATE MATERIALIZED VIEW public.mv_flw_duplicate_error_analysis
-TABLESPACE pg_default
-AS WITH duplicate_tazkiras AS (
-         SELECT elem.value ->> 'value'::text AS tazkira_value
-           FROM campaignformdata cfd_1
-             CROSS JOIN LATERAL json_array_elements(cfd_1.formvalues) elem(value)
-          WHERE (elem.value ->> 'id'::text) = 'TazkiraNo'::text AND (elem.value ->> 'value'::text) IS NOT NULL AND (elem.value ->> 'value'::text) <> ''::text
-          GROUP BY (elem.value ->> 'value'::text)
-         HAVING count(*) > 1
-        ), filtered_campaign_ids AS (
-         SELECT unnest(string_to_array(array_to_string(array_agg(flwduplicateerrorreport.id), ','::text), ','::text))::bigint AS campaign_id
-           FROM flwduplicateerrorreport
-          GROUP BY flwduplicateerrorreport.value
-         HAVING count(*) > 1
-        )
- SELECT cfd.id AS campaignformdata_id,
-    camp.uuid AS campaign_uuid,
-    a.uuid AS area_uuid,
-    a.name AS area,
-    r.uuid AS region_uuid,
-    r.name AS region,
-    d.uuid AS district_uuid,
-    d.name AS district,
-    f1.value ->> 'value'::text AS firstname,
-    f2.value ->> 'value'::text AS title,
-    f3.value ->> 'value'::text AS tazkiranumber,
-        CASE
-            WHEN dt.tazkira_value IS NOT NULL THEN 'Error: Duplicate Tazkira number'::text
-            ELSE 'No Error'::text
-        END AS error_status,
-    cfd.changedate AS last_modified
-   FROM campaignformdata cfd
-     JOIN filtered_campaign_ids fci ON cfd.id = fci.campaign_id
-     LEFT JOIN campaignformmeta cfm ON cfd.campaignformmeta_id = cfm.id
-     LEFT JOIN region r ON cfd.region_id = r.id
-     LEFT JOIN areas a ON cfd.area_id = a.id
-     LEFT JOIN district d ON cfd.district_id = d.id
-     LEFT JOIN campaigns camp ON cfd.campaign_id = camp.id
-     CROSS JOIN LATERAL json_array_elements(cfd.formvalues) f3(value)
-     LEFT JOIN LATERAL ( SELECT elem.value
-           FROM json_array_elements(cfd.formvalues) elem(value)
-          WHERE (elem.value ->> 'id'::text) = 'FirstName'::text
-         LIMIT 1) f1 ON true
-     LEFT JOIN LATERAL ( SELECT elem.value
-           FROM json_array_elements(cfd.formvalues) elem(value)
-          WHERE (elem.value ->> 'id'::text) = 'Title'::text
-         LIMIT 1) f2 ON true
-     LEFT JOIN LATERAL json_array_elements(cfm.campaignformelements) meta(value) ON true
-     LEFT JOIN duplicate_tazkiras dt ON (f3.value ->> 'value'::text) = dt.tazkira_value
-  WHERE (f3.value ->> 'id'::text) = 'TazkiraNo'::text AND (f3.value ->> 'id'::text) = (meta.value ->> 'id'::text)
-WITH DATA;
-
-
-CREATE INDEX idx_mv_flw_area_uuid ON public.mv_flw_duplicate_error_analysis USING btree (area_uuid);
-CREATE INDEX idx_mv_flw_campaign_uuid ON public.mv_flw_duplicate_error_analysis USING btree (campaign_uuid);
-CREATE INDEX idx_mv_flw_composite_filter ON public.mv_flw_duplicate_error_analysis USING btree (campaign_uuid, area_uuid, region_uuid, district_uuid, error_status);
-CREATE INDEX idx_mv_flw_district_uuid ON public.mv_flw_duplicate_error_analysis USING btree (district_uuid);
-CREATE INDEX idx_mv_flw_error_status ON public.mv_flw_duplicate_error_analysis USING btree (error_status);
-CREATE INDEX idx_mv_flw_region_uuid ON public.mv_flw_duplicate_error_analysis USING btree (region_uuid);
-CREATE INDEX idx_mv_flw_sort_area ON public.mv_flw_duplicate_error_analysis USING btree (area, campaignformdata_id);
-CREATE INDEX idx_mv_flw_sort_district ON public.mv_flw_duplicate_error_analysis USING btree (district, campaignformdata_id);
-CREATE INDEX idx_mv_flw_sort_firstname ON public.mv_flw_duplicate_error_analysis USING btree (firstname, campaignformdata_id);
-CREATE INDEX idx_mv_flw_sort_region ON public.mv_flw_duplicate_error_analysis USING btree (region, campaignformdata_id);
-CREATE UNIQUE INDEX idx_mv_flw_unique_id ON public.mv_flw_duplicate_error_analysis USING btree (campaignformdata_id);
-
-INSERT INTO schema_version (version_number, comment) VALUES (490, 'Materialized View for FLW Operation performance #811');
 
 
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***
