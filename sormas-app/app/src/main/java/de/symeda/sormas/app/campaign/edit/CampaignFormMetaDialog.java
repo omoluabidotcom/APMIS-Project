@@ -88,43 +88,47 @@ public class CampaignFormMetaDialog extends FormDialog {
         List<CampaignFormMeta> allFormsForCampaign =new ArrayList<CampaignFormMeta>();
         allFormsForCampaign =  campaign.getCampaignFormMetas();
 
-        System.out.println("allFormsForCampaign----" + allFormsForCampaign);
-
         List<CampaignFormMeta> allUnexpiredFormsForCampaign = new ArrayList<>();
 
-
+        // TODO
+        // Think of a way to make this Enum so if it changes from sormas api you dont need to make changes here
+        // and code wont break in production because of it
+        List<String> preCampaignsCategories = List.of("FLW", "MODALITY_PRE", "TRAINING");
+        List<String> intraCampaignsCategories = List.of("ICM", "ADMIN", "EAG-ICM", "EAG-ADMIN");
+        List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION");
 
         for (CampaignFormMeta campaignFormMeta : allFormsForCampaign) {
-            Date expiryDate = DatabaseHelper.getCampaignFormMetaWithExpDao().getCampaignFormExpiryDateByCampaignIdAndFormId(campaign.getUuid(), campaignFormMeta.getUuid());
             LocalDate currentDate = LocalDate.now();
 
-            if (expiryDate != null) {
-//                System.out.println("uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuyyyyyytt");
-            LocalDate expiryLocalDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                if (currentDate.isBefore(expiryLocalDate) || expiryLocalDate.isEqual(currentDate)) {
-                    User user = ConfigProvider.getUser();
+            User user = ConfigProvider.getUser();
+            List<CampaignFormMetaRegion> formsSelectedForCampaign =
+                    DatabaseHelper.getCampaignFormMetaRegionDao().getSelectedFormsByRegion(campaignFormMeta.getUuid(), user.getRegion().getArea().getUuid());
+            if (preCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                if (!currentDate.isBefore(campaign.getPreCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
+                        && !currentDate.isAfter(campaign.getPreCampEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
 
-//System.out.println("xxxuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuyyyyyytt");
-// After Checking if the form meets the expiry criteria the we want to check if the form is added fro this region before we add
-//the form to the list to be presented in the forms dialog ;
-                    List<CampaignFormMetaRegion> formsSelectedForCampaign = DatabaseHelper.getCampaignFormMetaRegionDao().getSelectedFormsByRegion(campaignFormMeta.getUuid(), user.getRegion().getArea().getUuid());
-                    System.out.println(formsSelectedForCampaign + "formsSelectedForCampaignformsSelectedForCampaignformsSelectedForCampaign" +campaignFormMeta.getUuid() + "campaignFormMeta.getUuid()," +  user.getRegion().getArea().getUuid());
-                    if(formsSelectedForCampaign.size() > 0){
-
+                    if (formsSelectedForCampaign.size() > 0) {
                         allUnexpiredFormsForCampaign.add(campaignFormMeta);
                     }
-// expiryDate is before currentDate or equals tob the current date itshold be added to my new list
-            }  else {
-//expiryDate is after currentDate
-//System.out.println("This form has Expired Dte is " + expiryLocalDate + " current date is " + currentDate);
-//System.out.println("This form has Expired For Data Entry " + campaignFormMeta.getFormName());
-            }
-            } else {
+                }
+            } else if (intraCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                if (!currentDate.isBefore(campaign.getPreCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
+                        && !currentDate.isAfter(campaign.getPreCampEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
 
-                System.out.println("This form does not have an expiry date set  " + campaignFormMeta.getFormName());
+                    if (formsSelectedForCampaign.size() > 0) {
+                        allUnexpiredFormsForCampaign.add(campaignFormMeta);
+                    }
+                }
+            } else if (postCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                if (!currentDate.isBefore(campaign.getPreCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
+                        && !currentDate.isAfter(campaign.getPreCampEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
 
+                    if (formsSelectedForCampaign.size() > 0) {
+                        allUnexpiredFormsForCampaign.add(campaignFormMeta);
+                    }
+                }
             }
-}
+        }
         Collections.sort(allUnexpiredFormsForCampaign, Comparator.comparing(CampaignFormMeta::getFormName));
 
             contentBinding.campaignFormMeta.initializeSpinner(DataUtils.toItems(allUnexpiredFormsForCampaign));
