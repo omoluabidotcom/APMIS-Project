@@ -289,7 +289,7 @@ public class ControlTextReadField extends ControlPropertyField<String> {
 		System.out.println(stringValue +" setValuesetValuesetValue");
 		String cleanStringValue  = stringValue == null ? null : stringValue.endsWith(".0") ? stringValue.substring(0, stringValue.length() - 2): stringValue;
 		System.out.println(stringValue +" cleanStringValuecleanStringValuecleanStringValuecleanStringValue" + cleanStringValue);
-		setValue(textField, cleanStringValue, appendValue, valueFormat, defaultValue, stringValue);
+		setValue(textField, cleanStringValue, appendValue, valueFormat, defaultValue, cleanStringValue);
 	}
 
 	@BindingAdapter(value = {
@@ -317,7 +317,7 @@ public class ControlTextReadField extends ControlPropertyField<String> {
 			}
 		}
 		System.out.println(stringValue + " cleanStringValuecleanStringValuecleanStringValue = " + cleanStringValue);
-		setValue(textField, stringValue, appendValue, valueFormat, defaultValue, stringValue);
+		setValue(textField, cleanStringValue, appendValue, valueFormat, defaultValue, cleanStringValue);
 	}
 
 	@BindingAdapter(value = {

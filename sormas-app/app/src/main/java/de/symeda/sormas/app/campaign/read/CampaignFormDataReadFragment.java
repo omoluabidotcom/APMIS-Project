@@ -980,8 +980,10 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                             }
 
                             //optionsValues.get(value)
-                        }else if (type == CampaignFormElementType.RANGE || type == CampaignFormElementType.NUMBER){
+                        }else if ( type == CampaignFormElementType.NUMBER){
                             ControlTextReadField.setValue((ControlTextReadField) dynamicField, value, null, null, null, false);
+                        }else if (type == CampaignFormElementType.RANGE){
+                            ControlTextReadField.setValue((ControlTextReadField) dynamicField, value, null, null, null, true);
                         }else{
                             ControlTextReadField.setValue((ControlTextReadField) dynamicField, value, null, null, null);
                         }

@@ -218,6 +218,7 @@ public class ControlTextEditField extends ControlPropertyEditField<String> {
 
     @Override
     protected void setFieldValue(String value) {
+        System.out.println("SEtting fireld value i text edit field =============");
         input.setText(value);
     }
 
@@ -487,6 +488,11 @@ String onChangeData = "";
 
                 if (isRange && minValue != null && maxValue != null) {
                     if (minValue != null && maxValue != null && input.getText() != null) {
+                        if (beforeData.length() == 0 && onChangeData.length() == 0) {
+                            System.out.println("lenght before and after is 0 ===== no user input ==");
+                            disableErrorState();
+                        }
+
                         if (!input.getText().toString().equals("") || !input.getText().toString().isEmpty()) {
                             try{
                                 int valxx = Integer.parseInt(input.getText().toString());
@@ -571,7 +577,7 @@ String onChangeData = "";
 
           @Override
           public void onChange(ControlPropertyField field) {
-              System.out.println(isLiveValidationDisabled() + " vaue changes isLiveValidationDisabled()----------");
+              System.out.println(isLiveValidationDisabled() + " vaue changes isLiveValidationDisabled()----------TEXTEDIT");
                       if (!isLiveValidationDisabled()) {
                       ((ControlTextEditField) field).setErrorIfEmptyRange();
               }
@@ -662,7 +668,7 @@ String onChangeData = "";
     @BindingAdapter("value")
     public static void setValue(ControlTextEditField view, String text) {
         // If text is null or blank, keep it empty
-        if (text == null || text.trim().isEmpty() || text == "") {
+        if (text == null || text.trim().isEmpty() || text == "" || text.equalsIgnoreCase("NaN")) {
             view.setFieldValue("");
             return;
         }else{

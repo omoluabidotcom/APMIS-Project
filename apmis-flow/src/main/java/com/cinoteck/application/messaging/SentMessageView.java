@@ -2,11 +2,14 @@ package com.cinoteck.application.messaging;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -20,6 +23,7 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.BatchResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
 import com.vaadin.flow.component.Unit;
@@ -610,38 +614,153 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 		dialog.getFooter().add(scheduleMessageClose);
 	}
 
+//	public void sendFcmSdk(MessageDto messageDto) throws IOException {
+//
+//		System.out.println("SENFCMSDKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
+//		List<String> tokens = FacadeProvider.getUserFacade().getUserForFCM(messageDto.getFormAccess(),
+//				messageDto.getArea(), messageDto.getRegion(), messageDto.getDistrict(), messageDto.getCommunity());
+//
+//		tokens = tokens.stream().filter(element -> element != null).collect(Collectors.toList());
+//
+//		Set<String> mySet = new HashSet<>(tokens);
+//		for (String string : mySet) {
+//			System.out.println("token " + string);
+//		}
+//		try {
+//			if (FirebaseApp.getApps().isEmpty()) {
+//			    FileInputStream serviceAccount = new FileInputStream(
+//			        "C:\\Users\\yyaha\\Downloads\\sormasapp-7d2db-firebase-adminsdk-tukt0-9def4aa8f9.json"
+//			    );
+//
+//			    GoogleCredentials credentials = GoogleCredentials.fromStream(serviceAccount)
+//			            .createScoped("https://www.googleapis.com/auth/cloud-platform");
+//
+//			    FirebaseOptions options = FirebaseOptions.builder()
+//			            .setCredentials(credentials)
+//			            .build();
+//
+//			    FirebaseApp.initializeApp(options);
+//			}
+//
+//			String token = FirebaseMessaging.getInstance().send(
+//				    Message.builder()
+//				        .setToken(mySet.iterator().next())
+//				        .putData(messageDto.getTitle(), messageDto.getMessageContent())
+//				        .build()
+//				);
+//
+//				System.out.println("FCM RESULT = " + token);
+//				
+//			MulticastMessage multicastMessage = MulticastMessage.builder() .putData("title", messageDto.getTitle())
+//				    .putData("body", messageDto.getMessageContent()).setNotification(
+//					Notification.builder().setTitle(messageDto.getTitle()).setBody(messageDto.getMessageContent()).build())
+//					.addAllTokens(mySet).build();
+//			System.out.println("BROADCASTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
+//			BatchResponse response = FirebaseMessaging.getInstance().sendMulticast(multicastMessage);
+//			System.out.println("RESPONSEEEEEEEEEEEEEEE " + response);
+//		} catch (FirebaseMessagingException e) {
+//			e.printStackTrace();
+//		}
+//	}
+	
 	public void sendFcmSdk(MessageDto messageDto) throws IOException {
 
-		List<String> tokens = FacadeProvider.getUserFacade().getUserForFCM(messageDto.getFormAccess(),
-				messageDto.getArea(), messageDto.getRegion(), messageDto.getDistrict(), messageDto.getCommunity());
+	    System.out.println("SENFCMSDKKKKKKK");
 
-		tokens = tokens.stream().filter(element -> element != null).collect(Collectors.toList());
+	    // Fetch tokens
+	    List<String> tokens = FacadeProvider.getUserFacade()
+	            .getUserForFCM(
+	                    messageDto.getFormAccess(),
+	                    messageDto.getArea(),
+	                    messageDto.getRegion(),
+	                    messageDto.getDistrict(),
+	                    messageDto.getCommunity()
+	            );
 
-		Set<String> mySet = new HashSet<>(tokens);
-		try {
-			if (FirebaseApp.getApps().isEmpty()) {
-				FileInputStream serviceAccount = new FileInputStream(
-						"C:\\Users\\ABC\\Downloads\\sormasapp-9280a-firebase-adminsdk-p77y7-6d71da1dc3.json");
-				FirebaseOptions options = new FirebaseOptions.Builder()
-						.setCredentials(GoogleCredentials.fromStream(serviceAccount)).build();
+	    Set<String> uniqueTokens = tokens.stream()
+	            .filter(Objects::nonNull)
+	            .collect(Collectors.toSet());
 
-				FirebaseApp.initializeApp(options);
-			}
+	    uniqueTokens.forEach(t -> System.out.println("token " + t));
 
-			MulticastMessage multicastMessage = MulticastMessage.builder().setNotification(
-					Notification.builder().setTitle("APMIS Update").setBody(messageDto.getMessageContent()).build())
-					.addAllTokens(mySet).build();
+	    try {
+	        // ---------------------------
+	        // INIT FIREBASE ONLY ONCE
+	        // ---------------------------
+	        if (FirebaseApp.getApps().isEmpty()) {
+//	            FileInputStream serviceAccount = new FileInputStream(
+//	                    "C:\\Users\\yyaha\\Downloads\\sormasapp-7d2db-firebase-adminsdk-tukt0-9def4aa8f9.json"
+//	            );
+	        	
+	        	InputStream serviceAccount = 
+	        	        this.getClass().getClassLoader().getResourceAsStream("serviceaccount.json");
 
-			BatchResponse response = FirebaseMessaging.getInstance().sendMulticast(multicastMessage);
-		} catch (FirebaseMessagingException e) {
-			e.getMessage();
-		}
+	        	if (serviceAccount == null) {
+	        	    throw new IllegalStateException("Service account file not found in resources!");
+	        	}
+
+	            GoogleCredentials credentials = GoogleCredentials.fromStream(serviceAccount)
+	                    .createScoped(Collections.singletonList(
+	                            "https://www.googleapis.com/auth/cloud-platform"
+	                    ));
+
+	            FirebaseOptions options = FirebaseOptions.builder()
+	                    .setCredentials(credentials)
+	                    .build();
+
+	            FirebaseApp.initializeApp(options);
+	            System.out.println("Firebase initialized!");
+	        }
+
+	        FirebaseMessaging messaging = FirebaseMessaging.getInstance();
+
+	        // ---------------------------
+	        // SEND ONE BY ONE — NO BATCH
+	        // ---------------------------
+	        int success = 0;
+	        int failure = 0;
+
+	        for (String token : uniqueTokens) {
+	            try {
+	                Message message = Message.builder()
+	                        .setToken(token)
+	                        .putData("title", messageDto.getTitle())
+	                        .putData("body", messageDto.getMessageContent())
+	                        .setNotification(
+	                                Notification.builder()
+	                                        .setTitle(messageDto.getTitle())
+	                                        .setBody(messageDto.getMessageContent())
+	                                        .build()
+	                        )
+	                        .build();
+
+	                String response = messaging.send(message);
+	                System.out.println("Sent successfully → " + token + " | ID=" + response);
+	                success++;
+
+	            } catch (Exception e) {
+	                System.err.println("Failed to send → " + token + ": " + e.getMessage());
+	                failure++;
+	            }
+	        }
+
+	        // Summary
+	        System.out.println("FINISHED SENDING:");
+	        System.out.println("  Success: " + success);
+	        System.out.println("  Failure: " + failure);
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
 	}
+
+
 
 	public void saveMessage(MessagingLayout.SaveEvent event) throws Exception {
 		FacadeProvider.getMessageFacade().saveMessage(event.getMessage());
 
 		if (event.getMessage().getUserRoles().contains(UserRole.REST_USER)) {
+			System.out.println("SENDINGMOBILEUSERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
 			sendFcmSdk(event.getMessage());
 		}
 	}

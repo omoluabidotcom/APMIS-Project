@@ -212,26 +212,30 @@ public class MessagingLayout extends VerticalLayout {
 		Icon reSendIcon = new Icon(VaadinIcon.CHECK_CIRCLE_O);
 		Button reSend = new Button("Resend", reSendIcon);
 		
+		Button reSendFacade = new Button("Resend", reSendIcon);
+		
 		if(!isNew) {
 			saved.setVisible(isNew);
-			reSend.setVisible(!isNew);
+			reSendFacade.setVisible(!isNew);
+			reSend.setVisible(false);
 			
+			titleField.setReadOnly(!isNew);
+			messageContent.setReadOnly(!isNew);
+			messageCategory.setReadOnly(!isNew);
+			userRoles.setReadOnly(!isNew);
+			formAccessSelector.setReadOnly(!isNew);
+			areaSelector.setReadOnly(!isNew);
+			regionSelector.setReadOnly(!isNew);
+			districtSelector.setReadOnly(!isNew);
+			communitySelector.setReadOnly(!isNew);
 
-			titleField.setEnabled(isNew); 
-			messageContent.setEnabled(isNew); 
-			messageCategory.setEnabled(isNew);  
-			userRoles.setEnabled(isNew);  
-			formAccessSelector.setEnabled(isNew);  
-			areaSelector.setEnabled(isNew);  
-			regionSelector.setEnabled(isNew);  
-			districtSelector.setEnabled(isNew); 
-			communitySelector.setEnabled(isNew); 
 		} else {
 			saved.setVisible(true);
+			reSendFacade.setVisible(false);
 			reSend.setVisible(false);
 		}
 		
-		hr.add(discardChanges, saved, reSend);
+		hr.add(discardChanges, saved, reSend, reSendFacade);
 		add(formLayout, hr);
 
 		discardChanges.addClickListener(e -> discardChanges());
@@ -292,6 +296,24 @@ public class MessagingLayout extends VerticalLayout {
 			messageDtoResend.setTitle(binder.getBean().getTitle());
 			
 			validateAndSave(messageDtoResend);
+		});
+		
+		reSendFacade.addClickListener(e -> {
+			
+			if(reSendFacade.isVisible()) {
+				reSend.setVisible(true);
+				reSendFacade.setVisible(false);				
+				
+				titleField.setReadOnly(false);
+				messageContent.setReadOnly(false);
+				messageCategory.setReadOnly(false);
+				userRoles.setReadOnly(false);
+				formAccessSelector.setReadOnly(false);
+				areaSelector.setReadOnly(false);
+				regionSelector.setReadOnly(false);
+				districtSelector.setReadOnly(false);
+				communitySelector.setReadOnly(false);
+			} 
 		});
 
 		savePreviewButton.addClickListener(e -> {

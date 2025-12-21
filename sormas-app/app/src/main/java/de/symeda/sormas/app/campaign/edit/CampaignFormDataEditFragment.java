@@ -437,7 +437,9 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             Boolean okk = field.getFocusedChild() != null ? true : false;
                             final CampaignFormDataEntry campaignFormDataEntry = CampaignFormDataFragmentUtils.getOrCreateCampaignFormDataEntry(formValues, campaignFormElement);
                             campaignFormDataEntry.setValue(field.getValue());
-                            if ((campaignFormElement.getExpression() == null && fieldMap.get(campaignFormElement.getId()) != null) || (okk && isRangeandExpressionx)) {
+
+                            if (campaignFormElement.getExpression() == null) {
+                                // This field has NO expression, so just update its value
                                 for (CampaignFormDataEntry det : formValues) {
                                     if (det.getValue() != null) {
                                         if (det.getValue().toString().isEmpty()) {
@@ -445,12 +447,42 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                         }
                                     }
                                 }
-                                expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
-                            } else if (field.isFocused()) {
-                                System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
-
+                            } else {
+                                // This field HAS an expression OR expression was triggered
+                                if ((okk && isRangeandExpressionx)) {
+                                    for (CampaignFormDataEntry det : formValues) {
+                                        if (det.getValue() != null) {
+                                            if (det.getValue().toString().isEmpty()) {
+                                                det.setValue(null);
+                                            }
+                                        }
+                                    }
+                                    // Only evaluate expressions for fields that have them
+                                    expressionMap.forEach((formElement, controlPropertyField) -> {
+                                        if (formElement.getExpression() != null && !formElement.getExpression().isEmpty()) {
+                                            CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues,
+                                                    CampaignFormElementType.fromString(formElement.getType()), controlPropertyField,
+                                                    formElement.getExpression(), ignoreDisable, field.getValue(), formElement);
+                                        }
+                                    });
+                                }
                             }
+//                            if ((campaignFormElement.getExpression() == null && fieldMap.get(campaignFormElement.getId()) != null) || (okk && isRangeandExpressionx)) {
+//                                for (CampaignFormDataEntry det : formValues) {
+//                                    if (det.getValue() != null) {
+//                                        if (det.getValue().toString().isEmpty()) {
+//                                            det.setValue(null);
+//                                        }
+//                                    }
+//                                }
+//                                expressionMap.forEach((formElement, controlPropertyField) ->
+//                                        CampaignFormDataFragmentUtils.handleExpressionSecEdit(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+//
+////                                CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
+//                            } else if (field.isFocused()) {
+//                                System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
+//
+//                            }
 
                             if (finalIsdependingOn && isRangeandExpressionx) {
                                 field.setVisibility(View.GONE);
@@ -465,7 +497,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
-                            handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
+                        handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
                             expressionMap.put(campaignFormElement, dynamicField);
                         }
                     } else if (type == CampaignFormElementType.SECTION) {
@@ -640,7 +672,9 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
+                                                CampaignFormDataFragmentUtils.handleExpressionSecEdit(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+
+//                                CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -661,7 +695,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
-                            handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
+                        handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
                             expressionMap.put(campaignFormElement, dynamicField);
                         }
                     } else if (type == CampaignFormElementType.SECTION) {
@@ -795,7 +829,9 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
+                                                CampaignFormDataFragmentUtils.handleExpressionSecEdit(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+
+//                                CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -814,7 +850,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
-                            handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
+                                                  handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
                             expressionMap.put(campaignFormElement, dynamicField);
                         }
                     } else if (type == CampaignFormElementType.SECTION) {
@@ -967,7 +1003,9 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
+                                                CampaignFormDataFragmentUtils.handleExpressionSecEdit(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+
+//                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -985,7 +1023,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
-                            handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
+                                                  handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
                             expressionMap.put(campaignFormElement, dynamicField);
                         }
                     } else if (type == CampaignFormElementType.SECTION) {
@@ -1117,7 +1155,9 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
+                                                CampaignFormDataFragmentUtils.handleExpressionSecEdit(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+
+//                                CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -1135,7 +1175,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
-                            handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
+                                                  handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
                             expressionMap.put(campaignFormElement, dynamicField);
                         }
                     } else if (type == CampaignFormElementType.SECTION) {
@@ -1267,7 +1307,9 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
+                                                CampaignFormDataFragmentUtils.handleExpressionSecEdit(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+
+//                                CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -1285,7 +1327,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
-                            handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
+                                                  handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
                             expressionMap.put(campaignFormElement, dynamicField);
                         }
                     } else if (type == CampaignFormElementType.SECTION) {
@@ -1417,7 +1459,9 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
+                                                CampaignFormDataFragmentUtils.handleExpressionSecEdit(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+
+//                                CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -1435,7 +1479,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
-                            handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
+                                                  handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
                             expressionMap.put(campaignFormElement, dynamicField);
                         }
                     } else if (type == CampaignFormElementType.SECTION) {
@@ -1567,7 +1611,9 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
+                                        CampaignFormDataFragmentUtils.handleExpressionSecEdit(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+
+//                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -1586,7 +1632,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                         final String expressionString = campaignFormElement.getExpression();
                         if (expressionString != null) {
-                            handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
+                                                  handleExpression(expressionParser, formValues, type, dynamicField, expressionString, ignoreDisable);
                             expressionMap.put(campaignFormElement, dynamicField);
                         }
 
@@ -1666,6 +1712,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     ", Raw value: " + value +
                                     ", Parsed keys: " + selectedKeys);
                         }
+
+
 
                         dynamicField = createControlMultiSelectCheckBoxEditField(campaignFormElement, requireContext(),
                                 getUserTranslations(campaignFormMeta), optionsValues, selectedKeys,
@@ -1990,7 +2038,9 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     }
                                 }
                                 expressionMap.forEach((formElement, controlPropertyField) ->
-                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
+//                                        CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue(), formElement));
+                                        CampaignFormDataFragmentUtils.handleExpressionSecEdit(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
+
                             } else if (field.isFocused()) {
                                 System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" + fieldMap.get(campaignFormElement.getId()).getCaption());
 
@@ -2084,6 +2134,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                     serializedValue = "[" + String.join(",", selectedList) + "]";
                                 }
                             }
+
 
                             campaignFormDataEntry.setValue(serializedValue);
                             System.out.println("DEBUG - Field " + campaignFormElement.getId() + " set to: " + serializedValue);

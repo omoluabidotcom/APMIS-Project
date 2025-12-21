@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import androidx.databinding.ViewDataBinding;
 
 import de.symeda.sormas.api.utils.ValidationException;
+import de.symeda.sormas.app.component.controls.ControlCheckBoxGroupField;
 import de.symeda.sormas.app.component.controls.ControlDateField;
 import de.symeda.sormas.app.component.controls.ControlDateTimeField;
 import de.symeda.sormas.app.component.controls.ControlPropertyEditField;
@@ -77,9 +78,16 @@ public class FragmentValidator {
 					fieldHasError |= ((ControlDateTimeField) field).setErrorIfOutOfDateRange();
 				}
 
+				if (field instanceof ControlCheckBoxGroupField) {
+					System.out.println("DEBUG FragmentValidator - validating ControlCheckBoxGroupField: " + field.getId() );
+					fieldHasError |= ((ControlCheckBoxGroupField) field).setErrorIfEmpty();
+				}
+
 				if (field.getValidationCallback() != null) {
 					fieldHasError |= (Boolean) field.getValidationCallback().call();
 				}
+
+
 
 				// Disable error state on the field if all check returned without errors
 				if (!fieldHasError) {
@@ -87,6 +95,10 @@ public class FragmentValidator {
 				}
 
 				if (field.isHasError() && field.getVisibility() == VISIBLE && field.isEnabled()) {
+					errorInfo.addFieldWithError(field);
+				}
+
+				if(field.isRequired() && (field.getValue() != null || field.getValue().toString() !="")){
 					errorInfo.addFieldWithError(field);
 				}
 			} else if (child instanceof ViewGroup) {

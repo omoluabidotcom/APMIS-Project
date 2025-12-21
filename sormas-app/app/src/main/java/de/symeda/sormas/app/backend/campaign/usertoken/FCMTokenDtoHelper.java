@@ -24,12 +24,12 @@ public class FCMTokenDtoHelper extends AdoDtoHelper<FCMToken, FCMTokenDto> {
 
     @Override
     protected Call<List<FCMTokenDto>> pullAllSince(long since) throws NoConnectionException {
-        throw new UnsupportedOperationException("Can't change users in app");
+        return null;
     }
 
     @Override
     protected Call<List<FCMTokenDto>> pullByUuids(List<String> uuids) throws NoConnectionException {
-        throw new UnsupportedOperationException("Can't change users in app");
+        return null;
     }
 
     @Override
@@ -38,13 +38,11 @@ public class FCMTokenDtoHelper extends AdoDtoHelper<FCMToken, FCMTokenDto> {
     }
 
     @Override
-    protected void fillInnerFromDto(FCMToken target, FCMTokenDto source) {
-//        throw new UnsupportedOperationException("Can't change users in app");
-    }
+    protected void fillInnerFromDto(FCMToken target, FCMTokenDto source) {}
 
     @Override
     protected void fillInnerFromAdo(FCMTokenDto target, FCMToken source) {
         target.setToken(source.getToken());
         target.setUserName(source.getUserName());
-     }
+    }
 }

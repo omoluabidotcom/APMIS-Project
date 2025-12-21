@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.cinoteck.application.UserProvider;
 import com.cinoteck.application.views.utils.gridexporter.GridExporter;
@@ -38,6 +39,8 @@ import de.symeda.sormas.api.deviceerrormanager.DeviceErrorManagerDto;
 import de.symeda.sormas.api.devicemanager.DeviceManagerDto;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.I18nProperties;
+import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
+import de.symeda.sormas.api.user.UserDto;
 import de.symeda.sormas.api.user.UserRight;
 
 public class DeviceDetailsDialog extends Dialog {
@@ -443,18 +446,41 @@ public class DeviceDetailsDialog extends Dialog {
         section.getStyle().set("gap", "0%");
 
 
-        H4 title = new H4("Location Information");
-        title.getStyle().set("color", "#2d5a3d");
-        title.getStyle().set("margin-top", "0");
-        title.getStyle().set("font-size", "13px !important");
-
-        
-
  
-        HorizontalLayout currentLocation = createLocationRow(VaadinIcon.MAP_MARKER, "Assigned Location", deviceManagerDto.getUserLocation());
- //        HorizontalLayout lastLocation = createLocationRow(VaadinIcon.MAP_MARKER, "Last known location", "Badaskan");
+        HorizontalLayout currentLocation = createLocationRow(VaadinIcon.WORKPLACE, "Assigned Area", deviceManagerDto.getUserLocation());
         
-        section.add(title,  currentLocation);
+    UserDto userDetails =  FacadeProvider.getUserFacade().getByUserName(deviceManagerDto.getUserName());
+    String userLocationExtended = "";
+    if(userDetails.getRegion() != null) {
+    	if(userDetails.getDistrict() != null) {
+            if (userDetails.getCommunity() != null && !userDetails.getCommunity().isEmpty()
+                    && userDetails.getCommunitynos() != null && !userDetails.getCommunitynos().isEmpty()) {
+
+                String clusterNumbers = String.join(", ", userDetails.getCommunitynos());
+
+                userLocationExtended =
+                        userDetails.getRegion().getCaption()
+                        + " / " + userDetails.getDistrict().getCaption()
+                        + " / " + clusterNumbers;
+            }
+    		
+    	}else if(userDetails.getDistricts() != null && userDetails.getDistricts().size() > 0 ) {
+    		 String districts = userDetails.getDistricts()
+    		            .stream()
+    		            .map(d -> d.getCaption())
+    		            .collect(Collectors.joining(", "));
+
+    		    userLocationExtended =
+    		            userDetails.getRegion().getCaption()
+    		            + " / " + districts;
+    	}
+    	
+    	
+    }
+        
+        HorizontalLayout currentLocationExtended = createLocationRow(VaadinIcon.WORKPLACE, "Province/District/Clusters", userLocationExtended);
+
+        section.add( currentLocation, currentLocationExtended);
         return section;
     }
     
@@ -549,9 +575,7 @@ public class DeviceDetailsDialog extends Dialog {
         section.add(title, horizontalLine, batteryInfoLayout);
         return section;
     }
-    
- 
-   
+       
     private VerticalLayout createDeviceSystemInformationC(DeviceManagerDto deviceManagerDto) {
          VerticalLayout section = new VerticalLayout();
         section.setSpacing(true);
@@ -579,8 +603,7 @@ public class DeviceDetailsDialog extends Dialog {
         section.add(title, horizontalLine, androidVersion, apkVersion);
         return section;
     }
-    
- 
+     
     private VerticalLayout createSystemInformation(DeviceManagerDto deviceManagerDto) {
         VerticalLayout section = new VerticalLayout();
         section.setSpacing(true);
@@ -623,78 +646,7 @@ public class DeviceDetailsDialog extends Dialog {
         section.add(title, horizontalLine, itemsLayout);
         return section;
     }
-//    
-//     private void createFooter(DeviceManagerDto deviceManagerDto) {
-//        HorizontalLayout footer = new HorizontalLayout();
-//        footer.setWidthFull();
-//        footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-//        footer.setPadding(true);
-// 
-////        footer.getStyle().set("border-top", "1px solid #e0e0e0");
-////        footer.getStyle().set("background-color", "#f5f5f5");
-//         
-//        Button closeBtn = new Button("Close");
-//        closeBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
-//        closeBtn.addClickListener(e -> close());
-//        
-//        HorizontalLayout actionButtons = new HorizontalLayout();
-//        actionButtons.setSpacing(true);
-//        
-//        
-//        Button viewDeviceLogs = new Button("Error Logs", new Icon(VaadinIcon.REFRESH));
-//        viewDeviceLogs.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//
-// 
-//       
-//        viewDeviceLogs.addClickListener(e -> {
-//            if (errorLogDialog == null) {
-//                errorLogDialog = new Dialog();
-//                errorLogDialog.setHeaderTitle("Error Log");
-//                errorLogDialog.setWidth("800px");
-//                errorLogDialog.setHeight("600px");
-//
-//                errorGrid = configureLogsGrid(deviceManagerDto); 
-//                errorLogDialog.add(errorGrid);
-//
-//                Button closeButton = new Button("Close", ev -> errorLogDialog.close());
-//                closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//                errorLogDialog.getFooter().add(closeButton);
-//
-//                errorLogDialog.addOpenedChangeListener(ev -> {
-//                    if (!ev.isOpened()) {
-////                      errorLogDialog.getDataProvider().refreshAll();
-//                    }
-//                });
-//            } else {
-//                // refresh items if needed
-//                // errorGrid.setItems(fetchLogs(deviceManagerDto));
-//                errorGrid.getDataProvider().refreshAll();
-//            }
-//            errorLogDialog.open();
-//        });
-//        
-// 
-//
-//        // Helper method to build error log content with Eclipse-style formatting
-//       
-//        
-//        Button requestDataSync = new Button("Request Data sync", new Icon(VaadinIcon.REFRESH));
-//        requestDataSync.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//        
-//        Button latestDiagnostics = new Button("Latest diagnostics", new Icon(VaadinIcon.STETHOSCOPE));
-//        latestDiagnostics.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//        
-//        Button remoteSupport = new Button("Remote support", new Icon(VaadinIcon.HEADPHONES));
-//        remoteSupport.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//        
-// 
-//        actionButtons.add(viewDeviceLogs);
-//         
-//        footer.add(closeBtn, actionButtons);
-//        add(footer);
-//    }
-//    
-    
+
     private Component createFooter(DeviceManagerDto deviceManagerDto) {
         HorizontalLayout footer = new HorizontalLayout();
         footer.setWidthFull();
@@ -1113,14 +1065,21 @@ public class DeviceDetailsDialog extends Dialog {
         
         
         Image icon = new Image();
+  
         if(label.equalsIgnoreCase("Network Provider")) {
-        	icon = new Image("images/Shape4.svg", "Android");
-        	icon.getStyle().set("width", "30px").set("height", "65px");
+        	icon = new Image("images/icons8-three-bar-signal-48.png", "Android");
+        	icon.getStyle().set("width", "30px").set("height", "30px");
              
         }else if(label.equalsIgnoreCase("Wi-Fi")) {
+        	if(status.equalsIgnoreCase("connected")) {
+        		icon = new Image("images/icons8-wi-fi.png", "Wifi On");
+            	icon.getStyle().set("width", "30px").set("height", "30px");
+        	}else {
 
-        	icon = new Image("images/shape5.svg", "Android");
-        	icon.getStyle().set("width", "30px").set("height", "65px");
+            	icon = new Image("images/icons8-wi-fi-off-48.png", "Wifi Off");
+            	icon.getStyle().set("width", "30px").set("height", "30px");
+        	}
+
         }
 
       

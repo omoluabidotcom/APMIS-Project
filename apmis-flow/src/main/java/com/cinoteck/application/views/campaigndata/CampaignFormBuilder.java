@@ -831,6 +831,8 @@ if (!selectedAreas.isEmpty()) {
 		int accrd_count = 0;
 
 		for (CampaignFormElement formElement : formElements) {
+			
+			if(formElement.getType() != null) {
 			CampaignFormElementOptions campaignFormElementOptions = new CampaignFormElementOptions();
 			CampaignFormElementType type = CampaignFormElementType.fromString(formElement.getType());
 			String fieldId = formElement.getId();
@@ -1845,6 +1847,11 @@ if (!selectedAreas.isEmpty()) {
 			}
 
 			userOptTranslations = new HashMap<String, String>();
+		}else {
+			System.out.println( formElement + "Check elements for nulll types");
+
+			System.out.println( formElement.getCaption() + "Check elements caption for nulll types");
+		}
 		}
 		checkExpression();
 		disableExpressionFieldsForEditing();
@@ -1948,7 +1955,7 @@ if (!selectedAreas.isEmpty()) {
 			}
 
 			if (value != null) {
-				if (value.toString().equals("")) {
+				if (value.toString().equals("") ||  value.toString().equals("false")) {
 					((IntegerField) field).setValue(null);
 				} else {
 					String cleanValue = value.toString().replace(".0", "");
@@ -1982,8 +1989,8 @@ if (!selectedAreas.isEmpty()) {
 				NumberField numberField = (NumberField) field;
 
 				if (value != null) {
-					String cvalue = value.toString().replace("null", "").trim();
-					if (cvalue.equals("") || cvalue.equals("null")) {
+					String cvalue =  value.toString().replace("null", "").trim();
+					if (cvalue.equals("") || cvalue.equals("null") || cvalue.equals("false")) {
 						numberField.setValue(null);
 					} else {
 						try {

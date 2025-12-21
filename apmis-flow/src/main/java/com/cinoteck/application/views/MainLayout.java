@@ -211,9 +211,9 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 
 		Span versionadd = new Span();
 
-		String releaseDate = "01/01/2025";//FacadeProvider.getInfoFacade().getApmisReleaseDate();
+		String releaseDate = FacadeProvider.getInfoFacade().getApmisReleaseDate();
 
-		String webAppVersionNumber = "4.0.95";//FacadeProvider.getInfoFacade().getWebAppVersionNumber();
+		String webAppVersionNumber = FacadeProvider.getInfoFacade().getWebAppVersionNumber();
 
 		versionadd.getElement().setProperty("innerHTML",
 				"<p>" + I18nProperties.getCaption(Captions.apmisVersionNumber) + ": " + webAppVersionNumber + "</p> <p>"
@@ -341,7 +341,7 @@ public class MainLayout extends AppLayout implements HasUserProvider, HasViewMod
 		
  
 		if ((userProvider.getUser().getUserRoles().contains(UserRole.ADMIN))) {
-		nav.addItem(new AppNavItem("Device Management", DeviceInformationView.class, VaadinIcon.CLUSTER,
+		nav.addItem(new AppNavItem("Device List", DeviceInformationView.class, VaadinIcon.CLUSTER,
 				"navitem"));
 		}
 		

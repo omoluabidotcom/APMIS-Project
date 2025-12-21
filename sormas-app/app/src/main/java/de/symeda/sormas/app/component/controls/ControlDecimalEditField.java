@@ -400,13 +400,14 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
 //                    }
                 } else if (isDecimal && isExpression && isRequired) {
 
-                    if(text.equals("-") || text.startsWith("-")) {
+                    if (text.equals("-") || text.startsWith("-")) {
                         input.removeTextChangedListener(this);
                         input.setText(text.replace("-", ""));
                         input.setSelection(input.getText().length());
                         input.addTextChangedListener(this);
                         return;
                     }
+
                       try {
  
                         if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
@@ -437,7 +438,7 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
  
                 }else if(isDecimal && isExpression && !isRequired){
 
-                    if(text.equals("-") || text.startsWith("-")) {
+                    if (text.equals("-") || text.startsWith("-")) {
                         input.removeTextChangedListener(this);
                         input.setText(text.replace("-", ""));
                         input.setSelection(input.getText().length());
