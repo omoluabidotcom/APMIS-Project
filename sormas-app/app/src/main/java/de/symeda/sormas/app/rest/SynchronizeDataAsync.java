@@ -388,9 +388,9 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			if (populationDataDtoHelper.pullAndPushEntities())
 				populationDataDtoHelper.pullEntities(true);
 
-			final FCMTokenDtoHelper fcmTokenDtoHelper = new FCMTokenDtoHelper();
-			if (fcmTokenDtoHelper.pullAndPushEntities())
-				fcmTokenDtoHelper.pullEntities(true);
+//			final FCMTokenDtoHelper fcmTokenDtoHelper = new FCMTokenDtoHelper();
+//			if (fcmTokenDtoHelper.pullAndPushEntities())
+//				fcmTokenDtoHelper.pullEntities(true);
 
 			final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
 			if (deviceInfoDtoHelper.pullAndPushEntities())

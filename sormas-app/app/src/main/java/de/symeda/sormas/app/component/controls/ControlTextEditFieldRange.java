@@ -25,7 +25,6 @@ import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spanned;
 import android.text.TextWatcher;
-import android.text.method.DigitsKeyListener;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -71,11 +70,7 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
 
     protected InverseBindingListener inverseBindingListener;
     private OnClickListener onClickListener;
- 
-    boolean isUpdatingText = false;
-    private TextWatcher textWatcher;
 
- 
     // Constructors
 
     public ControlTextEditFieldRange(Context context) {
@@ -132,9 +127,8 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
         });
     }
 
-    private void setUpOnFocusChangeListener() {
+    protected void setUpOnFocusChangeListener() {
         input.setOnFocusChangeListener(new OnFocusChangeListener() {
-
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!v.isEnabled()) {
@@ -150,12 +144,17 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
                         changeVisualState(VisualState.FOCUSED);
                         imm.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT);
                         // Prevent the content from being automatically selected
-//                        input.setSelection(input.getText().length(), input.getText().length());
-                        input.selectAll();
+                        input.setSelection(input.getText().length(), input.getText().length());
                         if (onClickListener != null) {
                             input.setOnClickListener(onClickListener);
                         }
                     } else {
+                        // Focus lost - trigger value change notification
+                        if (inverseBindingListener != null) {
+                            inverseBindingListener.onChange();
+                        }
+                        onValueChanged();
+
                         if (hasError) {
                             changeVisualState(VisualState.ERROR);
                         } else {
@@ -168,7 +167,6 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
             }
         });
     }
-
     private void initializeOnClickListener() {
         if (onClickListener != null) {
             return;
@@ -191,12 +189,6 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
                         imm.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT);
                         //// Prevent the content from being automatically selected
                         //input.setSelection(input.getText().length(), input.getText().length());
-                        String currentText = input.getText().toString();
-                        if (!currentText.isEmpty()) {
-                            input.selectAll();
-                        } else {
-                            input.setSelection(input.getText().length());
-                        }
                     } else {
                         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                     }
@@ -220,99 +212,18 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
         return input.getText().toString();
     }
 
- 
-
-
     @Override
     protected void setFieldValue(String value) {
-        System.out.println("Setfieldvalueeeeeeeeeeeee11111");
-        if (isUpdatingText) {
-            System.out.println("Setfieldvalueeeeeeeeeeeee222");
-            return;
-        }
-        // Check if value is actually different
-        String currentValue = input.getText() != null ? input.getText().toString() : "";
-
-        // Handle null values and empty strings consistently
-        String newValue = (value == null) ? "" : value.trim();
-
-        if (currentValue.equals("0") && newValue.isEmpty()) {
-            System.out.println("Allowing zero to be cleared by user");
-        }
-
-        if (currentValue.equals(newValue)) {
-            System.out.println("No change needed - values are equal");
-            return; // No change needed
-        }
-
-        isUpdatingText = true;
-
-
-        try {
-            // Remove listener before setText to prevent TextWatcher from triggering
-            if (textWatcher != null) {
-                input.removeTextChangedListener(textWatcher);
-            }
-            // Set the text - allow empty values
-            input.setText(newValue);
-            // Set cursor position
-            if (!newValue.isEmpty()) {
-                input.setSelection(newValue.length());
-            }
-
-                input.setError(null);
-                disableErrorState();
-                System.out.println("SETFIELDVALUEEEEEEEEEEEEEEEEE 7777777777777777777777");
-
-
-            // Re-add listener after setText
-            if (textWatcher != null) {
-                input.addTextChangedListener(textWatcher);
-                System.out.println("SETFIELDVALUEEEEEEEEEEEEEEEEE 888888888888888888888888888");
-            }
-
-            onValueChanged();
-
-        } finally {
-            isUpdatingText = false;
-        }
+        System.out.println("value from setfield value " + value);
+        input.setText(value);
+        return;
     }
 
-    // Add this method for safe expression updates
-    public void setFieldValueFromExpression(String value) {
-        isUpdatingText = true;
-        try {
-            System.out.println("Setting value from expression: " + value);
-            input.setText(value);
-        } finally {
-            isUpdatingText = false;
-        }
-     }
-
-    public void clearZeroValue() {
-        if (isUpdatingText) return;
-
-        String currentValue = getValue();
-        if (currentValue != null && currentValue.equals("0")) {
-            setFieldValue("");
-        }
-    }
-
-
-    @Override
-    public boolean setErrorIfEmpty() {
-        if (!required || !isEnabled()) {
-            return false;
-        }
-
-        String value = getValue();
-        if (value == null || value.trim().isEmpty()) {
-            enableErrorState(R.string.validation_error_required);
-            return true;
-        }
-
-        return false;
-    }
+//
+//    public void setFieldAsError(String errorMessage) {
+//        enableErrorState(errorMessage);
+////        setErrorIfEmptyRange();
+//    }
 
     @Override
     public void setEnabled(boolean enabled) {
@@ -343,7 +254,7 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
                 minLength = a.getInt(
                         R.styleable.ControlTextEditField_minLength,
                         textArea ? FieldConstraints.CHARACTER_LIMIT_BIG : FieldConstraints.CHARACTER_LIMIT_DEFAULT);
-                inputType = a.getInt(R.styleable.ControlTextEditFieldRange_inputType, InputType.TYPE_CLASS_NUMBER);
+                inputType = a.getInt(R.styleable.ControlTextEditField_inputType, InputType.TYPE_CLASS_TEXT);
             } finally {
                 a.recycle();
             }
@@ -371,215 +282,325 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        initInput(true, false, true, null, null, false, false);
+        initInput(false, false, false, null, null, false, false);
     }
 
 
-    public void initInput(boolean isIntegerFlag, boolean isRequired, boolean isRange, Integer minValue, Integer maxValue, Boolean isExpression, Boolean warnOnError) {
-         input = (EditText) this.findViewById(R.id.text_input);
+
+
+    protected void initInput(boolean isIntegerFlag, boolean isRequired, boolean isRange, Integer minValue, Integer maxValue, Boolean isExpression, Boolean warnOnError) {
+
+        input = (EditText) this.findViewById(R.id.text_input);
         input.setTextAlignment(getTextAlignment());
         if (getTextAlignment() == View.TEXT_ALIGNMENT_GRAVITY) {
             input.setGravity(getGravity());
         }
-
         if (isIntegerFlag) {
-            // SET STRICT INPUT TYPE - NO DECIMALS ALLOWED
-            input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED);
+            input.setInputType(InputType.TYPE_CLASS_NUMBER |
+                    InputType.TYPE_NUMBER_FLAG_DECIMAL |
+                    InputType.TYPE_NUMBER_FLAG_SIGNED);
+        } else {
 
- 
-            InputFilter digitFilter = new InputFilter() {
+            input.setInputType(inputType);
+        }
+        setSingleLine(singleLine);
+        if (getMaxLength() >= 0) {
+            input.setFilters(
+                    new InputFilter[]{
+                            new InputFilter.LengthFilter(240)}
+            );
+        }
+//// After setting LengthFilter
+        InputFilter[] existing = input.getFilters();
+        boolean isNumeric = (input.getInputType() & InputType.TYPE_CLASS_NUMBER) == InputType.TYPE_CLASS_NUMBER;
+        boolean allowDecimal = (input.getInputType() & InputType.TYPE_NUMBER_FLAG_DECIMAL) != 0;
+
+        if (isNumeric) {
+            InputFilter symbolBlocker = new InputFilter() {
                 @Override
                 public CharSequence filter(CharSequence source, int start, int end,
                                            Spanned dest, int dstart, int dend) {
-                    // Allow deletion
-                    if (source.length() == 0) {
-                        return null;
-                    }
+                    if (start == end) return null;
 
-                    // Check each character being added
-                    StringBuilder filteredString = new StringBuilder();
-                    for (int i = start; i < end; i++) {
-                        char c = source.charAt(i);
- 
-                        // ONLY allow digits 0-9
-                        if (c >= '0' && c <= '9') {
-                            filteredString.append(c);
-                        } else {
-                            // Block everything else
+                    StringBuilder sb = new StringBuilder(dest);
+                    sb.replace(dstart, dend, source.subSequence(start, end).toString());
+                    String newText = sb.toString();
+
+                    if (newText.isEmpty()) return null;
+
+                    if (!allowDecimal) {
+                        if (!newText.matches("\\d*")) {
                             return "";
                         }
+                        if (newText.length() > 1 && newText.startsWith("0")) {
+                            return "";
+                        }
+                        return null;
                     }
-
-                    // Handle leading zeros
-                    String result = filteredString.toString();
-                    String newText = dest.subSequence(0, dstart) + result + dest.subSequence(dend, dest.length());
-
-                    // Prevent multiple leading zeros
-                    if (newText.length() > 1 && newText.startsWith("0")) {
+                    // Decimal: digits, optional single dot, optional digits; no lone dots
+                    // Valid examples: "1", "0", "12.", "12.3", "0.45"
+                    // Invalid: ".", "..", "1..2", "1.2.3", "abc"
+                    if (!newText.matches("\\d+(?:\\.\\d*)?")) {
                         return "";
                     }
-
-                    return result;
-                }
+                    //Reject "09", "0123", etc. but allow "0.xxx"
+                    if (newText.length() > 1 && newText.startsWith("0") && !newText.startsWith("0.")) {
+                        return "";
+                    }
+                    return null;                }
             };
+            InputFilter[] merged = new InputFilter[existing.length + 1];
+            System.arraycopy(existing, 0, merged, 0, existing.length);
+            merged[existing.length] = symbolBlocker;
+            input.setFilters(merged);
+        }
+        required = isRequired;
 
-             InputFilter[] filters;
-            if (getMaxLength() >= 0) {
-                filters = new InputFilter[]{
-                        new InputFilter.LengthFilter(getMaxLength()),
-                        digitFilter
-                };
-            } else {
-                filters = new InputFilter[]{digitFilter};
-            }
-            input.setFilters(filters);
- 
-        }else if (getMaxLength() >= 0) {
-             input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(getMaxLength())});
+        CharSequence valx = input.getText();
+        if (valx == null && required) {
+            //  setSoftRequired(true);
+
+            //   input.setError("!");
+            return;
         }
 
-        required = isRequired;
- 
-
-
-        textWatcher = new TextWatcher() {
-             String beforeData = "";
+        input.addTextChangedListener(new TextWatcher() {
+            String beforeData = "";
             String onChangeData = "";
-
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                beforeData = charSequence.toString();
+                beforeData = charSequence+"";
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                onChangeData = charSequence.toString();
+                onChangeData = charSequence+"";
             }
 
+//            @Override
+//            public void afterTextChanged(Editable editablex) {
+//                System.out.println("===================================================== " + editablex.toString());
+//                System.out.println("===================================================== " + input.getText());
+//
+//
+//
+//
+//                String text = editablex.toString();
+//
+////                handleZeroReplacement(text);
+//
+//                if (inverseBindingListener != null) {
+//                    inverseBindingListener.onChange();
+//                }
+//
+//                onValueChanged();
+//
+//
+//                if (isRange && minValue != null && maxValue != null) {
+//                    //        System.out.println(minValue + "--------%%%11%%%------------" + maxValue);
+//                    if (minValue != null && maxValue != null && input.getText() != null) {
+//                        //      System.out.println(minValue + "--------%%%22%%%------------" + maxValue);
+//                        if (!input.getText().toString().equals("") || !input.getText().toString().isEmpty()) {
+//                            //         System.out.println(minValue + "--------%%%333%%%------------" + maxValue);
+//                            int valxx = Integer.parseInt(input.getText().toString());
+//                            if (valxx >= minValue && valxx <= maxValue) {
+//                                //           System.out.println(minValue + "--------%%%444%%%------------" + maxValue);
+//                            } else if (warnOnError) {
+//                                //          System.out.println(minValue + "--------%%555%%%%------------" + maxValue);
+//                                NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+//                            } else {
+//                                //       System.out.println(minValue + "Number not in provided range!" + maxValue);
+//                                input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+//                                setErrorIfEmptyRange();
+//                                enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+//
+//                            }
+//                        }
+//
+//                    }
+//
+//                }
+//
+//
+//                if (isRange && isExpression && isRequired) {
+//                    System.out.println("is range111111111111111111111111111111111-==================");
+//                    System.out.println(beforeData + "beforeDatarange111111111111111111111111111111111" + onChangeData);                    System.out.println(beforeData + "beforeDatarange111111111111111111111111111111111" + onChangeData);
+//                    System.out.println(beforeData.length() + "lengthbeforeDatarange111111111111111111111111111111111" + onChangeData.length());
+////                    System.out.println(beforeDatax.length() + "beforeXDatarange111111111111111111111111111111111" + onChangeData.length());
+//
+//                    try {
+//                        if (beforeData.length() > 0 || onChangeData.length() > 0) {
+//                            if (beforeData.toString() != "" && onChangeData.toString() != "") {
+//                                int beforeDatavalxx = Integer.parseInt(beforeData.toString());
+//                                int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
+//
+//                                if (beforeData.length() > 0 && onChangeData.length() == 0) {
+//                                    input.setError("Number not in provided range!");
+//                                    enableErrorState("Number not in provided range!");
+//                                }
+//                            }
+//                        }
+//                    } catch (NumberFormatException ec) {
+//                        input.setError("Please Enter a valid Number");
+//                        enableErrorState("Please Enter a valid Number");
+//                    }
+//
+//                    System.out.println("111111111111111111111111111111111-==================cccccc");
+//                } else if (isRange && isExpression && !isRequired) {
+//
+//                    System.out.println("is rangejnotrequired111111111111111111111111111111111-==================");
+//                    System.out.println(beforeData + "beforeDatarange111111111111111111111111111111111" + onChangeData);
+//
+//                    try {
+//                        if (beforeData.length() > 0 || onChangeData.length() > 0) {
+//                            if (beforeData.toString() != "" && onChangeData.toString() != "") {
+//
+//                                int beforeDatavalxx = Integer.parseInt(beforeData.toString());
+//                                int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
+//                                System.out.println(beforeDatavalxx + "elsevalxx111111111111111111111111111111111-==================" + onChangeDatavalxx);
+//                            }
+//                        }
+//                    } catch (NumberFormatException e) {
+//                        input.setError("Please enter a valid number.");
+//                        enableErrorState("else1111111111111111111111-=====Number not in provided range! i.e min:------------------");
+//                    }
+//
+//                }
+//
+//                }
+
+
             @Override
-            public void afterTextChanged(Editable editable) {
-                String text = editable.toString();
+            public void afterTextChanged(Editable editablex) {
+                System.out.println("===================================================== " + editablex.toString());
+                System.out.println("===================================================== " + input.getText());
 
- 
-                System.out.println("Text changed to: '" + text + "'");
+                String text = editablex.toString();
 
-                // If we're already updating text programmatically, skip processing
-                if (isUpdatingText) {
-                    System.out.println("Skipping - programmatic update in progress");
-                    return;
+                // Special handling for "0" - clear errors immediately
+                if (text != null ) {
+                    input.setError(null);
+                    disableErrorState();
+                    changeVisualState(VisualState.NORMAL);
+                    System.out.println("Zero input - errors cleared");
                 }
 
-                // Allow empty field
-                if (text.isEmpty()) {
-                    if (inverseBindingListener != null) {
-                        inverseBindingListener.onChange();
-                    }
-                    onValueChanged();
-                    return;
+                // Clear error immediately when user starts typing
+                if (!text.isEmpty()) {
+                    input.setError(null);
+                    disableErrorState();
                 }
 
-                // STRICTER REGEX PROTECTION FOR INTEGER FIELDS
-                if (isIntegerFlag) {
-                    System.out.println("isIntegerFlag: " + isIntegerFlag);
 
-                    // Allow "0" as a valid value - don't clean it
-                    if (text.equals("0")) {
-                        System.out.println("Single zero detected - allowing");
-                        // Continue with normal processing
-                    }
-                    else if (!text.matches("^\\d+$")) {
-                        System.out.println("Invalid characters detected, cleaning...");
-
-                        isUpdatingText = true;
-
-                        String cleanedText = text.replaceAll("[^0-9]", "");
-
-                        System.out.println("cleanedText: '" + cleanedText + "'");
-
-                        // Handle leading zeros for numbers other than single zero
-                        if (cleanedText.length() > 1 && cleanedText.startsWith("0")) {
-                            System.out.println("Removing leading zeros");
-                             cleanedText = cleanedText.replaceFirst("^0+", "");
-                            if (cleanedText.isEmpty()) cleanedText = "0";
-                        }
- 
-                        // Only update if different and not empty
-                        if (!cleanedText.equals(text) && !cleanedText.isEmpty()) {
-                            System.out.println("Updating text from '" + text + "' to '" + cleanedText + "'");
-
-                            // Remove listener to prevent recursion
-                            if (textWatcher != null) {
-                                input.removeTextChangedListener(textWatcher);
-                            }
-
-                            input.setText(cleanedText);
-                            input.setSelection(cleanedText.length());
-
-                            // Re-add listener after modification
-                            if (textWatcher != null) {
-                                input.addTextChangedListener(textWatcher);
-                            }
-
-                            NotificationHelper.showNotification((NotificationContext) getContext(), WARNING, "Only whole numbers are allowed");
-                        } else {
-                            System.out.println("No update needed - text is already clean");
-                        }
-
-                        isUpdatingText = false;
-                        return; // Skip the rest of the processing for this change
-                    }
-                }
-
-                // Only proceed with normal processing if we didn't modify the text
-                if (inverseBindingListener != null) {
-                    inverseBindingListener.onChange();
-                }
-                 onValueChanged();
-
-                // Your existing range validation logic...
-                if (isRange && minValue != null && maxValue != null && !text.isEmpty()) {
-                    try {
-                        int valxx = Integer.parseInt(text);
-                        if (valxx < minValue || valxx > maxValue) {
-                            if (warnOnError) {
-                                NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING,
-                                        "Number must be between " + minValue + " and " + maxValue);
+                if (isRange && minValue != null && maxValue != null) {
+                    if (!text.isEmpty()) {
+                        try {
+                            int valxx = Integer.parseInt(text);
+                            if (valxx >= minValue && valxx <= maxValue) {
+                                // Valid range - clear any errors
+                                input.setError(null);
+                                disableErrorState();
+                            } else if (warnOnError) {
+                                NotificationHelper.showNotification((NotificationContext) input.getContext(),
+                                        WARNING, "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
                             } else {
-                                input.setError("Number must be between " + minValue + " and " + maxValue);
-                                enableErrorState("Number must be between " + minValue + " and " + maxValue);
+                                // Only show error if value is not 0 (allow 0 even if out of range)
+                                if (valxx != 0) {
+                                    input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                    enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                } else {
+                                    // Clear error for 0 value
+                                    input.setError(null);
+                                    disableErrorState();
+                                }
                             }
-                        } else {
+                        } catch(NumberFormatException e) {
+                            // Check if it's "0" - if so, clear error
+                            if (text.equals("0")) {
+                                input.setError(null);
+                                disableErrorState();
+                            } else if(warnOnError) {
+                                NotificationHelper.showNotification((NotificationContext) input.getContext(),
+                                        WARNING, "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                            } else {
+                                input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                setErrorIfEmptyRange();
+                                enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                            }
+                        }
+                    } else {
+                        // For empty field, only show error if required
+                        if (beforeData.length() == 0 && onChangeData.length() == 0) {
+                            System.out.println("lenght before and after is 0 ===== no user input ==");
+                            disableErrorState();
+                        }else{
+                            if (isRequired) {
+                                enableErrorState("This field is required");
+                            } else {
+                                disableErrorState();
+                            }
+                        }
+
+                    }
+                }
+
+               else if (isRange && isExpression && isRequired) {
+                    System.out.println("is range111111111111111111111111111111111-==================");
+                    System.out.println(beforeData + "beforeDatarange111111111111111111111111111111111" + onChangeData);
+                    System.out.println(beforeData + "beforeDatarange111111111111111111111111111111111" + onChangeData);
+                    System.out.println(beforeData.length() + "lengthbeforeDatarange111111111111111111111111111111111" + onChangeData.length());
+//                    System.out.println(beforeDatax.length() + "beforeXDatarange111111111111111111111111111111111" + onChangeData.length());
+
+                    try {
+                        if (beforeData.length() == 0 && onChangeData.length() == 0) {
+                            System.out.println("lenght before and after is 0 ===== no user input ==");
+                            disableErrorState();
+                        }else{
+
+                         if (beforeData.length() <= 0 && onChangeData.length() > 0) {
+
+                        } else if (beforeData.length() > 0 && onChangeData.length() == 0) {
+                            input.setError("Please Enter a Valid Number!");
+                            enableErrorState("Please Enter a Valid Number!");
+                        }
+                    }
+                    } catch (NumberFormatException ec) {
+                        input.setError("Please Enter a valid Number");
+                        enableErrorState("Please Enter a valid Number");
+                    }
+
+                    System.out.println("111111111111111111111111111111111-==================cccccc");
+                }
+                else if(isRange && isExpression && !isRequired) {
+                    System.out.println("else range but not expression ==================");
+                    try {
+                        if (!text.isEmpty()) {
+                            int valxx = Integer.parseInt(text);
+                            // Valid number - clear error
                             input.setError(null);
                             disableErrorState();
                         }
-                    } catch (NumberFormatException e) {
- 
-                        input.setError("Please enter a valid number");
-                        enableErrorState("Please enter a valid number");
+                    } catch(NumberFormatException e) {
+                        // Check if it's "0" - if so, clear error
+                        if (text.equals("0")) {
+                            input.setError(null);
+                            disableErrorState();
+                        } else if (!text.isEmpty()) {
+                            input.setError("Please enter a valid number");
+                            enableErrorState("Invalid number");
+                        }
                     }
                 }
             }
-         };
-
-        input.addTextChangedListener(textWatcher);
-
-
- 
-        addValueChangedListener(new ValueChangeListener() {
-            @Override
-            public void onChange(ControlPropertyField field) {
-                System.out.println(isLiveValidationDisabled() + " vaue changes isLiveValidationDisabled()----------");
-                if (!isLiveValidationDisabled()) {
-                    ((ControlTextEditFieldRange) field).setErrorIfEmptyRange();
-                }
-            }
         });
-
         setUpOnEditorActionListener();
         setUpOnFocusChangeListener();
         initializeOnClickListener();
+
+
     }
- 
+
+
     private void NumberNumericValueValidator(String errorMessage, String minValue, String maxValue) {
         Integer minValuex = 0;
         Integer maxValuex = 0;
@@ -648,81 +669,46 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
         setBackgroundFor(input, background);
     }
 
-
+    // Data binding, getters & setters
 
     @BindingAdapter("value")
     public static void setValue(ControlTextEditFieldRange view, String text) {
-        System.out.println("SETTTTTTTTTTTTTTINGGGGGGGGGGGGGGGGG 1111111111111111111111111");
-        if (view.isUpdatingText) return;
-
-        if (text == null || text.trim().isEmpty() || text.equals("")) {
-            view.setFieldValue("");
-            System.out.println("SETTTTTTTTTTTTTTINGGGGGGGGGGGGGGGGG 22222222222222222");
+        // If text is null or blank, keep it empty
+        if (text == null || text.trim().isEmpty() || text == "") {
+            view.setFieldValue(null);
             return;
-        } else {
-            // Clean the value
-            String cleanedText = text.replaceAll("[^0-9]", "");
-            System.out.println("SETTTTTTTTTTTTTTINGGGGGGGGGGGGGGGGG 333333333333333333333333333333");
-
-            if (cleanedText.equals("0")) {
-                view.setFieldValue("0");
-                System.out.println("SETTTTTTTTTTTTTTINGGGGGGGGGGGGGGGGG 4444444444444444444444444444");
-
-            } else if (!cleanedText.isEmpty()) {
-                // Remove leading zeros for other numbers
-                System.out.println("SETTTTTTTTTTTTTTINGGGGGGGGGGGGGGGGG 55555555555555555555555");
-                if (cleanedText.startsWith("0") && cleanedText.length() > 1) {
-                    cleanedText = cleanedText.replaceFirst("^0+", "");
-                    System.out.println("SETTTTTTTTTTTTTTINGGGGGGGGGGGGGGGGG 666666666666666666666666");
+        }else{
+            try {
+                double num = Double.parseDouble(text);
+                if (num == Math.floor(num)) {
+                    // Whole number, no decimals
+                    text = String.valueOf((int) num);
+                } else {
+                    // Show with 2 decimal places
+                    text = String.format("%.2f", num);
                 }
-                view.setFieldValue(cleanedText);
-            } else {
-                view.setFieldValue("");
-                System.out.println("SETTTTTTTTTTTTTTINGGGGGGGGGGGGGGGGG 777777777777777777777777777777");
+            } catch (NumberFormatException e) {
+                // If not a number, leave as-is
             }
+            view.setFieldValue(text);
+            return;
+
         }
     }
 
-//    @BindingAdapter("value")
-//    public static void setValue(ControlTextEditFieldRange view, String text) {
-//        if (view.isUpdatingText) return;
-//
-//        if (text == null || text.trim().isEmpty() || text.equals("")) {
-//            view.setFieldValue("");
-//            return;
-//        } else {
-//            // IMPROVED: Handle decimal values properly for range fields
-//            String cleanedText = text.replaceAll("[^0-9.]", ""); // Allow decimal points
-//
-//            // Remove multiple decimal points
-//            int firstDot = cleanedText.indexOf('.');
-//            if (firstDot != -1) {
-//                cleanedText = cleanedText.substring(0, firstDot + 1) +
-//                        cleanedText.substring(firstDot + 1).replace(".", "");
-//            }
-//
-//            // For range fields, convert to integer if it's a whole number
-//            try {
-//                double num = Double.parseDouble(cleanedText);
-//                if (num == Math.floor(num)) {
-//                    cleanedText = String.valueOf((int) num);
-//                }
-//            } catch (NumberFormatException e) {
-//                // Keep original if parsing fails
-//            }
-//
-//            // Prevent leading zeros (except single zero)
-//            if (cleanedText.length() > 1 && cleanedText.startsWith("0")) {
-//                cleanedText = cleanedText.replaceFirst("^0+", "");
-//                if (cleanedText.isEmpty()) cleanedText = "";
-//            }
-//
-//            view.setFieldValue(cleanedText);
-//        }
-//    }
 
+    @BindingAdapter("value")
+    public static void setValue(ControlTextEditFieldRange view, String text, String errorMessage) {
+        // If text is null or blank, keep it empty
+        if (text == null || text.trim().isEmpty() || text == "") {
+            view.setFieldValue("");
+            return;
+        }else{
+            view.setFieldValue(text);
+        }
+    }
 
-     @BindingAdapter("value")
+    @BindingAdapter("value")
     public static void setValue(ControlTextEditFieldRange view, Integer integerValue) {
         if (integerValue != null) {
             view.setFieldValue(String.valueOf(integerValue));
@@ -734,44 +720,29 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     @BindingAdapter("value")
     public static void setValue(ControlTextEditFieldRange view, Float floatValue) {
         if (floatValue != null) {
-            // Convert to integer for integer fields
-            int intValue = Math.round(floatValue);
-            view.setFieldValue(String.valueOf(intValue));
+            view.setFieldValue(String.valueOf(floatValue));
         } else {
-            view.setFieldValue("");
+            view.setFieldValue(null);
         }
     }
 
     @BindingAdapter("value")
     public static void setValue(ControlTextEditFieldRange view, Double doubleValue) {
         if (doubleValue != null) {
-            // Convert to integer for integer fields
-            int intValue = (int) Math.round(doubleValue);
-            view.setFieldValue(String.valueOf(intValue));
+            view.setFieldValue(String.valueOf(doubleValue));
         } else {
-            view.setFieldValue("");
+            view.setFieldValue(null);
         }
     }
 
-    public void setIntegerValue(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            setFieldValue("");
-            return;
-        }
 
-        // Clean the value using regex
-        String cleanedValue = value.replaceAll("[^0-9]", "");
-        if (!cleanedValue.isEmpty()) {
-            try {
-                // Parse and format to ensure it's a proper integer
-                int intValue = Integer.parseInt(cleanedValue);
-                setFieldValue(String.valueOf(intValue));
-            } catch (NumberFormatException e) {
-                setFieldValue("");
-            }
-        } else {
-            setFieldValue("");
-        }
+
+    public void setDoubleValue(Double doubleValue) {
+        setValue(this, doubleValue);
+    }
+
+    public void setFloatValue(Float floatValue) {
+        setValue(this, floatValue);
     }
 
     @InverseBindingAdapter(attribute = "value", event = "valueAttrChanged")
@@ -787,6 +758,25 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
             return null;
         }
     }
+
+    @InverseBindingAdapter(attribute = "value", event = "valueAttrChanged")
+    public static Float getFloatValue(ControlTextEditFieldRange view) {
+        if (view.getFieldValue() != null && !view.getFieldValue().isEmpty()) {
+            return Float.valueOf(view.getFieldValue());
+        } else {
+            return null;
+        }
+    }
+
+    @InverseBindingAdapter(attribute = "value", event = "valueAttrChanged")
+    public static Double getDoubleValue(ControlTextEditFieldRange view) {
+        if (view.getFieldValue() != null && !view.getFieldValue().isEmpty()) {
+            return Double.valueOf(view.getFieldValue());
+        } else {
+            return null;
+        }
+    }
+
     @BindingAdapter("valueAttrChanged")
     public static void setListener(ControlTextEditFieldRange view, InverseBindingListener listener) {
         view.inverseBindingListener = listener;

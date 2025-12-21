@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.cinoteck.application.UserProvider;
 import com.cinoteck.application.views.utils.gridexporter.GridExporter;
@@ -38,6 +39,8 @@ import de.symeda.sormas.api.deviceerrormanager.DeviceErrorManagerDto;
 import de.symeda.sormas.api.devicemanager.DeviceManagerDto;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.I18nProperties;
+import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
+import de.symeda.sormas.api.user.UserDto;
 import de.symeda.sormas.api.user.UserRight;
 
 public class DeviceDetailsDialog extends Dialog {
@@ -443,18 +446,41 @@ public class DeviceDetailsDialog extends Dialog {
         section.getStyle().set("gap", "0%");
 
 
-        H4 title = new H4("Location Information");
-        title.getStyle().set("color", "#2d5a3d");
-        title.getStyle().set("margin-top", "0");
-        title.getStyle().set("font-size", "13px !important");
-
-        
-
  
-        HorizontalLayout currentLocation = createLocationRow(VaadinIcon.MAP_MARKER, "Assigned Location", deviceManagerDto.getUserLocation());
- //        HorizontalLayout lastLocation = createLocationRow(VaadinIcon.MAP_MARKER, "Last known location", "Badaskan");
+        HorizontalLayout currentLocation = createLocationRow(VaadinIcon.WORKPLACE, "Assigned Area", deviceManagerDto.getUserLocation());
         
-        section.add(title,  currentLocation);
+    UserDto userDetails =  FacadeProvider.getUserFacade().getByUserName(deviceManagerDto.getUserName());
+    String userLocationExtended = "";
+    if(userDetails.getRegion() != null) {
+    	if(userDetails.getDistrict() != null) {
+            if (userDetails.getCommunity() != null && !userDetails.getCommunity().isEmpty()
+                    && userDetails.getCommunitynos() != null && !userDetails.getCommunitynos().isEmpty()) {
+
+                String clusterNumbers = String.join(", ", userDetails.getCommunitynos());
+
+                userLocationExtended =
+                        userDetails.getRegion().getCaption()
+                        + " / " + userDetails.getDistrict().getCaption()
+                        + " / " + clusterNumbers;
+            }
+    		
+    	}else if(userDetails.getDistricts() != null && userDetails.getDistricts().size() > 0 ) {
+    		 String districts = userDetails.getDistricts()
+    		            .stream()
+    		            .map(d -> d.getCaption())
+    		            .collect(Collectors.joining(", "));
+
+    		    userLocationExtended =
+    		            userDetails.getRegion().getCaption()
+    		            + " / " + districts;
+    	}
+    	
+    	
+    }
+        
+        HorizontalLayout currentLocationExtended = createLocationRow(VaadinIcon.WORKPLACE, "Province/District/Clusters", userLocationExtended);
+
+        section.add( currentLocation, currentLocationExtended);
         return section;
     }
     
@@ -1041,8 +1067,8 @@ public class DeviceDetailsDialog extends Dialog {
         Image icon = new Image();
   
         if(label.equalsIgnoreCase("Network Provider")) {
-        	icon = new Image("images/Shape4.svg", "Android");
-        	icon.getStyle().set("width", "30px").set("height", "65px");
+        	icon = new Image("images/icons8-three-bar-signal-48.png", "Android");
+        	icon.getStyle().set("width", "30px").set("height", "30px");
              
         }else if(label.equalsIgnoreCase("Wi-Fi")) {
         	if(status.equalsIgnoreCase("connected")) {

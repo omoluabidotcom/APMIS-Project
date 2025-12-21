@@ -11483,5 +11483,104 @@ INSERT INTO schema_version (version_number, comment) VALUES (489, 'Implementing 
 
 
 
+CREATE MATERIALIZED VIEW public.mv_flw_duplicate_error_analysis
+TABLESPACE pg_default
+AS WITH duplicate_tazkiras AS (
+         SELECT elem.value ->> 'value' AS tazkira_value
+           FROM campaignformdata cfd_1
+             CROSS JOIN LATERAL json_array_elements(
+                 regexp_replace(cfd_1.formvalues::text, '\\u0000', '', 'g')::json
+             ) elem(value)
+          WHERE (elem.value ->> 'id') = 'TazkiraNo'
+            AND (elem.value ->> 'value') IS NOT NULL
+            AND (elem.value ->> 'value') <> ''
+          GROUP BY 1
+         HAVING count(*) > 1
+        ), filtered_campaign_ids AS (
+         SELECT unnest(string_to_array(array_to_string(array_agg(flwduplicateerrorreport.id), ','), ','))::bigint AS campaign_id
+           FROM flwduplicateerrorreport
+          GROUP BY flwduplicateerrorreport.value
+         HAVING count(*) > 1
+        )
+SELECT cfd.id AS campaignformdata_id,
+       camp.uuid AS campaign_uuid,
+       a.uuid AS area_uuid,
+       a.name AS area,
+       r.uuid AS region_uuid,
+       r.name AS region,
+       d.uuid AS district_uuid,
+       d.name AS district,
+
+       -- Clean FirstName
+       f1.value ->> 'value' AS firstname,
+
+       -- Clean Title
+       f2.value ->> 'value' AS title,
+
+       -- Clean Tazkira No
+       f3.value ->> 'value' AS tazkiranumber,
+
+       CASE
+            WHEN dt.tazkira_value IS NOT NULL THEN 'Error: Duplicate Tazkira number'
+            ELSE 'No Error'
+       END AS error_status,
+       cfd.changedate AS last_modified
+FROM campaignformdata cfd
+JOIN filtered_campaign_ids fci ON cfd.id = fci.campaign_id
+LEFT JOIN campaignformmeta cfm ON cfd.campaignformmeta_id = cfm.id
+LEFT JOIN region r ON cfd.region_id = r.id
+LEFT JOIN areas a ON cfd.area_id = a.id
+LEFT JOIN district d ON cfd.district_id = d.id
+LEFT JOIN campaigns camp ON cfd.campaign_id = camp.id
+
+CROSS JOIN LATERAL json_array_elements(
+    regexp_replace(cfd.formvalues::text, '\\u0000', '', 'g')::json
+) f3(value)
+
+LEFT JOIN LATERAL (
+        SELECT elem.value
+          FROM json_array_elements(
+              regexp_replace(cfd.formvalues::text, '\\u0000', '', 'g')::json
+          ) elem(value)
+         WHERE elem.value ->> 'id' = 'FirstName'
+         LIMIT 1
+    ) f1 ON true
+
+LEFT JOIN LATERAL (
+        SELECT elem.value
+          FROM json_array_elements(
+              regexp_replace(cfd.formvalues::text, '\\u0000', '', 'g')::json
+          ) elem(value)
+         WHERE elem.value ->> 'id' = 'Title'
+         LIMIT 1
+    ) f2 ON true
+
+LEFT JOIN LATERAL json_array_elements(
+    regexp_replace(cfm.campaignformelements::text, '\\u0000', '', 'g')::json
+) meta(value) ON true
+
+LEFT JOIN duplicate_tazkiras dt ON (f3.value ->> 'value') = dt.tazkira_value
+WHERE f3.value ->> 'id' = 'TazkiraNo'
+  AND (f3.value ->> 'id') = (meta.value ->> 'id')
+WITH DATA;
+
+
+-- Indexes
+CREATE INDEX idx_mv_flw_area_uuid ON public.mv_flw_duplicate_error_analysis USING btree (area_uuid);
+CREATE INDEX idx_mv_flw_campaign_uuid ON public.mv_flw_duplicate_error_analysis USING btree (campaign_uuid);
+CREATE INDEX idx_mv_flw_composite_filter ON public.mv_flw_duplicate_error_analysis USING btree (campaign_uuid, area_uuid, region_uuid, district_uuid, error_status);
+CREATE INDEX idx_mv_flw_district_uuid ON public.mv_flw_duplicate_error_analysis USING btree (district_uuid);
+CREATE INDEX idx_mv_flw_error_status ON public.mv_flw_duplicate_error_analysis USING btree (error_status);
+CREATE INDEX idx_mv_flw_region_uuid ON public.mv_flw_duplicate_error_analysis USING btree (region_uuid);
+CREATE INDEX idx_mv_flw_sort_area ON public.mv_flw_duplicate_error_analysis USING btree (area, campaignformdata_id);
+CREATE INDEX idx_mv_flw_sort_district ON public.mv_flw_duplicate_error_analysis USING btree (district, campaignformdata_id);
+CREATE INDEX idx_mv_flw_sort_firstname ON public.mv_flw_duplicate_error_analysis USING btree (firstname, campaignformdata_id);
+CREATE INDEX idx_mv_flw_sort_region ON public.mv_flw_duplicate_error_analysis USING btree (region, campaignformdata_id);
+CREATE UNIQUE INDEX idx_mv_flw_unique_id ON public.mv_flw_duplicate_error_analysis USING btree (campaignformdata_id);
+
+
+INSERT INTO schema_version (version_number, comment)
+VALUES (490, 'Materialized View for FLW Operation performance #811');
+
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***
 

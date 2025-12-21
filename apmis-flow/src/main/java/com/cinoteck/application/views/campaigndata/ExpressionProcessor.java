@@ -125,7 +125,15 @@ public class ExpressionProcessor {
 								null,
 								null, null, false, e.getErrormessage() != null ? e.getCaption() +" : "+e.getErrormessage() +".." : "..");
 						//return;
-					} else {
+					}else if(value.toString().equals("false")) { 
+						campaignFormBuilder
+						.setFieldValue(campaignFormBuilder.getFields().get(e.getId()), 
+								CampaignFormElementType.fromString(e.getType()),
+								null,
+								null, null, false, e.getErrormessage() != null ? e.getCaption() +" : "+e.getErrormessage() +".." : "..");
+						//return;
+					}
+					else {
 						
 						Boolean isErrored = value.toString().endsWith(".0");
 //						System.out.println(e.getCaption() +" : "+value+" = ==========///\\\\\\\======= " + isErrored);
