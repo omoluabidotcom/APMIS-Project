@@ -8,6 +8,7 @@ import com.j256.ormlite.stmt.Where;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.UUID;
 
 import de.symeda.sormas.app.backend.common.AbstractAdoDao;
 import de.symeda.sormas.app.backend.common.AbstractDomainObject;
@@ -29,34 +30,31 @@ public class FCMTokenDao extends AbstractAdoDao<FCMToken> {
 
     public void updateFcmToken(String username, String token) {
         try {
-            QueryBuilder<FCMToken, Long> builder = dao.queryBuilder();
-            Where<FCMToken, Long> where = builder.where();
-            where.eq(FCMToken.USER_NAME, username.toLowerCase());
-            where.and().eq(AbstractDomainObject.SNAPSHOT, false);
-            PreparedQuery<FCMToken> preparedQuery = builder.prepare();
-            FCMToken fcmtoken = dao.queryForFirst(preparedQuery);
 
-            if (fcmtoken != null) {
-                fcmtoken.setToken(token);
-                dao.update(fcmtoken); 
-            } else {
-                FCMToken fcmToken = new FCMToken();
-                fcmToken.setUserName(username.toLowerCase());
-                fcmToken.setToken(token);
+            Date now = new Date();
+            FCMToken fcmtoken = dao.queryBuilder()
+                    .where()
+                    .eq(FCMToken.USER_NAME, username.toLowerCase())
+                    .and()
+                    .eq(AbstractDomainObject.SNAPSHOT, false)
+                    .queryForFirst();
 
-                // Required ADO fields
-                Date now = new Date();
-                fcmToken.setUuid(java.util.UUID.randomUUID().toString());
-                fcmToken.setCreationDate(now);
-                fcmToken.setChangeDate(now);
-                fcmToken.setLocalChangeDate(now);
-                fcmToken.setLastOpenedDate(now);
-                fcmToken.setModified(true);
-                fcmToken.setSnapshot(false);
-
-                dao.create(fcmToken);
-                dao.create(fcmToken);         
+            if (fcmtoken == null) {
+                fcmtoken = new FCMToken();
+                fcmtoken.setUuid(UUID.randomUUID().toString());
+                fcmtoken.setCreationDate(now);
             }
+
+            fcmtoken.setUserName(username.toLowerCase());
+            fcmtoken.setToken(token);
+            fcmtoken.setChangeDate(now);
+            fcmtoken.setLocalChangeDate(now);
+            fcmtoken.setLastOpenedDate(now);
+            fcmtoken.setModified(true);
+            fcmtoken.setSnapshot(false);
+
+            dao.createOrUpdate(fcmtoken);
+
         } catch (SQLException e) {
             throw new RuntimeException("Failed to update FCM Token for user: " + username, e);
         }
