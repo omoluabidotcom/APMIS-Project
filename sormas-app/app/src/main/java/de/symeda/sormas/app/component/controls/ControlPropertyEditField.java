@@ -26,6 +26,9 @@ import android.widget.TextView;
 
 import androidx.databinding.BindingAdapter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import de.symeda.sormas.api.user.UserRight;
 import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
@@ -249,6 +252,8 @@ public abstract class ControlPropertyEditField<T> extends ControlPropertyField<T
 			enableErrorState(R.string.validation_error_required);
 			return true;
 		}
+
+
 
 		return false;
 	}
@@ -567,5 +572,9 @@ public abstract class ControlPropertyEditField<T> extends ControlPropertyField<T
 	@BindingAdapter("hint")
 	public static void setHint(ControlTextEditField view, String hint) {
 		view.setHint(hint);
+	}
+
+	public boolean isRequired() {
+		return required;
 	}
 }

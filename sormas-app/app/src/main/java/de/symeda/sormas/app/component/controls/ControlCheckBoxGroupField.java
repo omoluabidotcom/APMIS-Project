@@ -52,7 +52,7 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 	// New layout components for vertical structure
 	private LinearLayout dynamicCheckboxesContainer;
 	private TextView groupLabel;
-	private LinearLayout errorIndicatorsLayout;
+//	private LinearLayout errorIndicatorsLayout;
 	Set<String> selectedElements = new HashSet<>();
 
 	// Add this field to store the pending value
@@ -73,19 +73,37 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
  
 		super(context);
 		this.storedContext = context;
-		this.selectedElements = new HashSet<>();
+		// In each constructor, add:
+		if (selectedElements == null) {
+			selectedElements = new HashSet<>();
+			logSelectedElementsChange("initialized in constructor333");
+		}
+//		this.selectedElements = new HashSet<>();
+//		logSelectedElementsChange("reset in constructor");
  	}
 
 	public ControlCheckBoxGroupField(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		this.storedContext = context;
-		this.selectedElements = new HashSet<>();
+		// In each constructor, add:
+		if (selectedElements == null) {
+			selectedElements = new HashSet<>();
+			logSelectedElementsChange("initialized in constructor22");
+		}
+//		this.selectedElements = new HashSet<>();
+//		logSelectedElementsChange("reset in setValue(null)");
 	}
 
 	public ControlCheckBoxGroupField(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		this.storedContext = context;
-		this.selectedElements = new HashSet<>();
+		// In each constructor, add:
+		if (selectedElements == null) {
+			selectedElements = new HashSet<>();
+			logSelectedElementsChange("initialized in constructor");
+		}
+//		this.selectedElements = new HashSet<>();
+//		logSelectedElementsChange("reset in setValue(empty)");
 	}
 
 	public <T extends Enum> void setEnumClass(Class<T> c) {
@@ -114,21 +132,25 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 		}
 	}
 
-
 	public void setOptions(Map<String, String> optionsValue) {
 		initializeContainers();
 		removeAllItems();
+
+		// DO NOT clear selectedElements here!
+		// We want to preserve selections if this is called after values are set
 
 		validOptionKeys = new HashSet<>();
 		validOptionKeys.clear();
 		validOptionKeys.addAll(optionsValue.keySet());
 
-
 		int index = 0;
 		for (Map.Entry<String, String> entry : optionsValue.entrySet()) {
 			String key = entry.getKey();    // This is the value we want to store
 			String value = entry.getValue(); // This is what we show to user
-			addItem(key, index, value);
+
+			// Check if this key should be selected based on current selectedElements
+			boolean shouldBeChecked = selectedElements != null && selectedElements.contains(key);
+			addItemWithPreSelection(key, index, value, shouldBeChecked);
 			index++;
 		}
 		optionsSet = true;
@@ -142,30 +164,80 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 	}
 
 	public void setOptionsAndValue(Map<String, String> optionsValue, Object fieldValue) {
-		if (selectedElements == null) {
-			selectedElements = new HashSet<>();
+		System.out.println("DEBUG setOptionsAndValue called with fieldValue: " + fieldValue);
+
+		// Parse the fieldValue first
+		List<String> valuesToSet = new ArrayList<>();
+		if (fieldValue instanceof List) {
+			List<?> valueList = (List<?>) fieldValue;
+			for (Object element : valueList) {
+				if (element != null) {
+					valuesToSet.add(element.toString().trim());
+				}
+			}
+		} else if (fieldValue != null) {
+			valuesToSet.add(fieldValue.toString().trim());
 		}
 
+		// Initialize selectedElements if null
+		if (selectedElements == null) {
+			selectedElements = new HashSet<>();
+			logSelectedElementsChange("initialized in setOptionsAndValue");
+		}
+		// DO NOT clear selectedElements here! We want to preserve any existing values
+
 		validOptionKeys = new HashSet<>();
-
 		validOptionKeys.clear();
-
 		validOptionKeys.addAll(optionsValue.keySet());
 
 		initializeContainers();
 		removeAllItems();
+
 		int index = 0;
 		for (Map.Entry<String, String> entry : optionsValue.entrySet()) {
 			String key = entry.getKey();
 			String value = entry.getValue();
-			addItemAndSetValue(key, index, value, fieldValue);
+			// Create checkbox with pre-selection
+			boolean shouldBeChecked = valuesToSet.contains(key);
+			addItemWithPreSelection(key, index, value, shouldBeChecked);
 			index++;
 		}
 		optionsSet = true;
+
+		// Make sure selectedElements matches what we just set
+		selectedElements.clear();
+		selectedElements.addAll(valuesToSet);
+
+		System.out.println("DEBUG setOptionsAndValue - Final selectedElements: " + selectedElements);
+
 		if (pendingValue != null) {
 			System.out.println("Applying pending value after options set: " + pendingValue);
 			applyValueToCheckboxes(pendingValue);
 			pendingValue = null;
+		}
+	}
+
+	private void addItemWithPreSelection(String key, int index, String displayText, boolean shouldBeChecked) {
+		// ALWAYS initialize if null
+		if (selectedElements == null) {
+			selectedElements = new HashSet<>();
+			logSelectedElementsChange("initialized in addItemWithPreSelection");
+		}
+
+		final CheckBox checkBox = createCheckBoxWithLayout(key, index, displayText);
+		if (dynamicCheckboxesContainer != null && checkBox != null) {
+			checkBoxes.put(key, checkBox);
+
+			// Set the checked state immediately
+			checkBox.setChecked(shouldBeChecked);
+
+			// Update selectedElements to match
+			if (shouldBeChecked) {
+				selectedElements.add(key);
+				System.out.println("DEBUG addItemWithPreSelection - Selected: " + key);
+			} else {
+				selectedElements.remove(key);
+			}
 		}
 	}
 
@@ -175,22 +247,6 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 		}
 		if (groupLabel == null) {
 			groupLabel = this.findViewById(R.id.label);
-		}
-		if (errorIndicatorsLayout == null) {
-			View labelFrame = this.findViewById(R.id.label_frame);
-			if (labelFrame instanceof LinearLayout) {
-				LinearLayout parentLayout = (LinearLayout) labelFrame;
-				for (int i = 0; i < parentLayout.getChildCount(); i++) {
-					View child = parentLayout.getChildAt(i);
-					if (child instanceof LinearLayout) {
-						LinearLayout childLayout = (LinearLayout) child;
-						if (childLayout.findViewById(R.id.required_indicator) != null) {
-							errorIndicatorsLayout = childLayout;
-							break;
-						}
-					}
-				}
-			}
 		}
 
 		if (checkBoxes == null) {
@@ -205,24 +261,61 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 		}
 	}
 
+
 	private void addItemAndSetValue(String key, int index, String displayText, Object value) {
+		// ALWAYS initialize if null
 		if (selectedElements == null) {
 			selectedElements = new HashSet<>();
+			logSelectedElementsChange("initialized in addItemAndSetValue");
 		}
 
 		final CheckBox checkBox = createCheckBoxWithLayout(key, index, displayText);
 		if (dynamicCheckboxesContainer != null && checkBox != null) {
-			try {
-				checkBoxes.put(key, checkBox);
-			} finally {
-				// Check if this checkbox should be selected based on the provided value
-				if (shouldCheckBoxBeSelected(key, value)) {
-					checkBox.setChecked(true);
-					selectedElements.add(key);
-				}
+			checkBoxes.put(key, checkBox);
+
+			// Check if this checkbox should be selected based on the provided value
+			if (shouldCheckBoxBeSelected(key, value)) {
+				checkBox.setChecked(true);
+				selectedElements.add(key);
+				System.out.println("DEBUG addItemAndSetValue - Selected: " + key);
 			}
 		}
 	}
+
+
+	private boolean valuesAreEqual(List<String> list1, List<String> list2) {
+		if (list1 == null && list2 == null) {
+			return true;
+		}
+		if (list1 == null || list2 == null) {
+			return false;
+		}
+
+		// Create sets for comparison (order doesn't matter for checkboxes)
+		Set<String> set1 = new HashSet<>(list1);
+		Set<String> set2 = new HashSet<>(list2);
+		return set1.equals(set2);
+	}
+//	private void addItemAndSetValue(String key, int index, String displayText, Object value) {
+//		if (selectedElements == null) {
+////			selectedElements = new HashSet<>();
+//			logSelectedElementsChange("safety initialized in addItemAndSetValue");
+//
+//		}
+//
+//		final CheckBox checkBox = createCheckBoxWithLayout(key, index, displayText);
+//		if (dynamicCheckboxesContainer != null && checkBox != null) {
+//			try {
+//				checkBoxes.put(key, checkBox);
+//			} finally {
+//				// Check if this checkbox should be selected based on the provided value
+//				if (shouldCheckBoxBeSelected(key, value)) {
+//					checkBox.setChecked(true);
+//					selectedElements.add(key);
+//				}
+//			}
+//		}
+//	}
 
 
 	private boolean shouldCheckBoxBeSelected(String key, Object value) {
@@ -254,39 +347,6 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 	}
 
 
-//	private void addItemAndSetValue(String key, int index, String displayText, Object value) {
-//		if (selectedElements == null) {
-//			selectedElements = new HashSet<>();
-//		}
-//
-//		final CheckBox checkBox = createCheckBoxWithLayout(key, index, displayText);
-//		if (dynamicCheckboxesContainer != null && checkBox != null) {
-//			try {
-//				checkBoxes.put(key, checkBox);
-//			} finally {
-//				if (value instanceof List) {
-//					List<?> valueList = (List<?>) value;
-//					for (Object element : valueList) {
-//						if (element instanceof String) {
-//							String str = ((String) element).trim();
-//							if (str.startsWith("[") && str.endsWith("]")) {
-//								str = str.substring(1, str.length() - 1);
-//							}
-//
-//							String[] parts = str.split("\\s*,\\s*");
-//
-//							for (String part : parts) {
-//								if (part.equals(key)) {
-//									checkBox.setChecked(true);
-//									selectedElements.add(key);
-//								}
-//							}
-//						}
-//					}
-//				}
-//			}
-//		}
-//	}
 
 	private CheckBox createCheckBoxWithLayout(String key, int index, String displayText) {
 		// Inflate individual checkbox item layout
@@ -314,41 +374,30 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 				checkBox.toggle();
 			}
 		});
-
 		checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
 			if (suppressListeners) return;
 
 			isUserInteraction = true;
 			try {
+				// Ensure selectedElements is initialized
 				if (selectedElements == null) {
-					selectedElements = new HashSet<>(); // Safety check
+					selectedElements = new HashSet<>();
+					logSelectedElementsChange("initialized in checkbox listener");
 				}
 
 				if (isChecked) {
 					selectedElements.add(key);
+					System.out.println("Checkbox '" + key + "' checked, selectedElements: " + selectedElements);
 				} else {
 					selectedElements.remove(key);
+					System.out.println("Checkbox '" + key + "' unchecked, selectedElements: " + selectedElements);
 				}
-				System.out.println("Checkbox '" + key + "' is now: " + isChecked);
 				notifyValueChanged();
 			} finally {
 				isUserInteraction = false;
 			}
 		});
-//
-//		checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-//			if (selectedElements == null) {
-//				selectedElements = new HashSet<>(); // Safety check
-//			}
-//
-//			if (isChecked) {
-//				selectedElements.add(key);
-//			} else {
-//				selectedElements.remove(key);
-//			}
-//			System.out.println("Checkbox '" + key + "' is now: " + isChecked);
-//			notifyValueChanged();
-//		});
+
 
 		if (dynamicCheckboxesContainer != null) {
 			dynamicCheckboxesContainer.addView(checkboxItemView);
@@ -377,16 +426,19 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 
 			isUserInteraction = true;
 			try {
+				// Ensure selectedElements is initialized
 				if (selectedElements == null) {
 					selectedElements = new HashSet<>();
+					logSelectedElementsChange("initialized in checkbox listener");
 				}
 
 				if (isChecked) {
 					selectedElements.add(key);
+					System.out.println("Checkbox '" + key + "' checked, selectedElements: " + selectedElements);
 				} else {
 					selectedElements.remove(key);
+					System.out.println("Checkbox '" + key + "' unchecked, selectedElements: " + selectedElements);
 				}
-				System.out.println("Checkbox '" + key + "' is now: " + isChecked);
 				notifyValueChanged();
 			} finally {
 				isUserInteraction = false;
@@ -399,6 +451,22 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 			dynamicCheckboxesContainer.addView(itemLayout);
 		}
 		return checkBox;
+	}
+
+	public void clearSelection() {
+		if (selectedElements != null) {
+			selectedElements.clear();
+		}
+		uncheckAll();
+		System.out.println("DEBUG - Cleared all selections");
+	}
+
+	public List<String> getSelectedValues() {
+		if (selectedElements == null) {
+			return new ArrayList<>();
+		}
+		// Return a copy to prevent modification
+		return new ArrayList<>(selectedElements);
 	}
 
 	private void notifyValueChanged() {
@@ -441,24 +509,24 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 			groupLabel.setText(labelText);
 		}
 	}
-
-	public void showError(String errorMessage) {
-		initializeContainers();
-		if (errorIndicatorsLayout != null) {
-			TextView errorIndicator = errorIndicatorsLayout.findViewById(R.id.error_indicator);
-			if (errorIndicator != null) {
-				errorIndicator.setText(errorMessage);
-				errorIndicator.setVisibility(View.VISIBLE);
-				errorIndicatorsLayout.setVisibility(View.VISIBLE);
-			}
-		}
-	}
-
-	public void hideErrors() {
-		if (errorIndicatorsLayout != null) {
-			errorIndicatorsLayout.setVisibility(View.GONE);
-		}
-	}
+//
+//	public void showError(String errorMessage) {
+//		initializeContainers();
+//		if (errorIndicatorsLayout != null) {
+//			TextView errorIndicator = errorIndicatorsLayout.findViewById(R.id.error_indicator);
+//			if (errorIndicator != null) {
+//				errorIndicator.setText(errorMessage);
+//				errorIndicator.setVisibility(View.VISIBLE);
+//				errorIndicatorsLayout.setVisibility(View.VISIBLE);
+//			}
+//		}
+//	}
+//
+//	public void hideErrors() {
+//		if (errorIndicatorsLayout != null) {
+//			errorIndicatorsLayout.setVisibility(View.GONE);
+//		}
+//	}
 
 	@Override
 	protected void initialize(Context context, AttributeSet attrs, int defStyle) {
@@ -549,15 +617,6 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 	private void applyValueToCheckboxes(Object value) {
 		suppressListeners = true;
 		try {
-
-			if (!isUserInteraction) {
-				selectedElements.clear();
-				uncheckAll();
-			}
-
-//			selectedElements.clear();
-//			uncheckAll();
-
 			List<String> valuesToSet = new ArrayList<>();
 
 			// Parse the value regardless of its format
@@ -584,20 +643,43 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 				}
 			}
 
-			System.out.println("DEBUG - Values to set on checkboxes: " + valuesToSet);
+			System.out.println("DEBUG applyValueToCheckboxes - Values to set: " + valuesToSet);
+			System.out.println("DEBUG applyValueToCheckboxes - Current selectedElements before: " + selectedElements);
 
-			// Now check the checkboxes
-			for (String key : valuesToSet) {
-				CheckBox checkBox = checkBoxes.get(key);
-				if (checkBox != null) {
-					checkBox.setChecked(true);
+			// NEVER clear selectedElements! Just update checkboxes
+			// First, uncheck any checkboxes that are NOT in valuesToSet
+			for (Map.Entry<Object, CheckBox> entry : checkBoxes.entrySet()) {
+				String key = entry.getKey().toString();
+				CheckBox checkBox = entry.getValue();
+
+				if (valuesToSet.contains(key)) {
+					// This should be checked
+					if (!checkBox.isChecked()) {
+						checkBox.setChecked(true);
+					}
+					// Ensure it's in selectedElements
 					selectedElements.add(key);
-					System.out.println("DEBUG - Checked checkbox for key: " + key);
+					System.out.println("DEBUG applyValueToCheckboxes - Ensured checked: " + key);
 				} else {
-					System.out.println("DEBUG - No checkbox found for key: '" + key + "'");
-					System.out.println("DEBUG - Available checkbox keys: " + checkBoxes.keySet());
+					// This should NOT be checked
+					if (checkBox.isChecked()) {
+						checkBox.setChecked(false);
+					}
+					// Remove from selectedElements
+					selectedElements.remove(key);
+					System.out.println("DEBUG applyValueToCheckboxes - Ensured unchecked: " + key);
 				}
 			}
+
+			// Also handle case where we might need to add keys that aren't in checkboxes yet
+			// (though this shouldn't happen if options are set first)
+			for (String key : valuesToSet) {
+				if (!selectedElements.contains(key)) {
+					selectedElements.add(key);
+				}
+			}
+
+			System.out.println("DEBUG applyValueToCheckboxes - Current selectedElements after: " + selectedElements);
 		} finally {
 			suppressListeners = false;
 		}
@@ -608,108 +690,6 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 			disableErrorState();
 		}
 	}
-
-//	@Override
-//	protected void setFieldValue( Object value) {
-//		pendingValue = value;
-//		checkBoxes.put(value, new CheckBox(storedContext));
-//		if (checkBoxes.isEmpty()) {
-//			pendingValue = value;
-//			return;
-//		}
-//		applyValueToCheckboxes(value);
-//	}
-
-//	private void applyValueToCheckboxes(Object value) {
-//		suppressListeners = true;
-//		try {
-//			selectedElements.clear();
-//			uncheckAll();
-//
-//			if (value instanceof List) {
-//				List<?> valueList = (List<?>) value;
-//				for (Object element : valueList) {
-//					if (element instanceof List) {
-//						// Handle nested lists
-//						for (Object inner : (List<?>) element) {
-//							handleElement(inner);
-//						}
-//					} else if (element instanceof String) {
-//						// Clean up string values like "[NA, No_assistance, Community_mobilization]"
-//						String str = ((String) element).trim();
-//						// Remove brackets if present
-//						if (str.startsWith("[") && str.endsWith("]")) {
-//							str = str.substring(1, str.length() - 1);
-//						}
-//						// Split by comma
-//						String[] parts = str.split("\\s*,\\s*"); // trims whitespace around commas
-//
-//						for (String part : parts) {
-//							System.out.println(part + "  extracted value");
-//							handleElement(part);
-//						}
-//					} else {
-//						handleElement(element);
-//					}
-//				}
-//			} else if (value != null) {
-//				handleElement(value);
-//			}
-//		} finally {
-//			suppressListeners = false;
-//		}
-//
-//		notifyValueChanged();
-//
-//		if (!selectedElements.isEmpty()) {
-//			disableErrorState();
-//		}
-//	}
-
-	private void handleElement(Object element) {
-		if (element == null) {
-			return;
-		}
-
-		String key = element.toString().trim();
-
-		CheckBox checkBox = checkBoxes.get(key);
-		if (checkBox != null) {
-			checkBox.setChecked(true);
-			selectedElements.add(key);
-			System.out.println("Successfully checked checkbox for key: " + key);
-		} else {
-			System.out.println("WARNING: No checkbox found for key: '" + key + "'");
-			System.out.println("Available keys: " + checkBoxes.keySet());
-		}
-	}
-
-
-//	@Override
-//	protected Object getFieldValue() {
-//		List<String> selectedList = new ArrayList<>(selectedElements);
-//		System.out.println("getFieldValue() returning: " + selectedList);
-//		return selectedList;
-//	}
-
-//	@Override
-//	protected Object getFieldValue() {
-//		List<String> selectedList = new ArrayList<>(selectedElements);
-//
-//		// Filter out invalid values that are not part of the configured options
-//		if (!validOptionKeys.isEmpty()) {
-//			selectedList = selectedList.stream()
-//					.filter(validOptionKeys::contains)
-//					.collect(Collectors.toList());
-//
-//			// Update selectedElements to remove invalid entries
-////			selectedElements.retainAll(validOptionKeys);
-//		}
-//
-//		System.out.println("getFieldValue() returning (filtered): " + selectedList);
-//		return selectedList;
-//	}
-
 
 	@Override
 	protected Object getFieldValue() {
@@ -728,9 +708,19 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 
 	@Override
 	public boolean setErrorIfEmpty() {
-		if (!required || !isEnabled()) {
+
+		System.out.println("DEBUG ControlCheckBoxGroupField.setErrorIfEmpty() - required: " + isRequired() +
+				", enabled: " + isEnabled() + ", selectedElements size: " + getSelectedElementsSize() +
+				", field id: " + getId());
+
+		if (!isEnabled()) {
 			return false;
 		}
+
+		if (!isRequired()) {
+			return false;
+		}
+
 		// For checkbox groups, check if no checkboxes are selected
 		List<String> selectedList = new ArrayList<>(selectedElements);
 		if (selectedList.isEmpty()) {
@@ -740,6 +730,39 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 
 		return false;
 	}
+////	@Override
+//	public boolean setErrorIfEmpty() {
+//		System.out.println("DEBUG ControlCheckBoxGroupField.setErrorIfEmpty() called - required: " + required + ", enabled: " + isEnabled() + ", selectedElements size: " + selectedElements.size());
+//		if (!required || !isEnabled()) {
+//			System.out.println("DEBUG ControlCheckBoxGroupField.setErrorIfEmpty() - skipping validation (not required or not enabled)");
+//			return false;
+//		}
+//		// For checkbox groups, check if no checkboxes are selected
+//		List<String> selectedList = new ArrayList<>(selectedElements);
+//		System.out.println("DEBUG ControlCheckBoxGroupField.setErrorIfEmpty() - selectedList: " + selectedList);
+//		if (selectedList.isEmpty()) {
+//			System.out.println("DEBUG ControlCheckBoxGroupField.setErrorIfEmpty() - enabling error state");
+//			enableErrorState(R.string.validation_error_required);
+//			return true;
+//		}
+//
+//		return false;
+//	}
+
+//	@Override
+//	public boolean setErrorIfEmpty() {
+//		if (!required || !isEnabled()) {
+//			return false;
+//		}
+//		// For checkbox groups, check if no checkboxes are selected
+//		List<String> selectedList = new ArrayList<>(selectedElements);
+//		if (selectedList.isEmpty()) {
+//			enableErrorState(R.string.validation_error_required);
+//			return true;
+//		}
+//
+//		return false;
+//	}
 
 
 	@Override
@@ -815,30 +838,32 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 
 	@Override
 	protected void changeVisualState(VisualState state) {
-		// Handle label color changes like other fields
+		// Handle label color changes
 		if (groupLabel != null) {
 			int labelColor = getResources().getColor(state.getLabelColor());
 			groupLabel.setTextColor(labelColor);
 		}
 
 		if (state == VisualState.ERROR) {
-			setBackgroundColor(getResources().getColor(android.R.color.holo_red_light) & 0x33FFFFFF); // Semi-transparent red
+			// Make error more visible
+			setBackgroundColor(getResources().getColor(android.R.color.holo_red_light) & 0x33FFFFFF);
+
+			// Optionally scroll to this field
+			requestFocus();
 		} else {
 			setBackgroundColor(Color.TRANSPARENT);
 		}
+	}
 
-		switch (state) {
-			case ERROR:
-				// Show error indicators
-				if (errorIndicatorsLayout != null) {
-					errorIndicatorsLayout.setVisibility(View.VISIBLE);
-				}
-				break;
-			case NORMAL:
-				hideErrors();
-				break;
-			default:
-				break;
-		}
+	public int getSelectedElementsSize() {
+		return selectedElements != null ? selectedElements.size() : 0;
+	}
+
+	public Set<String> getSelectedElements() {
+		return selectedElements != null ? new HashSet<>(selectedElements) : new HashSet<>();
+	}
+
+	private void logSelectedElementsChange(String operation) {
+		System.out.println("DEBUG selectedElements " + operation + " - size: " + getSelectedElementsSize() + ", elements: " + getSelectedElements());
 	}
 }

@@ -703,9 +703,17 @@ public class StartupShutdownService {
 				nextUpdateBuilder.append(nextLine).append("\n");
 
 				// Perform the current update when the INSERT INTO schema_version statement is reached
+//				if (schemaLineVersion != null) {
+//					logger.info("Updating database to version {}...", schemaLineVersion);
+//					entityManager.createNativeQuery(nextUpdateBuilder.toString()).executeUpdate();
+//					nextUpdateBuilder.setLength(0);
+//				}
+				
 				if (schemaLineVersion != null) {
 					logger.info("Updating database to version {}...", schemaLineVersion);
-					entityManager.createNativeQuery(nextUpdateBuilder.toString()).executeUpdate();
+					String sqlToExecute = nextUpdateBuilder.toString();
+					logger.info("Executing SQL: {}", sqlToExecute); // Add this line
+					entityManager.createNativeQuery(sqlToExecute).executeUpdate();
 					nextUpdateBuilder.setLength(0);
 				}
 			}

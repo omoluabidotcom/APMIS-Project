@@ -28,6 +28,8 @@ public class CampaignFormElement implements Serializable {
 	public static final String ERRORMESSAGE = "errormessage";
 	public static final String COMMENT = "comment";
 	public static final String DEFAULTVALUE = "defaultvalue";
+	public static final String EXPRESSIONZEROBEHAVIOUR = "expressionZeroBehavior";
+
 
 	private static final long serialVersionUID = 5553496750859734167L;
 
@@ -74,6 +76,7 @@ public class CampaignFormElement implements Serializable {
 	private String errormessage;
 	private String comment;
 	private String defaultvalue;
+	private String expressionZeroBehavior;
 
 	public String getType() {
 		return type;
@@ -217,6 +220,16 @@ public class CampaignFormElement implements Serializable {
 	public void setDefaultvalue(String defaultvalue) {
 		this.defaultvalue = defaultvalue;
 	}
+	
+	
+
+	public String getExpressionZeroBehavior() {
+		return expressionZeroBehavior;
+	}
+
+	public void setExpressionZeroBehavior(String expressionZeroBehavior) {
+		this.expressionZeroBehavior = expressionZeroBehavior;
+	}
 
 	/**
 	 * Needed. Otherwise hibernate will persist whenever loading, because hibernate
@@ -240,12 +253,13 @@ public class CampaignFormElement implements Serializable {
 				&& Objects.equals(warnonerror, that.warnonerror)
 				&& Objects.equals(errormessage, that.errormessage)
 				&& Objects.equals(comment, that.comment)
-				&& Objects.equals(defaultvalue, that.defaultvalue);
+				&& Objects.equals(defaultvalue, that.defaultvalue)
+				&& Objects.equals(expressionZeroBehavior, that.expressionZeroBehavior);
 	}
 
 	@Override
 	public int hashCode() {
-		int result = Objects.hash(type, id, caption, expression, dependingOn, important, warnonerror, errormessage, comment, defaultvalue, ignoredisable);
+		int result = Objects.hash(type, id, caption, expression, dependingOn, important, warnonerror, errormessage, comment, defaultvalue, ignoredisable, expressionZeroBehavior);
 		result = 31 * result + Arrays.hashCode(styles);
 	//	result = 31 * result + Arrays.hashCode(options);
 		result = 31 * result + Arrays.hashCode(constraints);
