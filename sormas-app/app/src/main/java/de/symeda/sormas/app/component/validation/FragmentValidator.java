@@ -23,6 +23,9 @@ import android.view.ViewGroup;
 
 import androidx.databinding.ViewDataBinding;
 
+import java.time.LocalDate;
+import java.util.Date;
+
 import de.symeda.sormas.api.utils.ValidationException;
 import de.symeda.sormas.app.component.controls.ControlCheckBoxGroupField;
 import de.symeda.sormas.app.component.controls.ControlDateField;
@@ -54,6 +57,14 @@ public class FragmentValidator {
 		}
 	}
 
+	public static void validate(Context context, ViewDataBinding contentBinding, LocalDate minDate,  LocalDate maxDate,  LocalDate formDate) throws ValidationException {
+		ValidationErrorInfo errorInfo = FragmentValidator.validateFragment(context, contentBinding, minDate, maxDate, formDate);
+
+		if (errorInfo.hasError()) {
+			throw new ValidationException(errorInfo.toString());
+		}
+	}
+
 	private static ValidationErrorInfo validateFragment(Context context, ViewDataBinding fragmentBinding) {
 		ValidationErrorInfo errorInfo = new ValidationErrorInfo(context);
 
@@ -62,6 +73,15 @@ public class FragmentValidator {
 
 		return errorInfo;
 	}
+	private static ValidationErrorInfo validateFragment(Context context, ViewDataBinding fragmentBinding, LocalDate minDate,  LocalDate maxDate,  LocalDate formDate) {
+		ValidationErrorInfo errorInfo = new ValidationErrorInfo(context);
+
+		ViewGroup root = (ViewGroup) fragmentBinding.getRoot();
+		validatePropertyEditFields(root, errorInfo, minDate, maxDate, formDate);
+
+		return errorInfo;
+	}
+
 
 	private static void validatePropertyEditFields(ViewGroup parent, ValidationErrorInfo errorInfo) {
 		for (int i = 0; i < parent.getChildCount(); i++) {
@@ -104,6 +124,54 @@ public class FragmentValidator {
 //				}
 			} else if (child instanceof ViewGroup) {
 				validatePropertyEditFields((ViewGroup) child, errorInfo);
+			}
+		}
+	}
+
+	private static void validatePropertyEditFields(ViewGroup parent, ValidationErrorInfo errorInfo, LocalDate minDate,  LocalDate maxDate,  LocalDate formDate) {
+		for (int i = 0; i < parent.getChildCount(); i++) {
+			View child = parent.getChildAt(i);
+			if (child instanceof ControlPropertyEditField) {
+				ControlPropertyEditField field = (ControlPropertyEditField) child;
+				boolean fieldHasError = field.setErrorIfEmpty();
+
+				if (field instanceof ControlDateField) {
+					ControlDateField dateField = (ControlDateField) field;
+					if (minDate != null) {
+						Date minDateAsDate = Date.from(minDate.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
+						dateField.setMinDate(minDateAsDate);
+					}
+					if (maxDate != null) {
+						Date maxDateAsDate = Date.from(maxDate.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
+						dateField.setMaxDate(maxDateAsDate);
+					}
+					// Now validate the field
+					fieldHasError |= dateField.setErrorIfOutOfDateRange();
+				}
+
+				if (field instanceof ControlDateTimeField) {
+					if ((minDate != null && formDate.isBefore(minDate)) ||
+							(maxDate != null && formDate.isAfter(maxDate))) {
+						((ControlDateTimeField) field).setErrorIfOutOfDateRange();
+					}				}
+
+				if (field.getValidationCallback() != null) {
+					fieldHasError |= (Boolean) field.getValidationCallback().call();
+				}
+
+
+
+				// Disable error state on the field if all check returned without errors
+				if (!fieldHasError) {
+					field.disableErrorState();
+				}
+
+				if (field.isHasError() && field.getVisibility() == VISIBLE && field.isEnabled()) {
+					errorInfo.addFieldWithError(field);
+				}
+
+			} else if (child instanceof ViewGroup) {
+				validatePropertyEditFields((ViewGroup) child, errorInfo, minDate, maxDate, formDate);
 			}
 		}
 	}

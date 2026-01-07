@@ -18,24 +18,6 @@ package de.symeda.sormas.app.campaign;
 import static de.symeda.sormas.api.campaign.ExpressionProcessorUtils.refreshEvaluationContext;
 import static de.symeda.sormas.api.utils.FieldConstraints.CHARACTER_LIMIT_DEFAULT;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EmptyStackException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.EvaluationException;
-import org.springframework.expression.Expression;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.SpelEvaluationException;
-import org.springframework.expression.spel.SpelMessage;
-
 import android.content.Context;
 import android.text.InputType;
 import android.util.AttributeSet;
@@ -47,6 +29,23 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.fragment.app.FragmentManager;
+
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.SpelEvaluationException;
+import org.springframework.expression.spel.SpelMessage;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EmptyStackException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
@@ -76,6 +75,7 @@ public class CampaignFormDataFragmentUtils {
     public static final int DEFAULT_MIN_LENGTH = 1;
     private static final DecimalFormat df = new DecimalFormat("0.00");
     private static boolean isExpressionEvaluationInProgress = false;
+
     private CampaignFormDataFragmentUtils() {
     }
 
@@ -103,17 +103,17 @@ public class CampaignFormDataFragmentUtils {
             Boolean isDisIgnore,
             Object orginalValue) {
         try {
-            if(!expressionString.isEmpty() && expressionString != null && !expressionString.equals("")) {
+            if (!expressionString.isEmpty() && expressionString != null && !expressionString.equals("")) {
                 final Object expressionValue = getExpressionValue(expressionParser, formValues, expressionString);
                 String valuex = expressionValue + "";
 
                 if (!valuex.isEmpty() && !valuex.equals("") && expressionValue != null) {//&& !valuex.equals("0")
 
                     if (expressionValue != null) { //we need to see how to check and filter when its blank or empty
-                        System.out.println(dynamicField.getCaption()+" : "+ expressionString+" =====)))))))))))))))==== "+expressionValue);
+                        System.out.println(dynamicField.getCaption() + " : " + expressionString + " =====)))))))))))))))==== " + expressionValue);
                         if (type == CampaignFormElementType.YES_NO) {
                             ControlSwitchField.setValue((ControlSwitchField) dynamicField, expressionValue, true, YesNo.class, null);
-                        }else if (type == CampaignFormElementType.RANGE) {
+                        } else if (type == CampaignFormElementType.RANGE) {
                             String valudex = valuex == null ? "" : valuex.endsWith(".0") ? valuex.replace(".0", "") : valuex;
 
                             if (orginalValue != null) {
@@ -124,7 +124,7 @@ public class CampaignFormDataFragmentUtils {
                                         ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, expressionValue.toString().equals("0") ? "0" : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
                                     }
                                 }
-                            }else {
+                            } else {
                                 if (valudex != null) {
                                     ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, expressionValue.toString().equals("0") ? "" : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
                                 }
@@ -210,7 +210,7 @@ public class CampaignFormDataFragmentUtils {
                                     }
                                 }
                             }
-                        }else if (type == CampaignFormElementType.NUMBER) {
+                        } else if (type == CampaignFormElementType.NUMBER) {
                             String valudex = null;
                             try {
                                 double num = Double.parseDouble(valuex);
@@ -222,7 +222,7 @@ public class CampaignFormDataFragmentUtils {
                                         // If it's a decimal, format to 2 decimal places
                                         valudex = String.format("%.2f", num);
                                     }
-                                }else{
+                                } else {
                                     valudex = String.valueOf((int) num); // Whole number
 
                                 }
@@ -251,7 +251,7 @@ public class CampaignFormDataFragmentUtils {
                 }
 
 
-            }else{
+            } else {
 
             }
         } catch (SpelEvaluationException e) {
@@ -259,9 +259,9 @@ public class CampaignFormDataFragmentUtils {
         }
         if (type == CampaignFormElementType.RANGE || type == CampaignFormElementType.DECIMAL) {
             dynamicField.setEnabled(true);
-        }else if (isDisIgnore) {
+        } else if (isDisIgnore) {
             dynamicField.setEnabled(true);
-        }else{
+        } else {
             dynamicField.setEnabled(false);
         }
 
@@ -420,8 +420,6 @@ public class CampaignFormDataFragmentUtils {
 //    }
 
 
-
-
     public static void handleExpression(
             ExpressionParser expressionParser,
             List<CampaignFormDataEntry> formValues,
@@ -455,7 +453,7 @@ public class CampaignFormDataFragmentUtils {
                                     } else {
                                         valudex = String.format("%.2f", num); // Decimal to 2 dp
                                     }
-                                }else{
+                                } else {
                                     valudex = String.valueOf((int) num); // Whole number
                                 }
                             } catch (NumberFormatException e) {
@@ -537,7 +535,7 @@ public class CampaignFormDataFragmentUtils {
         } catch (SpelEvaluationException e) {
             Log.e("Error evaluating expression on field2 : " + dynamicField.getCaption(), e.getMessage());
         }
-        if (type == CampaignFormElementType.RANGE || type == CampaignFormElementType.DECIMAL ) {
+        if (type == CampaignFormElementType.RANGE || type == CampaignFormElementType.DECIMAL) {
             dynamicField.setEnabled(true);
         } else if (isDisIgnore) {
             dynamicField.setEnabled(true);
@@ -1088,8 +1086,8 @@ public class CampaignFormDataFragmentUtils {
                 : dependingOnFieldValue.toString().equalsIgnoreCase("Yes") ? "true" : dependingOnFieldValue.toString().equalsIgnoreCase("No") ? "false" : dependingOnFieldValue.toString();
 
 
-        System.out.println(parsedDependingOnFieldValue + " parsedDependingOnFieldValue ========"  + dependingOnValues.equalsIgnoreCase(parsedDependingOnFieldValue));
-        System.out.println(parsedDependingOnFieldValue + " 22222parsedDependingOnFieldValue ========"  + dependingOnValues.contains(parsedDependingOnFieldValue));
+        System.out.println(parsedDependingOnFieldValue + " parsedDependingOnFieldValue ========" + dependingOnValues.equalsIgnoreCase(parsedDependingOnFieldValue));
+        System.out.println(parsedDependingOnFieldValue + " 22222parsedDependingOnFieldValue ========" + dependingOnValues.contains(parsedDependingOnFieldValue));
 
 
         if (dependingOnValues.contains("!")) {
@@ -1330,7 +1328,7 @@ public class CampaignFormDataFragmentUtils {
                 return CHARACTER_LIMIT_DEFAULT;
             }
 
-//
+            //
             @Override
             protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
                 super.inflateView(context, attrs, defStyle);
@@ -1992,6 +1990,7 @@ public class CampaignFormDataFragmentUtils {
     }
 
 
+
     public static ControlCheckBoxGroupField createControlMultiSelectCheckBoxEditField(
             CampaignFormElement campaignFormElement,
             Context context,
@@ -2001,6 +2000,7 @@ public class CampaignFormDataFragmentUtils {
             boolean isRequired) {
 
         return new ControlCheckBoxGroupField(context) {
+            @Override
             protected String getPrefixDescription() {
                 return getUserLanguageCaption(userTranslations, campaignFormElement);
             }
@@ -2024,11 +2024,6 @@ public class CampaignFormDataFragmentUtils {
             protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
                 super.inflateView(context, attrs, defStyle);
 
-                // Add debug logging
-                System.out.println("DEBUG Creating checkbox field for: " + campaignFormElement.getId());
-                System.out.println("DEBUG Selected keys passed: " + selectedKeys);
-                System.out.println("DEBUG Options available: " + optionValues);
-
                 // Initialize the parent field components
                 initLabel();
                 initLabelAndValidationListeners();
@@ -2044,34 +2039,29 @@ public class CampaignFormDataFragmentUtils {
                     setRequired(true);
                 }
 
-                // Set up the checkbox options
-                if (optionValues != null && !optionValues.isEmpty()) {
-                    // Convert selectedKeys to proper format for the field
-                    List<String> finalSelectedKeys = new ArrayList<>();
-                    if (selectedKeys != null && !selectedKeys.isEmpty()) {
-                        for (Object key : selectedKeys) {
-                            if (key != null) {
-                                String strKey = key.toString().trim();
-                                if (!strKey.isEmpty()) {
-                                    finalSelectedKeys.add(strKey);
-                                }
+                // Convert selectedKeys to proper format
+                List<String> finalSelectedKeys = new ArrayList<>();
+                if (selectedKeys != null && !selectedKeys.isEmpty()) {
+                    for (Object key : selectedKeys) {
+                        if (key != null) {
+                            String strKey = key.toString().trim();
+                            if (!strKey.isEmpty()) {
+                                finalSelectedKeys.add(strKey);
                             }
                         }
                     }
+                }
 
+                // Set up the checkbox options with values
+                if (optionValues != null && !optionValues.isEmpty()) {
                     System.out.println("DEBUG - Setting options with selected keys: " + finalSelectedKeys);
                     setOptionsAndValue(optionValues, finalSelectedKeys);
-
-//                    // Double-check after setting
-//                    new Handler().postDelayed(() -> {
-//                        System.out.println("DEBUG - After setOptionsAndValue, selectedElements: " + getSelectedElements());
-//                    }, 100);
                 }
             }
         };
     }
 
-    //    public static ControlCheckBoxGroupField createControlMultiSelectCheckBoxEditField(
+//    public static ControlCheckBoxGroupField createControlMultiSelectCheckBoxEditField(
 //            CampaignFormElement campaignFormElement,
 //            Context context,
 //            Map<String, String> userTranslations,
@@ -2080,7 +2070,6 @@ public class CampaignFormDataFragmentUtils {
 //            boolean isRequired) {
 //
 //        return new ControlCheckBoxGroupField(context) {
-//            @Override
 //            protected String getPrefixDescription() {
 //                return getUserLanguageCaption(userTranslations, campaignFormElement);
 //            }
@@ -2104,6 +2093,11 @@ public class CampaignFormDataFragmentUtils {
 //            protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
 //                super.inflateView(context, attrs, defStyle);
 //
+//                // Add debug logging
+//                System.out.println("DEBUG Creating checkbox field for: " + campaignFormElement.getId());
+//                System.out.println("DEBUG Selected keys passed: " + selectedKeys);
+//                System.out.println("DEBUG Options available: " + optionValues);
+//
 //                // Initialize the parent field components
 //                initLabel();
 //                initLabelAndValidationListeners();
@@ -2121,39 +2115,28 @@ public class CampaignFormDataFragmentUtils {
 //
 //                // Set up the checkbox options
 //                if (optionValues != null && !optionValues.isEmpty()) {
-//                    System.out.println("DEBUG - Options: " + optionValues);
-//
-//
-//
 //                    // Convert selectedKeys to proper format for the field
 //                    List<String> finalSelectedKeys = new ArrayList<>();
-//                    // In your CampaignFragmentUtil.createControlMultiSelectCheckBoxEditField method:
-//// Make sure selectedKeys contains the saved values from database
 //                    if (selectedKeys != null && !selectedKeys.isEmpty()) {
-//                        System.out.println("DEBUG - Passing selectedKeys to field: " + selectedKeys);
-//                        // Convert to List<String> properly
-//                        List<String> stringKeys = new ArrayList<>();
 //                        for (Object key : selectedKeys) {
 //                            if (key != null) {
-//                                stringKeys.add(key.toString());
+//                                String strKey = key.toString().trim();
+//                                if (!strKey.isEmpty()) {
+//                                    finalSelectedKeys.add(strKey);
+//                                }
 //                            }
 //                        }
-//                        setOptionsAndValue(optionValues, stringKeys);
-//                    } else {
-//                        // If no saved values, pass empty list
-//                        setOptionsAndValue(optionValues, new ArrayList<>());
 //                    }
 //
-//                    System.out.println("DEBUG - Setting selected keys: " + finalSelectedKeys);
-//                    setOptionsAndValue(optionValues, finalSelectedKeys);
-////                    System.out.println("DEBUG - After setOptionsAndValue, selectedElements size: " + ((ControlCheckBoxGroupField) ControlCheckBoxGroupField.this).getSelectedElementsSize());
+//                    System.out.println("DEBUG - Setting options with selected keys: " + finalSelectedKeys);
+////                    setOptionsAndValue(optionValues, finalSelectedKeys);
+//
 //                }
 //            }
-//
-//
 //        };
 //    }
-//
+
+
     public static ControlCheckBoxGroupField createControlMultiSelectCheckBoxField(
             CampaignFormElement campaignFormElement,
             Context context,
@@ -2323,7 +2306,7 @@ public class CampaignFormDataFragmentUtils {
 
             @Override
             public int getMaxLines() {
-                return 1;
+                return 5;
             }
 
             @Override

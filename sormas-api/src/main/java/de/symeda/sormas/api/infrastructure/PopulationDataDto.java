@@ -32,6 +32,7 @@ public class PopulationDataDto extends EntityDto {
 	public static final String SELECTED = "selected";
 	public static final String MODALITY = "modality";
 	public static final String DISTRICT_STATUS = "districtstatus";
+	public static final String CAMPAIGN_STATUS = "campaignstatus";
 
 	private RegionReferenceDto region;
 	private DistrictReferenceDto district;
@@ -44,6 +45,8 @@ public class PopulationDataDto extends EntityDto {
 	private String selected;
 	private String modality;
 	private String districtStatus;
+	private String campaignStatus;
+
 
 	private String campaign_id;
 	private String district_id;
@@ -60,15 +63,6 @@ public class PopulationDataDto extends EntityDto {
         this.selected = selected;
     }
 
-//	public PopulationDataDto(String campaign_id, String district_id, String selected) {
-//
-//		this.setUuid(DataHelper.createUuid());
-//		this.setChangeDate(Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-//
-//		this.campaign_id = campaign_id;
-//		this.district_id = district_id;
-//		this.selected = selected;
-//	}
 
 	public static PopulationDataDto build(Date collectionDate) {
 
@@ -182,6 +176,8 @@ public class PopulationDataDto extends EntityDto {
 	public void setDistrict_id(String district_id) {
 		this.district_id = district_id;
 	}
+	
+	
 
 //	public String getUuid() {
 //		return uuid;

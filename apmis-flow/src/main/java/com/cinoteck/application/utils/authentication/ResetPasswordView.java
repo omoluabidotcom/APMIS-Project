@@ -149,10 +149,10 @@ public class ResetPasswordView extends VerticalLayout implements BeforeEnterObse
     private SendGridEmailService getMailer() {
         // Get values from application.properties or use defaults
         // These values should match your application.properties
-        String apiKey = System.getProperty("sendgrid.api.key", 
-            "REDACTED");
+        String apiKey = "";
+
         String fromEmail = System.getProperty("mail.from.email", 
-            "salamioluwasegun.a@gmail.com");
+            "passwordreset@afghanistan-apmis.com");
         String fromName = System.getProperty("mail.from.name", 
             "APMIS Support");
         String appBaseUrl = System.getProperty("app.base.url", 

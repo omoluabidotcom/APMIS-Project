@@ -43,6 +43,7 @@ public class Community extends InfrastructureAdo {
 	public static final String EXTERNAL_ID = "externalId";
 	public static final String CLUSTER_NUMBER = "clusterNumber";
 	public static final String FLOATING_STATUS = "floating";
+	public static final String INTERNATIONAL_BORDER = "internationalborder";
 
 	private String name;
 	private String fa_af;
@@ -52,6 +53,8 @@ public class Community extends InfrastructureAdo {
 	private Long externalId;
 	private Integer clusterNumber;
 	private String floating;
+	
+	private boolean internationalBorder;
 
 	public String getName() {
 			return name;
@@ -120,6 +123,16 @@ public class Community extends InfrastructureAdo {
 
 	public void setFloating(String floating) {
 		this.floating = floating;
+	}
+	
+	
+
+	public boolean isInternationalBorder() {
+		return internationalBorder;
+	}
+
+	public void setInternationalBorder(boolean internationalBorder) {
+		this.internationalBorder = internationalBorder;
 	}
 
 	@Override

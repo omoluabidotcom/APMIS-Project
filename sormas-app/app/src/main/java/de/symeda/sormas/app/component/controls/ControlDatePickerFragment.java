@@ -35,10 +35,14 @@ public class ControlDatePickerFragment extends DialogFragment implements DatePic
 	// Constants
 
 	public static final String KEY_DATE = "Date";
+	public static final String KEY_MIN_DATE = "MinDate";
+	public static final String KEY_MAX_DATE = "MaxDate";
 
 	// Attributes
 
 	private Date date = null;
+	private Date minDate = null;
+	private Date maxDate = null;
 
 	// Listeners
 
@@ -53,6 +57,8 @@ public class ControlDatePickerFragment extends DialogFragment implements DatePic
 
 		if (outState != null) {
 			outState.putSerializable(KEY_DATE, date);
+			outState.putSerializable(KEY_MIN_DATE, minDate);
+			outState.putSerializable(KEY_MAX_DATE, maxDate);
 		}
 	}
 
@@ -62,8 +68,16 @@ public class ControlDatePickerFragment extends DialogFragment implements DatePic
 
 		Bundle arguments = (savedInstanceState != null) ? savedInstanceState : getArguments();
 
-		if (arguments != null && arguments.containsKey(KEY_DATE)) {
-			date = (Date) arguments.get(KEY_DATE);
+		if (arguments != null) {
+			if (arguments.containsKey(KEY_DATE)) {
+				date = (Date) arguments.get(KEY_DATE);
+			}
+			if (arguments.containsKey(KEY_MIN_DATE)) {
+				minDate = (Date) arguments.get(KEY_MIN_DATE);
+			}
+			if (arguments.containsKey(KEY_MAX_DATE)) {
+				maxDate = (Date) arguments.get(KEY_MAX_DATE);
+			}
 		}
 	}
 
@@ -81,6 +95,13 @@ public class ControlDatePickerFragment extends DialogFragment implements DatePic
 
 		final DatePickerDialog datePickerWithClear =
 			new DatePickerDialog(getActivity(), R.style.Theme_Tebo_Dialog_DatePicker, this, year, month, dayOfMonth);
+
+		if (minDate != null) {
+			datePickerWithClear.getDatePicker().setMinDate(minDate.getTime());
+		}
+		if (maxDate != null) {
+			datePickerWithClear.getDatePicker().setMaxDate(maxDate.getTime());
+		}
 
 		datePickerWithClear
 			.setButton(DialogInterface.BUTTON_NEUTRAL, getResources().getText(R.string.action_clear), new DialogInterface.OnClickListener() {

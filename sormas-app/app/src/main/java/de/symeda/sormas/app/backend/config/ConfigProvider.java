@@ -95,8 +95,8 @@ public final class ConfigProvider {
 	private static String LBDS_KEYSTORE_ALIAS_AES_SECRET = "LBDS_AES_SECRET";
 
  
-	public static String APPVERSIONNUMBER = "1.0.41";
-	public static String APPRELEASEDATE = "2 Dec, 2025";
+	public static String APPVERSIONNUMBER = "1.0.42";
+	public static String APPRELEASEDATE = "15 JAN, 2026";
 
 
 	private static final String FULL_COUNTRY_LOCALE_PATTERN = "[a-zA-Z]*-[a-zA-Z]*";
@@ -145,6 +145,7 @@ public final class ConfigProvider {
 		// on old android devices (versions 5 and 6) - see #410
 		// As a replacement the database should be encrypted #905
 		return true;
+
 //        DevicePolicyManager dpm = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
 //        return dpm.getStorageEncryptionStatus() == DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE ||
 //                dpm.getStorageEncryptionStatus() == DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER ||

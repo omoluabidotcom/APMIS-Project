@@ -806,6 +806,12 @@ public class StartupShutdownService {
 		}
 		
 		try {
+			importFacade.generateClusterLevelPopulationDataImportTemplateFile();
+		} catch (IOException e) {
+			logger.error("Could not create cluster level population data import template .csv file.");
+		}
+		
+		try {
 			importFacade.generateUserImportTemplateFile();
 		} catch (IOException e) {
 			logger.error("Could not create user data import template .csv file.");

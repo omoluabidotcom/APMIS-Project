@@ -8,6 +8,7 @@ import javax.validation.Valid;
 
 
 import de.symeda.sormas.api.campaign.diagram.CampaignDashboardElement;
+import de.symeda.sormas.api.campaign.form.CampaignFormMetaWithExpReferenceDto;
 import de.symeda.sormas.api.utils.SortProperty;
 import de.symeda.sormas.api.utils.ValidationRuntimeException;
 
@@ -75,5 +76,8 @@ public interface CampaignFacade { //CampaignFacadeEjb
 	int getCampaignFormExpByPhase(String formUuuid, String campaignUuid, String formPhase);
 
 	int getDefaultCampaignFormExpByPhase(String formUuuid, String formPhase);
+	
+	void saveCampaignFormExpiryEntry(CampaignFormMetaWithExpReferenceDto data, CampaignDto dto);
+
 
  }

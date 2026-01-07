@@ -274,6 +274,28 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		return em.createQuery(cq).getResultStream().map(populationData -> toDto(populationData))
 				.collect(Collectors.toList());
 	}
+	
+	@Override
+	public List<PopulationDataDto> getClusterPopulationByTypeUsingUUIDs(String clusterUuid, String campaignUuid,
+			AgeGroup ageGroup) {
+
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
+		Root<PopulationData> root = cq.from(PopulationData.class);
+		Join<PopulationData, Campaign> campaignJoin = root.join(PopulationData.CAMPAIGN);
+		Join<PopulationData, Community> clusterJoin = root.join(PopulationData.COMMUNITY);
+
+		Predicate campaignFilter = cb.and(cb.equal(campaignJoin.get(Campaign.UUID), campaignUuid));
+		Predicate clusterFilter = cb.and(cb.equal(clusterJoin.get(Community.UUID), clusterUuid));
+		Predicate ageFilter = cb.and(cb.equal(root.get(PopulationData.AGE_GROUP), ageGroup));
+
+		cq.where(campaignFilter, clusterFilter, ageFilter);
+
+		System.out.println("zzzzzzDEBUGGER 5678ijhyuioYYYYYY" + SQLExtractor.from(em.createQuery(cq)) + ageFilter);
+
+		return em.createQuery(cq).getResultStream().map(populationData -> toDto(populationData))
+				.collect(Collectors.toList());
+	}
 
 	@Override
 	public List<PopulationDataDto> getAllPopulationData() {
@@ -873,8 +895,19 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 			String buildsql = "";
 			String buildsql_ = "";
 			for (PopulationDataDto dfc : savePopulationList) {
+				
+				System.out.println(dfc + "========XXXXXXX");
+				System.out.println(dfc.getCommunity() + "======XXXXXXXdfc");
+
+				System.out.println(dfc.getCommunity().getUuid() + "===uuid===XXXXXXXdfc9999");
+
+				
+				System.out.println(communityService.getByUuid(dfc.getCommunity().getUuid()).getId() + "=getid=====XXXXXXXdfc9999");
+
+				buildsql = buildsql +  communityService.getByUuid(dfc.getCommunity().getUuid()).getId() + ", ";
+
 				// System.out.println("=============== ");
-				buildsql = buildsql + districtService.getByUuid(dfc.getDistrict().getUuid()).getId() + ", ";
+//				buildsql = buildsql + districtService.getByUuid(dfc.getDistrict().getUuid()).getId() + ", ";
 				buildsql_ = campaignService.getByUuid(dfc.getCampaign().getUuid()).getId() + "";
 				// dfc.getCampaign().getUuid()
 			}
@@ -890,7 +923,7 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 
 			{
 				String sqlstatemtnt_ = "update populationdata set selected = 'true' where campaign_id = " + buildsql_
-						+ "" + " and district_id in (" + buildsql.replace(", #", "") + ");";
+						+ "" + " and community_id in (" + buildsql.replace(", #", "") + ");";
 
 				System.out.println(sqlstatemtnt_);
 				em.createNativeQuery(sqlstatemtnt_).executeUpdate();
@@ -907,8 +940,9 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 
 		final String joinBuilder = "select population \n" + "from PopulationData population \n"
 				+ "inner join campaigns campaign on population.campaign_id=campaign.id \n"
-				+ "inner join District district on population.district_id=district.id \n" + "where campaign.uuid= '"
-				+ campaignUuid + "' and district.uuid='" + districtUuid + "' and population.ageGroup='" + ageGroup
+				+ "inner join community cluster on population.community_id=cluster.id \n" 
+				+ "where campaign.uuid= '"
+				+ campaignUuid + "' and cluster.uuid='" + districtUuid + "' and population.ageGroup='" + ageGroup
 				+ "';";
 
 //		System.out.println(districtUuid  +  campaignUuid +  ageGroup + "Credentials from backend OOOPPPPPP" +joinBuilder);
@@ -921,13 +955,15 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		}
 
 	}
+	
+	
 
 	@Override
 	public String getDistrictStatusByCampaign(String districtUuid, String campaignUuid, String ageGroup) {
 		// TODO Auto-generated method stub
 		final String joinBuilder = "select districtstatus \n" + "from PopulationData population \n"
 				+ "inner join campaigns campaign on population.campaign_id=campaign.id \n"
-				+ "inner join District district on population.district_id=district.id \n" + "where campaign.uuid= '"
+				+ "inner join community district on population.community_id=district.id \n" + "where campaign.uuid= '"
 				+ campaignUuid + "' and district.uuid='" + districtUuid + "' and population.ageGroup='" + ageGroup
 				+ "';";
 		try {
@@ -944,7 +980,7 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		// TODO Auto-generated method stub
 		final String joinBuilder = "select modality \n" + "from PopulationData population \n"
 				+ "inner join campaigns campaign on population.campaign_id=campaign.id \n"
-				+ "inner join District district on population.district_id=district.id \n" + "where campaign.uuid= '"
+				+ "inner join community district on population.community_id=district.id \n" + "where campaign.uuid= '"
 				+ campaignUuid + "' and district.uuid='" + districtUuid + "' and population.ageGroup='" + ageGroup
 				+ "';";
 
@@ -974,6 +1010,35 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		Predicate ageFilter = cb.and(cb.equal(root.get(PopulationData.AGE_GROUP), agegroup));
 
 		cq.where(campaignFilter, districtFilter, ageFilter);
+
+//		 System.out.println(//"resultData - "+ resultData.toString());
+//		 "DUMBGFyyresultData - "+SQLExtractor.from(seriesDataQuery));
+
+		System.out.println("1111zzzzzzDEBUGGER 5678ijhyuioYYYYYY" + SQLExtractor.from(em.createQuery(cq)));
+
+		return em.createQuery(cq).getResultStream().map(populationData -> toDto(populationData))
+				.collect(Collectors.toList());
+	}
+
+	
+	@Override
+	public List<PopulationDataDto> getDistrictModalityByclusterUUIDsandCampaignUUIdAndAgeGroup(String clusterUuid,
+			String campaignUuid, AgeGroup agegroup) {
+		// TODO Auto-generated method stub
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
+		Root<PopulationData> root = cq.from(PopulationData.class);
+		Join<PopulationData, Campaign> campaignJoin = root.join(PopulationData.CAMPAIGN);
+		Join<PopulationData, Community> clusterJoin = root.join(PopulationData.COMMUNITY);
+
+//		System.out.println(districtUuid + "1111zzzzzzDEBUGGER 5678ijhyuioYYYYYY" + campaignUuid
+//				+ "1111zzzzzzDEBUGGER 5678ijhyuioYYYYYY" + agegroup);
+
+		Predicate campaignFilter = cb.and(cb.equal(campaignJoin.get(Campaign.UUID), campaignUuid));
+		Predicate clusterFilter = cb.and(cb.equal(clusterJoin.get(District.UUID), clusterUuid));
+		Predicate ageFilter = cb.and(cb.equal(root.get(PopulationData.AGE_GROUP), agegroup));
+
+		cq.where(campaignFilter, clusterFilter, ageFilter);
 
 //		 System.out.println(//"resultData - "+ resultData.toString());
 //		 "DUMBGFyyresultData - "+SQLExtractor.from(seriesDataQuery));
@@ -1037,6 +1102,31 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	}
 	
 	@Override
+	public void deletePopulationDataByClusters(List<Long> populationDataList, String campaignUUID) {
+		// TODO Auto-generated method stub
+
+		for (Long populationDataListItems : populationDataList) {
+
+			String executeQuery = "DELETE FROM populationdata p \n" 
+								+ "USING community d, campaigns c \n"
+								+ "WHERE p.community_id = d.id \n" 
+								+ "AND p.campaign_id = c.id \n"
+								+ "AND d.id = " + populationDataListItems
+								+ " AND c.\"uuid\" = '" + campaignUUID + "';";
+
+			
+			System.out.println(executeQuery + "========Debuggerr ");
+			// Create a native query
+			Query query = em.createNativeQuery(executeQuery);
+
+			// Execute the query
+			query.executeUpdate();
+
+		}
+
+	}
+	
+	@Override
 	public void deletePopulationDataByDistrictAndAgeGroup(List<Long> populationDataList, String campaignUUID, String ageGroup) {
 		// TODO Auto-generated method stub
 
@@ -1045,6 +1135,32 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 			String executeQuery = "DELETE FROM populationdata p \n" 
 								+ "USING district d, campaigns c \n"
 								+ "WHERE p.district_id = d.id \n" 
+								+ "AND p.campaign_id = c.id \n"
+								+ "AND d.id = " + populationDataListItems 
+								+ " AND p.agegroup = '" + ageGroup
+								+ "' AND c.\"uuid\" = '" + campaignUUID + "';";
+
+			
+			System.out.println(executeQuery + "========Debuggerr ");
+			// Create a native query
+			Query query = em.createNativeQuery(executeQuery);
+
+			// Execute the query
+			query.executeUpdate();
+
+		}
+
+	}
+	
+	@Override
+	public void deletePopulationDataByClusterAndAgeGroup(List<Long> populationDataList, String campaignUUID, String ageGroup) {
+		// TODO Auto-generated method stub
+
+		for (Long populationDataListItems : populationDataList) {
+
+			String executeQuery = "DELETE FROM populationdata p \n" 
+								+ "USING community d, campaigns c \n"
+								+ "WHERE p.community_id = d.id \n" 
 								+ "AND p.campaign_id = c.id \n"
 								+ "AND d.id = " + populationDataListItems 
 								+ " AND p.agegroup = '" + ageGroup

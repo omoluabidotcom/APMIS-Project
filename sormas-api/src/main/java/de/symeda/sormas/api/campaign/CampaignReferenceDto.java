@@ -30,6 +30,11 @@ public class CampaignReferenceDto extends ReferenceDto {
 	private String campaignYear;
 	
 	private Date startDate;
+	
+	private Date precampaignStartDate;
+
+	
+	private Date postcampaignStartDate;
 
 	public CampaignReferenceDto() {
 	}
@@ -55,6 +60,15 @@ public class CampaignReferenceDto extends ReferenceDto {
 		this.campaignYear = campaignYear;
 		this.startDate = startDate;
 	}
+	
+	public CampaignReferenceDto(String uuid, String caption, String campaignYear, Date startDate, Date precampaignStartDate, Date postcampaignStartDate){
+		setUuid(uuid);
+		setCaption(caption);
+		this.campaignYear = campaignYear;
+		this.startDate = startDate;
+		this.precampaignStartDate = precampaignStartDate;
+		this.postcampaignStartDate = postcampaignStartDate;
+	}
 
 	public String getCampaignYear() {
 		return campaignYear;
@@ -71,4 +85,22 @@ public class CampaignReferenceDto extends ReferenceDto {
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
 	}
+
+	public Date getPrecampaignStartDate() {
+		return precampaignStartDate;
+	}
+
+	public void setPrecampaignStartDate(Date precampaignStartDate) {
+		this.precampaignStartDate = precampaignStartDate;
+	}
+
+	public Date getPostcampaignStartDate() {
+		return postcampaignStartDate;
+	}
+
+	public void setPostcampaignStartDate(Date postcampaignStartDate) {
+		this.postcampaignStartDate = postcampaignStartDate;
+	}
+	
+	
 }

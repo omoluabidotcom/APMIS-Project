@@ -36,6 +36,7 @@ import de.symeda.sormas.api.campaign.CampaignReferenceDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
+import de.symeda.sormas.api.campaign.form.CampaignFormMetaExpiryDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.Descriptions;
@@ -69,10 +70,23 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 
 	private final UserProvider usr = new UserProvider();
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
+	
+	
+	//New Form 
+	
+//	CampaignFormDataEditForm cam = new CampaignFormDataEditForm(e.getValue(),campaignz.getValue(), false, null, grid, fff);
+	
+	//Existing FOrms 
+//	CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());	
+//}
+	
+
 
 	public CampaignFormDataEditForm(CampaignFormMetaReferenceDto campaignFormMetaReferenceDto,
 			CampaignReferenceDto campaignReferenceDto, boolean openData, String uuidForm,
-			Grid<CampaignFormDataIndexDto> grid, boolean campaignFormMetaDtox) {
+			Grid<CampaignFormDataIndexDto> grid, boolean campaignFormMetaDtox,CampaignDto campaignDto , CampaignFormMetaExpiryDto expiryDto) {
+		
+		System.out.println(campaignReferenceDto.getStartDate() + "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
 		setSizeFull();
 		CampaignDto currentCampaign = FacadeProvider.getCampaignFacade().getByUuid(campaignReferenceDto.getUuid());
@@ -84,17 +98,17 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 			campaignFormBuilder = new CampaignFormBuilder(campaignFormMetaDto.getCampaignFormElements(), null,
 					campaignReferenceDto, campaignFormMetaDto.getCampaignFormTranslations(),
 					campaignFormMetaDto.getFormname_ps_af(), campaignFormMetaReferenceDto, openData, uuidForm,
-					campaignFormMetaDtox);
+					campaignFormMetaDtox, campaignDto, expiryDto);
 		} else if (usr.getUser().getLanguage().toString().equals("Dari")) {
 			campaignFormBuilder = new CampaignFormBuilder(campaignFormMetaDto.getCampaignFormElements(), null,
 					campaignReferenceDto, campaignFormMetaDto.getCampaignFormTranslations(),
 					campaignFormMetaDto.getFormname_fa_af(), campaignFormMetaReferenceDto, openData, uuidForm,
-					campaignFormMetaDtox);
+					campaignFormMetaDtox, campaignDto, expiryDto);
 		} else {
 			campaignFormBuilder = new CampaignFormBuilder(campaignFormMetaDto.getCampaignFormElements(), null,
 					campaignReferenceDto, campaignFormMetaDto.getCampaignFormTranslations(),
 					campaignFormMetaDto.getFormName(), campaignFormMetaReferenceDto, openData, uuidForm,
-					campaignFormMetaDtox);
+					campaignFormMetaDtox, campaignDto, expiryDto);
 		}
 
 		System.out.print(campaignFormMetaDto.isDistrictentry() + "district daa entry uuuuuuuuuuuuuuuuuu");
@@ -390,7 +404,7 @@ public class CampaignFormDataEditForm extends HorizontalLayout {
 				campaignFormBuilder = new CampaignFormBuilder(campaignFormMetaDto.getCampaignFormElements(), null,
 						campaignReferenceDto, campaignFormMetaDto.getCampaignFormTranslations(),
 						campaignFormMetaDto.getFormName(), campaignFormMetaReferenceDto, false, null,
-						campaignFormMetaDtox);
+						campaignFormMetaDtox, campaignDto, expiryDto);
 
 				dialog.add(campaignFormBuilder);
 				dialog.setSizeFull();

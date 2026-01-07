@@ -69,6 +69,8 @@ public class ImportPopulationDataDialog extends Dialog {
 //	ComboBox<CampaignReferenceDto> campaignFilter = new ComboBox<>();
 	Button downloadImportTemplate = new Button(I18nProperties.getCaption(Captions.importDownloadImportTemplate));
 
+	Button downloadClusterLevelImportTemplate = new Button(I18nProperties.getCaption(Captions.importDownloadImportTemplate));
+
 	Button startDataImport = new Button(I18nProperties.getCaption(Captions.importImportData));
 	Button startDryRunImport = new Button(I18nProperties.getCaption(Captions.importImportData) + " Dry Run");
 
@@ -110,9 +112,10 @@ public class ImportPopulationDataDialog extends Dialog {
 		Label lblImportTemplateInfo = new Label(I18nProperties.getString(Strings.infoDownloadCaseImportTemplate));
 		Icon downloadButtonnIcon = new Icon(VaadinIcon.DOWNLOAD);
 
-		downloadImportTemplate.setIcon(downloadButtonnIcon);
+//		downloadImportTemplate.setIcon(downloadButtonnIcon);
+		downloadClusterLevelImportTemplate.setIcon(downloadButtonnIcon);
 
-		downloadImportTemplate.addClickListener(e -> {
+		downloadClusterLevelImportTemplate.addClickListener(e -> {
 
 			try {
 
@@ -121,8 +124,8 @@ public class ImportPopulationDataDialog extends Dialog {
 				String fileNameAddition;
 				ImportFacade importFacade = FacadeProvider.getImportFacade();
 
-				templateFilePath = importFacade.getPopulationDataImportTemplateFilePath();
-				templateFileName = importFacade.getPopulationDataImportTemplateFileName();
+				templateFilePath = importFacade.getClusterLevelPopulationDataImportTemplateFilePath();
+				templateFileName = importFacade.getClusterLevelPopulationDataImportTemplateFileName();
 				fileNameAddition = camapigndto.getName().replace(" ", "_") + "_population_data_import_";
 
 				String content = FacadeProvider.getImportFacade().getImportTemplateContent(templateFilePath);
@@ -158,6 +161,53 @@ public class ImportPopulationDataDialog extends Dialog {
 		}
 
 		);
+		
+//		downloadImportTemplate.addClickListener(e -> {
+//
+//			try {
+//
+//				String templateFilePath;
+//				String templateFileName;
+//				String fileNameAddition;
+//				ImportFacade importFacade = FacadeProvider.getImportFacade();
+//
+//				templateFilePath = importFacade.getPopulationDataImportTemplateFilePath();
+//				templateFileName = importFacade.getPopulationDataImportTemplateFileName();
+//				fileNameAddition = camapigndto.getName().replace(" ", "_") + "_population_data_import_";
+//
+//				String content = FacadeProvider.getImportFacade().getImportTemplateContent(templateFilePath);
+//
+//				InputStream inputStream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+//
+//				// Create a StreamResource
+//				StreamResource streamResource = new StreamResource(templateFileName, () -> inputStream);
+//
+//				// Open the StreamResource in browser for download
+//				streamResource.setContentType("text/csv");
+//				streamResource.setCacheTime(0); // Disable caching
+//
+//				// Create an anchor to trigger the download
+//				Anchor downloadAnchor = new Anchor(streamResource, "Download CSV");
+//				downloadAnchor.getElement().setAttribute("download", true);
+//				downloadAnchor.getStyle().set("display", "none");
+//
+//				step1.add(downloadAnchor);
+//
+//				// Simulate a click event on the hidden anchor to trigger the download
+//				downloadAnchor.getElement().callJsFunction("click");
+//				Notification.show("downloading...");
+//
+//			} catch (IOException ioException) {
+//				ioException.printStackTrace();
+//
+//				Notification.show(I18nProperties.getString(Strings.headingTemplateNotAvailable) + ": "
+//						+ I18nProperties.getString(Strings.messageTemplateNotAvailable));
+//
+//			}
+//
+//		}
+//
+//		);
 
 		H3 step2 = new H3();
 		step2.add("Step 2: Import CSV File");
@@ -206,7 +256,8 @@ public class ImportPopulationDataDialog extends Dialog {
 					System.out.println("Header: " + header);
 				}
 
-				if (headerStrings.contains("TOTAL_AGE_0_4") && headerStrings.contains("TOTAL_AGE_5_10")) {
+
+				if (headerStrings.contains("TARGET_0_59M") && headerStrings.contains("TARGET_60_120M")) {
 
 					try {
 						System.out.println("Start import Clicked + 111111111111111111111111111111");
@@ -334,7 +385,7 @@ public class ImportPopulationDataDialog extends Dialog {
 
 		dialog.add(seperatorr, // startButton, stopButton,
 //				lblCollectionDateInfo, campaignFilter, lblCollectionDateInfo,
-				step1, lblImportTemplateInfo, downloadImportTemplate, step2, lblImportCsvFile, overWriteExistingData,
+				step1, lblImportTemplateInfo, downloadClusterLevelImportTemplate, step2, lblImportCsvFile, overWriteExistingData,
 				upload, startDryRunImport, startDataImport, step3, lblDnldErrorReport, donloadErrorReport, anchorSpan);
 
 		Button doneButton = new Button("Done", e -> {

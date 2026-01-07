@@ -76,6 +76,7 @@ public class ClusterDataImporter extends DataImporter {
 	private static final String P_CODE = "PCode";
 	private static final String D_CODE = "DCode";
 	private static final String C_CODE = "CCode";
+	private static final String INTERNATIONAL_BORDER = "International_Border";
 
 	private final CommunityFacade clusterFacade;
 
@@ -164,7 +165,10 @@ public class ClusterDataImporter extends DataImporter {
 		Integer clusterNumber = null;
 		String clusterName = "";
 		String floatStatus = "";
+		
 		boolean activeStatus = false;
+		boolean isInternationalBorder = false;
+
 
 		// Retrieve the region and district from the database or throw an error if more
 		// or less than one entry have been retrieved
@@ -413,6 +417,29 @@ public class ClusterDataImporter extends DataImporter {
 
 				}
 			}
+			
+			if (INTERNATIONAL_BORDER.equalsIgnoreCase(entityProperties[i])) {
+
+				if (DataHelper.isNullOrEmpty(values[i])) {
+					isInternationalBorder = false;
+
+					writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
+							+ " | International Border cannot be left empty enter Yes or No");
+					return ImportLineResult.ERROR;
+
+				} else {
+					if (values[i].toString().equalsIgnoreCase("Yes")) {
+						isInternationalBorder = true;
+					} else if (values[i].toString().equalsIgnoreCase("No")) {
+						isInternationalBorder= false;
+					} else {
+						writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
+								+ " | International Border value can only be either Yes or No");
+						return ImportLineResult.ERROR;
+					}
+
+				}
+			}
 
 		}
 
@@ -439,6 +466,8 @@ public class ClusterDataImporter extends DataImporter {
 		final Integer clusterNo = clusterNumber;
 		final String finalFloatStatus = floatStatus;
 		final boolean finalActiveStatus = activeStatus;
+		final boolean finalIntlBorderStatus = isInternationalBorder;
+
 
 		List<CommunityDto> newUserLinetoSave = new ArrayList<>();
 
@@ -453,6 +482,8 @@ public class ClusterDataImporter extends DataImporter {
 				newUserLine_.setExternalId(clusterid);
 				newUserLine_.setFloating(finalFloatStatus);
 				newUserLine_.setArchived(finalActiveStatus);// setFloating(finalFloatStatus);
+				newUserLine_.setInternationalborder(finalIntlBorderStatus);// setFloating(finalFloatStatus);
+
 
 				boolean usersDataHasImportError = insertRowIntoData(values, entityClasses, entityPropertyPaths, false,
 						new Function<ImportCellData, Exception>() {
@@ -511,9 +542,19 @@ public class ClusterDataImporter extends DataImporter {
 									}
 
 									if ("Active_Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+										
+										
 										System.out.println(cellData.getValue()
 												+ "Active_Statustttttttttttfloating cellData.getValue()cellData.getValue()");
 										newUserLine_.setArchived(finalActiveStatus);
+
+//										newUserLine_.setName(cellData.getValue());
+									}
+									
+									if (INTERNATIONAL_BORDER.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+										System.out.println(cellData.getValue()
+												+ "Active_Statustttttttttttfloating cellData.getValue()cellData.getValue()");
+										newUserLine_.setInternationalborder(finalIntlBorderStatus);
 
 //										newUserLine_.setName(cellData.getValue());
 									}
@@ -558,6 +599,8 @@ public class ClusterDataImporter extends DataImporter {
 				newUserLine_.setExternalId(clusterid);
 				newUserLine_.setFloating(finalFloatStatus);
 				newUserLine_.setArchived(finalActiveStatus);
+
+				newUserLine_.setInternationalborder(finalIntlBorderStatus);
 
 				boolean usersDataHasImportError = insertRowIntoData(values, entityClasses, entityPropertyPaths, false,
 						new Function<ImportCellData, Exception>() {
@@ -621,6 +664,15 @@ public class ClusterDataImporter extends DataImporter {
 
 //										newUserLine_.setName(cellData.getValue());
 									}
+									
+									if (INTERNATIONAL_BORDER.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+										System.out.println(cellData.getValue()
+												+ "tttttttttttfloating cellData.getValue()cellData.getValue()");
+
+										newUserLine_.setInternationalborder(finalIntlBorderStatus);
+
+//										newUserLine_.setName(cellData.getValue());
+									}
 
 									newUserLinetoSave.add(newUserLine_);
 
@@ -661,6 +713,9 @@ public class ClusterDataImporter extends DataImporter {
 			newUserLine.setExternalId(clusterid);
 			newUserLine.setFloating(finalFloatStatus);
 			newUserLine.setArchived(finalActiveStatus);
+			
+			newUserLine.setInternationalborder(finalIntlBorderStatus);
+
 			boolean usersDataHasImportError = insertRowIntoData(values, entityClasses, entityPropertyPaths, false,
 					new Function<ImportCellData, Exception>() {
 
@@ -719,6 +774,15 @@ public class ClusterDataImporter extends DataImporter {
 											+ "tttttttttttfloating cellData.getValue()cellData.getValue()");
 
 									newUserLine.setArchived(finalActiveStatus);
+
+//									newUserLine_.setName(cellData.getValue());
+								}
+								
+								if (INTERNATIONAL_BORDER.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+									System.out.println(cellData.getValue()
+											+ "tttttttttttfloating cellData.getValue()cellData.getValue()");
+
+									newUserLine.setInternationalborder(finalIntlBorderStatus);
 
 //									newUserLine_.setName(cellData.getValue());
 								}

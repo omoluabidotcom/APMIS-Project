@@ -44,7 +44,9 @@ public class PopulationDataImporter extends DataImporter {
 	 * The pattern that entries in the header row must match in order for the
 	 * importer to determine how to fill its entries.
 	 */
-	private static final String HEADER_PATTERN = "[A-Z]+_[A-Z]{3}_\\d+_(\\d+|PLUS)";
+//	private static final String HEADER_PATTERN = "[A-Z]+_[A-Z]{3}_\\d+_(\\d+|PLUS)";
+	private static final String HEADER_PATTERN = "^TARGET_\\d+_\\d+M$";
+
 
 	/**
 	 * The pattern that entries in the header row representing total counts must
@@ -59,8 +61,18 @@ public class PopulationDataImporter extends DataImporter {
 	private final String dtoIdentifier;
 
 	private static final String PROVINCE = "province";
-	private static final String TOTAL_0_4 = "TOTAL_AGE_0_4";
-	private static final String TOTAL_5_10 = "TOTAL_AGE_5_10";
+	private static final String TOTAL_0_4 = "Target_0_59M";//"TOTAL_AGE_0_4"; 
+	private static final String TOTAL_5_10 = "Target_60_120M";
+	
+	private static final String RCODE = "RCODE";
+	private static final String PCODE = "PCODE";
+	private static final String DCODE = "DCODE";
+	private static final String CCODE = "CCODE";
+
+
+
+	
+	
 
 
 	public PopulationDataImporter(File inputFile, UserDto currentUser, CampaignDto campaignDto,
@@ -100,7 +112,7 @@ public class PopulationDataImporter extends DataImporter {
 		for (int i = 0; i < entityProperties.length; i++) {
 
 			if (isOverWrite) {
-				if ( PROVINCE.equalsIgnoreCase(entityProperties[i])) {
+				if ( PCODE.equalsIgnoreCase(entityProperties[i])) {
 					
 					if (DataHelper.isNullOrEmpty(values[i])) {
 //						region = null;
@@ -118,7 +130,7 @@ public class PopulationDataImporter extends DataImporter {
 					region = regions.get(0);
 					}
 				}
-				if (PopulationDataDto.DISTRICT.equalsIgnoreCase(entityProperties[i])) {
+				if (DCODE.equalsIgnoreCase(entityProperties[i])) {
 					if (DataHelper.isNullOrEmpty(values[i])) {
 //						district = null;
 //						
@@ -140,9 +152,12 @@ public class PopulationDataImporter extends DataImporter {
 				
 				// patch to use cluster No for data import
 
-				if (PopulationDataDto.COMMUNITY_EXTID.equalsIgnoreCase(entityProperties[i])) {
+				if (CCODE.equalsIgnoreCase(entityProperties[i])) {
 					if (DataHelper.isNullOrEmpty(values[i])) {
 						community = null;
+						
+						writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Cannot be empty");
+						return ImportLineResult.ERROR;
 					} else {
 						if (isLong(values[i])) {
 							List<CommunityReferenceDto> communities = FacadeProvider.getCommunityFacade()
@@ -229,7 +244,14 @@ public class PopulationDataImporter extends DataImporter {
 					}
 				}
 
-				if (PopulationDataDto.DISTRICT_STATUS.equalsIgnoreCase(entityProperties[i])) {
+				
+
+				if ("campaignstatus".equalsIgnoreCase(entityProperties[i])) {
+					
+					entityProperties[i] = PopulationDataDto.DISTRICT_STATUS;
+					
+					if (PopulationDataDto.DISTRICT_STATUS.equalsIgnoreCase(entityProperties[i])) {
+
 					if (DataHelper.isNullOrEmpty(values[i])) {
 						System.out.println("----------------------------------overrite districtsstatus");
 //						districtStatus_ = null;
@@ -255,6 +277,7 @@ public class PopulationDataImporter extends DataImporter {
 						}
 					}
 				}
+			}
 				
 				if (TOTAL_0_4.equalsIgnoreCase(entityProperties[i])) {
 					if (DataHelper.isNullOrEmpty(values[i])) {
@@ -281,7 +304,7 @@ public class PopulationDataImporter extends DataImporter {
 				}
 
 			} else {
-				if (PROVINCE.equalsIgnoreCase(entityProperties[i])) {
+				if (PCODE.equalsIgnoreCase(entityProperties[i])) {
 					if (DataHelper.isNullOrEmpty(values[i])) {
 //						region = null;
 						
@@ -297,7 +320,7 @@ public class PopulationDataImporter extends DataImporter {
 					region = regions.get(0);
 					}
 				}
-				if (PopulationDataDto.DISTRICT.equalsIgnoreCase(entityProperties[i])) {
+				if (DCODE.equalsIgnoreCase(entityProperties[i])) {
 					if (DataHelper.isNullOrEmpty(values[i])) {
 //						district = null;
 //						
@@ -317,9 +340,12 @@ public class PopulationDataImporter extends DataImporter {
 
 				// patch to use cluster No for data import
 
-				if (PopulationDataDto.COMMUNITY_EXTID.equalsIgnoreCase(entityProperties[i])) {
+				if (CCODE.equalsIgnoreCase(entityProperties[i])) {
 					if (DataHelper.isNullOrEmpty(values[i])) {
 						community = null;
+						
+						writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Cluster be left empty");
+						return ImportLineResult.ERROR;
 					} else {
 						if (isLong(values[i])) {
 							List<CommunityReferenceDto> communities = FacadeProvider.getCommunityFacade()
@@ -330,6 +356,23 @@ public class PopulationDataImporter extends DataImporter {
 //							System.out.println(new ImportErrorException(values[i], entityProperties[i]).getMessage());
 								return ImportLineResult.ERROR;
 							}
+							
+							
+							
+							
+							CommunityDto activeChecker = FacadeProvider.getCommunityFacade().getByUuid(communities.get(0).getUuid());
+							
+							System.out.println(activeChecker.isArchived() +  "activeChecker active stastry ");
+							 
+
+							if(activeChecker.isArchived()) {
+								
+								writeImportError(values,
+										new ImportErrorException(values[i], entityProperties[i]).getMessage() +  " Archived Clusters cannot be imported with Population Data");
+//							System.out.println(new ImportErrorException(values[i], entityProperties[i]).getMessage());
+								return ImportLineResult.ERROR;
+							}
+							
 							community = communities.get(0);
 						} else {
 							writeImportError(values,
@@ -424,8 +467,18 @@ public class PopulationDataImporter extends DataImporter {
 					}
 				}
 
-				if (PopulationDataDto.DISTRICT_STATUS.equalsIgnoreCase(entityProperties[i])) {
-					if (DataHelper.isNullOrEmpty(values[i])) {
+				if ("campaignstatus".equalsIgnoreCase(entityProperties[i])) {
+					
+					System.out.println(entityProperties[i] + " campaignstatus seneeeeeeeeeeeeeeeen   ");
+										
+					entityProperties[i] = PopulationDataDto.DISTRICT_STATUS;
+					
+					System.out.println(entityProperties[i] + " campaignstatus aftyeeeee seneeeeeeeeeeeeeeeen   ");
+
+					
+					if (PopulationDataDto.DISTRICT_STATUS.equalsIgnoreCase(entityProperties[i])) {					
+						if (DataHelper.isNullOrEmpty(values[i])) {
+						
 //						districtStatus_ = "Full District";
 						writeImportError(values,
 								new ImportErrorException(values[i], entityProperties[i]).getMessage()+ " cannot be empty");
@@ -450,6 +503,7 @@ public class PopulationDataImporter extends DataImporter {
 						}
 					}
 				}
+			}
 				
 				if (TOTAL_0_4.equalsIgnoreCase(entityProperties[i])) {
 					if (DataHelper.isNullOrEmpty(values[i])) {
@@ -465,7 +519,7 @@ public class PopulationDataImporter extends DataImporter {
 				
 				if (TOTAL_5_10.equalsIgnoreCase(entityProperties[i])) {
 					if (DataHelper.isNullOrEmpty(values[i])) {
-//						districtStatus_ = "Full District";
+//						districtStatus_ = "Full District";`
 						writeImportError(values,
 								new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Population Data Values Cannot be Empty");
 						return ImportLineResult.ERROR;
@@ -537,9 +591,9 @@ public class PopulationDataImporter extends DataImporter {
 							System.out.println("++++++++++++++++111111111111111111111111++++++++++++++++ ");
 
 							try {
-								if (PROVINCE.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
-										|| PopulationDataDto.DISTRICT
-												.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
+								if (PCODE.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
+										|| DCODE.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
+										|| CCODE.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
 										|| PopulationDataDto.CAMPAIGN
 												.equalsIgnoreCase(cellData.getEntityPropertyPath()[0]) // Property
 																										// type//
@@ -549,6 +603,8 @@ public class PopulationDataImporter extends DataImporter {
 										|| PopulationDataDto.MODALITY
 												.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
 										|| PopulationDataDto.DISTRICT_STATUS
+												.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
+												|| PopulationDataDto.CAMPAIGN_STATUS
 												.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
 
 								} else {
@@ -559,22 +615,13 @@ public class PopulationDataImporter extends DataImporter {
 
 									newPopulationData.setCampaign(finalCampaign);
 									newPopulationData.setDistrict(finalDistrict);
-
+									if(finalCommunity != null) {
+									newPopulationData.setCommunity(finalCommunity);
+									}
+									
 									insertCellValueIntoData(newPopulationData, cellData.getValue(),
 											cellData.getEntityPropertyPath());
 
-//									System.out.println(newPopulationData.getAgeGroup() + "   :+++++++++++++:X "
-//											+ "yyyyyy" + newPopulationData.getCampaign() + "zzzzzzz"
-//											+ newPopulationData.getDistrict() + existingPopulationDataList.size());
-//
-//									System.out.println(
-//											"  999 :+++++++++++++:X " + "yyyyyyzzzzzzz" + existingPopulationDataList);
-
-//									AgeGroup xx =  newPopulationData.getAgeGroup();
-
-//									System.out.println(" 10000000:+++++++++++++:X " 
-//											+ "yyyyyyzzzzzzz" 
-//											+ xx );
 
 									Optional<PopulationDataDto> existingPopulationData = existingPopulationDataList
 											.stream()
@@ -582,14 +629,17 @@ public class PopulationDataImporter extends DataImporter {
 													.equals(newPopulationData.getAgeGroup())
 													&& populationData.getCampaign()
 															.equals(newPopulationData.getCampaign())
-													&& populationData.getDistrict()
-															.equals(newPopulationData.getDistrict()))
+													&&
+													(
+															populationData.getDistrict()
+															.equals(newPopulationData.getDistrict()) 
+															|| 
+															populationData.getCommunity()
+															.equals(newPopulationData.getCommunity()) 
+															))
 											.findFirst();
 
-									Optional<PopulationDataDto> existingPopulationDatax = existingPopulationDataList
-											.stream().filter(populationData -> populationData.getAgeGroup()
-													.equals(newPopulationData.getAgeGroup()))
-											.findFirst();
+			
 
 									System.out.println(" ---======+++++++++++++:X " + existingPopulationData + "hhhhh"
 											+ existingPopulationDataList);
@@ -605,8 +655,11 @@ public class PopulationDataImporter extends DataImporter {
 										existingPopulationData.get().setModality(modality);
 										existingPopulationData.get().setDistrictStatus(districtStatus);
 
+										
+										if(existingPopulationData.get().getCommunity() != null) {
+											modifiedPopulationDataList.add(existingPopulationData.get());
+										}
 
-										modifiedPopulationDataList.add(existingPopulationData.get());
 									} else {
 										System.out.println(
 												"++++++++++++++++existingPopulationData.NOTisPresent()++++++++++++++++ ");
@@ -618,7 +671,11 @@ public class PopulationDataImporter extends DataImporter {
 										newPopulationData.setModality(modality);
 										newPopulationData.setDistrictStatus(districtStatus);
 
-										modifiedPopulationDataList.add(newPopulationData);
+										
+										if(newPopulationData.getCommunity() != null) {
+											modifiedPopulationDataList.add(newPopulationData);
+										}
+//										modifiedPopulationDataList.add(newPopulationData);
 									}
 								}
 							} catch (ImportErrorException | InvalidColumnException | NumberFormatException e) {
@@ -638,9 +695,9 @@ public class PopulationDataImporter extends DataImporter {
 							System.out.println("++++++++++++++++111111111111111111111111++++++++++++++++ ");
 
 							try {
-								if (PROVINCE.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
-										|| PopulationDataDto.DISTRICT
-												.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
+								if (PCODE.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
+										|| DCODE.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
+										|| CCODE.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
 										|| PopulationDataDto.CAMPAIGN
 												.equalsIgnoreCase(cellData.getEntityPropertyPath()[0]) // Property//
 																										// allowed
@@ -648,14 +705,17 @@ public class PopulationDataImporter extends DataImporter {
 												.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
 										|| PopulationDataDto.MODALITY
 												.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])
-										|| PopulationDataDto.DISTRICT_STATUS
+												|| PopulationDataDto.CAMPAIGN_STATUS
 												.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+									
 								} else {
 
 									// Add the data from the currently processed cell to a new population data
 									// object
 									PopulationDataDto newPopulationData = PopulationDataDto.build(collectionDate);
 									newPopulationData.setCampaign(finalCampaign);
+									
+									System.out.println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
 									insertCellValueIntoData(newPopulationData, cellData.getValue(),
 											cellData.getEntityPropertyPath());
 									
@@ -664,17 +724,7 @@ public class PopulationDataImporter extends DataImporter {
 									
 									System.out.println(newPopulationData.getAgeGroup() + "   :+++++++++++++:Y "
 											+ existingPopulationDataList.size());
-
-//									Optional<PopulationDataDto> existingPopulationData = existingPopulationDataList
-//											.stream()
-//											.filter(populationData -> populationData.getAgeGroup()
-//													.equals(newPopulationData.getAgeGroup())
-//													&& populationData.getCampaign()
-//															.equals(newPopulationData.getCampaign())
-//													&& populationData.getDistrict()
-//															.equals(newPopulationData.getDistrict()))
-//											.findFirst();
-									
+	
 									Optional<PopulationDataDto> existingPopulationData = existingPopulationDataList
 										    .stream()
 										    .filter(populationData -> {
@@ -694,7 +744,13 @@ public class PopulationDataImporter extends DataImporter {
 										existingPopulationData.get().setCollectionDate(collectionDate);
 //										existingPopulationData.setModality();
 
-										modifiedPopulationDataList.add(existingPopulationData.get());
+										
+
+										if(existingPopulationData.get().getCommunity() != null) {
+											modifiedPopulationDataList.add(existingPopulationData.get());
+										}
+										
+//										modifiedPopulationDataList.add(existingPopulationData.get());
 									} else {
 										System.out.println(
 												"++++++++++++++++existingPopulationData.NOTisPresent()++++++++++++++++ ");
@@ -706,7 +762,11 @@ public class PopulationDataImporter extends DataImporter {
 										newPopulationData.setModality(modality);
 										newPopulationData.setDistrictStatus(districtStatus);
 
-										modifiedPopulationDataList.add(newPopulationData);
+										
+										if(newPopulationData.getCommunity() != null) {
+											modifiedPopulationDataList.add(newPopulationData);
+										}
+//										modifiedPopulationDataList.add(newPopulationData);
 									}
 								}
 							} catch (ImportErrorException | InvalidColumnException | NumberFormatException e) {
@@ -769,13 +829,21 @@ public class PopulationDataImporter extends DataImporter {
 		}
 
 		String entityPropertyPath = entityPropertyPaths[0];
+		
+		System.out.println(entityPropertyPath + "entityPropertyPathentityPropertyPathentityPropertyPathentityPropertyPath");
 
 		try {
 			if (entityPropertyPath.equalsIgnoreCase("TOTAL")) {
+				
+				System.out.println("TOTALTOTALentityPropertyPathentityPropertyPathentityPropertyPathentityPropertyPath");
+
 				insertPopulationIntoPopulationData(populationData, value);
 
 				System.out.println(populationData + "header string " + value);
 			} else if (entityPropertyPath.matches(TOTAL_HEADER_PATTERN)) {
+				
+				System.out.println("TOTAL_HEADER_PATTERNentityPropertyPathentityPropertyPathentityPropertyPathentityPropertyPath");
+
 				try {
 					populationData.setSex(
 							Sex.valueOf(entityPropertyPaths[0].substring(0, entityPropertyPaths[0].indexOf("_"))));
@@ -784,25 +852,24 @@ public class PopulationDataImporter extends DataImporter {
 				}
 				insertPopulationIntoPopulationData(populationData, value);
 			} else if (entityPropertyPath.matches(HEADER_PATTERN)) {
-				// Sex
-				String sexString = entityPropertyPath.substring(0, entityPropertyPaths[0].indexOf("_"));
-				if (!sexString.equals("TOTAL")) {
-					try {
-						populationData.setSex(Sex.valueOf(sexString));
-
-						System.out.println(sexString + "header niot totsl string ");
-					} catch (IllegalArgumentException e) {
-						throw new InvalidColumnException(entityProperty);
-					}
+				System.out.println("HEADER_PATTERNHEADER_PATTERNentityPropertyPathentityPropertyPathentityPropertyPathentityPropertyPath");
+				
+				String ageGroupString = "";
+				if(entityPropertyPath.equalsIgnoreCase("TARGET_0_59M")) {
+					ageGroupString = "AGE_0_4";
+				}else if(entityPropertyPath.equalsIgnoreCase("TARGET_60_120M")) {
+					ageGroupString = "AGE_5_10";
 				}
-
 				// Age group
-				String ageGroupString = entityPropertyPath.substring(entityPropertyPath.indexOf("_") + 1,
-						entityPropertyPaths[0].length());
+//				String ageGroupString = entityPropertyPath.substring(entityPropertyPath.indexOf("_") + 1,
+//						entityPropertyPaths[0].length());
+//				
+				System.out.println( ageGroupString + "ageGroupStringentityPropertyPathentityPropertyPathentityPropertyPathentityPropertyPath");
+
 
 				//
 				try {
-
+					populationData.setSex(null);
 					populationData.setAgeGroup(AgeGroup.valueOf(ageGroupString));
 
 					System.out.println(ageGroupString + "Agegroup string ");
@@ -827,6 +894,8 @@ public class PopulationDataImporter extends DataImporter {
 
 	private void insertPopulationIntoPopulationData(PopulationDataDto populationData, String entry)
 			throws ImportErrorException {
+		
+		System.out.println("Attempting to inserr population data " + entry);
 		try {
 			populationData.setPopulation(Integer.parseInt(entry));
 		} catch (NumberFormatException e) {

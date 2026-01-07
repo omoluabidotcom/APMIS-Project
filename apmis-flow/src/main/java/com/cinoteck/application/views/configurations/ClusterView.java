@@ -303,6 +303,10 @@ public class ClusterView extends VerticalLayout {
 
 			
 		}
+		grid.addColumn(CommunityDto::provideInternationalborder)
+		.setHeader(I18nProperties.getCaption("International Border")).setResizable(true)
+		.setSortable(true)
+		.setTooltipGenerator(e -> I18nProperties.getCaption("International Border"));
 		
 		grid.addColumn(CommunityDto::provideFloatStatus).setHeader(I18nProperties.getCaption(Captions.floatStatus))
 		.setSortable(true).setResizable(true)
@@ -910,12 +914,16 @@ public class ClusterView extends VerticalLayout {
 		ComboBox<RegionReferenceDto> provinceOfDistrict = new ComboBox<>(I18nProperties.getCaption(Captions.region));
 		ComboBox<DistrictReferenceDto> districtOfCluster = new ComboBox<>(I18nProperties.getCaption(Captions.district));
 		ComboBox<String> floatStatus = new ComboBox<>(I18nProperties.getCaption(Captions.floatStatus));
+		ComboBox<String> intlBorderStatus = new ComboBox<>(I18nProperties.getCaption("International Border"));
+
 		
 		List<String> floatStatusesAvailable = new ArrayList<String>();
 		for (ClusterFloatStatus floatStatuses : ClusterFloatStatus.values()) {
 			floatStatusesAvailable.add(floatStatuses.toString());
 		}
 		floatStatus.setItems(floatStatusesAvailable);
+		
+		intlBorderStatus.setItems("Yes", "No");
 
 		provinceOfDistrict.setItems(FacadeProvider.getRegionFacade().getAllActiveAsReference());
 		provinceOfDistrict.addValueChangeListener(e -> {
@@ -935,6 +943,9 @@ public class ClusterView extends VerticalLayout {
 
 			floatStatus.setValue(communityDto.getFloating());
 			floatStatus.setEnabled(true);
+			
+			intlBorderStatus.setValue(communityDto.provideInternationalborder());
+			intlBorderStatus.setEnabled(true);
 		}
 
 		
@@ -1023,12 +1034,28 @@ public class ClusterView extends VerticalLayout {
 		}
 
 		saveButton.addClickListener(saveEvent -> {
+			System.out.println(intlBorderStatus.getValue() + "intlBorderStatus.getValue()intlBorderStatus.getValue()intlBorderStatus.getValue()");
+			boolean isErrored =  false;
+			
+			if(intlBorderStatus.getValue() != null  || intlBorderStatus.getValue() != ""  ) {
+				if(intlBorderStatus.getValue() != null ) {
+					
+				}else {
+					
+					intlBorderStatus.setErrorMessage("International Border cannot be left Empty.");	
+					isErrored = true;
+				}
+			}
 
+			
+			if(!isErrored) {
 			String name = nameField.getValue();
 			String clusterNum = clusterNumber.getValue();
 			String code = cCodeField.getValue();
 
-			String clusterFloatStatus = floatStatus.getValue().toString();
+			String clusterFloatStatus = floatStatus.getValue() != null ? floatStatus.getValue().toString() : "Normal";
+
+			String clusterIntlBorderStatus = intlBorderStatus.getValue() != null ? intlBorderStatus.getValue().toString() : "No";
 
 			String uuids = "";
 			if (communityDto != null) {
@@ -1049,6 +1076,8 @@ public class ClusterView extends VerticalLayout {
 					dce.setRegion(provinceOfDistrict.getValue());
 					dce.setDistrict(districtOfCluster.getValue());
 					dce.setFloating(clusterFloatStatus);
+					dce.setInternationalborder(clusterIntlBorderStatus.equalsIgnoreCase("Yes") ? true : false);
+
 
 					
 					List<DistrictIndexDto> pcode = FacadeProvider.getDistrictFacade().getAllDistricts();
@@ -1063,7 +1092,7 @@ public class ClusterView extends VerticalLayout {
 						if (selectedDistrictUuid.equals(districtOfCluster.getValue().getUuid().toString())) {
 							
 							System.out.println(" Distric matches pcodweeeeeeeeeeeee facsefprocvider " + 
-FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(selectedDistrictUuid));
+									FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(selectedDistrictUuid));
 
 							
 							System.out.println(" Distric matches pcodweeeeeeeeeeeee");
@@ -1177,6 +1206,8 @@ FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(selectedDistrictUu
 					System.out.println(clusterFloatStatus +" ============edit==========clusterFloatStatus");
 
 					dcex.setFloating(clusterFloatStatus);
+					dcex.setInternationalborder(clusterIntlBorderStatus.equalsIgnoreCase("Yes") ? true : false);
+
 
 //					List<DistrictIndexDto> pcode = FacadeProvider.getDistrictFacade().getAllDistricts();
 //					for (DistrictIndexDto districtIndexDto : pcode) {
@@ -1310,7 +1341,15 @@ FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(selectedDistrictUu
 			} else {
 				Notification.show(I18nProperties.getCaption(Captions.notValidValue) + name + " " + code);
 			}
-
+		}else {
+			Notification notification = Notification.show(
+			        I18nProperties.getCaption(Captions.notValidValue)
+			                + " Please provide a value in the International Border Field",
+			        4000,
+			        Notification.Position.TOP_END
+			);
+			notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+		}
 		});
 
 		if (communityDto == null) {
@@ -1328,7 +1367,7 @@ FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(selectedDistrictUu
 //			dialog.getFooter().add(archiveButton, discardButton, saveButton);
 
 		}
-		fmr.add(nameField, cCodeField, clusterNumber, provinceOfDistrict, districtOfCluster, floatStatus);
+		fmr.add(nameField, cCodeField, clusterNumber, provinceOfDistrict, districtOfCluster, floatStatus, intlBorderStatus);
 		dialog.add(fmr);
 
 //      getStyle().set("position", "fixed").set("top", "0").set("right", "0").set("bottom", "0").set("left", "0")

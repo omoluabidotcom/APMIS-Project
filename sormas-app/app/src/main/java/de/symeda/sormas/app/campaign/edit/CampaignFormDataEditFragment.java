@@ -38,6 +38,8 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -161,6 +163,12 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
     private ControlTextEditFieldRange errorSetterGlobal;
 
+
+    List<String> preCampaignsCategories = List.of("FLW", "MODALITY_PRE", "TRAINING");
+    List<String> intraCampaignsCategories = List.of("ICM", "ADMIN", "EAG-ICM", "EAG-ADMIN");
+    List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION");
+
+
     public void addMapValue() {
 
         mapvalue.put("Afghanistan", new CountryDetails("+93", 9, 9));
@@ -225,11 +233,20 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
         final View view = super.onCreateView(inflater, container, savedInstanceState);
 
         final CampaignFormMeta campaignFormMeta = DatabaseHelper.getCampaignFormMetaDao().queryForId(record.getCampaignFormMeta().getId());
+
+
+        
         final List<CampaignFormDataEntry> formValues = record.getFormValues();
         final List<CampaignFormTranslations> translationsOpt = record.getCampaignFormMeta().getCampaignFormTranslations();
         campaign = DatabaseHelper.getCampaignDao().queryForId(record.getCampaign().getId());
         criteria.setCampaign(campaign);
         criteria.setCampaignFormMeta(campaignFormMeta);
+
+        System.out.println(criteria.getCampaign().getUuid() + "campaign.getUuid()campaign.getUuid()campaign.getUuid()----------------");
+        System.out.println(campaignFormMeta.getUuid() + "campaign.getUuid()campaign.getUuid()campaign.getUuid()----------------");
+
+        Date expiryDate = DatabaseHelper.getCampaignFormMetaWithExpDao().getCampaignFormExpiryDateByCampaignIdAndFormId(campaign.getUuid(), campaignFormMeta.getUuid());
+        LocalDate expiryLocalDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
 
         final Map<String, String> formValuesMap = new HashMap<>();
@@ -415,6 +432,29 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                             System.out.println( getDateValue(value) + " getDateValue(value) getDateValue(value) getDateValue(value)" );
+
+
+                            if (campaign != null) {
+                                Date minDate = null;
+                                Date maxDate = null;
+
+                                if (preCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPreCampStartDate();
+                                }else if (intraCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getStartDate();
+                                }else if (postCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPostCampStartDate();
+                                 }
+                                maxDate = expiryDate;
+
+
+                                if (minDate != null) {
+                                    ((ControlDateField) dynamicField).setMinDate(minDate);                            }
+                                if (maxDate != null) {
+                                    ((ControlDateField) dynamicField).setMaxDate(maxDate);
+                                }
+                            }
+
                             ControlDateField.setValue((ControlDateField) dynamicField, getDateValue(value));
                         } else {
                             dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
@@ -641,6 +681,31 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
+
+
+                            if (campaign != null) {
+                                Date minDate = null;
+                                Date maxDate = null;
+
+                                String campaignPhase = "";
+                                if (preCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPreCampStartDate();
+                                 }else if (intraCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getStartDate();
+                                 }else if (postCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPostCampStartDate();
+                                 }
+                                maxDate = expiryDate;
+
+
+
+                                if (minDate != null) {
+                                    ((ControlDateField) dynamicField).setMinDate(minDate);                            }
+                                if (maxDate != null) {
+                                    ((ControlDateField) dynamicField).setMaxDate(maxDate);
+                                }
+                            }
+
                             ControlDateField.setValue((ControlDateField) dynamicField, getDateValue(value));
                         } else {
                             dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
@@ -799,6 +864,31 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
+
+
+                            if (campaign != null) {
+                                Date minDate = null;
+                                Date maxDate = null;
+
+                                String campaignPhase = "";
+                                if (preCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPreCampStartDate();
+                                 }else if (intraCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getStartDate();
+                                 }else if (postCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPostCampStartDate();
+                                 }
+
+                                maxDate = expiryDate;
+
+
+                                if (minDate != null) {
+                                    ((ControlDateField) dynamicField).setMinDate(minDate);                            }
+                                if (maxDate != null) {
+                                    ((ControlDateField) dynamicField).setMaxDate(maxDate);
+                                }
+                            }
+
                             ControlDateField.setValue((ControlDateField) dynamicField, getDateValue(value));
                         } else {
                             dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
@@ -973,6 +1063,31 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
+
+
+                            if (campaign != null) {
+                                Date minDate = null;
+                                Date maxDate = null;
+
+                                String campaignPhase = "";
+                                if (preCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPreCampStartDate();
+                                 }else if (intraCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getStartDate();
+                                 }else if (postCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPostCampStartDate();
+                                 }
+
+                                maxDate = expiryDate;
+
+
+                                if (minDate != null) {
+                                    ((ControlDateField) dynamicField).setMinDate(minDate);                            }
+                                if (maxDate != null) {
+                                    ((ControlDateField) dynamicField).setMaxDate(maxDate);
+                                }
+                            }
+
                             ControlDateField.setValue((ControlDateField) dynamicField, getDateValue(value));
                         } else {
                             dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
@@ -1126,6 +1241,31 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
+
+
+                            if (campaign != null) {
+                                Date minDate = null;
+                                Date maxDate = null;
+
+                                String campaignPhase = "";
+                                if (preCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPreCampStartDate();
+                                 }else if (intraCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getStartDate();
+                                 }else if (postCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPostCampStartDate();
+                                 }
+
+                                maxDate = expiryDate;
+
+
+                                if (minDate != null) {
+                                    ((ControlDateField) dynamicField).setMinDate(minDate);                            }
+                                if (maxDate != null) {
+                                    ((ControlDateField) dynamicField).setMaxDate(maxDate);
+                                }
+                            }
+
                             ControlDateField.setValue((ControlDateField) dynamicField, getDateValue(value));
                         } else {
                             dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
@@ -1278,6 +1418,29 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
+
+                            if (campaign != null) {
+                                Date minDate = null;
+                                Date maxDate = null;
+
+                                String campaignPhase = "";
+                                if (preCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPreCampStartDate();
+                                 }else if (intraCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getStartDate();
+                                 }else if (postCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPostCampStartDate();
+                                 }
+
+                                maxDate = expiryDate;
+
+
+                                if (minDate != null) {
+                                    ((ControlDateField) dynamicField).setMinDate(minDate);                            }
+                                if (maxDate != null) {
+                                    ((ControlDateField) dynamicField).setMaxDate(maxDate);
+                                }
+                            }
                             ControlDateField.setValue((ControlDateField) dynamicField, getDateValue(value));
                         } else {
                             dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
@@ -1430,6 +1593,29 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
+
+                            if (campaign != null) {
+                                Date minDate = null;
+                                Date maxDate = null;
+
+                                String campaignPhase = "";
+                                if (preCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPreCampStartDate();
+                                 }else if (intraCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getStartDate();
+                                 }else if (postCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPostCampStartDate();
+                                 }
+
+                                maxDate = expiryDate;
+
+
+                                if (minDate != null) {
+                                    ((ControlDateField) dynamicField).setMinDate(minDate);                            }
+                                if (maxDate != null) {
+                                    ((ControlDateField) dynamicField).setMaxDate(maxDate);
+                                }
+                            }
                             ControlDateField.setValue((ControlDateField) dynamicField, getDateValue(value));
                         } else {
                             dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
@@ -1583,6 +1769,29 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             ControlSpinnerField.setValue((ControlSpinnerField) dynamicField, value);
                         } else if (type == CampaignFormElementType.DATE) {
                             dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
+
+                            if (campaign != null) {
+                                Date minDate = null;
+                                Date maxDate = null;
+
+                                String campaignPhase = "";
+                                if (preCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPreCampStartDate();
+                                 }else if (intraCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getStartDate();
+                                 }else if (postCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                    minDate = campaign.getPostCampStartDate();
+                                 }
+
+                                maxDate = expiryDate;
+
+
+                                if (minDate != null) {
+                                    ((ControlDateField) dynamicField).setMinDate(minDate);                            }
+                                if (maxDate != null) {
+                                    ((ControlDateField) dynamicField).setMaxDate(maxDate);
+                                }
+                            }
                             ControlDateField.setValue((ControlDateField) dynamicField, getDateValue(value));
                         } else {
                             dynamicField = createControlTextEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
@@ -1692,36 +1901,39 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                         if (value != null && !value.trim().isEmpty()) {
                             String str = value.trim();
 
-                            // First, handle the stored value format
+                            // Remove brackets if present
                             if (str.startsWith("[") && str.endsWith("]")) {
                                 str = str.substring(1, str.length() - 1);
                             }
 
-                            // Also handle if it's already a comma-separated string without brackets
+                            // Remove quotes if present
+                            str = str.replace("\"", "");
+
+                            // Split by comma
                             String[] parts = str.split("\\s*,\\s*");
 
                             for (String part : parts) {
                                 String cleanPart = part.trim();
-                                // Remove any quotes
-                                if (cleanPart.startsWith("\"") && cleanPart.endsWith("\"")) {
-                                    cleanPart = cleanPart.substring(1, cleanPart.length() - 1);
-                                }
                                 if (!cleanPart.isEmpty()) {
                                     selectedKeys.add(cleanPart);
                                 }
                             }
-
-                            System.out.println("DEBUG - Field: " + campaignFormElement.getId() +
-                                    ", Raw value: " + value +
-                                    ", Parsed keys: " + selectedKeys);
                         }
 
+                        // Create the field
+                        dynamicField = createControlMultiSelectCheckBoxEditField(
+                                campaignFormElement,
+                                requireContext(),
+                                getUserTranslations(campaignFormMeta),
+                                optionsValues,
+                                selectedKeys,
+                                campaignFormElement.isImportant()
+                        );
 
-
-                        dynamicField = createControlMultiSelectCheckBoxEditField(campaignFormElement, requireContext(),
-                                getUserTranslations(campaignFormMeta), optionsValues, selectedKeys,
-                                campaignFormElement.isImportant());
-
+                        // Now set the value using the new method
+                        if (dynamicField instanceof ControlCheckBoxGroupField) {
+                            ((ControlCheckBoxGroupField) dynamicField).setOptionsAndValue(optionsValues, selectedKeys);
+                        }
                     }
                     else if (type == CampaignFormElementType.DECIMAL) {
                         final boolean exprx = expressionx;
@@ -1761,6 +1973,30 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
                     } else if (type == CampaignFormElementType.DATE) {
                         dynamicField = createControlDateEditField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
+
+
+                        if (campaign != null) {
+                            Date minDate = null;
+                            Date maxDate = null;
+
+                            String campaignPhase = "";
+                            if (preCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                minDate = campaign.getPreCampStartDate();
+                            }else if (intraCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                minDate = campaign.getStartDate();
+                            }else if (postCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                                minDate = campaign.getPostCampStartDate();
+                            }
+
+                            maxDate = expiryDate;
+
+
+                            if (minDate != null) {
+                                ((ControlDateField) dynamicField).setMinDate(minDate);                            }
+                            if (maxDate != null) {
+                                ((ControlDateField) dynamicField).setMaxDate(maxDate);
+                            }
+                        }
                         ControlDateField.setValue((ControlDateField) dynamicField, getDateValue(value));
                     } else if (type == CampaignFormElementType.PHONE) {
                         addMapValue();
@@ -2145,6 +2381,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 if (!selectedList.isEmpty()) {
                                     // Serialize as JSON array-like string
                                     serializedValue = "[" + String.join(",", selectedList) + "]";
+
+                                    System.out.println(serializedValue + "serializedValueserializedValueserializedValueserializedValue");
                                 }
                             }
 
@@ -2311,6 +2549,34 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
         }
         return view;
+    }
+
+    private List<String> parseCheckboxValue(String value) {
+        List<String> selectedKeys = new ArrayList<>();
+
+        if (value != null && !value.trim().isEmpty()) {
+            String str = value.trim();
+
+            // Remove brackets if present
+            if (str.startsWith("[") && str.endsWith("]")) {
+                str = str.substring(1, str.length() - 1);
+            }
+
+            // Remove quotes if present
+            str = str.replace("\"", "");
+
+            // Split by comma
+            String[] parts = str.split("\\s*,\\s*");
+
+            for (String part : parts) {
+                String cleanPart = part.trim();
+                if (!cleanPart.isEmpty()) {
+                    selectedKeys.add(cleanPart);
+                }
+            }
+        }
+
+        return selectedKeys;
     }
 
 

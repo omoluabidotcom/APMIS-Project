@@ -41,6 +41,7 @@ import de.symeda.sormas.api.ClusterFloatStatus;
 import de.symeda.sormas.api.EntityRelevanceStatus;
 import de.symeda.sormas.api.ErrorStatusEnum;
 import de.symeda.sormas.api.ReferenceDto;
+import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignPhase;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
@@ -54,6 +55,7 @@ import de.symeda.sormas.api.infrastructure.community.CommunityDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityFacade;
 import de.symeda.sormas.api.infrastructure.community.CommunityHistoryExtractDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
+import de.symeda.sormas.api.infrastructure.district.DistrictDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionHistoryExtractDto;
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
@@ -714,6 +716,8 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		Predicate filterx = cb.and(cb.isNotNull(community.get(District.EXTERNAL_ID)), cb.equal(community.get(District.ARCHIVED), false), cb.isNotNull(community.get(District.ARCHIVED)));
 		Predicate filterxy = cb.and(cb.isNotNull(community.get(District.EXTERNAL_ID)), cb.isNotNull(community.get(District.ARCHIVED)));
 		Predicate filterxx = cb.and(cb.isNotNull(community.get(District.EXTERNAL_ID)), cb.equal(community.get(District.ARCHIVED), true), cb.isNotNull(community.get(District.ARCHIVED)));
+//		Predicate intlBorderFilter = cb.and(cb.isNotNull(community.get(District.EXTERNAL_ID)), cb.equal(community.get(District.ARCHIVED), true), cb.isNotNull(community.get(District.ARCHIVED)));
+
 		Predicate floatPredicate = null;
 		if(criteria.getFloatStatus() != null) {
 		floatPredicate = cb.and( cb.equal(community.get(Community.FLOATING_STATUS), (criteria.getFloatStatus().toString() != null ?  criteria.getFloatStatus().toString(): criteria.getFloatStatus().toString())));
@@ -999,6 +1003,7 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		dto.setAreaname(entity.getDistrict().getRegion().getArea().getName());
 		dto.setAreaexternalId(entity.getDistrict().getRegion().getArea().getExternalId());
 		dto.setFloating(entity.getFloating());
+		dto.setInternationalborder(entity.isInternationalBorder());
 		return dto;
 	}
 	
@@ -1160,6 +1165,8 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		target.setExternalId(source.getExternalId());
 		target.setClusterNumber(source.getClusterNumber());
 		target.setFloating(source.getFloating());
+		target.setInternationalBorder(source.isInternationalborder());
+
 		return target;
 	}
 
@@ -1323,7 +1330,7 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 
 	
 
-public List<CommunityHistoryExtractDto> getClusterDataChangeHistory(CommunityCriteriaNew criteria) {
+	public List<CommunityHistoryExtractDto> getClusterDataChangeHistory(CommunityCriteriaNew criteria) {
 
     List<CommunityHistoryExtractDto> resultData = new ArrayList<>();
 
@@ -1453,6 +1460,53 @@ public List<CommunityHistoryExtractDto> getClusterDataChangeHistory(CommunityCri
 			return QueryHelper.getResultList(em, cq, null, null, this::toDtoList);//.stream().filter(e -> e.getMessage() != "Correctly assigned").collect(Collectors.toList());
 		}
 	
+	
+	@Override
+	public List<CommunityDto> getAllActiveClustersAsReferenceAndPopulation(Long regionId, String districtId, CampaignDto campaignDt) {
+		String queryStringBuilder = "select a.name,"
+				+ " SUM(CASE WHEN p.agegroup = 'AGE_0_4' THEN p.population ELSE 0 END) AS population_age_0_4,\n"
+				+ "    SUM(CASE WHEN p.agegroup = 'AGE_5_10' THEN p.population ELSE 0 END) AS population_age_5_10,"
+				+ " a.id, ar.uuid as regionUuid, dr.uuid as districtUuid, a.uuid as clusterUuid, p.selected, p.modality, p.districtstatus, a.floating from community a\n"
+				+ " left outer join populationdata p on a.id = p.community_id\n"
+				
+				+ " left outer join district dr on dr.uuid = '" + districtId + "' \n"
+
+				+ " left outer join region ar on ar.id = " + regionId + "\n"
+				+ " left outer join campaigns ca on p.campaign_id = ca.id \n"
+				+ " where a.archived = false and (p.agegroup = 'AGE_0_4' or p.agegroup = 'AGE_5_10') and a.district_id = (select id from district d where uuid = '"
+				+ districtId + "') and ca.uuid = '" + campaignDt.getUuid() + "'\n"
+				+ " group by a.name,  a.id, ar.uuid, dr.uuid, a.uuid, p.selected, p.modality, p.districtstatus, a.floating";
+
+		System.out.println("::::::" + queryStringBuilder);
+		Query seriesDataQuery = em.createNativeQuery(queryStringBuilder);
+
+		List<CommunityDto> resultData = new ArrayList<>();
+
+		@SuppressWarnings("unchecked")
+		List<Object[]> resultList = seriesDataQuery.getResultList();
+
+		// System.out.println("starting....");
+
+		resultData.addAll(resultList.stream()
+				.map((result) -> new CommunityDto((String) result[0].toString(), 
+						result[1] != null ? ((BigInteger) result[1]).longValue() : 886L,
+						result[2] != null ? ((BigInteger) result[2]).longValue() : 887L,
+						result[3] != null ? ((BigInteger) result[3]).longValue() : 888L,
+						result[4] != null ? (String) result[4].toString() : "" , 
+						result[5] != null ? (String) result[5].toString() : "" ,
+
+						result[6] != null ? (String) result[6].toString() : "" ,
+						result[7] != null ? (String) result[7].toString() : "false" , 
+						result[8] != null ? (String) result[8].toString() : "",
+						result[9] != null ? (String) result[9].toString() : "",	
+//						result[9] != null ? result[9].toString().equalsIgnoreCase("false") ? "Active" : "Archived" : "Archived",
+						result[10] != null ? (String) result[10].toString() : ""
+							))
+//						,
+//						(String) result[9].toString() ))
+				.collect(Collectors.toList()));
+		return resultData;
+	}
 	
 
 	

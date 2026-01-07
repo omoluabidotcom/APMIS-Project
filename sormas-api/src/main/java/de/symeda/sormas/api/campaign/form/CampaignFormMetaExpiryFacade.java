@@ -20,6 +20,8 @@ public interface CampaignFormMetaExpiryFacade {
 	List<String> getAllUuids();	
  	
     List<CampaignFormMetaExpiryDto> getAllAfter(Date campaignFormMetaChangeDate);
+    
+    Date getFormExpiryByCampaignAndFormUuid(String campaignUuid , String formUuid);
 
 
 

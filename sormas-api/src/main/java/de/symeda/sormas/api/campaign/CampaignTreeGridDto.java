@@ -18,6 +18,11 @@ public class CampaignTreeGridDto {
 	
 	
 	private List<CampaignTreeGridDto> regionData = new ArrayList<>();
+	private List<CampaignTreeGridDto> districtData = new ArrayList<>();
+	private List<CampaignTreeGridDto> clusterData = new ArrayList<>();
+
+
+	
     private String name;
     private Long id;
     private String parentUuid;
@@ -27,6 +32,7 @@ public class CampaignTreeGridDto {
     private String savedData;
     private String districtModality;
     private String districtStatus;
+    private String floatStatus;
     private String ageGroup;
 
     public CampaignTreeGridDto(String name, Long id, String parentUuid, String uuid, String levelAssessed) {
@@ -46,6 +52,19 @@ public class CampaignTreeGridDto {
         this.districtModality = districtModality;
         this.districtStatus = districtStatus;
 //        this.ageGroup = ageGroup;
+    }
+    
+    public CampaignTreeGridDto(String name, Long id, String parentUuid, String uuid, String levelAssessed, String districtModality, String districtStatus, String floatStatus) {
+        this.name = name;
+        this.id = id;
+        this.parentUuid = parentUuid;
+        this.uuid = uuid;
+        this.levelAssessed = levelAssessed;
+        this.districtModality = districtModality;
+        this.districtStatus = districtStatus;
+//        this.ageGroup = ageGroup;
+        this.floatStatus = floatStatus;
+
     }
     
 //    public CampaignTreeGridDto(String name, Long id, String parentUuid, String uuid, String levelAssessed, String districtModality, String districtStatus) {
@@ -79,11 +98,35 @@ public class CampaignTreeGridDto {
 
     public void setRegionData(List<CampaignTreeGridDto> regionData) {
         this.regionData = regionData;
+    }
+    
+    public List<CampaignTreeGridDto> getDistrictData() {
+        return districtData;
+    }
+
+    public void setDistrictData(List<CampaignTreeGridDto> districtData) {
+        this.districtData = districtData;
+    }	
+    
+    public List<CampaignTreeGridDto> getClusterData() {
+        return clusterData;
+    }
+
+    public void setClusterData(List<CampaignTreeGridDto> clusterData) {
+        this.clusterData = clusterData;
     }	
     
     
     public void addRegionData(CampaignTreeGridDto regionData_sub) {
     	regionData.add(regionData_sub);
+    }
+    
+    public void addDistrictData(CampaignTreeGridDto districtData_sub) {
+    	districtData.add(districtData_sub);
+    }
+    
+    public void addClusterData(CampaignTreeGridDto clusterData_sub) {
+    	clusterData.add(clusterData_sub);
     }
 
     public Long getPopulationData() {
@@ -174,6 +217,16 @@ public class CampaignTreeGridDto {
 	
 	public void setDistrictStatus(String districtStatus) {
 		this.districtStatus = districtStatus;
+	}
+
+	
+	
+	public String getFloatStatus() {
+		return floatStatus;
+	}
+
+	public void setFloatStatus(String floatStatus) {
+		this.floatStatus = floatStatus;
 	}
 
 	public String getAgeGroup() {

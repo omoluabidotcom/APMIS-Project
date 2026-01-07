@@ -72,6 +72,8 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 	private SimpleDateFormat dateFormat;
 	private int allowedDaysInFuture;
 	private Date cachedTime;
+	private Date minDate;
+	private Date maxDate;
 
 
 	private static final String STANDARD_DATE_TIME_FORMAT = "dd-MM-yyyy";
@@ -115,7 +117,25 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 			}
 		}
 
+
+		if (minDate != null && getValue().before(minDate)) {
+			enableErrorState(I18nProperties.getValidationError(Validations.validDateRange, getCaption()));
+			return true;
+		}
+		if (maxDate != null && getValue().after(maxDate)) {
+			enableErrorState(I18nProperties.getValidationError(Validations.validDateRange, getCaption()));
+			return true;
+		}
+
 		return false;
+	}
+
+	public void setMinDate(Date minDate) {
+		this.minDate = minDate;
+	}
+
+	public void setMaxDate(Date maxDate) {
+		this.maxDate = maxDate;
 	}
 
 	/**
@@ -166,6 +186,8 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 
 		Bundle dateBundle = new Bundle();
 		dateBundle.putSerializable(ControlDatePickerFragment.KEY_DATE, this.getFieldValue());
+		dateBundle.putSerializable(ControlDatePickerFragment.KEY_MIN_DATE, minDate);
+		dateBundle.putSerializable(ControlDatePickerFragment.KEY_MAX_DATE, maxDate);
 		fragment.setArguments(dateBundle);
 		fragment.show(fragmentManager, getResources().getText(R.string.hint_select_a_date).toString());
 	}

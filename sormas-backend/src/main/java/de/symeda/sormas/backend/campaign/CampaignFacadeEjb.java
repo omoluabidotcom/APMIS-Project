@@ -29,6 +29,7 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.ParameterExpression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -232,6 +233,7 @@ public class CampaignFacadeEjb implements CampaignFacade {
 	}
 
 	@Override
+	@Transactional
 	public CampaignDto saveCampaign(@Valid CampaignDto dto) {
 
 //System.out.println(dto + "from the campaign facade when its trying to save ");
@@ -355,6 +357,119 @@ public class CampaignFacadeEjb implements CampaignFacade {
 		}
 
 	}
+
+	
+	public void saveCampaignFormExpiryEntry(CampaignFormMetaWithExpReferenceDto data, CampaignDto dto) {
+		
+
+		if ( data != null) {
+			String fetchFormTypeSql = "SELECT LOWER(formtype) FROM campaignformmeta WHERE uuid = '"
+					+ data.getFormId() + "' LIMIT 1";
+
+			Object result = em.createNativeQuery(fetchFormTypeSql).getSingleResult();
+			String formType = result != null ? result.toString() : "";
+
+			// 2️⃣ Determine which column/value to use based on form type
+
+			try {
+
+				String expireDayColumn;
+				String expireValue;
+				switch (formType) {
+				case "pre-campaign":
+					expireDayColumn = CampaignFormMetaExpDay.EXPIRE_DAY;
+					expireValue = String.valueOf(data.getDaysExpired());
+					break;
+				case "post-campaign":
+					expireDayColumn = CampaignFormMetaExpDay.EXPIRE_DAY;
+					expireValue = String.valueOf(data.getDaysExpired());
+					break;
+				case "intra-campaign":
+					expireDayColumn = CampaignFormMetaExpDay.EXPIRE_DAY;
+					expireValue = String.valueOf(data.getDaysExpired());
+					break;
+				default:
+					expireDayColumn = CampaignFormMetaExpDay.EXPIRE_DAY;
+					expireValue = String.valueOf(data.getDaysExpired());
+					break;
+				}
+
+				System.out.println("Expire value-------------: " + expireValue);
+				System.out.println("Form type (final)-------------:: " + formType);
+
+				// 3️⃣ Insert or update expiry day
+				String sqlQuery = "INSERT INTO " + CampaignFormMetaExpDay.TABLE_NAME + " ("
+						+ CampaignFormMetaExpDay.FORM_ID + ", " + CampaignFormMetaExpDay.CAMPAIGN + ", "
+						+ expireDayColumn + ", " + CampaignFormMetaExpDay.UUID + ", "
+						+ CampaignFormMetaExpDay.CHANGE_DATE + ") " + "VALUES ('" + data.getFormId() + "', '"
+						+ data.getCampaignId() + "', '" + expireValue + "', '" + data.getUuid()
+						+ "', CURRENT_TIMESTAMP) " + "ON CONFLICT (" + CampaignFormMetaExpDay.FORM_ID + ", "
+						+ CampaignFormMetaExpDay.CAMPAIGN + ") DO UPDATE SET " + expireDayColumn + " = EXCLUDED."
+						+ expireDayColumn + ", " + CampaignFormMetaExpDay.UUID + " = EXCLUDED."
+						+ CampaignFormMetaExpDay.UUID + ", " + CampaignFormMetaExpDay.CHANGE_DATE
+						+ " = CURRENT_TIMESTAMP;";
+
+				System.out.println("Executing query for formType [" + formType + "]: " + sqlQuery);
+				int resultUpdate = em.createNativeQuery(sqlQuery).executeUpdate();
+				System.out.println("Insert/Update done: " + resultUpdate);
+
+			} catch (Exception e) {
+
+			} finally {
+
+				String updateCampaignExpiry = "";
+
+				switch (formType) {
+				case "pre-campaign":
+					updateCampaignExpiry = "UPDATE " + CampaignFormMetaExpDay.TABLE_NAME + " AS campaignExpiry "
+							+ "SET " + CampaignFormMetaExpDay.EXPIRE_DATE + " = campaigns.precampstartdate + (campaignExpiry."
+							+ CampaignFormMetaExpDay.EXPIRE_DAY + " * INTERVAL '1 day') " 
+							+ "FROM "
+							+ Campaign.TABLE_NAME + " AS campaigns " 
+							+ "WHERE campaigns.uuid  = '" + dto.getUuid()
+							+ "' and campaignExpiry.formid = '" + data.getFormId() + "';";
+
+					break;
+				case "post-campaign":
+					updateCampaignExpiry = "UPDATE " + CampaignFormMetaExpDay.TABLE_NAME + " AS campaignExpiry "
+							+ "SET " + CampaignFormMetaExpDay.EXPIRE_DATE + " = campaigns.postcampstartdate + (campaignExpiry."
+							+ CampaignFormMetaExpDay.EXPIRE_DAY + " * INTERVAL '1 day') " 
+							+ "FROM "
+							+ Campaign.TABLE_NAME + " AS campaigns " 
+							+ "WHERE campaigns.uuid  = '" + dto.getUuid()
+							+ "' and campaignExpiry.formid = '" + data.getFormId() + "';";
+
+					break;
+				case "intra-campaign":
+					updateCampaignExpiry = "UPDATE " + CampaignFormMetaExpDay.TABLE_NAME + " AS campaignExpiry "
+							+ "SET " + CampaignFormMetaExpDay.EXPIRE_DATE + " = campaigns.startdate + (campaignExpiry."
+							+ CampaignFormMetaExpDay.EXPIRE_DAY + " * INTERVAL '1 day') " 
+							+ "FROM "
+							+ Campaign.TABLE_NAME + " AS campaigns " 
+							+ "WHERE campaigns.uuid  = '" + dto.getUuid()
+							+ "' and campaignExpiry.formid = '" + data.getFormId() + "';";
+
+					break;
+				default:
+					updateCampaignExpiry = "UPDATE " + CampaignFormMetaExpDay.TABLE_NAME + " AS campaignExpiry "
+							+ "SET " + CampaignFormMetaExpDay.EXPIRE_DATE + " = campaigns.prestartdate + (campaignExpiry."
+							+ CampaignFormMetaExpDay.EXPIRE_DAY + " * INTERVAL '1 day') " 
+							+ "FROM "
+							+ Campaign.TABLE_NAME + " AS campaigns " 
+							+ "WHERE campaigns.uuid  = '" + dto.getUuid()
+							+ "' and campaignExpiry.formid = '" + data.getFormId() + "';";
+
+					break;
+				}
+				
+				  System.out.println("Updating PRE_CAMPAIGN_EXPIRE_DATE...");
+	            em.createNativeQuery(updateCampaignExpiry).executeUpdate();
+
+			}
+		}
+
+	}
+
 
 
 //
