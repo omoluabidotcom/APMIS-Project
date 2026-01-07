@@ -49,6 +49,7 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -4035,6 +4036,43 @@ if(criteria.getUserLanguage() != null) {
 		return resultData;
 	}
 
+//	public void checkLastAnalytics() {
+//		// completionanalysisview_e
+//		int isLocked = isUpdateTrakerLocked("camapaigndata_main");
+//		if (isLocked == 0) {
+//			updateTrakerTableCoreTimeStamp("campaignformdata");
+//
+//			boolean isAnalyticsOld = campaignStatisticsService.checkChangedDb("campaignformdata", "camapaigndata_main");
+//
+//			if (isAnalyticsOld) {
+//				final String jpqlQueries = "REFRESH MATERIALIZED VIEW CONCURRENTLY camapaigndata_main;";
+//				final String jpqlQueries_ = "REFRESH MATERIALIZED VIEW CONCURRENTLY camapaigndata_admin;";
+//
+//				try {
+//					updateTrakerTable("camapaigndata_main", true);
+//					em.createNativeQuery(jpqlQueries).executeUpdate();
+//
+//				} catch (Exception e) {
+//					System.err.println(e.getStackTrace());
+//				} finally {
+//					updateTrakerTable("camapaigndata_main", false);
+//
+//					try {
+//						updateTrakerTable("camapaigndata_admin", true);
+//						em.createNativeQuery(jpqlQueries_).executeUpdate();
+//
+//					} catch (Exception e) {
+//						System.err.println(e.getStackTrace());
+//					} finally {
+//						updateTrakerTable("camapaigndata_admin", false);
+//					}
+//				}
+//
+//			}
+//		}
+//	}
+	
+	
 	public void checkLastAnalytics() {
 		// completionanalysisview_e
 		int isLocked = isUpdateTrakerLocked("camapaigndata_main");
@@ -4044,30 +4082,43 @@ if(criteria.getUserLanguage() != null) {
 			boolean isAnalyticsOld = campaignStatisticsService.checkChangedDb("campaignformdata", "camapaigndata_main");
 
 			if (isAnalyticsOld) {
-				final String jpqlQueries = "REFRESH MATERIALIZED VIEW CONCURRENTLY camapaigndata_main;";
-				final String jpqlQueries_ = "REFRESH MATERIALIZED VIEW CONCURRENTLY camapaigndata_admin;";
-
+				// Execute each operation in separate transactions to avoid cascade failures
 				try {
-					updateTrakerTable("camapaigndata_main", true);
-					em.createNativeQuery(jpqlQueries).executeUpdate();
-
+					refreshMainCampaignData();
 				} catch (Exception e) {
-					System.err.println(e.getStackTrace());
-				} finally {
-					updateTrakerTable("camapaigndata_main", false);
-
-					try {
-						updateTrakerTable("camapaigndata_admin", true);
-						em.createNativeQuery(jpqlQueries_).executeUpdate();
-
-					} catch (Exception e) {
-						System.err.println(e.getStackTrace());
-					} finally {
-						updateTrakerTable("camapaigndata_admin", false);
-					}
+					System.out.println("Failed to refresh camapaigndata_main --> Exception Message " + e.toString());
 				}
-
+				
+				try {
+					refreshAdminCampaignData();
+				} catch (Exception e) {
+					System.out.println("Failed to refresh camapaigndata_admin --> Exception Message" + e.toString());
+				}
 			}
+		}
+	}
+
+	@Transactional
+	public void refreshMainCampaignData() {
+		final String jpqlQueries = "REFRESH MATERIALIZED VIEW CONCURRENTLY camapaigndata_main;";
+		
+		updateTrakerTable("camapaigndata_main", true);
+		try {
+			em.createNativeQuery(jpqlQueries).executeUpdate();
+		} finally {
+			updateTrakerTable("camapaigndata_main", false);
+		}
+	}
+
+	@Transactional  
+	public void refreshAdminCampaignData() {
+		final String jpqlQueries = "REFRESH MATERIALIZED VIEW CONCURRENTLY camapaigndata_admin;";
+		
+		updateTrakerTable("camapaigndata_admin", true);
+		try {
+			em.createNativeQuery(jpqlQueries).executeUpdate();
+		} finally {
+			updateTrakerTable("camapaigndata_admin", false);
 		}
 	}
 
