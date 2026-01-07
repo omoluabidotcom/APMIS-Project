@@ -11,8 +11,10 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -2106,22 +2108,78 @@ if (!selectedAreas.isEmpty()) {
 			((TextArea) field).setValue(value != null ? value.toString() : null);
 			break; 
 		case DATE:
-			if (value != null) {
-				try {
-					Date date = parseDateFromString(value);
-					LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-					DatePicker datePicker = (DatePicker) field;
-					datePicker.setLocale(Locale.UK);
-					datePicker.setValue(localDate);
-				} catch (Exception e) {
-					logger.error("Error parsing date value: " + value, e);
-					((DatePicker) field).setValue(null);
-				}
-			} else {
-				((DatePicker) field).setValue(null);
-			}
-			break;
+		    DatePicker datePicker = (DatePicker) field;
+		    
+		    if (value != null) {
+		        try {
+		            LocalDate localDate = null;
+		            
+		            // Handle LocalDate instances directly
+		            if (value instanceof LocalDate) {
+		                localDate = (LocalDate) value;
+		            }
+		            // Handle Date instances
+		            else if (value instanceof Date) {
+		                localDate = ((Date) value).toInstant()
+		                    .atZone(ZoneId.systemDefault())
+		                    .toLocalDate();
+		            }
+		            // Handle String values - multiple formats
+		            else if (value instanceof String) {
+		                String dateStr = ((String) value).trim();
+		                
+		                // Normalize Persian/Dari/Pashto digits to ASCII
+		                dateStr = normalizeDigits(dateStr);
+		                
+		                localDate = parseMultiFormatDate(dateStr);
+		            }
+		            // Handle other types (Long timestamps, etc.)
+		            else {
+		                logger.warn("Unexpected date type: {}. Attempting toString conversion.", 
+		                           value.getClass().getName());
+		                String dateStr = normalizeDigits(value.toString().trim());
+		                localDate = parseMultiFormatDate(dateStr);
+		            }
+		            
+		            if (localDate != null) {
+		                // Set locale and format pattern to dd-MM-yyyy
+		                datePicker.setLocale(new Locale("en", "GB")); // UK locale uses dd-MM-yyyy
+		                datePicker.setValue(localDate);
+		                
+		                // Optionally log the formatted output
+		                logger.debug("Date set to: {}", localDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+		            } else {
+		                datePicker.setValue(null);
+		                logger.error("Could not parse date value: {}", value);
+		            }
+		            
+		        } catch (Exception e) {
+		            logger.error("Error parsing date value: " + value, e);
+		            datePicker.setValue(null);
+		            datePicker.setInvalid(true);
+		            datePicker.setErrorMessage("Invalid date format. Expected dd-MM-yyyy");
+		        }
+		    } else {
+		        datePicker.setValue(null);
+		    }
+		    break;
+//		case DATE:
+//			if (value != null) {
+//				try {
+//					Date date = parseDateFromString(value);
+//					LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//
+//					DatePicker datePicker = (DatePicker) field;
+//					datePicker.setLocale(Locale.UK);
+//					datePicker.setValue(localDate);
+//				} catch (Exception e) {
+//					logger.error("Error parsing date value: " + value, e);
+//					((DatePicker) field).setValue(null);
+//				}
+//			} else {
+//				((DatePicker) field).setValue(null);
+//			}
+//			break;
 
 		case RADIO:
 			((RadioButtonGroup) field).setValue(Sets.newHashSet(value).toString().replace("[", "").replace("]", ""));
@@ -2184,17 +2242,80 @@ if (!selectedAreas.isEmpty()) {
 			break;
 
 		case TIME:
-			if (value != null) {
-				System.out.println(" time value is not null ");
-				if (value instanceof LocalTime) {
-					((TimePicker) field).setValue((LocalTime) value);
-				} else if (value instanceof String) {
-					((TimePicker) field).setValue(LocalTime.parse((String) value));
-				}
-			} else if (defaultvalue != null) {
-				((TimePicker) field).setValue(LocalTime.parse((String) defaultvalue));
-			}
-			break;
+		    TimePicker timePicker = (TimePicker) field;
+		    
+		    if (value != null) {
+		        System.out.println("time value is not null");
+		        
+		        // Handle LocalTime instances directly
+		        if (value instanceof LocalTime) {
+		            timePicker.setValue((LocalTime) value);
+		        } 
+		        // Handle String values with digit normalization
+		        else if (value instanceof String) {
+		            String timeStr = ((String) value).trim();
+		            
+		            // Normalize Persian/Dari/Pashto digits to ASCII
+		            String normalizedTime = normalizeDigits(timeStr);
+		            
+		            if (normalizedTime.isEmpty() || normalizedTime.equalsIgnoreCase("null")) {
+		                timePicker.setValue(null);
+		            } else {
+		                try {
+		                    timePicker.setValue(LocalTime.parse(normalizedTime));
+		                    logger.debug("Successfully parsed time: '{}' (original: '{}')", 
+		                                normalizedTime, timeStr);
+		                } catch (DateTimeParseException e) {
+		                    timePicker.setValue(null);
+		                    logger.error("Failed to parse time value: '{}' (normalized: '{}'). Error: {}", 
+		                                timeStr, normalizedTime, e.getMessage());
+		                    
+		                    // Set error state
+		                    timePicker.setInvalid(true);
+		                    timePicker.setErrorMessage("Invalid time format. Expected HH:mm or HH:mm:ss");
+		                }
+		            }
+		        }
+		        // Handle unexpected types
+		        else {
+		            timePicker.setValue(null);
+		            logger.warn("Unexpected type for TIME field: {}. Expected LocalTime or String.", 
+		                       value.getClass().getName());
+		        }
+		    } 
+		    // Handle default value with normalization
+		    else if (defaultvalue != null) {
+		        String defaultTimeStr = defaultvalue.trim();
+		        String normalizedDefault = normalizeDigits(defaultTimeStr);
+		        
+		        if (!normalizedDefault.isEmpty()) {
+		            try {
+		                timePicker.setValue(LocalTime.parse(normalizedDefault));
+		            } catch (DateTimeParseException e) {
+		                timePicker.setValue(null);
+		                logger.error("Failed to parse default time value: '{}' (normalized: '{}')", 
+		                            defaultTimeStr, normalizedDefault);
+		            }
+		        } else {
+		            timePicker.setValue(null);
+		        }
+		    } 
+		    // No value or default - clear the field
+		    else {
+		        timePicker.setValue(null);
+		    }
+		    break;
+//			if (value != null) {
+//				System.out.println(" time value is not null ");
+//				if (value instanceof LocalTime) {
+//					((TimePicker) field).setValue((LocalTime) value);
+//				} else if (value instanceof String) {
+//					((TimePicker) field).setValue(LocalTime.parse((String) value));
+//				}
+//			} else if (defaultvalue != null) {
+//				((TimePicker) field).setValue(LocalTime.parse((String) defaultvalue));
+//			}
+//			break;
 
 		case PHONE:
 			if (value != null) {
@@ -2209,7 +2330,154 @@ if (!selectedAreas.isEmpty()) {
 			throw new IllegalArgumentException(type.toString());
 		}
 	}
+	
+	/**
+	 * Normalizes Persian/Dari/Pashto/Arabic-Indic digits to ASCII digits
+	 * Supports both Eastern Arabic (٠-٩) and Persian (۰-۹) numerals
+	 */
+	private String normalizeDigits(String input) {
+	    if (input == null || input.isEmpty()) {
+	        return input;
+	    }
+	    
+	    StringBuilder normalized = new StringBuilder();
+	    
+	    for (char c : input.toCharArray()) {
+	        // Persian/Dari digits (U+06F0 to U+06F9)
+	        if (c >= '\u06F0' && c <= '\u06F9') {
+	            normalized.append((char) ('0' + (c - '\u06F0')));
+	        }
+	        // Arabic-Indic digits (U+0660 to U+0669)
+	        else if (c >= '\u0660' && c <= '\u0669') {
+	            normalized.append((char) ('0' + (c - '\u0660')));
+	        }
+	        // Keep everything else (colons, spaces, etc.)
+	        else {
+	            normalized.append(c);
+	        }
+	    }
+	    
+	    return normalized.toString();
+	}
 
+	
+	/**
+	 * Parses dates from multiple common formats including:
+	 * - "Tue Dec 09 00:00:00 GMT+01:00 2025" (Java Date.toString() format)
+	 * - "10-12-2025" (dd-MM-yyyy)
+	 * - "2025-12-10" (ISO format yyyy-MM-dd)
+	 * - "10/12/2025" (dd/MM/yyyy)
+	 * - "Dec 09, 2025" (MMM dd, yyyy)
+	 * 
+	 * All inputs are normalized and returned as LocalDate which will be displayed as dd-MM-yyyy
+	 * 
+	 * @param dateStr The date string to parse
+	 * @return LocalDate or null if parsing fails
+	 */
+	private LocalDate parseMultiFormatDate(String dateStr) {
+	    if (dateStr == null || dateStr.isEmpty() || dateStr.equalsIgnoreCase("null")) {
+	        return null;
+	    }
+	    
+	    // List of formatters to try in order
+	    // Note: All inputs are parsed to LocalDate, which DatePicker will display as dd-MM-yyyy
+	    DateTimeFormatter[] formatters = {
+	        // Handle "Tue Dec 09 00:00:00 GMT+01:00 2025" format
+	        // This is the output of Java's Date.toString()
+	        DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH),
+	        DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss 'GMT'XXX yyyy", Locale.ENGLISH),
+	        
+	        // dd-MM-yyyy format (PRIMARY format - try first)
+	        DateTimeFormatter.ofPattern("dd-MM-yyyy"),           // 10-12-2025
+	        DateTimeFormatter.ofPattern("d-M-yyyy"),             // 9-12-2025 (single digit)
+	        
+	        // Other common formats
+	        DateTimeFormatter.ofPattern("yyyy-MM-dd"),           // 2025-12-10 (ISO)
+	        DateTimeFormatter.ofPattern("dd/MM/yyyy"),           // 10/12/2025
+	        DateTimeFormatter.ofPattern("d/M/yyyy"),             // 9/12/2025
+	        
+	        // With time components
+	        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"),
+	        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
+	        DateTimeFormatter.ofPattern("dd-MM-yyyy'T'HH:mm:ss"),
+	        
+	        // Month name formats
+	        DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.ENGLISH),  // Dec 09, 2025
+	        DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH),   // 09 Dec 2025
+	        DateTimeFormatter.ofPattern("MMMM dd, yyyy", Locale.ENGLISH), // December 09, 2025
+	        
+	        // ISO formats
+	        DateTimeFormatter.ISO_LOCAL_DATE,
+	        DateTimeFormatter.ISO_DATE_TIME,
+	        DateTimeFormatter.ISO_OFFSET_DATE_TIME
+	    };
+	    
+	    // Try each formatter
+	    for (DateTimeFormatter formatter : formatters) {
+	        try {
+	            // For formatters that include time/zone info
+	            if (dateStr.contains("GMT") || dateStr.contains("Z") || 
+	                (dateStr.contains(":") && dateStr.length() > 15)) {
+	                try {
+	                    // Try parsing as ZonedDateTime first
+	                    ZonedDateTime zdt = ZonedDateTime.parse(dateStr, formatter);
+	                    LocalDate result = zdt.toLocalDate();
+	                    logger.debug("Parsed '{}' to {} (will display as dd-MM-yyyy)", 
+	                                dateStr, result.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+	                    return result;
+	                } catch (DateTimeParseException e1) {
+	                    try {
+	                        // Try parsing with different approaches
+	                        TemporalAccessor temporal = formatter.parse(dateStr);
+	                        LocalDate result = LocalDate.from(temporal);
+	                        logger.debug("Parsed '{}' to {} (will display as dd-MM-yyyy)", 
+	                                    dateStr, result.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+	                        return result;
+	                    } catch (DateTimeParseException e2) {
+	                        // Continue to next formatter
+	                    }
+	                }
+	            } else {
+	                // Direct LocalDate parsing for simple date formats
+	                LocalDate result = LocalDate.parse(dateStr, formatter);
+	                logger.debug("Parsed '{}' to {} (will display as dd-MM-yyyy)", 
+	                            dateStr, result.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+	                return result;
+	            }
+	        } catch (DateTimeParseException e) {
+	            // Continue to next formatter
+	        }
+	    }
+	    
+	    // If all formatters fail, try using SimpleDateFormat as fallback
+	    // This handles edge cases that DateTimeFormatter might miss
+	    try {
+	        SimpleDateFormat[] legacyFormatters = {
+	            new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH),
+	            new SimpleDateFormat("dd-MM-yyyy"),
+	            new SimpleDateFormat("yyyy-MM-dd"),
+	            new SimpleDateFormat("dd/MM/yyyy")
+	        };
+	        
+	        for (SimpleDateFormat sdf : legacyFormatters) {
+	            try {
+	                Date date = sdf.parse(dateStr);
+	                LocalDate result = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	                logger.debug("Parsed '{}' to {} using legacy formatter (will display as dd-MM-yyyy)", 
+	                            dateStr, result.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+	                return result;
+	            } catch (ParseException e) {
+	                // Continue
+	            }
+	        }
+	    } catch (Exception e) {
+	        logger.debug("Legacy date parsing also failed for: {}", dateStr);
+	    }
+	    
+	    logger.error("Could not parse date string with any known format: '{}'", dateStr);
+	    return null;
+	}
+	
 	private int getOccupiedColumns(CampaignFormElementType type, List<CampaignFormElementStyle> styles) {
 		List<CampaignFormElementStyle> colStyles = styles.stream().filter(s -> s.toString().startsWith("col"))
 				.collect(Collectors.toList());
@@ -3015,7 +3283,13 @@ if (!selectedAreas.isEmpty()) {
 									e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() + ".."
 											: "..");
 							// return;
-						} else {
+						} else if (value.toString().equals("false")) {
+								setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
+										null, null, null, false,
+										e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() + ".."
+												: "..");
+								// return;
+							} else {
 
 							Boolean isErrored = value.toString().endsWith(".0");
 

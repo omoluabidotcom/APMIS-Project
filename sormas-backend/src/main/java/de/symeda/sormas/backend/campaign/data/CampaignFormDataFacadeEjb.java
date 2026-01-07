@@ -1566,109 +1566,109 @@ if(criteria.getUserLanguage() != null) {
 //	}
 	
 	 
-	@Override
-	public List<CampaignFormDataIndexDto> getFlwDuplicateErrorAnalysis(CampaignFormDataCriteria criteria, Integer first, Integer max,
-	        List<SortProperty> sortProperties) {
-
-	    // Extract filter values
-	    String campaignUuid = criteria.getCampaign() != null ? criteria.getCampaign().getUuid() : null;
-	    String areaUuid = criteria.getArea() != null ? criteria.getArea().getUuid() : null;
-	    String regionUuid = criteria.getRegion() != null ? criteria.getRegion().getUuid() : null;
-	    String districtUuid = criteria.getDistrict() != null ? criteria.getDistrict().getUuid() : null;
-	    String errorStatus = criteria.getError_status();
-
-	    // Extract sort property
-	    String sortBy = "region"; // default fallback
-	    boolean sortAsc = true;   // default sort direction
-
-	    if (sortProperties != null && !sortProperties.isEmpty()) {
-	        SortProperty sortProperty = sortProperties.get(0); // assuming 1 sort for simplicity
-	        sortBy = mapSortPropertyToDbColumn(sortProperty.propertyName);
-	        sortAsc = sortProperty.ascending;
-	    }
-
-	    // Call the stored function
-//	    String sql = "SELECT * FROM get_flw_duplicate_error_analysis_dynamic(?::TEXT, ?::TEXT, ?::TEXT, ?::TEXT, ?::TEXT, ?::TEXT, ?, ?, ?)";
-	    
-//	    String sql = "SELECT * FROM get_flw_duplicate_error_analysis_dynamic(:campaignUuid, :areaUuid, :regionUuid, :districtUuid, :errorStatus, :sortBy, :sortAsc, :max, :first)";
-	    
-	    String sql = "SELECT * FROM get_flw_duplicate_error_analysis_dynamic("
-	    		+ "cast(:campaignUuid as text), "
-	    		+ "cast(:areaUuid as text), "
-	    		+ "cast(:regionUuid as text), "
-	    		+ "cast(:districtUuid as text), "
-	    		+ "cast(:errorStatus as text), "
-	    		+ "cast(:sortBy as text), "
-	    		+ "cast(:sortAsc as boolean), "
-	    		+ "cast(:max as integer), "
-	    		+ "cast(:first as integer))";
-	    Query query = em.createNativeQuery(sql);
-
-	    // Set parameters
-//	    query.setParameter(1, campaignUuid);
-//	    query.setParameter(2, areaUuid);
-//	    query.setParameter(3, regionUuid);
-//	    query.setParameter(4, districtUuid);
-//	    query.setParameter(5, errorStatus);
-//	    query.setParameter(6, sortBy);
-//	    query.setParameter(7, sortAsc);
-//	    query.setParameter(8, max);
-//	    query.setParameter(9, first);
-	    
-	    query.setParameter("campaignUuid", campaignUuid);
-	    query.setParameter("areaUuid", areaUuid);
-	    query.setParameter("regionUuid", regionUuid);
-	    query.setParameter("districtUuid", districtUuid);
-	    query.setParameter("errorStatus", errorStatus);
-	    query.setParameter("sortBy", sortBy);
-	    query.setParameter("sortAsc", sortAsc);
-	    query.setParameter("max", max);
-	    query.setParameter("first", first);
-
-
-	    @SuppressWarnings("unchecked")
-	    List<Object[]> resultList = query.getResultList();
-	    List<CampaignFormDataIndexDto> resultData = new ArrayList<>();
-
-//	    for (Object[] row : resultList) {
-//	        resultData.add(new CampaignFormDataIndexDto(
-//	            (String) row[0],                     // area
-//	            (String) row[1],                     // region
-//	            (String) row[2],                     // district
-////	            row[3] != null ? (Integer) row[3] : 0, // clusterNumber
-////	            row[4] != null ? ((BigInteger) row[4]).longValue() : 0L, // ccode
-//	            (String) row[5],                     // firstname
-//	            (String) row[6],                     // title
-//	            (String) row[7],                     // tazkiraNumber
-//	            (String) row[8]                      // error_status
-//	        ));
+//	@Override
+//	public List<CampaignFormDataIndexDto> getFlwDuplicateErrorAnalysis(CampaignFormDataCriteria criteria, Integer first, Integer max,
+//	        List<SortProperty> sortProperties) {
+//
+//	    // Extract filter values
+//	    String campaignUuid = criteria.getCampaign() != null ? criteria.getCampaign().getUuid() : null;
+//	    String areaUuid = criteria.getArea() != null ? criteria.getArea().getUuid() : null;
+//	    String regionUuid = criteria.getRegion() != null ? criteria.getRegion().getUuid() : null;
+//	    String districtUuid = criteria.getDistrict() != null ? criteria.getDistrict().getUuid() : null;
+//	    String errorStatus = criteria.getError_status();
+//
+//	    // Extract sort property
+//	    String sortBy = "region"; // default fallback
+//	    boolean sortAsc = true;   // default sort direction
+//
+//	    if (sortProperties != null && !sortProperties.isEmpty()) {
+//	        SortProperty sortProperty = sortProperties.get(0); // assuming 1 sort for simplicity
+//	        sortBy = mapSortPropertyToDbColumn(sortProperty.propertyName);
+//	        sortAsc = sortProperty.ascending;
 //	    }
-	    
+//
+//	    // Call the stored function
+////	    String sql = "SELECT * FROM get_flw_duplicate_error_analysis_dynamic(?::TEXT, ?::TEXT, ?::TEXT, ?::TEXT, ?::TEXT, ?::TEXT, ?, ?, ?)";
+//	    
+////	    String sql = "SELECT * FROM get_flw_duplicate_error_analysis_dynamic(:campaignUuid, :areaUuid, :regionUuid, :districtUuid, :errorStatus, :sortBy, :sortAsc, :max, :first)";
+//	    
+//	    String sql = "SELECT * FROM get_flw_duplicate_error_analysis_dynamic("
+//	    		+ "cast(:campaignUuid as text), "
+//	    		+ "cast(:areaUuid as text), "
+//	    		+ "cast(:regionUuid as text), "
+//	    		+ "cast(:districtUuid as text), "
+//	    		+ "cast(:errorStatus as text), "
+//	    		+ "cast(:sortBy as text), "
+//	    		+ "cast(:sortAsc as boolean), "
+//	    		+ "cast(:max as integer), "
+//	    		+ "cast(:first as integer))";
+//	    Query query = em.createNativeQuery(sql);
+//
+//	    // Set parameters
+////	    query.setParameter(1, campaignUuid);
+////	    query.setParameter(2, areaUuid);
+////	    query.setParameter(3, regionUuid);
+////	    query.setParameter(4, districtUuid);
+////	    query.setParameter(5, errorStatus);
+////	    query.setParameter(6, sortBy);
+////	    query.setParameter(7, sortAsc);
+////	    query.setParameter(8, max);
+////	    query.setParameter(9, first);
+//	    
+//	    query.setParameter("campaignUuid", campaignUuid);
+//	    query.setParameter("areaUuid", areaUuid);
+//	    query.setParameter("regionUuid", regionUuid);
+//	    query.setParameter("districtUuid", districtUuid);
+//	    query.setParameter("errorStatus", errorStatus);
+//	    query.setParameter("sortBy", sortBy);
+//	    query.setParameter("sortAsc", sortAsc);
+//	    query.setParameter("max", max);
+//	    query.setParameter("first", first);
+//
+//
+//	    @SuppressWarnings("unchecked")
+//	    List<Object[]> resultList = query.getResultList();
+//	    List<CampaignFormDataIndexDto> resultData = new ArrayList<>();
+//
+////	    for (Object[] row : resultList) {
+////	        resultData.add(new CampaignFormDataIndexDto(
+////	            (String) row[0],                     // area
+////	            (String) row[1],                     // region
+////	            (String) row[2],                     // district
+//////	            row[3] != null ? (Integer) row[3] : 0, // clusterNumber
+//////	            row[4] != null ? ((BigInteger) row[4]).longValue() : 0L, // ccode
+////	            (String) row[5],                     // firstname
+////	            (String) row[6],                     // title
+////	            (String) row[7],                     // tazkiraNumber
+////	            (String) row[8]                      // error_status
+////	        ));
+////	    }
+//	    
+////		resultData.addAll(resultList.stream()
+////		.map((result) -> new CampaignFormDataIndexDto(
+////					(String) result[0].toString(), 
+////					(String) result[1].toString(),
+////					(String) result[2].toString(),
+////					((String) result[3]).toString(), 
+////					((String) result[4]).toString(), 
+////					((String) result[5]).toString() != null || !((String) result[5]).toString().isEmpty() ? ((String) result[5]).toString() : "No Title",
+////					((String) result[6]).toString()
+////				)).collect(Collectors.toList()));
+//		
+//		
 //		resultData.addAll(resultList.stream()
-//		.map((result) -> new CampaignFormDataIndexDto(
-//					(String) result[0].toString(), 
-//					(String) result[1].toString(),
-//					(String) result[2].toString(),
-//					((String) result[3]).toString(), 
-//					((String) result[4]).toString(), 
-//					((String) result[5]).toString() != null || !((String) result[5]).toString().isEmpty() ? ((String) result[5]).toString() : "No Title",
-//					((String) result[6]).toString()
-//				)).collect(Collectors.toList()));
-		
-		
-		resultData.addAll(resultList.stream()
-			    .map((result) -> new CampaignFormDataIndexDto(
-			        result[0] != null ? result[0].toString() : "", 
-			        result[1] != null ? result[1].toString() : "",
-			        result[2] != null ? result[2].toString() : "",
-			        result[3] != null ? result[3].toString() : "", 
-			        result[4] != null ? result[4].toString() : "", 
-			        result[5] != null ? result[5].toString() : "No Title",
-			        result[6] != null ? result[6].toString() : ""
-			    )).collect(Collectors.toList()));
-
-	    return resultData;
-	}
+//			    .map((result) -> new CampaignFormDataIndexDto(
+//			        result[0] != null ? result[0].toString() : "", 
+//			        result[1] != null ? result[1].toString() : "",
+//			        result[2] != null ? result[2].toString() : "",
+//			        result[3] != null ? result[3].toString() : "", 
+//			        result[4] != null ? result[4].toString() : "", 
+//			        result[5] != null ? result[5].toString() : "No Title",
+//			        result[6] != null ? result[6].toString() : ""
+//			    )).collect(Collectors.toList()));
+//
+//	    return resultData;
+//	}
 	
 	private String mapSortPropertyToDbColumn(String propertyName) {
 	    switch (propertyName) {
@@ -1683,175 +1683,169 @@ if(criteria.getUserLanguage() != null) {
 	        default: throw new IllegalArgumentException("Invalid sort field: " + propertyName);
 	    }
 	}
+	
+//	@Override
+//	public int getFlwDuplicateErrorAnalysisCount(CampaignFormDataCriteria criteria, Integer first, Integer max,
+//			List<SortProperty> sortProperties) {
+//		String error_statusFilter ="";
+//
+//		boolean filterIsNull = criteria.getCampaign() == null ;
+//		
+//		String whereclause = "";
+//		
+//		if(!filterIsNull) {
+//		final CampaignReferenceDto campaign = criteria.getCampaign();
+//		final AreaReferenceDto area = criteria.getArea();
+//		final RegionReferenceDto region = criteria.getRegion();
+//		final DistrictReferenceDto district = criteria.getDistrict();
+//		final String error_status = criteria.getError_status();
+//		
+//		
+//		
+//		
+//		//@formatter:off
+//		
+//
+//		
+//		final String campaignFilter = campaign != null ? "campaigns.uuid = '"+campaign.getUuid()+"'" : "";
+//		final String areaFilter = area != null ? "AND areas.uuid = '"+area.getUuid()+"'" : "";
+//		final String regionFilter = region != null ? " AND region.uuid = '"+region.getUuid()+"'" : "";
+//		final String districtFilter = district != null ? " AND district.uuid = '"+district.getUuid()+"'" : "";
+//		if(error_status != null) {
+//			error_statusFilter = "and error_status = '" +error_status + "'" ;
+//			System.out.println(error_statusFilter+" =========errrrrooor status ============ "+whereclause);
+//
+//				}
+//		
+//
+//		
+//		whereclause = "and " + campaignFilter + areaFilter + regionFilter + districtFilter ;
+//	
+//		System.out.println(campaignFilter+" ===================== "+whereclause);
+//		}
+//		String addedWhere = "";
+//		
+//		
+//		if(!filterIsNull) {
+//			
+//			whereclause = whereclause;
+//	
+//		} 
+//
+//		final String joinBuilder = ""
+//				+ "SELECT count(*) \n"
+////				+ "    areas.name AS area,\n"
+////				+ "    region.name AS region,\n"
+////				+ "    district.name AS district,\n"
+////				+ "    community.clusternumber AS clusterNo,\n"
+////				+ "    community.externalid AS ccode,\n"
+////				+ "    users.firstname as firstName,\n"
+////				+ "    users.userposition as title,\n"
+////				+ "    jsondata.value ->> 'value' as tazkiraNumber\n"
+//				+ "FROM campaignformdata\n"
+//				+ "LEFT JOIN campaignformmeta ON campaignformdata.campaignformmeta_id = campaignformmeta.id\n"
+//				+ "LEFT JOIN region ON campaignformdata.region_id = region.id\n"
+//				+ "LEFT JOIN areas ON campaignformdata.area_id = areas.id\n"
+//				+ "LEFT JOIN district ON campaignformdata.district_id = district.id\n"
+//				+ "LEFT JOIN community ON campaignformdata.community_id = community.id\n"
+//				+ "LEFT JOIN users ON campaignformdata.creatinguser_id = users.id\n"
+//				+ "LEFT JOIN campaigns ON campaignformdata.campaign_id = campaigns.id,\n"
+//				+ "LATERAL json_array_elements(campaignformdata.formvalues) jsondata(value),\n"
+//				+ "LATERAL json_array_elements(campaignformmeta.campaignformelements) jsonmeta(value)\n"
+//				+ "WHERE \n"
+//				+ "    (jsondata.value ->> 'id') IN ('TazkiraNo') AND\n"
+//				+ "    (jsondata.value ->> 'id') = (jsonmeta.value ->> 'id') \n"
+//				+whereclause+" \n"
+//				+ "    and campaignformdata.id in (\n"
+//				+ "	    SELECT CAST(unnest(string_to_array(array_to_string(array_agg (id),', '), ',')) AS bigint) AS individual_values\n"
+//				+ "		FROM flwduplicateerrorreport\n"
+//				+ "		GROUP BY value\n"
+//				+ "		HAVING COUNT(*) > 1\n"
+//				+ "    )"
+////				+ " limit "+max+" offset "+first+";";
+//;
+//		
+//	System.out.println("=====seriesDataQuery======== "+joinBuilder);
+//		
+//		
+////		Query seriesDataQuery = em.createNativeQuery(joinBuilder);
+//		
+//		
+//		return Integer.parseInt(((BigInteger) em.createNativeQuery(joinBuilder).getSingleResult()).toString());
+//
+////	return seriesDataQuery.getResultList().size();
+//
+//	}
 
-
-	
-	
-	
-
-	
 	@Override
-	public int getFlwDuplicateErrorAnalysisCount(CampaignFormDataCriteria criteria, Integer first, Integer max,
-			List<SortProperty> sortProperties) {
-		String error_statusFilter ="";
+	public List<CampaignFormDataIndexDto> getFlwDuplicateErrorAnalysis(
+	        CampaignFormDataCriteria criteria, 
+	        Integer first, 
+	        Integer max,
+	        List<SortProperty> sortProperties) {
 
-		boolean filterIsNull = criteria.getCampaign() == null ;
-		
-		String whereclause = "";
-		
-		if(!filterIsNull) {
-		final CampaignReferenceDto campaign = criteria.getCampaign();
-		final AreaReferenceDto area = criteria.getArea();
-		final RegionReferenceDto region = criteria.getRegion();
-		final DistrictReferenceDto district = criteria.getDistrict();
-		final String error_status = criteria.getError_status();
-		
-		
-		
-		
-		//@formatter:off
-		
-
-		
-		final String campaignFilter = campaign != null ? "campaigns.uuid = '"+campaign.getUuid()+"'" : "";
-		final String areaFilter = area != null ? "AND areas.uuid = '"+area.getUuid()+"'" : "";
-		final String regionFilter = region != null ? " AND region.uuid = '"+region.getUuid()+"'" : "";
-		final String districtFilter = district != null ? " AND district.uuid = '"+district.getUuid()+"'" : "";
-		if(error_status != null) {
-			error_statusFilter = "and error_status = '" +error_status + "'" ;
-			System.out.println(error_statusFilter+" =========errrrrooor status ============ "+whereclause);
-
-				}
-		
-
-		
-		whereclause = "and " + campaignFilter + areaFilter + regionFilter + districtFilter ;
-	
-		System.out.println(campaignFilter+" ===================== "+whereclause);
-		}
-		String addedWhere = "";
-		
-		
-		if(!filterIsNull) {
-			
-			whereclause = whereclause;
-	
-		} 
-
-		final String joinBuilder = ""
-				+ "SELECT count(*) \n"
-//				+ "    areas.name AS area,\n"
-//				+ "    region.name AS region,\n"
-//				+ "    district.name AS district,\n"
-//				+ "    community.clusternumber AS clusterNo,\n"
-//				+ "    community.externalid AS ccode,\n"
-//				+ "    users.firstname as firstName,\n"
-//				+ "    users.userposition as title,\n"
-//				+ "    jsondata.value ->> 'value' as tazkiraNumber\n"
-				+ "FROM campaignformdata\n"
-				+ "LEFT JOIN campaignformmeta ON campaignformdata.campaignformmeta_id = campaignformmeta.id\n"
-				+ "LEFT JOIN region ON campaignformdata.region_id = region.id\n"
-				+ "LEFT JOIN areas ON campaignformdata.area_id = areas.id\n"
-				+ "LEFT JOIN district ON campaignformdata.district_id = district.id\n"
-				+ "LEFT JOIN community ON campaignformdata.community_id = community.id\n"
-				+ "LEFT JOIN users ON campaignformdata.creatinguser_id = users.id\n"
-				+ "LEFT JOIN campaigns ON campaignformdata.campaign_id = campaigns.id,\n"
-				+ "LATERAL json_array_elements(campaignformdata.formvalues) jsondata(value),\n"
-				+ "LATERAL json_array_elements(campaignformmeta.campaignformelements) jsonmeta(value)\n"
-				+ "WHERE \n"
-				+ "    (jsondata.value ->> 'id') IN ('TazkiraNo') AND\n"
-				+ "    (jsondata.value ->> 'id') = (jsonmeta.value ->> 'id') \n"
-				+whereclause+" \n"
-				+ "    and campaignformdata.id in (\n"
-				+ "	    SELECT CAST(unnest(string_to_array(array_to_string(array_agg (id),', '), ',')) AS bigint) AS individual_values\n"
-				+ "		FROM flwduplicateerrorreport\n"
-				+ "		GROUP BY value\n"
-				+ "		HAVING COUNT(*) > 1\n"
-				+ "    )"
-//				+ " limit "+max+" offset "+first+";";
-;
-		
-	System.out.println("=====seriesDataQuery======== "+joinBuilder);
-		
-		
-//		Query seriesDataQuery = em.createNativeQuery(joinBuilder);
-		
-		
-		return Integer.parseInt(((BigInteger) em.createNativeQuery(joinBuilder).getSingleResult()).toString());
-
-//	return seriesDataQuery.getResultList().size();
-
+	    // Build query using parameterized approach
+	    StringBuilder sql = new StringBuilder(
+	        "SELECT area, region, district, firstname, title, tazkiranumber, error_status " +
+	        "FROM mv_flw_duplicate_error_analysis " +
+	        "WHERE 1=1 "
+	    );
+	    
+	    Map<String, Object> params = new HashMap<>();
+	    
+	    // Apply filters safely with parameters
+	    appendFilterCriteria(sql, params, criteria);
+	    
+	    // Apply sorting
+	    applySorting(sql, sortProperties);
+	    
+	    // Apply pagination
+	    sql.append("LIMIT :maxResults OFFSET :firstResult");
+	    params.put("maxResults", max);
+	    params.put("firstResult", first);
+	    
+	    // Execute query
+	    Query query = em.createNativeQuery(sql.toString());
+	    params.forEach(query::setParameter);	    
+	    
+	    @SuppressWarnings("unchecked")
+	    List<Object[]> resultList = query.getResultList();
+	    
+	    // Map to DTO
+	    return resultList.stream()
+	        .map(result -> new CampaignFormDataIndexDto(
+	            safeToString(result[0]), // area
+	            safeToString(result[1]), // region
+	            safeToString(result[2]), // district
+	            safeToString(result[3]), // firstname
+	            safeToStringWithDefault(result[4], "No Title"), // title
+	            safeToString(result[5]), // tazkiranumber
+	            safeToString(result[6])  // error_status
+	        ))
+	        .collect(Collectors.toList());
 	}
 
-//	@Override
-//	public List<CampaignFormDataIndexDto> getFlwDuplicateErrorAnalysis(
-//	        CampaignFormDataCriteria criteria, 
-//	        Integer first, 
-//	        Integer max,
-//	        List<SortProperty> sortProperties) {
-//
-//	    // Build query using parameterized approach
-//	    StringBuilder sql = new StringBuilder(
-//	        "SELECT area, region, district, firstname, title, tazkiranumber, error_status " +
-//	        "FROM mv_flw_duplicate_error_analysis " +
-//	        "WHERE 1=1 "
-//	    );
-//	    
-//	    Map<String, Object> params = new HashMap<>();
-//	    
-//	    // Apply filters safely with parameters
-//	    appendFilterCriteria(sql, params, criteria);
-//	    
-//	    // Apply sorting
-//	    applySorting(sql, sortProperties);
-//	    
-//	    // Apply pagination
-//	    sql.append("LIMIT :maxResults OFFSET :firstResult");
-//	    params.put("maxResults", max);
-//	    params.put("firstResult", first);
-//	    
-//	    // Execute query
-//	    Query query = em.createNativeQuery(sql.toString());
-//	    params.forEach(query::setParameter);	    
-//	    
-//	    @SuppressWarnings("unchecked")
-//	    List<Object[]> resultList = query.getResultList();
-//	    
-//	    // Map to DTO
-//	    return resultList.stream()
-//	        .map(result -> new CampaignFormDataIndexDto(
-//	            safeToString(result[0]), // area
-//	            safeToString(result[1]), // region
-//	            safeToString(result[2]), // district
-//	            safeToString(result[3]), // firstname
-//	            safeToStringWithDefault(result[4], "No Title"), // title
-//	            safeToString(result[5]), // tazkiranumber
-//	            safeToString(result[6])  // error_status
-//	        ))
-//	        .collect(Collectors.toList());
-//	}
+	@Override
+	public int getFlwDuplicateErrorAnalysisCount(
+	        CampaignFormDataCriteria criteria,
+	        Integer first,    
+	        Integer max,      
+	        List<SortProperty> sortProperties) {
 
-//	@Override
-//	public int getFlwDuplicateErrorAnalysisCount(
-//	        CampaignFormDataCriteria criteria,
-//	        Integer first,    
-//	        Integer max,      
-//	        List<SortProperty> sortProperties) {
-//
-//	    StringBuilder sql = new StringBuilder(
-//	        "SELECT COUNT(*) FROM mv_flw_duplicate_error_analysis WHERE 1=1 "
-//	    );
-//	    
-//	    Map<String, Object> params = new HashMap<>();
-//	    
-//	    // Use same filter logic as data method
-//	    appendFilterCriteria(sql, params, criteria);
-//	    
-//	    Query query = em.createNativeQuery(sql.toString());
-//	    params.forEach(query::setParameter);
-//	    
-//	    return ((Number) query.getSingleResult()).intValue();
-//	}
+	    StringBuilder sql = new StringBuilder(
+	        "SELECT COUNT(*) FROM mv_flw_duplicate_error_analysis WHERE 1=1 "
+	    );
+	    
+	    Map<String, Object> params = new HashMap<>();
+	    
+	    // Use same filter logic as data method
+	    appendFilterCriteria(sql, params, criteria);
+	    
+	    Query query = em.createNativeQuery(sql.toString());
+	    params.forEach(query::setParameter);
+	    
+	    return ((Number) query.getSingleResult()).intValue();
+	}
 
 	// Helper method to build WHERE clause (DRY principle)
 	private void appendFilterCriteria(
