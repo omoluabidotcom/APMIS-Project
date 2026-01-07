@@ -17,9 +17,6 @@ package de.symeda.sormas.app.component.controls;
 
 import static de.symeda.sormas.app.core.notification.NotificationType.WARNING;
 
-import android.app.ActivityManager;
-import android.app.AlertDialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
@@ -36,15 +33,10 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.databinding.BindingAdapter;
 import androidx.databinding.InverseBindingAdapter;
 import androidx.databinding.InverseBindingListener;
-
-import org.springframework.core.env.SystemEnvironmentPropertySource;
-
-import java.math.BigDecimal;
 
 import de.symeda.sormas.api.utils.FieldConstraints;
 import de.symeda.sormas.app.R;
@@ -54,7 +46,7 @@ import de.symeda.sormas.app.component.VisualStateControlType;
 import de.symeda.sormas.app.core.NotificationContext;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
 
-public class ControlTextEditFieldRange extends ControlPropertyEditField<String> {
+public class ControlTextEditFieldAllowZeroInput extends ControlPropertyEditField<String> {
 
     // Views
 
@@ -69,8 +61,9 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     private boolean textArea;
     private int inputType;
     boolean isInternalChange = false;
-    String beforeData = "";
-    String onChangeData = "";
+
+
+    private boolean enableZeroHandling = false;
 
 
     // Listeners
@@ -80,15 +73,15 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
 
     // Constructors
 
-    public ControlTextEditFieldRange(Context context) {
+    public ControlTextEditFieldAllowZeroInput(Context context) {
         super(context);
     }
 
-    public ControlTextEditFieldRange(Context context, AttributeSet attrs) {
+    public ControlTextEditFieldAllowZeroInput(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public ControlTextEditFieldRange(Context context, AttributeSet attrs, int defStyle) {
+    public ControlTextEditFieldAllowZeroInput(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
@@ -116,7 +109,7 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
                     if (id != NO_ID) {
                         View nextView = v.getRootView().findViewById(id);
                         if (nextView != null && nextView.getVisibility() == VISIBLE) {
-                            if (nextView instanceof ControlTextEditFieldRange) {
+                            if (nextView instanceof ControlTextEditFieldAllowZeroInput) {
                                 requestFocusForContentView(nextView);
                             } else if (nextView instanceof ControlPropertyField) {
                                 ((ControlPropertyField) nextView).requestFocusForContentView(nextView);
@@ -217,8 +210,15 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
 
     @Override
     protected void setFieldValue(String value) {
+        System.out.println("SEtting fireld value i text edit field =============");
         input.setText(value);
     }
+
+//
+//    public void setFieldAsError(String errorMessage) {
+//        enableErrorState(errorMessage);
+////        setErrorIfEmptyRange();
+//    }
 
     @Override
     public void setEnabled(boolean enabled) {
@@ -236,20 +236,20 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     @Override
     protected void initialize(Context context, AttributeSet attrs, int defStyle) {
         if (attrs != null) {
-            TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ControlTextEditFieldRange, 0, 0);
+            TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ControlTextEditField, 0, 0);
 
             try {
-                singleLine = a.getBoolean(R.styleable.ControlTextEditFieldRange_singleLine, true);
-                maxLines = a.getInt(R.styleable.ControlTextEditFieldRange_maxLines, 1);
-                textArea = a.getBoolean(R.styleable.ControlTextEditFieldRange_textArea, false);
+                singleLine = a.getBoolean(R.styleable.ControlTextEditField_singleLine, true);
+                maxLines = a.getInt(R.styleable.ControlTextEditField_maxLines, 1);
+                textArea = a.getBoolean(R.styleable.ControlTextEditField_textArea, false);
                 maxLength = a.getInt(
-                        R.styleable.ControlTextEditFieldRange_maxLength,
+                        R.styleable.ControlTextEditField_maxLength,
                         textArea ? FieldConstraints.CHARACTER_LIMIT_BIG : FieldConstraints.CHARACTER_LIMIT_UUID_MIN);
 
                 minLength = a.getInt(
-                        R.styleable.ControlTextEditFieldRange_minLength,
+                        R.styleable.ControlTextEditField_minLength,
                         textArea ? FieldConstraints.CHARACTER_LIMIT_BIG : FieldConstraints.CHARACTER_LIMIT_DEFAULT);
-                inputType = a.getInt(R.styleable.ControlTextEditFieldRange_inputType, InputType.TYPE_CLASS_TEXT);
+                inputType = a.getInt(R.styleable.ControlTextEditField_inputType, InputType.TYPE_CLASS_TEXT);
             } finally {
                 a.recycle();
             }
@@ -281,40 +281,7 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     }
 
 
-    /**
-     * Handles the case where user wants to replace "0" with a new digit
-     * @param text Current text in the field
-     * @return true if replacement was handled, false otherwise
-     */
-    private boolean   handleZeroReplacement(String text) {
-        // Case 1: Field contains "0" and user typed a digit - replace the zero
-        if (text.length() > 1 && beforeData.equals("0") && text.contains("0")) {
-            // Find the new character that was added
-            String newChar = text.replace("0", "");
-            if (newChar.length() == 1 && Character.isDigit(newChar.charAt(0))) {
-                isInternalChange = true;
-                input.setText(newChar);
-                input.setSelection(1); // Position cursor after the digit
-                isInternalChange = false;
-                return true;
-            }
-        }
 
-        // Case 2: Remove leading zeros from numbers like "0123" -> "123"
-        if (text.length() > 1 && text.startsWith("0") && !text.startsWith("0.") && Character.isDigit(text.charAt(1))) {
-            isInternalChange = true;
-            String newText = text.replaceFirst("^0+", ""); // Remove leading zeros
-            if (newText.isEmpty()) {
-                newText = "0"; // If all digits were zeros, keep one zero
-            }
-            input.setText(newText);
-            input.setSelection(newText.length()); // Position cursor at end
-            isInternalChange = false;
-            return true;
-        }
-
-        return false;
-    }
 
     protected void initInput(boolean isIntegerFlag, boolean isRequired, boolean isRange, Integer minValue, Integer maxValue, Boolean isExpression, Boolean warnOnError) {
 
@@ -338,7 +305,7 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
                             new InputFilter.LengthFilter(240)}
             );
         }
-// After setting LengthFilter
+//// After setting LengthFilter
         InputFilter[] existing = input.getFilters();
         boolean isNumeric = (input.getInputType() & InputType.TYPE_CLASS_NUMBER) == InputType.TYPE_CLASS_NUMBER;
         boolean allowDecimal = (input.getInputType() & InputType.TYPE_NUMBER_FLAG_DECIMAL) != 0;
@@ -356,34 +323,27 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
 
                     if (newText.isEmpty()) return null;
 
-                    if (!allowDecimal) {
-                        if (!newText.matches("\\d*")) {
-                            return "";
-                        }
-
-                        if (newText.length() > 1 && newText.startsWith("0")) {
-                            return "";
-                        }
-                        return null;
-                    }
-
-
-
+//                    if (!allowDecimal) {
+//                        if (!newText.matches("\\d*")) {
+//                            return "";
+//                        }
+//                        if (newText.length() > 1 && newText.startsWith("0")) {
+//                            return "";
+//                        }
+//                        return null;
+//                    }
                     // Decimal: digits, optional single dot, optional digits; no lone dots
                     // Valid examples: "1", "0", "12.", "12.3", "0.45"
                     // Invalid: ".", "..", "1..2", "1.2.3", "abc"
                     if (!newText.matches("\\d+(?:\\.\\d*)?")) {
                         return "";
                     }
-
-                    // 🚫 Reject "09", "0123", etc. but allow "0.xxx"
-                    if (newText.length() > 1 && newText.startsWith("0") && !newText.startsWith("0.")) {
-                        return "";
-                    }
-
+                    //Reject "09", "0123", etc. but allow "0.xxx"
+//                    if (newText.length() > 1 && newText.startsWith("0") && !newText.startsWith("0.")) {
+//                        return "";
+//                    }
                     return null;                }
             };
-
             InputFilter[] merged = new InputFilter[existing.length + 1];
             System.arraycopy(existing, 0, merged, 0, existing.length);
             merged[existing.length] = symbolBlocker;
@@ -399,10 +359,9 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
             return;
         }
 
-
         input.addTextChangedListener(new TextWatcher() {
-
-
+String beforeData = "";
+String onChangeData = "";
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 beforeData = charSequence+"";
@@ -413,103 +372,209 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
                 onChangeData = charSequence+"";
             }
 
+//            @Override
+//            public void afterTextChanged(Editable editablex) {
+//                System.out.println("===================================================== " + editablex.toString());
+//                System.out.println("===================================================== " + input.getText());
+//
+//
+//
+//
+//                String text = editablex.toString();
+//
+////                handleZeroReplacement(text);
+//
+//                if (inverseBindingListener != null) {
+//                    inverseBindingListener.onChange();
+//                }
+//
+//                onValueChanged();
+//
+//
+//                if (isRange && minValue != null && maxValue != null) {
+//                    //        System.out.println(minValue + "--------%%%11%%%------------" + maxValue);
+//                    if (minValue != null && maxValue != null && input.getText() != null) {
+//                        //      System.out.println(minValue + "--------%%%22%%%------------" + maxValue);
+//                        if (!input.getText().toString().equals("") || !input.getText().toString().isEmpty()) {
+//                            //         System.out.println(minValue + "--------%%%333%%%------------" + maxValue);
+//                            int valxx = Integer.parseInt(input.getText().toString());
+//                            if (valxx >= minValue && valxx <= maxValue) {
+//                                //           System.out.println(minValue + "--------%%%444%%%------------" + maxValue);
+//                            } else if (warnOnError) {
+//                                //          System.out.println(minValue + "--------%%555%%%%------------" + maxValue);
+//                                NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+//                            } else {
+//                                //       System.out.println(minValue + "Number not in provided range!" + maxValue);
+//                                input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+//                                setErrorIfEmptyRange();
+//                                enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+//
+//                            }
+//                        }
+//
+//                    }
+//
+//                }
+//
+//
+//                if (isRange && isExpression && isRequired) {
+//                    System.out.println("is range111111111111111111111111111111111-==================");
+//                    System.out.println(beforeData + "beforeDatarange111111111111111111111111111111111" + onChangeData);                    System.out.println(beforeData + "beforeDatarange111111111111111111111111111111111" + onChangeData);
+//                    System.out.println(beforeData.length() + "lengthbeforeDatarange111111111111111111111111111111111" + onChangeData.length());
+////                    System.out.println(beforeDatax.length() + "beforeXDatarange111111111111111111111111111111111" + onChangeData.length());
+//
+//                    try {
+//                        if (beforeData.length() > 0 || onChangeData.length() > 0) {
+//                            if (beforeData.toString() != "" && onChangeData.toString() != "") {
+//                                int beforeDatavalxx = Integer.parseInt(beforeData.toString());
+//                                int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
+//
+//                                if (beforeData.length() > 0 && onChangeData.length() == 0) {
+//                                    input.setError("Number not in provided range!");
+//                                    enableErrorState("Number not in provided range!");
+//                                }
+//                            }
+//                        }
+//                    } catch (NumberFormatException ec) {
+//                        input.setError("Please Enter a valid Number");
+//                        enableErrorState("Please Enter a valid Number");
+//                    }
+//
+//                    System.out.println("111111111111111111111111111111111-==================cccccc");
+//                } else if (isRange && isExpression && !isRequired) {
+//
+//                    System.out.println("is rangejnotrequired111111111111111111111111111111111-==================");
+//                    System.out.println(beforeData + "beforeDatarange111111111111111111111111111111111" + onChangeData);
+//
+//                    try {
+//                        if (beforeData.length() > 0 || onChangeData.length() > 0) {
+//                            if (beforeData.toString() != "" && onChangeData.toString() != "") {
+//
+//                                int beforeDatavalxx = Integer.parseInt(beforeData.toString());
+//                                int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
+//                                System.out.println(beforeDatavalxx + "elsevalxx111111111111111111111111111111111-==================" + onChangeDatavalxx);
+//                            }
+//                        }
+//                    } catch (NumberFormatException e) {
+//                        input.setError("Please enter a valid number.");
+//                        enableErrorState("else1111111111111111111111-=====Number not in provided range! i.e min:------------------");
+//                    }
+//
+//                }
+//
+//                }
+
+
             @Override
             public void afterTextChanged(Editable editablex) {
-                System.out.println("===================================================== "+editablex.toString());
-                System.out.println("===================================================== "+input.getId());
+                System.out.println("===================================================== " + editablex.toString());
+                System.out.println("===================================================== " + input.getText());
 
-                if (isInternalChange) {
-                    return;
-                }
                 String text = editablex.toString();
-
-                if (handleZeroReplacement(text)) {
-                    return; // Exit early if we handled the zero replacement
-                }
 
                 if (inverseBindingListener != null) {
                     inverseBindingListener.onChange();
                 }
+
                 onValueChanged();
 
                 if (isRange && minValue != null && maxValue != null) {
                     if (minValue != null && maxValue != null && input.getText() != null) {
-                        if (!input.getText().toString().equals("") && !input.getText().toString().isEmpty()) {
-                            int valxx = Integer.parseInt(input.getText().toString());
-                            if (valxx >= minValue && valxx <= maxValue) {
-                            } else if (warnOnError) {
-                                NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING,
-                                        "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
-                            } else {
-                                input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
-                                setErrorIfEmptyRange();
-                                enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                        if (beforeData.length() == 0 && onChangeData.length() == 0) {
+                            System.out.println("lenght before and after is 0 ===== no user input ==");
+                            disableErrorState();
+                        }
+
+                        if (!input.getText().toString().equals("") || !input.getText().toString().isEmpty()) {
+                            try{
+                                int valxx = Integer.parseInt(input.getText().toString());
+                                if (valxx >= minValue && valxx <= maxValue) {
+                                    // Valid range
+                                } else if (warnOnError) {
+                                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                } else {
+                                    input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                    setErrorIfEmptyRange();
+                                    enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                }
+
+                            }catch(NumberFormatException e ){
+                                if(warnOnError){
+                                    NotificationHelper.showNotification((NotificationContext) input.getContext(), WARNING, "Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                }else{
+                                    input.setError("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                    setErrorIfEmptyRange();
+                                    enableErrorState("Number not in provided range! i.e min: " + minValue + " and max: " + maxValue);
+                                }
                             }
+
                         }
                     }
-                }
-
-                if (isRange && isExpression && isRequired){
-                    System.out.println("is range111111111111111111111111111111111-==================");
-//                        if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
-                    try{
-                        if (beforeData.length() > 0 && onChangeData.length() == 0) {
+                } else if (isRange && isExpression && isRequired){
+ 
+                    try {
+                        if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
+                            int beforeDatavalxx = Integer.parseInt(beforeData.toString());
+                            int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
+                            System.out.println(beforeDatavalxx + "valxx111111111111111111111111111111111-==================" + onChangeDatavalxx);
+                            if (beforeData.length() > 0 && onChangeData.length() == 0) {
+                                enableErrorState("Number not in provided range!");
+                            }
+                        }
+                    }catch (NumberFormatException e){
+                        if(beforeData.length() > 0 && onChangeData.length() == 0){
+                            input.setError("Please enter a valid number");
+                            enableErrorState("Invalid number");
+                        }else if (beforeData.length() > 0 &&  onChangeData.length() > 0) {
                             try {
-                                int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
-
-                                input.setError(null);  // clear error
-                                disableErrorState();   // optional: clear your custom error state
-
-                            } catch (NumberFormatException e) {
+                                Integer.parseInt(text);
+                                input.setError(null);
+                                disableErrorState();
+                            } catch (NumberFormatException eX) {
                                 input.setError("Please enter a valid number");
-                                enableErrorState("Please enter a valid number");
+                                enableErrorState("Invalid number");
                             }
                         }
-                    }catch(NumberFormatException ec){
-                        input.setError("Please Enter a valid Number");
-                        enableErrorState("Please Enter a valid Number");
-
-                    }
-
-//                        }
-                    System.out.println("111111111111111111111111111111111-==================cccccc");
+ 
+            }
+                     System.out.println("111111111111111111111111111111111-==================cccccc");
                 }else if(isRange && isExpression && !isRequired){
-                    if(!beforeData.toString().equalsIgnoreCase("") ||
-                            !onChangeData.toString().equalsIgnoreCase("")) {
-//                        try {
-//                            if ((beforeData.length() > 0  && onChangeData.length() > 0) {
-//                                try {
-////                                int beforeDatavalxx = Integer.parseInt(beforeData.toString());
-//                                    int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
-//                                } catch (NumberFormatException exception) {
-//                                    input.setError("Please Enter a valid Number");
-//
-////                             input.setError("2222222 input.setError input.setError input.setError");
-//
-//                                }
-//                            }
-//                        }catch(NumberFormatException exception) {
-//                            input.setError("Please Enter a valid Number");
-//
-//                        }
-
-                    }
+                    System.out.println("elselrange but not expressiom alxx111111111111111111111111111111111-==================" );
+                    try {
+                        if(beforeData.length() > 0 || onChangeData.length() > 0 ) {
+                            int beforeDatavalxx = Integer.parseInt(beforeData.toString());
+                            int onChangeDatavalxx = Integer.parseInt(onChangeData.toString());
+                            System.out.println(beforeDatavalxx +  "elsevalxx111111111111111111111111111111111-==================" + onChangeDatavalxx);
+                        }
+                    }catch (NumberFormatException e){
+                        if (!text.isEmpty()) {
+                            try {
+                                Integer.parseInt(text);
+                                // ✅ If parsing works, clear error
+                                input.setError(null);
+                                disableErrorState();
+                            } catch (NumberFormatException ecc) {
+                                input.setError("Please enter a valid number");
+                                enableErrorState("Invalid number");
+                            }
+                        }
+ 
+                   }
                 }
             }
         });
-//
-        addValueChangedListener(new ValueChangeListener() {
-            @Override
-            public void onChange(ControlPropertyField field) {
-                System.out.println(isLiveValidationDisabled() + " vaue changes isLiveValidationDisabled()----------");
-                if (!isLiveValidationDisabled()) {
-                    ((ControlTextEditFieldRange) field).setErrorIfEmptyRange();
-//                          ((ControlTextEditFieldRange) field)();
+
+       addValueChangedListener(new ValueChangeListener() {
 
 
-                }
-            }
-        });
+          @Override
+          public void onChange(ControlPropertyField field) {
+              System.out.println(isLiveValidationDisabled() + " vaue changes isLiveValidationDisabled()----------TEXTEDIT");
+                      if (!isLiveValidationDisabled()) {
+                      ((ControlTextEditFieldAllowZeroInput) field).setErrorIfEmptyRange();
+              }
+          }
+      });
 
 
 
@@ -520,6 +585,7 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
 
 
     }
+
 
     private void NumberNumericValueValidator(String errorMessage, String minValue, String maxValue) {
         Integer minValuex = 0;
@@ -542,8 +608,8 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     @Override
     protected void requestFocusForContentView(View nextView) {
         if (nextView != null) {
-            ((ControlTextEditFieldRange) nextView).input.requestFocus();
-            ((ControlTextEditFieldRange) nextView).setCursorToRight();
+            ((ControlTextEditFieldAllowZeroInput) nextView).input.requestFocus();
+            ((ControlTextEditFieldAllowZeroInput) nextView).setCursorToRight();
         }
     }
 
@@ -592,50 +658,53 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     // Data binding, getters & setters
 
     @BindingAdapter("value")
-    public static void setValue(ControlTextEditFieldRange view, String text) {
-        if (text != null) {
+    public static void setValue(ControlTextEditFieldAllowZeroInput view, String text) {
+        // If text is null or blank, keep it empty
+        if (text == null || text.trim().isEmpty() || text == "" || text.equalsIgnoreCase("NaN")) {
+            view.setFieldValue("");
+            return;
+        }else{
             try {
                 double num = Double.parseDouble(text);
                 if (num == Math.floor(num)) {
-                    text = String.valueOf((int) num); // whole number, no decimal
+                    // Whole number, no decimals
+                    text = String.valueOf((int) num);
                 } else {
-                    text = String.format("%.2f", num); // round to 2 decimal places
+                    // Show with 2 decimal places
+                    text = String.format("%.2f", num);
                 }
             } catch (NumberFormatException e) {
-                // value is not a number, leave as-is
+                // If not a number, leave as-is
             }
-        }
+            view.setFieldValue(text);
+            return;
 
-
-        view.setFieldValue(text);
-    }
-
-
-
-/*
-    @BindingAdapter("value")
-    public static void setValue(ControlTextEditFieldRange view, String text, Boolean hasErrorNow) {
-        view.setFieldValue(text);
-
-        if (hasErrorNow) {
-            changeVisualState(VisualState.ERROR);
-        } else {
-            changeVisualState(VisualState.NORMAL);
         }
     }
-*/
+
 
     @BindingAdapter("value")
-    public static void setValue(ControlTextEditFieldRange view, Integer integerValue) {
+    public static void setValue(ControlTextEditFieldAllowZeroInput view, String text, String errorMessage) {
+        // If text is null or blank, keep it empty
+        if (text == null || text.trim().isEmpty() || text == "") {
+            view.setFieldValue("");
+            return;
+        }else{
+            view.setFieldValue(text);
+        }
+    }
+
+    @BindingAdapter("value")
+    public static void setValue(ControlTextEditFieldAllowZeroInput view, Integer integerValue) {
         if (integerValue != null) {
             view.setFieldValue(String.valueOf(integerValue));
         } else {
-            view.setFieldValue(null);
+            view.setFieldValue("");
         }
     }
 
     @BindingAdapter("value")
-    public static void setValue(ControlTextEditFieldRange view, Float floatValue) {
+    public static void setValue(ControlTextEditFieldAllowZeroInput view, Float floatValue) {
         if (floatValue != null) {
             view.setFieldValue(String.valueOf(floatValue));
         } else {
@@ -643,27 +712,16 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
         }
     }
 
-//    @BindingAdapter("value")
-//    public static void setValue(ControlTextEditFieldRange view, Double doubleValue) {
-//        if (doubleValue != null) {
-//            view.setFieldValue(String.valueOf(doubleValue));
-//        } else {
-//            view.setFieldValue(null);
-//        }
-//    }
-
     @BindingAdapter("value")
-    public static void setValue(ControlTextEditFieldRange view, Double doubleValue) {
+    public static void setValue(ControlTextEditFieldAllowZeroInput view, Double doubleValue) {
         if (doubleValue != null) {
-            if (doubleValue.doubleValue() == Math.floor(doubleValue.doubleValue())) {
-                view.setFieldValue(String.format(java.util.Locale.US, "%.0f", doubleValue));
-            } else {
-                view.setFieldValue(String.valueOf(doubleValue));
-            }
+            view.setFieldValue(String.valueOf(doubleValue));
         } else {
             view.setFieldValue(null);
         }
     }
+
+
 
     public void setDoubleValue(Double doubleValue) {
         setValue(this, doubleValue);
@@ -674,12 +732,12 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     }
 
     @InverseBindingAdapter(attribute = "value", event = "valueAttrChanged")
-    public static String getValue(ControlTextEditFieldRange view) {
+    public static String getValue(ControlTextEditFieldAllowZeroInput view) {
         return view.getFieldValue();
     }
 
     @InverseBindingAdapter(attribute = "value", event = "valueAttrChanged")
-    public static Integer getIntegerValue(ControlTextEditFieldRange view) {
+    public static Integer getIntegerValue(ControlTextEditFieldAllowZeroInput view) {
         if (view.getFieldValue() != null && !view.getFieldValue().isEmpty()) {
             return Integer.valueOf(view.getFieldValue());
         } else {
@@ -688,7 +746,7 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     }
 
     @InverseBindingAdapter(attribute = "value", event = "valueAttrChanged")
-    public static Float getFloatValue(ControlTextEditFieldRange view) {
+    public static Float getFloatValue(ControlTextEditFieldAllowZeroInput view) {
         if (view.getFieldValue() != null && !view.getFieldValue().isEmpty()) {
             return Float.valueOf(view.getFieldValue());
         } else {
@@ -697,7 +755,7 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     }
 
     @InverseBindingAdapter(attribute = "value", event = "valueAttrChanged")
-    public static Double getDoubleValue(ControlTextEditFieldRange view) {
+    public static Double getDoubleValue(ControlTextEditFieldAllowZeroInput view) {
         if (view.getFieldValue() != null && !view.getFieldValue().isEmpty()) {
             return Double.valueOf(view.getFieldValue());
         } else {
@@ -706,7 +764,7 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     }
 
     @BindingAdapter("valueAttrChanged")
-    public static void setListener(ControlTextEditFieldRange view, InverseBindingListener listener) {
+    public static void setListener(ControlTextEditFieldAllowZeroInput view, InverseBindingListener listener) {
         view.inverseBindingListener = listener;
     }
 
@@ -769,5 +827,13 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
 
     public void setMinLength(int minLength) {
         this.minLength = minLength;
+    }
+
+    public EditText getInput() {
+        return input;
+    }
+
+    public void setInput(EditText input) {
+        this.input = input;
     }
 }

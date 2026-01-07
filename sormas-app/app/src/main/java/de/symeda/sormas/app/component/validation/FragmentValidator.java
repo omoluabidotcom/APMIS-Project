@@ -98,9 +98,10 @@ public class FragmentValidator {
 					errorInfo.addFieldWithError(field);
 				}
 
-				if(field.isRequired() && (field.getValue() != null || field.getValue().toString() !="")){
-					errorInfo.addFieldWithError(field);
-				}
+//				if(field.isRequired() && (field.getValue() == null || field.getValue().toString().equals(""))){
+//					System.out.println("-----------------------Validating required field");
+//					errorInfo.addFieldWithError(field);
+//				}
 			} else if (child instanceof ViewGroup) {
 				validatePropertyEditFields((ViewGroup) child, errorInfo);
 			}
