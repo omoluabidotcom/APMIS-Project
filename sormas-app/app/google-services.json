@@ -1,26 +1,36 @@
 {
   "project_info": {
-    "project_number": "931972404324",
-    "project_id": "sormasapp-7d2db",
-    "storage_bucket": "sormasapp-7d2db.firebasestorage.app"
+    "project_number": "537643474131",
+    "project_id": "apmis-cinoteck",
+    "storage_bucket": "apmis-cinoteck.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:931972404324:android:8d9008a02f6399abff7b71",
+        "mobilesdk_app_id": "1:537643474131:android:d93b03e19c6c822152c826",
         "android_client_info": {
           "package_name": "de.symeda.sormas.app.apmis.debug"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "537643474131-t4pqtp5r8o6cbn0fsufhrk5fdudnj8uf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyC8KXpilIy7xwFxgaKmkR7Ue-4LTNbPpOo"
+          "current_key": "AIzaSyC93wvgLwBmG7zpyPENmhVurN05uXnnaGM"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "537643474131-t4pqtp5r8o6cbn0fsufhrk5fdudnj8uf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

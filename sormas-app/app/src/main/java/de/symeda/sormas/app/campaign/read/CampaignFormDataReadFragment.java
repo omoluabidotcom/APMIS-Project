@@ -250,7 +250,10 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 //                            if (type == CampaignFormElementType.YES_NO) {
 //                                ControlTextReadField.setValue((ControlTextReadField) dynamicField, (Boolean) expressionValue, null, null);
 //                            } else {
-                                ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
+                                if(expressionValue != null){
+                                    ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
+                                }
+//                                ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
                                 // }
                             } catch (SpelEvaluationException e) {
                                 Log.e("Error evaluating expression: " + expressionString, e.getMessage());
@@ -347,7 +350,9 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                                 if (type == CampaignFormElementType.YES_NO) {
                                     ControlTextReadField.setValue((ControlTextReadField) dynamicField, (Boolean) expressionValue, null, null);
                                 } else {
-                                    ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
+                                    if(expressionValue != null){
+                                        ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
+                                    }
                                 }
                             } catch (SpelEvaluationException e) {
                                 Log.e("Error evaluating expression: " + expressionString, e.getMessage());
@@ -438,8 +443,9 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                                 if (type == CampaignFormElementType.YES_NO) {
                                     ControlTextReadField.setValue((ControlTextReadField) dynamicField, (Boolean) expressionValue, null, null);
                                 } else {
-                                    ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
-                                }
+                                    if(expressionValue != null){
+                                        ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
+                                    }                                }
                             } catch (SpelEvaluationException e) {
                                 Log.e("Error evaluating expression: " + expressionString, e.getMessage());
                             }
@@ -529,8 +535,9 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                                 if (type == CampaignFormElementType.YES_NO) {
                                     ControlTextReadField.setValue((ControlTextReadField) dynamicField, (Boolean) expressionValue, null, null);
                                 } else {
-                                    ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
-                                }
+                                    if(expressionValue != null){
+                                        ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
+                                    }                                }
                             } catch (SpelEvaluationException e) {
                                 Log.e("Error evaluating expression: " + expressionString, e.getMessage());
                             }
@@ -620,8 +627,9 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                                 if (type == CampaignFormElementType.YES_NO) {
                                     ControlTextReadField.setValue((ControlTextReadField) dynamicField, (Boolean) expressionValue, null, null);
                                 } else {
-                                    ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
-                                }
+                                    if(expressionValue != null){
+                                        ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
+                                    }                                }
                             } catch (SpelEvaluationException e) {
                                 Log.e("Error evaluating expression: " + expressionString, e.getMessage());
                             }
@@ -711,8 +719,9 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                                 if (type == CampaignFormElementType.YES_NO) {
                                     ControlTextReadField.setValue((ControlTextReadField) dynamicField, (Boolean) expressionValue, null, null);
                                 } else {
-                                    ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
-                                }
+                                    if(expressionValue != null){
+                                        ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
+                                    }                                }
                             } catch (SpelEvaluationException e) {
                                 Log.e("Error evaluating expression: " + expressionString, e.getMessage());
                             }
@@ -802,8 +811,9 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                                 if (type == CampaignFormElementType.YES_NO) {
                                     ControlTextReadField.setValue((ControlTextReadField) dynamicField, (Boolean) expressionValue, null, null);
                                 } else {
-                                    ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
-                                }
+                                    if(expressionValue != null){
+                                        ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
+                                    }                                }
                             } catch (SpelEvaluationException e) {
                                 Log.e("Error evaluating expression: " + expressionString, e.getMessage());
                             }
@@ -893,8 +903,9 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                                 if (type == CampaignFormElementType.YES_NO) {
                                     ControlTextReadField.setValue((ControlTextReadField) dynamicField, (Boolean) expressionValue, null, null);
                                 } else {
-                                    ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
-                                }
+                                    if(expressionValue != null){
+                                        ControlTextReadField.setValue((ControlTextReadField) dynamicField, expressionValue.toString(), null, null, null);
+                                    }                                }
                             } catch (SpelEvaluationException e) {
                                 Log.e("Error evaluating expression: " + expressionString, e.getMessage());
                             }
@@ -981,8 +992,12 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 
                             //optionsValues.get(value)
                         }else if ( type == CampaignFormElementType.NUMBER){
-                            ControlTextReadField.setValue((ControlTextReadField) dynamicField, value, null, null, null, false);
-                        }else if (type == CampaignFormElementType.RANGE){
+                            if (campaignFormElement.getId().equalsIgnoreCase("villagecode")){
+                                ControlTextReadField.setValue((ControlTextReadField) dynamicField, value+"", null, null, null, false);
+                            }else {
+                                ControlTextReadField.setValue((ControlTextReadField) dynamicField, value, null, null, null, false);
+                            }
+                            }else if (type == CampaignFormElementType.RANGE){
                             ControlTextReadField.setValue((ControlTextReadField) dynamicField, value, null, null, null, true);
                         }else{
                             ControlTextReadField.setValue((ControlTextReadField) dynamicField, value, null, null, null);
