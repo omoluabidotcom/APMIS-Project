@@ -118,9 +118,21 @@ public class CronService {
             logger.info("Starting MV refresh - current row count: {}", getCurrentRowCount());
             
             em.createNativeQuery(
-                "REFRESH MATERIALIZED VIEW CONCURRENTLY mv_flw_duplicate_error_analysis"
-            ).executeUpdate();
+                "CREATE OR REPLACE VIEW public.flwduplicateerrorreport\r\n"
+                + "AS SELECT campaignformdata.id,\r\n"
+                + "    jsondata.value ->> 'value'::text AS value\r\n"
+                + "   FROM campaignformdata\r\n"
+                + "     LEFT JOIN campaignformmeta ON campaignformdata.campaignformmeta_id = campaignformmeta.id,\r\n"
+                + "    LATERAL json_array_elements(campaignformdata.formvalues) jsondata(value),\r\n"
+                + "    LATERAL json_array_elements(campaignformmeta.campaignformelements) jsonmeta(value)\r\n"
+                + "  WHERE (jsondata.value ->> 'id'::text) = 'TazkiraNo'::text AND (jsondata.value ->> 'id'::text) = (jsonmeta.value ->> 'id'::text)\r\n"
+                + "AND campaignformmeta.id = 2170 AND campaignformmeta.formcategory::text = 'FLW'::text;"
+            ).executeUpdate();            
             
+            em.createNativeQuery(
+                    "REFRESH MATERIALIZED VIEW mv_flw_duplicate_error_analysis;"
+                ).executeUpdate();
+                      
             long duration = System.currentTimeMillis() - startTime;
             long newRowCount = getCurrentRowCount();
             
@@ -132,7 +144,7 @@ public class CronService {
             }
             
         } catch (Exception e) {
-        	logger.error("MV refresh failed", e);
+        	logger.error("mv_flw_duplicate_error_analysis refresh failed", e);
         }
     }
     
