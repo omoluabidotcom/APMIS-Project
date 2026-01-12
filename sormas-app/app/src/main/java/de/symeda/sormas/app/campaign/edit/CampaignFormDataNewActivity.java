@@ -140,8 +140,18 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
 
 
+//        try {
+//            FragmentValidator.validate(getContext(), getActiveFragment().getContentBinding());
+//        } catch (ValidationException e) {
+//            NotificationHelper.showNotification(this, ERROR, e.getMessage());
+//            return;
+//        }
+
+        CampaignFormDataNewFragment fragment =
+                (CampaignFormDataNewFragment) getActiveFragment();
+
         try {
-            FragmentValidator.validate(getContext(), getActiveFragment().getContentBinding());
+            fragment.validateForSave(getContext());
         } catch (ValidationException e) {
             NotificationHelper.showNotification(this, ERROR, e.getMessage());
             return;
