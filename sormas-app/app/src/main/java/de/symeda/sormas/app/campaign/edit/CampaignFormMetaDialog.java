@@ -97,7 +97,6 @@ public class CampaignFormMetaDialog extends FormDialog {
         List<String> intraCampaignsCategories = List.of("ICM", "ADMIN", "EAG-ICM", "EAG-ADMIN");
         List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION");
 
-
         for (CampaignFormMeta campaignFormMeta : allFormsForCampaign) {
             LocalDate currentDate = LocalDate.now();
             Date expiryDate = DatabaseHelper.getCampaignFormMetaWithExpDao().getCampaignFormExpiryDateByCampaignIdAndFormId(campaign.getUuid(), campaignFormMeta.getUuid());
@@ -112,7 +111,6 @@ public class CampaignFormMetaDialog extends FormDialog {
                     if (formsSelectedForCampaign.size() > 0) {
                         allUnexpiredFormsForCampaign.add(campaignFormMeta);
                     }
-//                    }
                 }
             } else if (intraCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
                 if ((!currentDate.isBefore(campaign.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) &&
