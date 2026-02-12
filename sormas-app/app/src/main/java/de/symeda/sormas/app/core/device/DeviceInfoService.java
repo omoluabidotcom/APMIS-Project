@@ -66,7 +66,10 @@ public class DeviceInfoService {
         deviceInfo.setUser(user);
         deviceInfo.setLoginTimestamp(new Date());
 
- 
+        deviceInfo.setArea(user.getRegion().getArea());
+        deviceInfo.setRegion(user.getRegion());
+        deviceInfo.setDistrict(user.getDistrict());
+
         try {
             // Device Information
             collectDeviceBasicInfo(deviceInfo);

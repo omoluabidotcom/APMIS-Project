@@ -31,27 +31,40 @@ import de.symeda.sormas.api.user.UserType;
 import de.symeda.sormas.api.utils.criteria.BaseCriteria;
 
 public class DeviceMangerCriteria extends BaseCriteria implements Serializable {
-
-
-	public static final String GEOGRAPHY_UNIT = "unit_type";
-
-
-	//for filter
-	private String unit_type;
-
-
-	private static final long serialVersionUID = 8124072093160133408L;
-
-
-	public String getUnit_type() {
-		return unit_type;
-	}
-
-
-	public void setUnit_type(String unit_type) {
-		this.unit_type = unit_type;
-	}
-
-
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private Set<AreaReferenceDto> area;
+	private Set<RegionReferenceDto> region;
+	private Set<DistrictReferenceDto> district;	
+    
+	public DeviceMangerCriteria region(Set<RegionReferenceDto> region) {
+		this.region = region;
+		return this;
+	}
+	
+	public DeviceMangerCriteria area(Set<AreaReferenceDto> set) {
+		this.area = set;
+		return this;
+	}
+
+	public Set<RegionReferenceDto> getRegion() {
+		return region;
+	}
+	
+	public Set<AreaReferenceDto> getArea() {
+		return area;
+	}
+	
+
+	public DeviceMangerCriteria district(Set<DistrictReferenceDto> district) {
+		this.district = district;
+		return this;
+	}
+
+	public Set<DistrictReferenceDto> getDistrict() {
+		return district;
+	}	
 }

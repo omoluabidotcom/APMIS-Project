@@ -179,6 +179,16 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
                     } else {
                         cleanedFormValues.add(entry);
                     }
+                } else if ("date".equalsIgnoreCase(entry.getId())) {
+                    String convertedDate = convertToEnglishNumbers(String.valueOf(entry.getValue()));
+                    if (!convertedDate.equals(entry.getValue())) {
+                        CampaignFormDataEntry timeEntry = new CampaignFormDataEntry();
+                        timeEntry.setId(entry.getId());
+                        timeEntry.setValue(convertedDate);
+                        cleanedFormValues.add(timeEntry);
+                    } else {
+                        cleanedFormValues.add(entry);
+                    }
                 } else {
                     cleanedFormValues.add(entry);
                 }
