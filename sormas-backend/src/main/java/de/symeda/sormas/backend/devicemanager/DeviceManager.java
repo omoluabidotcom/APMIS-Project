@@ -23,11 +23,14 @@ package de.symeda.sormas.backend.devicemanager;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Access;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -42,6 +45,9 @@ import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataReferenceDto;
 import de.symeda.sormas.api.campaign.data.PlatformEnum;
 import de.symeda.sormas.api.devicemanager.DeviceManagerReferenceDto;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
+import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
+import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
 import de.symeda.sormas.api.user.UserReferenceDto;
 import de.symeda.sormas.backend.campaign.Campaign;
 import de.symeda.sormas.backend.campaign.form.CampaignFormMeta;
@@ -58,6 +64,8 @@ import de.symeda.sormas.backend.util.ModelConstants;
 @Audited
 public class DeviceManager extends AbstractDomainObject{
 
+	private static final long serialVersionUID = -8021065433714419288L;
+	
 	public static final String TABLE_NAME = "device_manager";
 
 	public static final String DEVICEMODEL = "device_model";
@@ -91,15 +99,14 @@ public class DeviceManager extends AbstractDomainObject{
 	public static final String NETWORK_PROVIDER = "networkProvider";
 	public static final String ACTIVE_CAMPAIGNS = "activeCampaigns";
 	public static final String ACTIVE_FORM_COUNT = "activeFormCount";
-
-
- 
+	public static final String REGIONS = "regions";
+	public static final String PROVINCES = "provinces";
+	public static final String DISTRICTS = "districts";
 	
 	private String device_model ;//VARCHAR(255),
 	private String user_name;// VARCHAR(255),
 	private String user_location;// VARCHAR(255),
 	private String apk_version;// VARCHAR(255)
-
 
 	private String device_brand;
 	private String device_serial;
@@ -114,9 +121,7 @@ public class DeviceManager extends AbstractDomainObject{
     private Long free_int_storage;
     private Long total_ext_storage;
     private Long free_ext_storage;
-    private Long ram_storage;
- 
-    
+    private Long ram_storage;    
 
     @Column(name = "total_int_storage_gb", insertable = false, updatable = false)
     private BigDecimal total_int_storage_gb;
@@ -144,22 +149,24 @@ public class DeviceManager extends AbstractDomainObject{
     private Boolean wifi_connected;
     private Integer network_strength;
 
-@ManyToOne
-@JoinColumn(name = "user_id") // bigint FK to users.id
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user_id;
 
-
-//	public static final String DISTRICT = "district";
-//	public static final String COMMUNITY = "community";
-
-
-	private static final long serialVersionUID = -8021065433714419288L;
-
-
-//	private District district;
-//	public Community community;
-
-
+	@ManyToOne(cascade = {})
+    private Area area;
+	
+	@ManyToOne(cascade = {})
+	private Region region;
+	
+//	@ManyToMany
+//	@JoinTable(
+//	    name = "device_manager_district",
+//	    joinColumns = @JoinColumn(name = "device_manager_id"),
+//	    inverseJoinColumns = @JoinColumn(name = "districts_id")
+//	)
+	@ManyToMany(cascade = {})
+	private Set<District> districts;
 
 	public DeviceManagerReferenceDto toReference() {
 		return new DeviceManagerReferenceDto(getUuid());
@@ -340,31 +347,48 @@ public class DeviceManager extends AbstractDomainObject{
 		return networkProvider;
 	}
 
-
 	public void setNetworkProvider(String networkProvider) {
 		this.networkProvider = networkProvider;
 	}
-
 
 	public Integer getActiveCampaigns() {
 		return activeCampaigns;
 	}
 
-
 	public void setActiveCampaigns(Integer activeCampaigns) {
 		this.activeCampaigns = activeCampaigns;
 	}
-
 
 	public Integer getActiveFormCount() {
 		return activeFormCount;
 	}
 
-
 	public void setActiveFormCount(Integer activeFormCount) {
 		this.activeFormCount = activeFormCount;
 	}
-	
-	
 
+	public Area getArea() {
+		return area;
+	}
+
+	public void setArea(Area area) {
+		this.area = area;
+	}
+
+	public Region getRegion() {
+		return region;
+	}
+
+	public void setRegion(Region region) {
+		this.region = region;
+	}
+	
+	public Set<District> getDistricts() {
+		return districts;
+	}
+
+	public void setDistricts(Set<District> districts) {
+		this.districts = districts;
+	}		
+	
 }

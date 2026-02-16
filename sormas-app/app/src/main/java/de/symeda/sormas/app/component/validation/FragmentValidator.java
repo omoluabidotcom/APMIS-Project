@@ -31,6 +31,7 @@ import de.symeda.sormas.app.component.controls.ControlCheckBoxGroupField;
 import de.symeda.sormas.app.component.controls.ControlDateField;
 import de.symeda.sormas.app.component.controls.ControlDateTimeField;
 import de.symeda.sormas.app.component.controls.ControlPropertyEditField;
+import de.symeda.sormas.app.component.controls.ControlTextEditFieldRange;
 
 /**
  * Custom validator that iterates over all ControlPropertyEditFields in the given Fragment and
@@ -83,12 +84,13 @@ public class FragmentValidator {
 	}
 
 
-	private static void validatePropertyEditFields(ViewGroup parent, ValidationErrorInfo errorInfo) {
+	public static void validatePropertyEditFields(ViewGroup parent, ValidationErrorInfo errorInfo) {
 		for (int i = 0; i < parent.getChildCount(); i++) {
 			View child = parent.getChildAt(i);
 			if (child instanceof ControlPropertyEditField) {
 				ControlPropertyEditField field = (ControlPropertyEditField) child;
 				boolean fieldHasError = field.setErrorIfEmpty();
+				System.out.println(field.getCaption() + " CAPTIONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
 
 				if (field instanceof ControlDateField) {
 					fieldHasError |= ((ControlDateField) field).setErrorIfOutOfDateRange();
@@ -101,6 +103,11 @@ public class FragmentValidator {
 				if (field instanceof ControlCheckBoxGroupField) {
 					System.out.println("DEBUG FragmentValidator - validating ControlCheckBoxGroupField: " + field.getId() );
 					fieldHasError |= ((ControlCheckBoxGroupField) field).setErrorIfEmpty();
+				}
+
+				if (field instanceof ControlTextEditFieldRange) {
+					System.out.println("DEBUG FragmentValidator - validating ControlTextEditFieldRange: " + field.getId() );
+					fieldHasError |= ((ControlTextEditFieldRange) field).setErrorIfEmpty();
 				}
 
 				if (field.getValidationCallback() != null) {

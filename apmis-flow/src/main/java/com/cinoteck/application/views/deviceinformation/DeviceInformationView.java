@@ -1,22 +1,23 @@
 package com.cinoteck.application.views.deviceinformation;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.List;
 import com.cinoteck.application.UserProvider;
 import com.cinoteck.application.views.MainLayout;
 import com.cinoteck.application.views.utils.gridexporter.GridExporter;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Image;
 
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
@@ -25,14 +26,21 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.Language;
+import de.symeda.sormas.api.caze.CaseDataDto;
 import de.symeda.sormas.api.devicemanager.DeviceManagerDto;
+import de.symeda.sormas.api.devicemanager.DeviceMangerCriteria;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.I18nProperties;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
+import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
+import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
+import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
 import de.symeda.sormas.api.user.UserRight;
 
 @PageTitle("APMIS-Device Manager")
@@ -44,8 +52,16 @@ public class DeviceInformationView extends VerticalLayout {
 	Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
 	List<DeviceManagerDto> dataProvider;
 	GridListDataView<DeviceManagerDto> dataView;
-
+	private DeviceMangerCriteria criteria = new DeviceMangerCriteria();
 	Paragraph countRowItems;
+	
+	private MultiSelectComboBox<AreaReferenceDto> areaFilter = new MultiSelectComboBox<AreaReferenceDto>();
+	private MultiSelectComboBox<RegionReferenceDto> regionFilter = new MultiSelectComboBox<RegionReferenceDto>();
+	private MultiSelectComboBox<DistrictReferenceDto> districtFilter = new MultiSelectComboBox<DistrictReferenceDto>();
+	
+	private List<AreaReferenceDto> regions = FacadeProvider.getAreaFacade().getAllActiveAsReference();
+	private List<RegionReferenceDto> provinces = FacadeProvider.getRegionFacade().getAllActiveAsReference();
+	private List<DistrictReferenceDto> districts = FacadeProvider.getDistrictFacade().getAllActiveAsReference();
 
 	public DeviceInformationView() {
 
@@ -109,7 +125,175 @@ public class DeviceInformationView extends VerticalLayout {
 //		ComboBox<?> geographyUnitTypeFilter = new ComboBox<>(I18nProperties.getCaption("Unit Type"));
 
 		Button resetFilters = new Button(I18nProperties.getCaption(Captions.resetFilters));
+		
+		areaFilter.setId(CaseDataDto.AREA);
+		areaFilter.setWidth("145px");
 
+		areaFilter.setLabel(I18nProperties.getPrefixCaption(CaseDataDto.I18N_PREFIX, CaseDataDto.AREA));
+		areaFilter.setPlaceholder(I18nProperties.getCaption(Captions.area));
+		areaFilter.getStyle().set("margin-left", "0.1rem");
+		areaFilter.getStyle().set("padding-top", "0px!important");
+		areaFilter.setClearButtonVisible(true);
+		regions = FacadeProvider.getAreaFacade().getAllActiveAsReference();
+
+		areaFilter.setItems(regions);			
+
+		areaFilter.addValueChangeListener(e -> {
+			if (e.getValue() != null) {
+				List<RegionReferenceDto> allProvinces = new ArrayList<>();
+				if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
+					for (AreaReferenceDto selectedUUID : e.getValue()) {
+						String uuid = selectedUUID.getUuid();
+						provinces = FacadeProvider.getRegionFacade().getAllActiveByAreaPashto(uuid);
+						allProvinces.addAll(provinces);
+					}
+//						provinces = FacadeProvider.getRegionFacade().getAllActiveByAreaPashto(e.getValue().getUuid());
+					regionFilter.setItems(allProvinces);
+					areaFilter.setValue(e.getValue());
+				} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
+					for (AreaReferenceDto selectedUUID : e.getValue()) {
+						String uuid = selectedUUID.getUuid();
+						provinces = FacadeProvider.getRegionFacade().getAllActiveByAreaDari(uuid);
+						allProvinces.addAll(provinces);
+					}
+//						provinces = FacadeProvider.getRegionFacade().getAllActiveByAreaDari(e.getValue().getUuid());
+					regionFilter.setItems(allProvinces);
+					areaFilter.setValue(e.getValue());
+				} else {
+					for (AreaReferenceDto selectedUUID : e.getValue()) {
+						String uuid = selectedUUID.getUuid();
+						provinces = FacadeProvider.getRegionFacade().getAllActiveByArea(uuid);
+						allProvinces.addAll(provinces);
+						System.out.println(selectedUUID.getCaption() + " CAPTIONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
+					}
+//						provinces = FacadeProvider.getRegionFacade().getAllActiveByArea(e.getValue().getUuid());
+					regionFilter.setItems(allProvinces);
+					areaFilter.setValue(e.getValue());					
+				}
+				regionFilter.setEnabled(true);
+			} else {
+//				if (regionFilter.getValue() != null) {
+//					regionFilter.clear();
+//				}
+//				regionFilter.setEnabled(false);
+			}
+			reload();
+			updateRowCount();
+
+	
+		});
+
+		regionFilter.setId(CaseDataDto.REGION);
+		regionFilter.setWidth(145, Unit.PIXELS);
+		regionFilter.setLabel(
+				I18nProperties.getPrefixCaption(CaseDataDto.I18N_PREFIX, I18nProperties.getCaption(Captions.region)));
+		regionFilter.setPlaceholder(I18nProperties.getCaption(Captions.region));
+		regionFilter.getStyle().set("margin-left", "0.1rem");
+		regionFilter.getStyle().set("padding-top", "0px!important");
+		regionFilter.setClearButtonVisible(true);
+		
+		
+//		dataView.setFilter((SerializablePredicate<DeviceManagerDto>) criteria.region(userProvider.getUser().getRegion()));
+
+
+		regionFilter.addValueChangeListener(e -> {
+			if (e.getValue() != null) {
+				List<DistrictReferenceDto> allDistricts = new ArrayList<>();
+				if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
+					for (RegionReferenceDto selectedUUID : e.getValue()) {
+						String uuid = selectedUUID.getUuid();
+						districts = FacadeProvider.getDistrictFacade().getAllActiveByRegionPashto(uuid);
+						allDistricts.addAll(districts);
+					}
+//					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegionPashto(e.getValue().getUuid());
+					districtFilter.setItems(allDistricts);
+					regionFilter.setValue(e.getValue());
+				} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
+					for (RegionReferenceDto selectedUUID : e.getValue()) {
+						String uuid = selectedUUID.getUuid();
+						districts = FacadeProvider.getDistrictFacade().getAllActiveByRegionDari(uuid);
+						allDistricts.addAll(districts);
+					}
+
+//					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegionDari(e.getValue().getUuid());
+					districtFilter.setItems(allDistricts);
+					regionFilter.setValue(e.getValue());
+				} else {
+					for (RegionReferenceDto selectedUUID : e.getValue()) {
+						String uuid = selectedUUID.getUuid();
+						districts = FacadeProvider.getDistrictFacade().getAllActiveByRegion(uuid);
+						allDistricts.addAll(districts);
+						System.out.println(selectedUUID.getCaption() + " CAPTIONPROVINCEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
+					}
+//					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegion(e.getValue().getUuid());
+					districtFilter.setItems(allDistricts);
+					regionFilter.setValue(e.getValue());
+				}
+				districtFilter.setEnabled(true);
+			} else {
+//				if (districtFilter.getValue() != null) {
+//					districtFilter.clear();
+//				}
+//				districtFilter.setEnabled(false);
+			}
+			reload();
+			updateRowCount();
+
+		});
+
+		districtFilter.setId(CaseDataDto.DISTRICT);
+		districtFilter.setWidth(145, Unit.PIXELS);
+		districtFilter.setLabel(I18nProperties.getCaption(Captions.district));
+		districtFilter.setPlaceholder(I18nProperties.getCaption(Captions.district));
+		districtFilter.getStyle().set("margin-left", "0.1rem");
+		districtFilter.getStyle().set("padding-top", "0px!important");
+		districtFilter.setClearButtonVisible(true);
+//		districtFilter.setReadOnly(true);	
+
+		districtFilter.addValueChangeListener(e -> {
+			if (e.getValue() != null) {
+				List<CommunityReferenceDto> allClusters = new ArrayList<>();
+
+//				for (DistrictReferenceDto selectedUUID : e.getValue()) {
+//					String uuid = selectedUUID.getUuid();
+//					communities = FacadeProvider.getCommunityFacade().getAllActiveByDistrict(uuid);
+//					allClusters.addAll(communities);
+//				}
+
+//				communities = FacadeProvider.getCommunityFacade().getAllActiveByDistrict(e.getValue().getUuid());
+//				clusterCombo.setItemLabelGenerator(itm -> {
+//					CommunityReferenceDto dcfv = (CommunityReferenceDto) itm;
+//					return dcfv.getNumber() + " | " + dcfv.getCaption();
+//				});
+//				allClusters.sort(Comparator.comparing(CommunityReferenceDto::getNumber));
+//				clusterCombo.setItems(allClusters);
+//
+//				clusterCombo.setEnabled(true);
+
+				districtFilter.setValue(e.getValue());
+				
+				for (DistrictReferenceDto districtReferenceDto : e.getValue()) {
+					
+				}
+				System.out.println(DistrictReferenceDto.CAPTION + " CA[TOONDISTRICTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
+
+			} else {
+//				if (clusterCombo.getValue() != null) {
+//					clusterCombo.clear();
+//				}
+//				clusterCombo.setEnabled(false);
+			}
+
+			reload();
+			updateRowCount();
+			
+		});
+			
+		
+		
+		
+		
+		
 		Button exportDevicesInfo = new Button(I18nProperties.getCaption(Captions.export));
 
 		searchField.addClassName("filterBar");
@@ -153,7 +337,7 @@ public class DeviceInformationView extends VerticalLayout {
 			updateRowCount();
 		});
 
-		layout.add(searchField);
+		layout.add(searchField, areaFilter, regionFilter, districtFilter);
 //		layout.add(geographyUnitTypeFilter);
 
 		layout.add(resetFilters);
@@ -198,6 +382,8 @@ public class DeviceInformationView extends VerticalLayout {
 		grid.setSizeFull();
 		grid.setColumnReorderingAllowed(true);
 
+		grid.addColumn(DeviceManagerDto::getDeviceBrand).setHeader(I18nProperties.getCaption("Device Brand"))
+		.setSortable(true).setResizable(true);
 		grid.addColumn(DeviceManagerDto::getDeviceModel).setHeader(I18nProperties.getCaption("Device Model"))
 				.setSortable(true).setResizable(true)
 				.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.area));
@@ -262,7 +448,7 @@ public class DeviceInformationView extends VerticalLayout {
 //				.map(order -> new SortProperty(order.getSorted(), order.getDirection().equals(SortDirection.ASCENDING)))
 //				.collect(Collectors.toList());
 
-		return FacadeProvider.getDeviceManagerFacade().getIndexList(null, null, null, null);
+		return FacadeProvider.getDeviceManagerFacade().getIndexList(criteria, null, null, null);
 
 	}
 
@@ -270,6 +456,32 @@ public class DeviceInformationView extends VerticalLayout {
 		DeviceDetailsDialog dialog = new DeviceDetailsDialog(deviceManagerDto);
 		dialog.open();
 
+	}
+	
+	public void reload() {
+	    if (criteria == null) {
+	        criteria = new DeviceMangerCriteria();
+	    }
+	    
+	    // Set filter values
+	    criteria.area(areaFilter.getValue());
+	    criteria.region(regionFilter.getValue());
+	    criteria.district(districtFilter.getValue());
+	    
+	    // DEBUG: Print what we're sending
+	    System.out.println("DEBUG - Sending to backend:");
+	    System.out.println("  Area count: " + (areaFilter.getValue() != null ? areaFilter.getValue().size() : 0));
+	    System.out.println("  Region count: " + (regionFilter.getValue() != null ? regionFilter.getValue().size() : 0));
+	    System.out.println("  District count: " + (districtFilter.getValue() != null ? districtFilter.getValue().size() : 0));
+	    
+	    // Fetch new data with updated criteria
+	    List<DeviceManagerDto> newData = fetchDevicesInfoData();
+	    
+	    // Update grid data
+	    grid.setItems(newData);
+	    dataView = grid.getListDataView();
+	    
+	    updateRowCount();
 	}
 
 }

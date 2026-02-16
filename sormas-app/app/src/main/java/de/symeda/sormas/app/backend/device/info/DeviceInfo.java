@@ -21,11 +21,16 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.Transient;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import de.symeda.sormas.app.backend.common.AbstractDomainObject;
+import de.symeda.sormas.app.backend.region.Area;
+import de.symeda.sormas.app.backend.region.Community;
+import de.symeda.sormas.app.backend.region.District;
+import de.symeda.sormas.app.backend.region.Region;
 import de.symeda.sormas.app.backend.user.User;
 
 @Entity(name = DeviceInfo.TABLE_NAME)
@@ -162,7 +167,17 @@ public class DeviceInfo extends AbstractDomainObject {
     @Column
     private  Integer activeFormCount;
 
+    @DatabaseField(foreign = true, foreignAutoRefresh = true)
+    private Area area;
 
+    @DatabaseField(foreign = true, foreignAutoRefresh = true)
+    private Region region;
+
+    @DatabaseField(foreign = true, foreignAutoRefresh = true)
+    private District district;
+
+    @DatabaseField(foreign = true, foreignAutoRefresh = true)
+    private Community community;
  
     // Enums
 //    public enum BatteryStatus {
@@ -359,7 +374,6 @@ public class DeviceInfo extends AbstractDomainObject {
         this.userName = userName;
     }
 
- 
     public String getNetworkProvider() {
         return networkProvider;
     }
@@ -376,7 +390,6 @@ public class DeviceInfo extends AbstractDomainObject {
         this.activeCampaigns = activeCampaigns;
     }
 
-
     public Integer getActiveFormCount() {
         return activeFormCount;
     }
@@ -385,7 +398,44 @@ public class DeviceInfo extends AbstractDomainObject {
         this.activeFormCount = activeFormCount;
     }
 
-     @Override
+    @Transient
+    public Area getArea() {
+        return area;
+    }
+
+    public void setArea(Area area) {
+        this.area = area;
+    }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+
+        this.region = region;
+        if (region != null) {
+            setArea(region.getArea());
+        }
+    }
+
+    public District getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(District district) {
+        this.district = district;
+    }
+
+    public Community getCommunity() {
+        return community;
+    }
+
+    public void setCommunity(Community community) {
+        this.community = community;
+    }
+
+    @Override
     public String getI18nPrefix() {
         return I18N_PREFIX;
     }

@@ -109,30 +109,25 @@ public class CronService {
 		logger.debug("running analytics updates finished. {} proccessed, {} s", 0, DateHelper.durationSeconds(timeStart));
 	} 
 	
-	@Schedule(hour = "0", minute = "0", second = "0", persistent = false)
-    @Transactional
+	@Schedule(hour = "*", minute = "*/5", second = "0", persistent = false)   
     public void refreshFlwDuplicateAnalysisView() {
         try {
             long startTime = System.currentTimeMillis();
             
             logger.info("Starting MV refresh - current row count: {}", getCurrentRowCount());
+            System.out.println("Starting MV refresh - current row count: {}");         
             
-            em.createNativeQuery(
-                "REFRESH MATERIALIZED VIEW CONCURRENTLY mv_flw_duplicate_error_analysis"
-            ).executeUpdate();
-            
+            em.createNativeQuery("REFRESH MATERIALIZED VIEW CONCURRENTLY public.mv_flw_duplicate_error_analysis;").executeUpdate();
+                      
             long duration = System.currentTimeMillis() - startTime;
             long newRowCount = getCurrentRowCount();
             
             logger.info("MV refresh completed in {}ms. New row count: {}", duration, newRowCount);
-            
-            // Alert if refresh takes too long
-            if (duration > 300000) { // 5 minutes
-            	logger.warn("MV refresh took longer than expected: {}ms", duration);
-            }
+            System.out.println("MV refresh completed in {}ms. New row count:");
             
         } catch (Exception e) {
-        	logger.error("MV refresh failed", e);
+        	logger.error("mv_flw_duplicate_error_analysis refresh failed", e);
+        	System.out.println("mv_flw_duplicate_error_analysis refresh failed");
         }
     }
     

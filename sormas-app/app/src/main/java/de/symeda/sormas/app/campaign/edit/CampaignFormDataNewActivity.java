@@ -148,8 +148,18 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
 
 
+//        try {
+//            FragmentValidator.validate(getContext(), getActiveFragment().getContentBinding());
+//        } catch (ValidationException e) {
+//            NotificationHelper.showNotification(this, ERROR, e.getMessage());
+//            return;
+//        }
+
+        CampaignFormDataNewFragment fragment =
+                (CampaignFormDataNewFragment) getActiveFragment();
+
         try {
-            FragmentValidator.validate(getContext(), getActiveFragment().getContentBinding());
+            fragment.validateForSave(getContext());
         } catch (ValidationException e) {
             NotificationHelper.showNotification(this, ERROR, e.getMessage());
             return;
@@ -173,6 +183,16 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
                         CampaignFormDataEntry timeEntry = new CampaignFormDataEntry();
                         timeEntry.setId(entry.getId());
                         timeEntry.setValue(convertedTime);
+                        cleanedFormValues.add(timeEntry);
+                    } else {
+                        cleanedFormValues.add(entry);
+                    }
+                } else if ("date".equalsIgnoreCase(entry.getId())) {
+                    String convertedDate = convertToEnglishNumbers(String.valueOf(entry.getValue()));
+                    if (!convertedDate.equals(entry.getValue())) {
+                        CampaignFormDataEntry timeEntry = new CampaignFormDataEntry();
+                        timeEntry.setId(entry.getId());
+                        timeEntry.setValue(convertedDate);
                         cleanedFormValues.add(timeEntry);
                     } else {
                         cleanedFormValues.add(entry);

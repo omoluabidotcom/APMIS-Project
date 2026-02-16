@@ -125,9 +125,11 @@ public class DeviceInfoDao extends AbstractAdoDao<DeviceInfo> {
         deviceInfo.setNetworkProvider(inputDeviceInfo.getNetworkProvider());
         deviceInfo.setActiveCampaigns(inputDeviceInfo.getActiveCampaigns());
         deviceInfo.setActiveFormCount(inputDeviceInfo.getActiveFormCount());
+        deviceInfo.setArea(inputDeviceInfo.getArea());
+        deviceInfo.setRegion(inputDeviceInfo.getRegion());
+        deviceInfo.setDistrict(inputDeviceInfo.getDistrict());
 
-
-         deviceInfo.setModified(true);
+        deviceInfo.setModified(true);
 
         create(deviceInfo);
         Log.i(getTableName(), "Created DeviceInfo for user: " + user.getUserName());
@@ -173,8 +175,9 @@ public class DeviceInfoDao extends AbstractAdoDao<DeviceInfo> {
         existingDeviceInfo.setNetworkProvider(inputDeviceInfo.getNetworkProvider());
         existingDeviceInfo.setActiveCampaigns(inputDeviceInfo.getActiveCampaigns());
         existingDeviceInfo.setActiveFormCount(inputDeviceInfo.getActiveFormCount());
-
- 
+        existingDeviceInfo.setArea(inputDeviceInfo.getArea());
+        existingDeviceInfo.setRegion(inputDeviceInfo.getRegion());
+        existingDeviceInfo.setDistrict(inputDeviceInfo.getDistrict());
 
         existingDeviceInfo.setModified(true);
 

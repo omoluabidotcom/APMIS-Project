@@ -18,6 +18,7 @@
 
 package de.symeda.sormas.app.campaign.edit;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -60,6 +61,7 @@ import de.symeda.sormas.api.campaign.form.CampaignFormElementType;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.utils.DataHelper;
+import de.symeda.sormas.api.utils.ValidationException;
 import de.symeda.sormas.app.BaseEditFragment;
 import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.campaign.Campaign;
@@ -84,6 +86,8 @@ import de.symeda.sormas.app.component.controls.ControlTextEditField;
 import de.symeda.sormas.app.component.controls.ControlTextEditFieldAllowZeroInput;
 import de.symeda.sormas.app.component.controls.ControlTextEditFieldRange;
 import de.symeda.sormas.app.component.controls.ControlTimeField;
+import de.symeda.sormas.app.component.validation.FragmentValidator;
+import de.symeda.sormas.app.component.validation.ValidationErrorInfo;
 import de.symeda.sormas.app.databinding.FragmentCampaignDataEditLayoutBinding;
 import de.symeda.sormas.app.util.DataUtils;
 import de.symeda.sormas.app.util.InfrastructureDaoHelper;
@@ -162,13 +166,11 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
     boolean isSpinnerInitialized = false;
 
     private ControlTextEditFieldRange errorSetterGlobal;
-
-
     List<String> preCampaignsCategories = List.of("FLW", "MODALITY_PRE", "TRAINING");
     List<String> intraCampaignsCategories = List.of("ICM", "ADMIN", "EAG-ICM", "EAG-ADMIN");
     List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION");
-
-
+    private TabHost mTabHost;
+    private boolean daywise = false;
     public void addMapValue() {
 
         mapvalue.put("Afghanistan", new CountryDetails("+93", 9, 9));
@@ -255,7 +257,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
         final Map<String, ControlPropertyField> fieldMap = new HashMap<>();
         final Map<CampaignFormElement, ControlPropertyField> expressionMap = new HashMap<>();
 
-        boolean daywise = false;
+        daywise = false;
 
         int dayy = 0;
         for (CampaignFormElement campaignFormElement : campaignFormMeta.getCampaignFormElements()) {
@@ -274,7 +276,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
         int accrd_count = 0;
 
         Resources res = getResources();
-        TabHost mTabHost = (TabHost) view.findViewById(R.id.tabhostxxxxXEd);
+        mTabHost = (TabHost) view.findViewById(R.id.tabhostxxxxXEd);
         mTabHost.setup();
 
         TabHost.TabSpec spec;
@@ -2916,5 +2918,50 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
         });
 
         dialog.show();
+    }
+
+    public void validateForSave(Context context) throws ValidationException {
+        if (!daywise) {
+            // Non-daywise form → validate everything
+            FragmentValidator.validate(context, getContentBinding());
+            return;
+        }
+
+        // Day-wise form → restricted validation
+        validateDayWise(context);
+    }
+
+    private void validateDayWise(Context context) throws ValidationException {
+
+        int currentDay = mTabHost.getCurrentTab() + 1;
+        ValidationErrorInfo errorInfo = new ValidationErrorInfo(context);
+
+        // Always validate Day-1
+        ViewGroup day1 = getDayContainer(1);
+        FragmentValidator.validatePropertyEditFields(day1, errorInfo);
+
+        // Validate current day if different
+        if (currentDay != 1) {
+            System.out.println("NOTDAYONEVALIDATIONNNNNNNNNNNNNNNNNNNNNNNNNNNNEDITTTTTTTTTTTTTTT");
+            ViewGroup current = getDayContainer(currentDay);
+            System.out.println(current.getChildCount());
+            FragmentValidator.validatePropertyEditFields(current, errorInfo);
+        }
+
+        if (errorInfo.hasError()) {
+            throw new ValidationException(errorInfo.toString());
+        }
+    }
+
+    private ViewGroup getDayContainer(int day) {
+        System.out.println("DAYYYYYYYYYYYYYYYYYYYYEDITTTTTTTTTTT " +day);
+        switch (day) {
+            case 1: return mTabHost.findViewById(R.id.tabSheet1);
+            case 2: return mTabHost.findViewById(R.id.tabSheet2);
+            case 3: return mTabHost.findViewById(R.id.tabSheet3);
+            case 4: return mTabHost.findViewById(R.id.tabSheet4);
+            case 5: return mTabHost.findViewById(R.id.tabSheet5);
+            default: return null;
+        }
     }
 }
