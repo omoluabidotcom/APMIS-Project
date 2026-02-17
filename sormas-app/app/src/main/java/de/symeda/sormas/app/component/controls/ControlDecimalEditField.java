@@ -284,6 +284,10 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
             input.setInputType(InputType.TYPE_CLASS_NUMBER |
                     InputType.TYPE_NUMBER_FLAG_DECIMAL |
                     InputType.TYPE_NUMBER_FLAG_SIGNED);
+
+            input.setImeOptions(EditorInfo.IME_FLAG_FORCE_ASCII);
+
+            input.setKeyListener(android.text.method.DigitsKeyListener.getInstance("0123456789.-"));
         } else {
  
             input.setInputType(inputType);
