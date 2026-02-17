@@ -940,6 +940,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 				if (type == CampaignFormElementType.DAYWISE) {
 					accrd_count++;
+					daywiseTracker = true;
 					if (accrd_count > 1) {
 
 						final FormLayout layout = new FormLayout(vertical);
