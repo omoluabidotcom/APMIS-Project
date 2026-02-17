@@ -11663,5 +11663,14 @@ INSERT INTO schema_version (version_number, comment)
 VALUES (491, 'Materialized View Update for FLW Operation performance #811');
 
 
+ALTER TABLE community 
+ADD COLUMN internationalborder BOOLEAN DEFAULT FALSE;
+
+
+INSERT INTO schema_version (version_number, comment)
+VALUES (492, 'Add "International Border" column to Cluster table in Geography #908');
+
+
+
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***
 
