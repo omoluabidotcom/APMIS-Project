@@ -80,6 +80,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.component.shared.Tooltip;
+import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.EmailField;
@@ -196,6 +197,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 	private DialingCodeDto dialingCodeDto = new DialingCodeDto();
 	private int min = 0;
 	private int max = 0;
+	private String currentDay = "Day-1";
+	private boolean daywiseTracker = false;
 
 	private CampaignDto campaignDto;
 	CampaignFormMetaExpiryDto expiryDto;
@@ -840,6 +843,14 @@ public class CampaignFormBuilder extends VerticalLayout {
 		int ii = 0;
 
 		TabSheet accrd = new TabSheet();
+		
+		accrd.addSelectedChangeListener(event -> {
+			Tab selectedTab = accrd.getSelectedTab();
+			if (selectedTab != null) {
+				currentDay = selectedTab.getLabel().toLowerCase().replace("-", "");
+				System.out.println("SWITCHHHHHHHHHHHHHHHHHHH " + currentDay.toLowerCase() + " ENDDDDDDDDDDDDDDDDDDDDDDDD");
+			}
+		});
 		accrd.setHeight(750, Unit.PIXELS);
 
 		int accrd_count = 0;
@@ -3153,69 +3164,157 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 	private boolean validateAndSave() {
 		hasErrorFormValuesReset();
-		fields.forEach((key, value) -> {
-			Component formField = fields.get(key);
-
-			if (cbArea.getValue() == null) {
-				cbArea.getElement().setProperty("invalid", true);
-				hasErrorFormValues(1);
-			}
-			if (cbRegion.getValue() == null) {
-				cbRegion.getElement().setProperty("invalid", true);
-				hasErrorFormValues(2);
-			}
-			if (cbDistrict.getValue() == null) {
-				cbDistrict.getElement().setProperty("invalid", true);
-				hasErrorFormValues(3);
-			}
-			if (!isDistrictEntry) {
-				System.out.println("Not a district entry form 1111111");
-				if (cbCommunity.getValue() == null) {
-					cbCommunity.getElement().setProperty("invalid", true);
-					hasErrorFormValues(4);
-				}
-			} else {
-				System.out.println(" district entry form 1111111");
-
-			}
-			if (formDate.getValue() == null) {
-				formDate.getElement().setProperty("invalid", true);
-				hasErrorFormValues(5);
-			}else {
-			if(!validateTextInputFormDate(formDate.getValue())) {
-				formDate.getElement().setProperty("invalid", true);
-				hasErrorFormValues(13);
-			}
 				
-			}
+		if (daywiseTracker) {
 
-			if (((AbstractField) formField).isRequiredIndicatorVisible()) {
-				logger.debug(
-						((AbstractField) formField).getValue() + "++++++++++" + ((AbstractField) formField).getId());
+			fields.forEach((key, value) -> {
+				Component formField = fields.get(key);
 
-				if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == ""
-						|| (((AbstractField) formField).getValue() instanceof Set
-								&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
-
-					if ((((AbstractField) formField).getValue() instanceof Set
-							&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
-						formField.getElement().getStyle().set("background", "#ffe5e5");
+				if (cbArea.getValue() == null) {
+					cbArea.getElement().setProperty("invalid", true);
+					hasErrorFormValues(1);
+				}
+				if (cbRegion.getValue() == null) {
+					cbRegion.getElement().setProperty("invalid", true);
+					hasErrorFormValues(2);
+				}
+				if (cbDistrict.getValue() == null) {
+					cbDistrict.getElement().setProperty("invalid", true);
+					hasErrorFormValues(3);
+				}
+				if (!isDistrictEntry) {
+					System.out.println(currentDay +" Not a district entry form QQQQQQQQQQQQQQQQ " + key);
+					if (cbCommunity.getValue() == null) {
+						cbCommunity.getElement().setProperty("invalid", true);
+						hasErrorFormValues(4);
 					}
-
-					hasErrorFormValues(6);
-					formField.getElement().setProperty("invalid", true);
 				} else {
-					// Clear error state and background color when field has value
-					if (formField.getElement().getProperty("invalid", false)) {
-						formField.getElement().setProperty("invalid", false);
-					}
-					// Clear background if it was set due to error
-					if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
-						formField.getElement().getStyle().remove("background");
-						formField.getElement().setProperty("error-background-set", null);
+					System.out.println(currentDay + " district entry form QQQQQQQQQQQQQQQQQQQQQQ " + key);
+
+				}
+				if (formDate.getValue() == null) {
+					formDate.getElement().setProperty("invalid", true);
+					hasErrorFormValues(5);
+				}
+
+				if (((AbstractField) formField).isRequiredIndicatorVisible() && key.contains(currentDay)) {
+					System.out.println(key + "FORMFIELDSSSSSSSS " + value);
+					logger.debug(((AbstractField) formField).getValue() + "++++++++++"
+							+ ((AbstractField) formField).getId());
+
+					if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == ""
+							|| (((AbstractField) formField).getValue() instanceof Set
+									&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+
+						if ((((AbstractField) formField).getValue() instanceof Set
+								&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+							formField.getElement().getStyle().set("background", "#ffe5e5");
+						}
+
+						hasErrorFormValues(6);
+						formField.getElement().setProperty("invalid", true);
+					} else {
+						// Clear error state and background color when field has value
+						if (formField.getElement().getProperty("invalid", false)) {
+							formField.getElement().setProperty("invalid", false);
+						}
+						// Clear background if it was set due to error
+						if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
+							formField.getElement().getStyle().remove("background");
+							formField.getElement().setProperty("error-background-set", null);
+						}
 					}
 				}
-			}
+				
+				if (((AbstractField) formField).isRequiredIndicatorVisible() && key.contains("day1")) {
+					System.out.println(key + "DAY111111111111111111111111111111111 " + value);
+					logger.debug(((AbstractField) formField).getValue() + "++++++++++"
+							+ ((AbstractField) formField).getId());
+
+					if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == ""
+							|| (((AbstractField) formField).getValue() instanceof Set
+									&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+
+						if ((((AbstractField) formField).getValue() instanceof Set
+								&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+							formField.getElement().getStyle().set("background", "#ffe5e5");
+						}
+
+						hasErrorFormValues(6);
+						formField.getElement().setProperty("invalid", true);
+					} else {
+						// Clear error state and background color when field has value
+						if (formField.getElement().getProperty("invalid", false)) {
+							formField.getElement().setProperty("invalid", false);
+						}
+						// Clear background if it was set due to error
+						if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
+							formField.getElement().getStyle().remove("background");
+							formField.getElement().setProperty("error-background-set", null);
+						}
+					}
+				}
+
+			});
+		} else {
+			System.out.println("NOTSUPPOSETORUNNINGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG");
+			fields.forEach((key, value) -> {
+				Component formField = fields.get(key);
+
+				if (cbArea.getValue() == null) {
+					cbArea.getElement().setProperty("invalid", true);
+					hasErrorFormValues(1);
+				}
+				if (cbRegion.getValue() == null) {
+					cbRegion.getElement().setProperty("invalid", true);
+					hasErrorFormValues(2);
+				}
+				if (cbDistrict.getValue() == null) {
+					cbDistrict.getElement().setProperty("invalid", true);
+					hasErrorFormValues(3);
+				}
+				if (!isDistrictEntry) {
+					System.out.println("Not a district entry form 1111111");
+					if (cbCommunity.getValue() == null) {
+						cbCommunity.getElement().setProperty("invalid", true);
+						hasErrorFormValues(4);
+					}
+				} else {
+					System.out.println(" district entry form 1111111");
+
+				}
+				if (formDate.getValue() == null) {
+					formDate.getElement().setProperty("invalid", true);
+					hasErrorFormValues(5);
+				}
+
+				if (((AbstractField) formField).isRequiredIndicatorVisible()) {
+					logger.debug(((AbstractField) formField).getValue() + "++++++++++"
+							+ ((AbstractField) formField).getId());
+
+					if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == ""
+							|| (((AbstractField) formField).getValue() instanceof Set
+									&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+
+						if ((((AbstractField) formField).getValue() instanceof Set
+								&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+							formField.getElement().getStyle().set("background", "#ffe5e5");
+						}
+
+						hasErrorFormValues(6);
+						formField.getElement().setProperty("invalid", true);
+					} else {
+						// Clear error state and background color when field has value
+						if (formField.getElement().getProperty("invalid", false)) {
+							formField.getElement().setProperty("invalid", false);
+						}
+						// Clear background if it was set due to error
+						if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
+							formField.getElement().getStyle().remove("background");
+							formField.getElement().setProperty("error-background-set", null);
+						}
+					}
+				}
 //			
 //			if (formField instanceof AbstractField) {
 //			    AbstractField<?, ?> field = (AbstractField<?, ?>) formField;
@@ -3242,7 +3341,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 //			    }
 //			}
 
-		});
+			});
+
+		}
 
 		fields.forEach((key, value) -> {
 			Component formField = fields.get(key);
