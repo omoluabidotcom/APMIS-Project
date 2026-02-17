@@ -11582,5 +11582,86 @@ CREATE UNIQUE INDEX idx_mv_flw_unique_id ON public.mv_flw_duplicate_error_analys
 INSERT INTO schema_version (version_number, comment)
 VALUES (490, 'Materialized View for FLW Operation performance #811');
 
+DROP MATERIALIZED VIEW IF EXISTS public.mv_flw_duplicate_error_analysis;
+
+-- public.mv_flw_duplicate_error_analysis source
+
+CREATE MATERIALIZED VIEW public.mv_flw_duplicate_error_analysis
+TABLESPACE pg_default
+AS WITH extracted_tazkiras AS (
+         SELECT cfd.id AS campaignformdata_id,
+            cfd.campaign_id,
+            cfd.area_id,
+            cfd.region_id,
+            cfd.district_id,
+            cfd.changedate,
+            elem.value ->> 'value'::text AS tazkira_value
+           FROM campaignformdata cfd
+             JOIN campaignformmeta cfm ON cfd.campaignformmeta_id = cfm.id
+             CROSS JOIN LATERAL json_array_elements(cfd.formvalues) elem(value)
+             CROSS JOIN LATERAL json_array_elements(cfm.campaignformelements) meta(value)
+          WHERE (elem.value ->> 'id'::text) = 'TazkiraNo'::text AND (elem.value ->> 'id'::text) = (meta.value ->> 'id'::text) AND cfm.id = 2170 AND cfm.formcategory::text = 'FLW'::text AND (elem.value ->> 'value'::text) IS NOT NULL AND (elem.value ->> 'value'::text) <> ''::text
+        ), duplicate_tazkiras AS (
+         SELECT extracted_tazkiras.tazkira_value
+           FROM extracted_tazkiras
+          GROUP BY extracted_tazkiras.tazkira_value
+         HAVING count(*) > 1
+        )
+ SELECT et.campaignformdata_id,
+    camp.uuid AS campaign_uuid,
+    a.uuid AS area_uuid,
+    a.name AS area,
+    r.uuid AS region_uuid,
+    r.name AS region,
+    d.uuid AS district_uuid,
+    d.name AS district,
+    f1.value ->> 'value'::text AS firstname,
+    f2.value ->> 'value'::text AS title,
+    et.tazkira_value AS tazkiranumber,
+    'Error: Duplicate Tazkira number'::text AS error_status,
+    et.changedate AS last_modified
+   FROM extracted_tazkiras et
+     JOIN duplicate_tazkiras dt ON et.tazkira_value = dt.tazkira_value
+     LEFT JOIN campaigns camp ON et.campaign_id = camp.id
+     LEFT JOIN areas a ON et.area_id = a.id
+     LEFT JOIN region r ON et.region_id = r.id
+     LEFT JOIN district d ON et.district_id = d.id
+     LEFT JOIN LATERAL ( SELECT elem.value
+           FROM json_array_elements(( SELECT campaignformdata.formvalues
+                   FROM campaignformdata
+                  WHERE campaignformdata.id = et.campaignformdata_id)) elem(value)
+          WHERE (elem.value ->> 'id'::text) = 'FirstName'::text
+         LIMIT 1) f1 ON true
+     LEFT JOIN LATERAL ( SELECT elem.value
+           FROM json_array_elements(( SELECT campaignformdata.formvalues
+                   FROM campaignformdata
+                  WHERE campaignformdata.id = et.campaignformdata_id)) elem(value)
+          WHERE (elem.value ->> 'id'::text) = 'Title'::text
+         LIMIT 1) f2 ON true
+WITH DATA;
+
+-- View indexes:
+CREATE INDEX idx_mv_flw_composite_filter ON public.mv_flw_duplicate_error_analysis USING btree (campaign_uuid, area_uuid, region_uuid, district_uuid, error_status);
+CREATE UNIQUE INDEX idx_mv_flw_unique_id ON public.mv_flw_duplicate_error_analysis USING btree (campaignformdata_id);
+
+
+alter table public.device_manager add column region_id int8 null;
+alter table public.device_manager add column area_id int8 NULL;
+
+
+ALTER TABLE public.device_manager ADD CONSTRAINT fk_device_manager_area_id FOREIGN KEY (area_id) REFERENCES public.areas(id);
+ALTER TABLE public.device_manager ADD CONSTRAINT fk_device_manager_region_id FOREIGN KEY (region_id) REFERENCES public.region(id);
+
+
+CREATE TABLE public.device_manager_district (
+	device_manager_id int8 NOT NULL,
+	districts_id int8 NOT NULL
+);
+
+
+INSERT INTO schema_version (version_number, comment)
+VALUES (491, 'Materialized View Update for FLW Operation performance #811');
+
+
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***
 
