@@ -163,59 +163,59 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 		}
 	}
 
-	public void setOptionsAndValue(Map<String, String> optionsValue, Object fieldValue) {
-		System.out.println("DEBUG setOptionsAndValue called with fieldValue: " + fieldValue);
-
-		// Parse the fieldValue first
-		List<String> valuesToSet = new ArrayList<>();
-		if (fieldValue instanceof List) {
-			List<?> valueList = (List<?>) fieldValue;
-			for (Object element : valueList) {
-				if (element != null) {
-					valuesToSet.add(element.toString().trim());
-				}
-			}
-		} else if (fieldValue != null) {
-			valuesToSet.add(fieldValue.toString().trim());
-		}
-
-		// Initialize selectedElements if null
-		if (selectedElements == null) {
-			selectedElements = new HashSet<>();
-			logSelectedElementsChange("initialized in setOptionsAndValue");
-		}
-		// DO NOT clear selectedElements here! We want to preserve any existing values
-
-		validOptionKeys = new HashSet<>();
-		validOptionKeys.clear();
-		validOptionKeys.addAll(optionsValue.keySet());
-
-		initializeContainers();
-		removeAllItems();
-
-		int index = 0;
-		for (Map.Entry<String, String> entry : optionsValue.entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue();
-			// Create checkbox with pre-selection
-			boolean shouldBeChecked = valuesToSet.contains(key);
-			addItemWithPreSelection(key, index, value, shouldBeChecked);
-			index++;
-		}
-		optionsSet = true;
-
-		// Make sure selectedElements matches what we just set
-		selectedElements.clear();
-		selectedElements.addAll(valuesToSet);
-
-		System.out.println("DEBUG setOptionsAndValue - Final selectedElements: " + selectedElements);
-
-		if (pendingValue != null) {
-			System.out.println("Applying pending value after options set: " + pendingValue);
-			applyValueToCheckboxes(pendingValue);
-			pendingValue = null;
-		}
-	}
+//	public void setOptionsAndValue(Map<String, String> optionsValue, Object fieldValue) {
+//		System.out.println("DEBUG setOptionsAndValue called with fieldValue: " + fieldValue);
+//
+//		// Parse the fieldValue first
+//		List<String> valuesToSet = new ArrayList<>();
+//		if (fieldValue instanceof List) {
+//			List<?> valueList = (List<?>) fieldValue;
+//			for (Object element : valueList) {
+//				if (element != null) {
+//					valuesToSet.add(element.toString().trim());
+//				}
+//			}
+//		} else if (fieldValue != null) {
+//			valuesToSet.add(fieldValue.toString().trim());
+//		}
+//
+//		// Initialize selectedElements if null
+//		if (selectedElements == null) {
+//			selectedElements = new HashSet<>();
+//			logSelectedElementsChange("initialized in setOptionsAndValue");
+//		}
+//		// DO NOT clear selectedElements here! We want to preserve any existing values
+//
+//		validOptionKeys = new HashSet<>();
+//		validOptionKeys.clear();
+//		validOptionKeys.addAll(optionsValue.keySet());
+//
+//		initializeContainers();
+//		removeAllItems();
+//
+//		int index = 0;
+//		for (Map.Entry<String, String> entry : optionsValue.entrySet()) {
+//			String key = entry.getKey();
+//			String value = entry.getValue();
+//			// Create checkbox with pre-selection
+//			boolean shouldBeChecked = valuesToSet.contains(key);
+//			addItemWithPreSelection(key, index, value, shouldBeChecked);
+//			index++;
+//		}
+//		optionsSet = true;
+//
+//		// Make sure selectedElements matches what we just set
+//		selectedElements.clear();
+//		selectedElements.addAll(valuesToSet);
+//
+//		System.out.println("DEBUG setOptionsAndValue - Final selectedElements: " + selectedElements);
+//
+//		if (pendingValue != null) {
+//			System.out.println("Applying pending value after options set: " + pendingValue);
+//			applyValueToCheckboxes(pendingValue);
+//			pendingValue = null;
+//		}
+//	}
 
 	private void addItemWithPreSelection(String key, int index, String displayText, boolean shouldBeChecked) {
 		// ALWAYS initialize if null
@@ -865,5 +865,143 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 
 	private void logSelectedElementsChange(String operation) {
 		System.out.println("DEBUG selectedElements " + operation + " - size: " + getSelectedElementsSize() + ", elements: " + getSelectedElements());
+	}
+
+//	public void initializeWithOptionsAndValue(Map<String, String> options, Object value) {
+//		setOptionsAndValue(options, value);
+//	}
+
+	public void setOptionsAndValue(Map<String, String> optionsValue, Object fieldValue) {
+		System.out.println("DEBUG setOptionsAndValue called with options: " +
+				(optionsValue != null ? optionsValue.size() : 0) +
+				", value: " + fieldValue);
+
+		// Initialize selectedElements if null
+		if (selectedElements == null) {
+			selectedElements = new HashSet<>();
+			logSelectedElementsChange("initialized in setOptionsAndValue");
+		}
+
+		// Parse the fieldValue
+		List<String> valuesToSet = new ArrayList<>();
+		if (fieldValue instanceof List) {
+			List<?> valueList = (List<?>) fieldValue;
+			for (Object element : valueList) {
+				if (element != null) {
+					valuesToSet.add(element.toString().trim());
+				}
+			}
+		} else if (fieldValue instanceof Set) {
+			Set<?> valueSet = (Set<?>) fieldValue;
+			for (Object element : valueSet) {
+				if (element != null) {
+					valuesToSet.add(element.toString().trim());
+				}
+			}
+		} else if (fieldValue != null) {
+			// Handle single string value
+			String strValue = fieldValue.toString().trim();
+			if (!strValue.isEmpty()) {
+				if (strValue.startsWith("[") && strValue.endsWith("]")) {
+					strValue = strValue.substring(1, strValue.length() - 1);
+				}
+				String[] parts = strValue.split("\\s*,\\s*");
+				for (String part : parts) {
+					if (!part.trim().isEmpty()) {
+						valuesToSet.add(part.trim());
+					}
+				}
+			}
+		}
+
+		System.out.println("DEBUG setOptionsAndValue - Parsed values: " + valuesToSet);
+
+		// Store valid option keys
+		validOptionKeys = new HashSet<>();
+		if (optionsValue != null) {
+			validOptionKeys.addAll(optionsValue.keySet());
+		}
+
+		// Initialize containers
+		initializeContainers();
+
+		// Clear existing items
+		removeAllItems();
+
+		// Clear current selections (but we'll rebuild from valuesToSet)
+		selectedElements.clear();
+
+		// Create checkboxes with proper selection
+		if (optionsValue != null) {
+			int index = 0;
+			for (Map.Entry<String, String> entry : optionsValue.entrySet()) {
+				String key = entry.getKey();
+				String displayText = entry.getValue();
+
+				// Check if this should be selected
+				boolean shouldBeChecked = valuesToSet.contains(key);
+
+				// Create checkbox with pre-selection
+				addItemWithPreSelection(key, index, displayText, shouldBeChecked);
+
+				// Update selectedElements
+				if (shouldBeChecked) {
+					selectedElements.add(key);
+				}
+
+				index++;
+			}
+		}
+
+		optionsSet = true;
+		pendingValue = null; // Clear any pending value
+
+		System.out.println("DEBUG setOptionsAndValue - Final selectedElements: " + selectedElements);
+	}
+
+	@BindingAdapter(value = {
+			"options",
+			"value",
+			"enumClass"
+	})
+	public static void setOptionsAndValue(ControlCheckBoxGroupField view,
+										  Map<String, String> options,
+										  Object value,
+										  Class enumClass) {
+
+		System.out.println("BindingAdapter - options: " +
+				(options != null ? options.size() : "null") +
+				", value: " + value +
+				", enumClass: " + enumClass);
+
+		// Handle enum class first if provided
+		if (enumClass != null) {
+			view.setEnumClass((Class<? extends Enum>) enumClass);
+			// If enumClass is set, it will create its own options
+			// So we should set the value after
+			if (value != null) {
+				view.setFieldValue(value);
+			}
+		}
+		// If options are provided directly
+		else if (options != null) {
+			// Use the combined method
+			view.setOptionsAndValue(options, value);
+		}
+		// If only value is provided (options already set)
+		else if (value != null) {
+			view.setFieldValue(value);
+		}
+	}
+
+	@BindingAdapter({"options", "value"})
+	public static void setOptionsAndValueSimple(ControlCheckBoxGroupField view,
+												Map<String, String> options,
+												Object value) {
+		view.setOptionsAndValue(options, value);
+	}
+
+	public void initializeWithOptionsAndValue(Map<String, String> options, Object value) {
+		setOptionsAndValue(options, value);
 	}
 }

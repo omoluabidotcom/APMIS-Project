@@ -14,6 +14,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,6 +106,7 @@ import de.symeda.sormas.api.campaign.form.CampaignFormElementStyle;
 import de.symeda.sormas.api.campaign.form.CampaignFormElementOptions;
 import de.symeda.sormas.api.campaign.form.CampaignFormElementType;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
+import de.symeda.sormas.api.campaign.form.CampaignFormMetaExpiryDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
 import de.symeda.sormas.api.campaign.form.DialingCodeDto;
@@ -195,10 +197,15 @@ public class CampaignFormBuilder extends VerticalLayout {
 	private int min = 0;
 	private int max = 0;
 
+	private CampaignDto campaignDto;
+	CampaignFormMetaExpiryDto expiryDto;
+
+	DateTimeFormatter dateformatter = DateTimeFormatter.ofPattern("dd-MM-uuuu").withResolverStyle(ResolverStyle.STRICT);
+
 	public CampaignFormBuilder(List<CampaignFormElement> formElements, List<CampaignFormDataEntry> formValues,
 			CampaignReferenceDto campaignReferenceDto, List<CampaignFormTranslations> translations, String formName,
 			CampaignFormMetaReferenceDto campaignFormMetaUUID, boolean openData, String uuidForm,
-			boolean isDistrictEntry) {
+			boolean isDistrictEntry, CampaignDto campaignDto, CampaignFormMetaExpiryDto expiryDto) {
 
 		logger.debug("+++++++++++CampaignFormBuilder+++++: " + openData);
 
@@ -208,6 +215,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 		this.campaignReferenceDto = campaignReferenceDto;
 		this.campaignFormMeta = campaignFormMetaUUID;
 		this.isDistrictEntry = isDistrictEntry;
+		this.campaignDto = campaignDto;
+		this.expiryDto = expiryDto;
 		this.formName = formName;
 		if (formValues != null) {
 			this.formValuesMap = new HashMap<>();
@@ -251,16 +260,23 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		formDate.setLabel(I18nProperties.getCaption(Captions.CampaignFormData_formDate));
 		LocalDate today = LocalDate.now();
-		
+
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 		String formattedDate = today.format(formatter);
 
-		
 		formDate.setValue(formattedDate);
 		formDate.setRequired(true);
-		formDate.setId("my-disabled-textfield");
+//		formDate.setId("my-disabled-textfield");
 		formDate.getStyle().set("-webkit-text-fill-color", "green !important");
+		
+		formDate.setErrorMessage(""); // Initialize error message
+		formDate.setInvalid(false); 
 
+		formDate.addValueChangeListener(e -> {
+			
+			System.out.println(validateTextInputFormDate(e.getValue()) + "validateTextInputFormDate(e.getValue())validateTextInputFormDate(e.getValue())");
+			validateTextInputFormDate(e.getValue());
+			});
 
 		//
 
@@ -270,49 +286,45 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		cbArea = new ComboBox<>(I18nProperties.getCaption(Captions.area));
 		cbArea.setRequired(true);
-ArrayList<String> areaNamesExtract = new ArrayList<String>();
-List<AreaReferenceDto> areaNamesExtractFinal = new ArrayList<>();
-List<AreaReferenceDto> selectedAreas = FacadeProvider.getAreaFacade()
-.getAllSelectedAreasByFormUuidAndLocale(
-    campaignFormMetaUUID.getUuid(), 
-    userProvider.getUser().getLanguage().toString()
-);
+		ArrayList<String> areaNamesExtract = new ArrayList<String>();
+		List<AreaReferenceDto> areaNamesExtractFinal = new ArrayList<>();
+		List<AreaReferenceDto> selectedAreas = FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(
+				campaignFormMetaUUID.getUuid(), userProvider.getUser().getLanguage().toString());
 
+		System.out.println("222dtodtodtodtodtodtodtodtodtodtodtodtodtodto------------------------"
+				+ FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(),
+						userProvider.getUser().getLanguage().toString()).size());
 
+		if (FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(),
+				userProvider.getUser().getLanguage().toString()).size() > 0) {
 
-System.out.println("222dtodtodtodtodtodtodtodtodtodtodtodtodtodto------------------------" + FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), userProvider.getUser().getLanguage().toString()).size());
+			if (!selectedAreas.isEmpty()) {
+				String lang = userProvider.getUser().getLanguage().toString();
 
-		if(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), userProvider.getUser().getLanguage().toString()).size() > 0) {
- 
-if (!selectedAreas.isEmpty()) {
-    String lang = userProvider.getUser().getLanguage().toString();
+				if (lang.equals("Pashto")) {
+					cbArea.setItems(FacadeProvider.getAreaFacade()
+							.getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Pashto"));
+				} else if (lang.equals("Dari")) {
+					cbArea.setItems(FacadeProvider.getAreaFacade()
+							.getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Dari"));
+				} else {
+					// English or default
+					for (AreaReferenceDto dto : FacadeProvider.getAreaFacade()
+							.getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "English")) {
+						areaNamesExtract.add(dto.getCaption());
+					}
 
-    if (lang.equals("Pashto")) {
-        cbArea.setItems(FacadeProvider.getAreaFacade()
-            .getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Pashto"));
-    } else if (lang.equals("Dari")) {
-        cbArea.setItems(FacadeProvider.getAreaFacade()
-            .getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Dari"));
-    } else {
-        // English or default
-        for (AreaReferenceDto dto : FacadeProvider.getAreaFacade()
-                .getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "English")) {
-            areaNamesExtract.add(dto.getCaption());
-        }
+					for (String name : areaNamesExtract) {
+						areaNamesExtractFinal.addAll(FacadeProvider.getAreaFacade().getByName(name, false));
+					}
 
-        for (String name : areaNamesExtract) {
-            areaNamesExtractFinal.addAll(FacadeProvider.getAreaFacade().getByName(name, false));
-        }
+					cbArea.setItems(areaNamesExtractFinal);
+				}
+			}
 
-        cbArea.setItems(areaNamesExtractFinal);
-    }
-}
-		
-		
-		
-		}else {
+		} else {
 			cbArea.setItems(new ArrayList<AreaReferenceDto>());
-	
+
 		}
 		cbArea.setId("my-disabled-textfield");
 		cbArea.getStyle().set("-webkit-text-fill-color", "green !important");
@@ -631,7 +643,7 @@ if (!selectedAreas.isEmpty()) {
 		}
 
 		if (uuidForm != null) {
-			
+
 			if (userProvider.hasUserRight(UserRight.REASSIGN_CAMPAIGN_FORM_DATA_CLUSTER)) {
 //			if (currentUser.getUserRoles().contains(UserRole.ADMIN)
 //					|| currentUser.getUserRoles().contains(UserRole.COMMUNITY_INFORMANT)) {
@@ -832,1028 +844,1058 @@ if (!selectedAreas.isEmpty()) {
 
 		int accrd_count = 0;
 
+		Date formEndDate = FacadeProvider.getCampaignFormMetaWithExpFacade()
+				.getFormExpiryByCampaignAndFormUuid(campaignDto.getUuid(), campaignFormMeta.getUuid());
+
 		for (CampaignFormElement formElement : formElements) {
-			
-			if(formElement.getType() != null) {
-			CampaignFormElementOptions campaignFormElementOptions = new CampaignFormElementOptions();
-			CampaignFormElementType type = CampaignFormElementType.fromString(formElement.getType());
-			String fieldId = formElement.getId();
-			List<CampaignFormElementStyle> styles;
-			if (formElement.getStyles() != null) {
-				styles = Arrays.stream(formElement.getStyles()).map(CampaignFormElementStyle::fromString)
-						.collect(Collectors.toList());
-			} else {
-				styles = new ArrayList<>();
-			}
 
-			if (formElement.getOptions() != null) {
-				campaignFormElementOptions = new CampaignFormElementOptions();
-
-				optionsValues = formElement.getOptions().stream()
-						.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));
-
-				if (userLocale != null) {
-					if (translationsOpt != null) {
-						translationsOpt.stream().filter(t -> t.getLanguageCode().equals(userLocale.toString()))
-								.findFirst()
-								.ifPresent(filteredTranslations -> filteredTranslations.getTranslations().stream()
-										.filter(cd -> cd.getElementId().equals(formElement.getId())).findFirst()
-										.ifPresent(optionsList -> {
-											if (optionsList.getOptions() != null) {
-												userOptTranslations = optionsList.getOptions().stream()
-														.filter(c -> c != null && c.getCaption() != null)
-														.collect(Collectors.toMap(MapperUtil::getKey,
-																MapperUtil::getCaption));
-											}
-										}));
-					}
-				}
-
-				if (userOptTranslations.size() == 0) {
-					campaignFormElementOptions.setOptionsListValues(optionsValues);
-					// get18nOptCaption(formElement.getId(), optionsValues));
+			if (formElement.getType() != null) {
+				CampaignFormElementOptions campaignFormElementOptions = new CampaignFormElementOptions();
+				CampaignFormElementType type = CampaignFormElementType.fromString(formElement.getType());
+				String fieldId = formElement.getId();
+				List<CampaignFormElementStyle> styles;
+				if (formElement.getStyles() != null) {
+					styles = Arrays.stream(formElement.getStyles()).map(CampaignFormElementStyle::fromString)
+							.collect(Collectors.toList());
 				} else {
-					campaignFormElementOptions.setOptionsListValues(userOptTranslations);
+					styles = new ArrayList<>();
 				}
 
-			} else {
-				optionsValues = new LinkedHashMap<String, String>();
-			}
+				if (formElement.getOptions() != null) {
+					campaignFormElementOptions = new CampaignFormElementOptions();
 
-			if (formElement.getConstraints() != null) {
-				campaignFormElementOptions = new CampaignFormElementOptions();
-				constraints = (List<String>) Arrays.stream(formElement.getConstraints()).collect(Collectors.toList());
-				ListIterator<String> lstItemsx = constraints.listIterator();
-				int i = 1;
-				while (lstItemsx.hasNext()) {
-					String lss = lstItemsx.next().toString();
-					if (lss.toLowerCase().contains("max")) {
-						campaignFormElementOptions.setMax(Integer.parseInt(lss.substring(lss.lastIndexOf("=") + 1)));
-					} else if (lss.toLowerCase().contains("min")) {
-						campaignFormElementOptions.setMin(Integer.parseInt(lss.substring(lss.lastIndexOf("=") + 1)));
-					} else if (lss.toLowerCase().contains("expression")) {
-						campaignFormElementOptions.setExpression(true);
+					optionsValues = formElement.getOptions().stream()
+							.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));
+
+					if (userLocale != null) {
+						if (translationsOpt != null) {
+							translationsOpt.stream().filter(t -> t.getLanguageCode().equals(userLocale.toString()))
+									.findFirst()
+									.ifPresent(filteredTranslations -> filteredTranslations.getTranslations().stream()
+											.filter(cd -> cd.getElementId().equals(formElement.getId())).findFirst()
+											.ifPresent(optionsList -> {
+												if (optionsList.getOptions() != null) {
+													userOptTranslations = optionsList.getOptions().stream()
+															.filter(c -> c != null && c.getCaption() != null)
+															.collect(Collectors.toMap(MapperUtil::getKey,
+																	MapperUtil::getCaption));
+												}
+											}));
+						}
 					}
+
+					if (userOptTranslations.size() == 0) {
+						campaignFormElementOptions.setOptionsListValues(optionsValues);
+						// get18nOptCaption(formElement.getId(), optionsValues));
+					} else {
+						campaignFormElementOptions.setOptionsListValues(userOptTranslations);
+					}
+
+				} else {
+					optionsValues = new LinkedHashMap<String, String>();
 				}
 
-			}
-			// input:checked
-
-			String dependingOnId = formElement.getDependingOn();
-			Object[] dependingOnValues = formElement.getDependingOnValues();
-
-			Object value = formValuesMap.get(formElement.getId());
-
-			int occupiedColumns = getOccupiedColumns(type, styles);
-
-			final HashMap<String, String> data = (HashMap<String, String>) campaignFormElementOptions
-					.getOptionsListValues();
-
-			if (type == CampaignFormElementType.DAYWISE) {
-				accrd_count++;
-				if (accrd_count > 1) {
-
-					final FormLayout layout = new FormLayout(vertical);
-					// layout.addComponent(label);
-					int temp = accrd_count;
-					temp = temp - 1;
-					layout.setClassName("daywise_background_" + temp); // .addStyleName(dependingOnId); sormas
-																		// background: green
-					accrd.add(get18nCaption(formElement.getId(), formElement.getCaption()), layout);
-
-					vertical = new FormLayout();
-					vertical.setSizeFull();
-					vertical.setWidthFull();
-					vertical.setHeightFull();
+				if (formElement.getConstraints() != null) {
+					campaignFormElementOptions = new CampaignFormElementOptions();
+					constraints = (List<String>) Arrays.stream(formElement.getConstraints())
+							.collect(Collectors.toList());
+					ListIterator<String> lstItemsx = constraints.listIterator();
+					int i = 1;
+					while (lstItemsx.hasNext()) {
+						String lss = lstItemsx.next().toString();
+						if (lss.toLowerCase().contains("max")) {
+							campaignFormElementOptions
+									.setMax(Integer.parseInt(lss.substring(lss.lastIndexOf("=") + 1)));
+						} else if (lss.toLowerCase().contains("min")) {
+							campaignFormElementOptions
+									.setMin(Integer.parseInt(lss.substring(lss.lastIndexOf("=") + 1)));
+						} else if (lss.toLowerCase().contains("expression")) {
+							campaignFormElementOptions.setExpression(true);
+						}
+					}
 
 				}
-			} else if (type == CampaignFormElementType.SECTION) {
-				sectionCount++;
+				// input:checked
 
-				vertical.setId("formSectionId-" + sectionCount);
+				String dependingOnId = formElement.getDependingOn();
+				Object[] dependingOnValues = formElement.getDependingOnValues();
 
-			} else if (type == CampaignFormElementType.LABEL) {
+				Object value = formValuesMap.get(formElement.getId());
 
-				Label labx = new Label();
-				labx.getElement().setProperty("innerHTML", get18nCaption(formElement.getId(),
-						get18nCaption(formElement.getId(), formElement.getCaption())));
-				labx.setId(formElement.getId());
+				int occupiedColumns = getOccupiedColumns(type, styles);
 
-				VerticalLayout labelLayout = new VerticalLayout();
+				final HashMap<String, String> data = (HashMap<String, String>) campaignFormElementOptions
+						.getOptionsListValues();
 
-				labelLayout.add(labx);
-				vertical.setColspan(labelLayout, 3);
-				vertical.add(labelLayout);
-				if (dependingOnId != null && dependingOnValues != null) {
-					// needed
-					setVisibilityDependency(labx, dependingOnId, dependingOnValues, type, false);
-				}
-			} else if (type == CampaignFormElementType.LINEBREAK) {
-				Paragraph newLine = new Paragraph();
-				newLine.setId("pageBreak");
+				if (type == CampaignFormElementType.DAYWISE) {
+					accrd_count++;
+					if (accrd_count > 1) {
+
+						final FormLayout layout = new FormLayout(vertical);
+						// layout.addComponent(label);
+						int temp = accrd_count;
+						temp = temp - 1;
+						layout.setClassName("daywise_background_" + temp); // .addStyleName(dependingOnId); sormas
+																			// background: green
+						accrd.add(get18nCaption(formElement.getId(), formElement.getCaption()), layout);
+
+						vertical = new FormLayout();
+						vertical.setSizeFull();
+						vertical.setWidthFull();
+						vertical.setHeightFull();
+
+					}
+				} else if (type == CampaignFormElementType.SECTION) {
+					sectionCount++;
+
+					vertical.setId("formSectionId-" + sectionCount);
+
+				} else if (type == CampaignFormElementType.LABEL) {
+
+					Label labx = new Label();
+					labx.getElement().setProperty("innerHTML", get18nCaption(formElement.getId(),
+							get18nCaption(formElement.getId(), formElement.getCaption())));
+					labx.setId(formElement.getId());
+
+					VerticalLayout labelLayout = new VerticalLayout();
+
+					labelLayout.add(labx);
+					vertical.setColspan(labelLayout, 3);
+					vertical.add(labelLayout);
+					if (dependingOnId != null && dependingOnValues != null) {
+						// needed
+						setVisibilityDependency(labx, dependingOnId, dependingOnValues, type, false);
+					}
+				} else if (type == CampaignFormElementType.LINEBREAK) {
+					Paragraph newLine = new Paragraph();
+					newLine.setId("pageBreak");
 //				newLine.getStyle().set("width", "100% !important");
-				vertical.setColspan(newLine, 3);
-				vertical.add(newLine);
+					vertical.setColspan(newLine, 3);
+					vertical.add(newLine);
 
-			} else {
-				CampaignFormElementOptions constrainsVal = new CampaignFormElementOptions();
-				boolean fieldIsRequired = formElement.isImportant();
+				} else {
+					CampaignFormElementOptions constrainsVal = new CampaignFormElementOptions();
+					boolean fieldIsRequired = formElement.isImportant();
 
-				if (type == CampaignFormElementType.YES_NO) {
+					if (type == CampaignFormElementType.YES_NO) {
 
 //					HashMap<Boolean, String> map = new HashMap<>();
 //					map.put(true, I18nProperties.getCaption(Captions.actionYes));
 //					map.put(false, I18nProperties.getCaption(Captions.actionNo));
 
-					ToggleButtonGroup<Boolean> toggle = new ToggleButtonGroup<>(
-							get18nCaption(formElement.getId(), formElement.getCaption()), List.of(true, false));
-					toggle.setId(formElement.getId());
+						ToggleButtonGroup<Boolean> toggle = new ToggleButtonGroup<>(
+								get18nCaption(formElement.getId(), formElement.getCaption()), List.of(true, false));
+						toggle.setId(formElement.getId());
 
-					toggle.setClassName("customTextWrap");
+						toggle.setClassName("customTextWrap");
 
-					HashMap<Boolean, String> map = new HashMap<>();
-					map.put(true, "Yes");
-					map.put(false, "No");
+						HashMap<Boolean, String> map = new HashMap<>();
+						map.put(true, "Yes");
+						map.put(false, "No");
 
-					HashMap<Boolean, String> mapPashto = new HashMap<>();
-					mapPashto.put(true, "هو");
-					mapPashto.put(false, "نه");
+						HashMap<Boolean, String> mapPashto = new HashMap<>();
+						mapPashto.put(true, "هو");
+						mapPashto.put(false, "نه");
 
-					HashMap<Boolean, String> mapDari = new HashMap<>();
-					mapDari.put(true, "آره");
-					mapDari.put(false, "خیر");
+						HashMap<Boolean, String> mapDari = new HashMap<>();
+						mapDari.put(true, "آره");
+						mapDari.put(false, "خیر");
 
-					toggle.setItemLabelGenerator(item -> {
-						switch (currentUser.getUser().getLanguage().toString()) {
-						case "Pashto":
-							return mapPashto.get(item);
-						case "Dari":
-							return mapDari.get(item);
-						default:
-							return map.get(item);
-						}
-					});
+						toggle.setItemLabelGenerator(item -> {
+							switch (currentUser.getUser().getLanguage().toString()) {
+							case "Pashto":
+								return mapPashto.get(item);
+							case "Dari":
+								return mapDari.get(item);
+							default:
+								return map.get(item);
+							}
+						});
 
 //					toggle.setItemLabelGenerator(item -> map.get(item));
-					toggle.getStyle().set("color", "Green");
-					toggle.getStyle().set("background", "white");
+						toggle.getStyle().set("color", "Green");
+						toggle.getStyle().set("background", "white");
 
-					setFieldValue(toggle, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
+						setFieldValue(toggle, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 
-					vertical.add(toggle);
-					fields.put(formElement.getId(), toggle);
+						vertical.add(toggle);
+						fields.put(formElement.getId(), toggle);
 //					System.out.println(dependingOnId + "dependingOnId11111111111111111111111 " + dependingOnValues);
 
-					if (dependingOnId != null && dependingOnValues != null) {
+						if (dependingOnId != null && dependingOnValues != null) {
 
 //						System.out.println(dependingOnId + "dependingOnId 2222222222222222" + dependingOnValues
 //								+ "tttttt" + formElement.isImportant());
-						// needed
-						setVisibilityDependency(toggle, dependingOnId, dependingOnValues, type,
-								formElement.isImportant());
-					} else {
-						toggle.setRequiredIndicatorVisible(formElement.isImportant());
-					}
-
-				} else if (type == CampaignFormElementType.TEXT) {
-					TextField textField = new TextField();
-					textField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-					textField.setClassName("customTextWrap");
-
-					// textField.setValue("Ruukinkatu 2");
-					textField.setClearButtonVisible(true);
-					textField.setPrefixComponent(VaadinIcon.PENCIL.create());
-					textField.setId(formElement.getId());
-					textField.setSizeFull();
-					//
-					setFieldValue(textField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
-					vertical.add(textField);
-					fields.put(formElement.getId(), textField);
-
-					if (fieldId.equalsIgnoreCase("eTazkiraNo")) {
-
-						System.out.println("Tazkira Number Found -------------------");
-
-						// Add validation for Tazkira Number
-						textField.setAllowedCharPattern("[0-9-]"); // Allow only digits and hyphens
-
-						// Check for existing value - use the value passed to the method
-						if (value != null && !value.toString().isEmpty()) {
-							System.out.println("Tazkira Number Found -----------------c--" + value.toString().length());
-							try {
-
-								String existingValue = value.toString().replace("-", "");
-								if (existingValue.length() == 13) {
-									String formattedDisplay = existingValue.substring(0, 4) + "-"
-											+ existingValue.substring(4, 8) + "-" + existingValue.substring(8);
-
-									setFieldValue(textField, type, formattedDisplay, optionsValues,
-											formElement.getDefaultvalue(), false, null);
-
-								}
-							} catch (Exception ex) {
-								logger.error("Error formatting existing Tazkiraxx: " + ex.getMessage());
-							}
+							// needed
+							setVisibilityDependency(toggle, dependingOnId, dependingOnValues, type,
+									formElement.isImportant());
+						} else {
+							toggle.setRequiredIndicatorVisible(formElement.isImportant());
 						}
 
- 
-						// Add listener for new input
-						textField.addValueChangeListener(e -> {
-							textField.addInputListener(ex -> {
-								System.out.println("textField.getValue().toString().length();------"
-										+ textField.getValue().toString().length());
-//				        		textField.getValue().toString().length();
-							});
-							try {
-								if (e.getValue() != null) {
-									String inputValue = e.getValue().toString();
-									// Remove any existing formatting
-									String cleanInput = inputValue.replace("-", "").replace(".", "");
-									System.out.println("Value changed ===");
-									if (e.getValue().length() == 13) {
+					} else if (type == CampaignFormElementType.TEXT) {
+						TextField textField = new TextField();
+						textField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+						textField.setClassName("customTextWrap");
 
-										System.out.println("Value now 13 changed ===");
+						// textField.setValue("Ruukinkatu 2");
+						textField.setClearButtonVisible(true);
+						textField.setPrefixComponent(VaadinIcon.PENCIL.create());
+						textField.setId(formElement.getId());
+						textField.setSizeFull();
+						//
+						setFieldValue(textField, type, value, optionsValues, formElement.getDefaultvalue(), false,
+								null);
+						vertical.add(textField);
+						fields.put(formElement.getId(), textField);
 
-										// Format properly and store only the numeric value to avoid double formatting
-										String formattedExample = cleanInput.substring(0, 4) + "-"
-												+ cleanInput.substring(4, 8) + "-" + cleanInput.substring(8);
-//				                        textField.setHelperText("/alid E-Tazkira formatc: " + formattedExample);
+						if (fieldId.equalsIgnoreCase("eTazkiraNo")) {
 
-										setFieldValue(textField, type, formattedExample, optionsValues,
+							System.out.println("Tazkira Number Found -------------------");
+
+							// Add validation for Tazkira Number
+							textField.setAllowedCharPattern("[0-9-]"); // Allow only digits and hyphens
+
+							// Check for existing value - use the value passed to the method
+							if (value != null && !value.toString().isEmpty()) {
+								System.out.println(
+										"Tazkira Number Found -----------------c--" + value.toString().length());
+								try {
+
+									String existingValue = value.toString().replace("-", "");
+									if (existingValue.length() == 13) {
+										String formattedDisplay = existingValue.substring(0, 4) + "-"
+												+ existingValue.substring(4, 8) + "-" + existingValue.substring(8);
+
+										setFieldValue(textField, type, formattedDisplay, optionsValues,
 												formElement.getDefaultvalue(), false, null);
 
-									} else if (!inputValue.isEmpty()) {
-										// Show warning if not empty and not 13 digits
-//				                    	textField.setHelperText("E-Tazkira should be 13 digits in format: 0000-0000-00000");
 									}
+								} catch (Exception ex) {
+									logger.error("Error formatting existing Tazkiraxx: " + ex.getMessage());
 								}
-							} catch (Exception ex) {
-								logger.error("Error in Tazkira value change: " + ex.getMessage());
 							}
-						});
-					}
 
-					if (dependingOnId != null && dependingOnValues != null) {
-						// needed
-						setVisibilityDependency(textField, dependingOnId, dependingOnValues, type,
-								formElement.isImportant());
-					} else {
-						textField.setRequiredIndicatorVisible(formElement.isImportant());
-					}
+							// Add listener for new input
+							textField.addValueChangeListener(e -> {
+								textField.addInputListener(ex -> {
+									System.out.println("textField.getValue().toString().length();------"
+											+ textField.getValue().toString().length());
+//				        		textField.getValue().toString().length();
+								});
+								try {
+									if (e.getValue() != null) {
+										String inputValue = e.getValue().toString();
+										// Remove any existing formatting
+										String cleanInput = inputValue.replace("-", "").replace(".", "");
+										System.out.println("Value changed ===");
+										if (e.getValue().length() == 13) {
 
-				} else if (type == CampaignFormElementType.NUMBER) {
-					NumberField numberField = new NumberField();
-					numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-					numberField.setClassName("customTextWrap");
-					numberField.setMin(0);
-					numberField.setId(formElement.getId());
-					numberField.setSizeFull();
- 
-					numberField.setAllowedCharPattern("[0-9.]*"); // allow digits and one decimal point
+											System.out.println("Value now 13 changed ===");
+
+											// Format properly and store only the numeric value to avoid double
+											// formatting
+											String formattedExample = cleanInput.substring(0, 4) + "-"
+													+ cleanInput.substring(4, 8) + "-" + cleanInput.substring(8);
+//				                        textField.setHelperText("/alid E-Tazkira formatc: " + formattedExample);
+
+											setFieldValue(textField, type, formattedExample, optionsValues,
+													formElement.getDefaultvalue(), false, null);
+
+										} else if (!inputValue.isEmpty()) {
+											// Show warning if not empty and not 13 digits
+//				                    	textField.setHelperText("E-Tazkira should be 13 digits in format: 0000-0000-00000");
+										}
+									}
+								} catch (Exception ex) {
+									logger.error("Error in Tazkira value change: " + ex.getMessage());
+								}
+							});
+						}
+
+						if (dependingOnId != null && dependingOnValues != null) {
+							// needed
+							setVisibilityDependency(textField, dependingOnId, dependingOnValues, type,
+									formElement.isImportant());
+						} else {
+							textField.setRequiredIndicatorVisible(formElement.isImportant());
+						}
+
+					} else if (type == CampaignFormElementType.NUMBER) {
+						NumberField numberField = new NumberField();
+						numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+						numberField.setClassName("customTextWrap");
+						numberField.setMin(0);
+						numberField.setId(formElement.getId());
+						numberField.setSizeFull();
+
+						numberField.setAllowedCharPattern("[0-9.]*"); // allow digits and one decimal point
 
 //					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 //					vertical.add(numberField);
 //					fields.put(formElement.getId(), numberField);
 
-					// Binder<String> binder = new Binder<>(String.class);
+						// Binder<String> binder = new Binder<>(String.class);
 
-					if (fieldId.equalsIgnoreCase("Villagecode")) {
-						numberField.setAllowedCharPattern("(?!.*000$).*");
+						if (fieldId.equalsIgnoreCase("Villagecode")) {
+							numberField.setAllowedCharPattern("(?!.*000$).*");
 //								 new RegexpValidator("(?!.*000$).*", I18nProperties.getValidationError(
 //											errormsg == null ? caption + ": " + Validations.onlyDecimalNumbersAllowed : errormsg, caption) ));
 
-						numberField.addValueChangeListener(e -> {
+							numberField.addValueChangeListener(e -> {
 
-							String inputValue = e.getValue() != null ? e.getValue().toString() : "";
+								String inputValue = e.getValue() != null ? e.getValue().toString() : "";
 
-							if (e.getValue() != null && e.getValue().toString().length() == 3) {
-								String result = inputValue.substring(0, 1);
-								logger.debug(result + " resultrrrr lento " + e.getValue().toString().length()
-										+ "ttt11111111111" + inputValue + " tttttttttttttttttt" + result.length());
+								if (e.getValue() != null && e.getValue().toString().length() == 3) {
+									String result = inputValue.substring(0, 1);
+									logger.debug(result + " resultrrrr lento " + e.getValue().toString().length()
+											+ "ttt11111111111" + inputValue + " tttttttttttttttttt" + result.length());
 
-								// Checking the finl length of the trimmd val
-								int length = result.length();
-								if (length == 1 && VaadinService.getCurrentRequest().getWrappedSession()
-										.getAttribute("Clusternumber") != null) {
+									// Checking the finl length of the trimmd val
+									int length = result.length();
+									if (length == 1 && VaadinService.getCurrentRequest().getWrappedSession()
+											.getAttribute("Clusternumber") != null) {
 
-									String cCodeLengthCheck = VaadinService.getCurrentRequest().getWrappedSession()
-											.getAttribute("Clusternumber").toString();
+										String cCodeLengthCheck = VaadinService.getCurrentRequest().getWrappedSession()
+												.getAttribute("Clusternumber").toString();
 
-									int ccodeCheckLength = cCodeLengthCheck.length();
-									if (ccodeCheckLength == 6) {
-										result = VaadinService.getCurrentRequest().getWrappedSession()
-												.getAttribute("Clusternumber") + "000" + result;
-									} else if (ccodeCheckLength == 7) {
-										result = VaadinService.getCurrentRequest().getWrappedSession()
-												.getAttribute("Clusternumber") + "00" + result;
-									}
+										int ccodeCheckLength = cCodeLengthCheck.length();
+										if (ccodeCheckLength == 6) {
+											result = VaadinService.getCurrentRequest().getWrappedSession()
+													.getAttribute("Clusternumber") + "000" + result;
+										} else if (ccodeCheckLength == 7) {
+											result = VaadinService.getCurrentRequest().getWrappedSession()
+													.getAttribute("Clusternumber") + "00" + result;
+										}
 
-									// Prefix "00" for single-digit numbers
+										// Prefix "00" for single-digit numbers
 
-									logger.debug(result + " resultrrrr lento ttt222222222222tttttttttttttttttt"
-											+ result.length());
+										logger.debug(result + " resultrrrr lento ttt222222222222tttttttttttttttttt"
+												+ result.length());
 
-								}
-
-								numberField.setValue(Double.parseDouble(result));
-
-							}
-							if (e.getValue() != null && e.getValue().toString().length() == 4) {
-								String result = inputValue.substring(0, e.getValue().toString().length() - 2);
-
-//								logger.debug(result + " result lento ttttttttttttttttttttt" + result.length() );
-
-								int length = result.length();
-								if (length == 2 && VaadinService.getCurrentRequest().getWrappedSession()
-										.getAttribute("Clusternumber") != null) {
-									// Prefix "0" for single-digit numbers
-									String cCodeLengthCheck = VaadinService.getCurrentRequest().getWrappedSession()
-											.getAttribute("Clusternumber").toString();
-
-									int ccodeCheckLength = cCodeLengthCheck.length();
-									if (ccodeCheckLength == 6) {
-										result = VaadinService.getCurrentRequest().getWrappedSession()
-												.getAttribute("Clusternumber") + "00" + result;
-									} else if (ccodeCheckLength == 7) {
-										result = VaadinService.getCurrentRequest().getWrappedSession()
-												.getAttribute("Clusternumber") + "0" + result;
-									}
-//					            	result  =VaadinService.getCurrentRequest().getWrappedSession()
-//											.getAttribute("Clusternumber") + "0" + result;
-//									logger.debug(result + " resultrrrr lento ttttttttttttttttttttt" + result.length() );
-
-								}
-
-								numberField.setValue(Double.parseDouble(result));
-
-							}
-							if (e.getValue() != null && e.getValue().toString().length() == 5) {
-//								logger.debug(e.getValue() + "lento ttttttttttttttttttttt" + e.getValue().toString().length() );
-								String result = inputValue.substring(0, e.getValue().toString().length() - 2);
-
-//								logger.debug(result + " result lento ttttttttttttttttttttt" + result.length() );
-
-//					            String trimmedValue = inputValue.replaceFirst("^0+(?!$)", "");
-								// Check the length of the trimmed value
-								int length = result.length();
-								if (length == 3 && VaadinService.getCurrentRequest().getWrappedSession()
-										.getAttribute("Clusternumber") != null) {
-									// Prefix "00" for single-digit numbers
-
-									String cCodeLengthCheck = VaadinService.getCurrentRequest().getWrappedSession()
-											.getAttribute("Clusternumber").toString();
-
-									int ccodeCheckLength = cCodeLengthCheck.length();
-									if (ccodeCheckLength == 6) {
-										result = VaadinService.getCurrentRequest().getWrappedSession()
-												.getAttribute("Clusternumber") + "0" + result;
-									} else if (ccodeCheckLength == 7) {
-										result = VaadinService.getCurrentRequest().getWrappedSession()
-												.getAttribute("Clusternumber") + result;
 									}
 
 									numberField.setValue(Double.parseDouble(result));
 
 								}
-							}
-						});
+								if (e.getValue() != null && e.getValue().toString().length() == 4) {
+									String result = inputValue.substring(0, e.getValue().toString().length() - 2);
 
-					}
+//								logger.debug(result + " result lento ttttttttttttttttttttt" + result.length() );
 
-					if (fieldId.equalsIgnoreCase("PopulationGroup_0_4")) {
+									int length = result.length();
+									if (length == 2 && VaadinService.getCurrentRequest().getWrappedSession()
+											.getAttribute("Clusternumber") != null) {
+										// Prefix "0" for single-digit numbers
+										String cCodeLengthCheck = VaadinService.getCurrentRequest().getWrappedSession()
+												.getAttribute("Clusternumber").toString();
+
+										int ccodeCheckLength = cCodeLengthCheck.length();
+										if (ccodeCheckLength == 6) {
+											result = VaadinService.getCurrentRequest().getWrappedSession()
+													.getAttribute("Clusternumber") + "00" + result;
+										} else if (ccodeCheckLength == 7) {
+											result = VaadinService.getCurrentRequest().getWrappedSession()
+													.getAttribute("Clusternumber") + "0" + result;
+										}
+//					            	result  =VaadinService.getCurrentRequest().getWrappedSession()
+//											.getAttribute("Clusternumber") + "0" + result;
+//									logger.debug(result + " resultrrrr lento ttttttttttttttttttttt" + result.length() );
+
+									}
+
+									numberField.setValue(Double.parseDouble(result));
+
+								}
+								if (e.getValue() != null && e.getValue().toString().length() == 5) {
+//								logger.debug(e.getValue() + "lento ttttttttttttttttttttt" + e.getValue().toString().length() );
+									String result = inputValue.substring(0, e.getValue().toString().length() - 2);
+
+//								logger.debug(result + " result lento ttttttttttttttttttttt" + result.length() );
+
+//					            String trimmedValue = inputValue.replaceFirst("^0+(?!$)", "");
+									// Check the length of the trimmed value
+									int length = result.length();
+									if (length == 3 && VaadinService.getCurrentRequest().getWrappedSession()
+											.getAttribute("Clusternumber") != null) {
+										// Prefix "00" for single-digit numbers
+
+										String cCodeLengthCheck = VaadinService.getCurrentRequest().getWrappedSession()
+												.getAttribute("Clusternumber").toString();
+
+										int ccodeCheckLength = cCodeLengthCheck.length();
+										if (ccodeCheckLength == 6) {
+											result = VaadinService.getCurrentRequest().getWrappedSession()
+													.getAttribute("Clusternumber") + "0" + result;
+										} else if (ccodeCheckLength == 7) {
+											result = VaadinService.getCurrentRequest().getWrappedSession()
+													.getAttribute("Clusternumber") + result;
+										}
+
+										numberField.setValue(Double.parseDouble(result));
+
+									}
+								}
+							});
+
+						}
+
+						if (fieldId.equalsIgnoreCase("PopulationGroup_0_4")) {
+
+							numberField.addValueChangeListener(e -> {
+								if (VaadinService.getCurrentRequest().getWrappedSession()
+										.getAttribute("populationdata") != null) {
+
+									final String des = VaadinService.getCurrentRequest().getWrappedSession()
+											.getAttribute("populationdata").toString();
+									numberField.setValue(Double.parseDouble(des));
+									numberField.setReadOnly(true);
+								}
+
+							});
+
+						}
+
+						if (fieldId.equalsIgnoreCase("PopulationGroup_5_10")) {
+
+							numberField.addValueChangeListener(e -> {
+								if (VaadinService.getCurrentRequest().getWrappedSession()
+										.getAttribute("populationdata") != null) {
+
+									final String des = VaadinService.getCurrentRequest().getWrappedSession()
+											.getAttribute("populationdata").toString();
+									numberField.setValue(Double.parseDouble(des));
+									numberField.setReadOnly(true);
+								}
+
+							});
+
+						}
+
+						if (dependingOnId != null && dependingOnValues != null) {
+							// needed
+							setVisibilityDependency(numberField, dependingOnId, dependingOnValues, type,
+									formElement.isImportant());
+						} else {
+							numberField.setRequiredIndicatorVisible(formElement.isImportant());
+						}
+
+						setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false,
+								null);
 
 						numberField.addValueChangeListener(e -> {
-							if (VaadinService.getCurrentRequest().getWrappedSession()
-									.getAttribute("populationdata") != null) {
-
-								final String des = VaadinService.getCurrentRequest().getWrappedSession()
-										.getAttribute("populationdata").toString();
-								numberField.setValue(Double.parseDouble(des));
-								numberField.setReadOnly(true);
-							}
-
-						});
-
-					}
-
-					if (fieldId.equalsIgnoreCase("PopulationGroup_5_10")) {
-
-						numberField.addValueChangeListener(e -> {
-							if (VaadinService.getCurrentRequest().getWrappedSession()
-									.getAttribute("populationdata") != null) {
-
-								final String des = VaadinService.getCurrentRequest().getWrappedSession()
-										.getAttribute("populationdata").toString();
-								numberField.setValue(Double.parseDouble(des));
-								numberField.setReadOnly(true);
-							}
-
-						});
-
-					}
-
-					if (dependingOnId != null && dependingOnValues != null) {
-						// needed
-						setVisibilityDependency(numberField, dependingOnId, dependingOnValues, type,
-								formElement.isImportant());
-					} else {
-						numberField.setRequiredIndicatorVisible(formElement.isImportant());
-					}
-
-					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
- 			
-					numberField.addValueChangeListener(e -> {
-				        if (e.getValue() != null && e.getValue() < 0) {
+							if (e.getValue() != null && e.getValue() < 0) {
 //				        	integerField.setValue(0.0); // Reset to 0 if negative
-				        	numberField.setInvalid(true);
-				        	numberField.setErrorMessage("Negative values are not allowed");
-				        }
-				    });
-					
- 					vertical.add(numberField);
-					fields.put(formElement.getId(), numberField);
+								numberField.setInvalid(true);
+								numberField.setErrorMessage("Negative values are not allowed");
+							}
+						});
 
-				} else if (type == CampaignFormElementType.PHONE) {
-					ComboBox<String> availableCountries = new ComboBox<String>();
-					availableCountries.setLabel("Country");
+						vertical.add(numberField);
+						fields.put(formElement.getId(), numberField);
 
-					TextField numberField = new TextField();
-					numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-					numberField.setClassName("customTextWrap");
-					numberField.setId(formElement.getId());
-					numberField.setSizeFull();
+					} else if (type == CampaignFormElementType.PHONE) {
+						ComboBox<String> availableCountries = new ComboBox<String>();
+						availableCountries.setLabel("Country");
 
-					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
-					vertical.add(availableCountries, numberField);
-					fields.put(formElement.getId(), numberField);
-					List<String> namesListx = new ArrayList<String>();
+						TextField numberField = new TextField();
+						numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+						numberField.setClassName("customTextWrap");
+						numberField.setId(formElement.getId());
+						numberField.setSizeFull();
 
-					for (DialingCodeDto dialingCodeDto : FacadeProvider.getDialingCodeFacade().getAllCountriesDto()) {
-						namesListx.add(dialingCodeDto.getCountry());
-					}
-
-					availableCountries.setItems(namesListx);
-
-					if (value == null || value.toString().isEmpty()) {
-
-						availableCountries.setValue(namesListx.get(0));
-						dialingCodeDto = FacadeProvider.getDialingCodeFacade()
-								.getCountryByCode(availableCountries.getValue());
-						numberField.setValue(FacadeProvider.getDialingCodeFacade()
-								.getCountryByCode(availableCountries.getValue()).getCode());
-					} else {
+						setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false,
+								null);
+						vertical.add(availableCountries, numberField);
+						fields.put(formElement.getId(), numberField);
+						List<String> namesListx = new ArrayList<String>();
 
 						for (DialingCodeDto dialingCodeDto : FacadeProvider.getDialingCodeFacade()
 								.getAllCountriesDto()) {
-							if (value.toString().startsWith(dialingCodeDto.getCode())) {
-								System.out.println("dialingCodeDto.getCode() " + dialingCodeDto.getCode());
-								availableCountries.setValue(dialingCodeDto.getCountry());
-								dialingCodeDto = FacadeProvider.getDialingCodeFacade()
-										.getCountryByCode(availableCountries.getValue());
-								break;
+							namesListx.add(dialingCodeDto.getCountry());
+						}
+
+						availableCountries.setItems(namesListx);
+
+						if (value == null || value.toString().isEmpty()) {
+
+							availableCountries.setValue(namesListx.get(0));
+							dialingCodeDto = FacadeProvider.getDialingCodeFacade()
+									.getCountryByCode(availableCountries.getValue());
+							numberField.setValue(FacadeProvider.getDialingCodeFacade()
+									.getCountryByCode(availableCountries.getValue()).getCode());
+						} else {
+
+							for (DialingCodeDto dialingCodeDto : FacadeProvider.getDialingCodeFacade()
+									.getAllCountriesDto()) {
+								if (value.toString().startsWith(dialingCodeDto.getCode())) {
+									System.out.println("dialingCodeDto.getCode() " + dialingCodeDto.getCode());
+									availableCountries.setValue(dialingCodeDto.getCountry());
+									dialingCodeDto = FacadeProvider.getDialingCodeFacade()
+											.getCountryByCode(availableCountries.getValue());
+									break;
+								}
 							}
+							numberField.setValue(value.toString());
 						}
-						numberField.setValue(value.toString());
-					}
 
-					min = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
-							.getMin_length() + 2;
-					max = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
-							.getMax_length() + 2;
+						min = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
+								.getMin_length() + 2;
+						max = FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
+								.getMax_length() + 2;
 
-					numberField.setHelperText("Mobile number for "
-							+ FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
-									.getCountry()
-							+ " must be between " + min + " and " + max + " digits with the country code");
-
-					numberField.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
-					numberField.setErrorMessage("Invalid");
-
-					availableCountries.addValueChangeListener(e -> {
-
-						if (numberField.getValue() != null) {
-							numberField.clear();
-						}
-						dialingCodeDto = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue());
-						int addition = dialingCodeDto.getCode().length() - 1;
-						min = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMin_length()
-								+ addition;
-						max = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMax_length()
-								+ addition;
-
-						numberField.setValue(
-								FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getCode());
-						numberField.setHelperText("Mobile number for " + dialingCodeDto.getCountry()
+						numberField.setHelperText("Mobile number for "
+								+ FacadeProvider.getDialingCodeFacade().getCountryByCode(availableCountries.getValue())
+										.getCountry()
 								+ " must be between " + min + " and " + max + " digits with the country code");
+
 						numberField.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
 						numberField.setErrorMessage("Invalid");
-					});
 
-				} else if (type == CampaignFormElementType.RANGE) {
-					IntegerField integerField = new IntegerField();
-					integerField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-					integerField.setClassName("customTextWrap");
+						availableCountries.addValueChangeListener(e -> {
+
+							if (numberField.getValue() != null) {
+								numberField.clear();
+							}
+							dialingCodeDto = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue());
+							int addition = dialingCodeDto.getCode().length() - 1;
+							min = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMin_length()
+									+ addition;
+							max = FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getMax_length()
+									+ addition;
+
+							numberField.setValue(
+									FacadeProvider.getDialingCodeFacade().getCountryByCode(e.getValue()).getCode());
+							numberField.setHelperText("Mobile number for " + dialingCodeDto.getCountry()
+									+ " must be between " + min + " and " + max + " digits with the country code");
+							numberField.setPattern("^[+]?[0-9]{" + min + "," + max + "}$");
+							numberField.setErrorMessage("Invalid");
+						});
+
+					} else if (type == CampaignFormElementType.RANGE) {
+						IntegerField integerField = new IntegerField();
+						integerField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+						integerField.setClassName("customTextWrap");
 
 //					integerField.setHelperText("Max 10 items");
-					integerField.setId(formElement.getId());
-					integerField.setStepButtonsVisible(true);
-					integerField.setSizeFull();
-					integerField.setMin(0);
- 
-					integerField.setAllowedCharPattern("[0-9.]*"); // allow digits and one decimal point
+						integerField.setId(formElement.getId());
+						integerField.setStepButtonsVisible(true);
+						integerField.setSizeFull();
+						integerField.setMin(0);
 
- 
+						integerField.setAllowedCharPattern("[0-9.]*"); // allow digits and one decimal point
 
-					setFieldValue(integerField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
+						setFieldValue(integerField, type, value, optionsValues, formElement.getDefaultvalue(), false,
+								null);
 
-					vertical.add(integerField);
-					fields.put(formElement.getId(), integerField);
+						vertical.add(integerField);
+						fields.put(formElement.getId(), integerField);
 
-					String validationMessageTag = "";
-					Map<String, Object> validationMessageArgs = new HashMap<>();
+						String validationMessageTag = "";
+						Map<String, Object> validationMessageArgs = new HashMap<>();
 
-					if (constrainsVal.isExpression()) {
+						if (constrainsVal.isExpression()) {
 
-						if (!fieldIsRequired) {
-							// ApmisNotification notification = new ApmisNotification("Application
-							// submitted!");
-						}
-
-						constrainsVal.setExpression(false);
-
-					} else {
-
-						if (constrainsVal.getMin() != null || constrainsVal.getMax() != null) {
-
-							integerField.setMin(constrainsVal.getMin());
-							integerField.setMax(constrainsVal.getMax());
-
-							if (constrainsVal.getMin() == null) {
-								validationMessageTag = Validations.numberTooBig;
-								validationMessageArgs.put("value", constrainsVal.getMax());
-							} else if (constrainsVal.getMax() == null) {
-								validationMessageTag = Validations.numberTooSmall;
-								validationMessageArgs.put("value", constrainsVal.getMin());
-							} else {
-								validationMessageTag = Validations.numberNotInRange;
-								validationMessageArgs.put("min", constrainsVal.getMin());
-								validationMessageArgs.put("max", constrainsVal.getMax());
+							if (!fieldIsRequired) {
+								// ApmisNotification notification = new ApmisNotification("Application
+								// submitted!");
 							}
 
- 
+							constrainsVal.setExpression(false);
 
 						} else {
 
+							if (constrainsVal.getMin() != null || constrainsVal.getMax() != null) {
+
+								integerField.setMin(constrainsVal.getMin());
+								integerField.setMax(constrainsVal.getMax());
+
+								if (constrainsVal.getMin() == null) {
+									validationMessageTag = Validations.numberTooBig;
+									validationMessageArgs.put("value", constrainsVal.getMax());
+								} else if (constrainsVal.getMax() == null) {
+									validationMessageTag = Validations.numberTooSmall;
+									validationMessageArgs.put("value", constrainsVal.getMin());
+								} else {
+									validationMessageTag = Validations.numberNotInRange;
+									validationMessageArgs.put("min", constrainsVal.getMin());
+									validationMessageArgs.put("max", constrainsVal.getMax());
+								}
+
+							} else {
+
+								// needed
+								// This should throw error as range suppose to have min and max if not taken
+								// care by expression
+							}
+						}
+
+						if (dependingOnId != null && dependingOnValues != null) {
 							// needed
-							// This should throw error as range suppose to have min and max if not taken
-							// care by expression
+							setVisibilityDependency(integerField, dependingOnId, dependingOnValues, type,
+									formElement.isImportant());
+						} else {
+							integerField.setRequiredIndicatorVisible(formElement.isImportant());
 						}
-					}
 
-					if (dependingOnId != null && dependingOnValues != null) {
-						// needed
-						setVisibilityDependency(integerField, dependingOnId, dependingOnValues, type,
-								formElement.isImportant());
-					} else {
-						integerField.setRequiredIndicatorVisible(formElement.isImportant());
-					}
- 
-					
-					integerField.addValueChangeListener(e -> {
-				        if (e.getValue() != null && e.getValue() < 0) {
+						integerField.addValueChangeListener(e -> {
+							if (e.getValue() != null && e.getValue() < 0) {
 //				        	integerField.setValue(0.0); // Reset to 0 if negative
-				        	integerField.setInvalid(true);
-				        	integerField.setErrorMessage("Negative values are not allowed");
-				        }
-				    });
+								integerField.setInvalid(true);
+								integerField.setErrorMessage("Negative values are not allowed");
+							}
+						});
 
-				} else if (type == CampaignFormElementType.DECIMAL) {
-					
-					NumberField numberField = new NumberField();
-				    numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-				    numberField.setClassName("customTextWrap");
-				    numberField.setWidth("240px");
-				    numberField.setId(formElement.getId());
-				    numberField.setSizeFull();
-				    numberField.setReadOnly(false);
-				    numberField.setMin(0);
-				    
-				    setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
-				    vertical.add(numberField);
-				    fields.put(formElement.getId(), numberField);
+					} else if (type == CampaignFormElementType.DECIMAL) {
 
-				    String validationMessageTag = "";
-				    Map<String, Object> validationMessageArgs = new HashMap<>();
-				  
-				    if (campaignFormElementOptions.isExpression()) {
-				        if (!fieldIsRequired) {				           
-				        }
-				        campaignFormElementOptions.setExpression(false);				       
-				    } else {				       
-				        if (campaignFormElementOptions.getMin() != null || campaignFormElementOptions.getMax() != null) {
-				            
-				            if (campaignFormElementOptions.getMin() != null) {
-				                numberField.setMin(campaignFormElementOptions.getMin().doubleValue());				               
-				            }
-				            if (campaignFormElementOptions.getMax() != null) {
-				                numberField.setMax(campaignFormElementOptions.getMax().doubleValue());				                
-				            }
-				          
-				            if (campaignFormElementOptions.getMin() == null) {
-				                validationMessageTag = Validations.numberTooBig;
-				                validationMessageArgs.put("value", campaignFormElementOptions.getMax());				                
-				            } else if (campaignFormElementOptions.getMax() == null) {
-				                validationMessageTag = Validations.numberTooSmall;
-				                validationMessageArgs.put("value", campaignFormElementOptions.getMin());				                
-				            } else {
-				                validationMessageTag = Validations.numberNotInRange;
-				                validationMessageArgs.put("min", campaignFormElementOptions.getMin());
-				                validationMessageArgs.put("max", campaignFormElementOptions.getMax());				                
-				            }
-				            				            
-				            final Double minValue = numberField.getMin();
-				            final Double maxValue = numberField.getMax();
-				            final String errorMsg = I18nProperties.getValidationError(
-				                validationMessageTag, validationMessageArgs);
-				            
-				            numberField.addValueChangeListener(e -> {
-				                Double val = e.getValue();
-				                if (val != null) {
-				                    boolean isInvalid = false;
-				                    
-				                    if (minValue != null && val < minValue) {
-				                        isInvalid = true;				                        
-				                    }
-				                    if (maxValue != null && val > maxValue) {
-				                        isInvalid = true;				                        
-				                    }
-				                    
-				                    if (isInvalid) {
-				                        numberField.setInvalid(true);
-				                        numberField.setErrorMessage(errorMsg);				                        
-				                    } else {
-				                        numberField.setInvalid(false);
-				                        numberField.setErrorMessage(null);				                       
-				                    }
-				                } else {
-				                    numberField.setInvalid(false);				                    
-				                }
-				            });				            
-				        }
-				    }
-				
-					if (constrainsVal.isExpression()) {
+						NumberField numberField = new NumberField();
+						numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+						numberField.setClassName("customTextWrap");
+						numberField.setWidth("240px");
+						numberField.setId(formElement.getId());
+						numberField.setSizeFull();
+						numberField.setReadOnly(false);
+						numberField.setMin(0);
 
-						if (!fieldIsRequired) {
+						setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false,
+								null);
+						vertical.add(numberField);
+						fields.put(formElement.getId(), numberField);
 
- 
+						String validationMessageTag = "";
+						Map<String, Object> validationMessageArgs = new HashMap<>();
+
+						if (campaignFormElementOptions.isExpression()) {
+							if (!fieldIsRequired) {
+							}
+							campaignFormElementOptions.setExpression(false);
+						} else {
+							if (campaignFormElementOptions.getMin() != null
+									|| campaignFormElementOptions.getMax() != null) {
+
+								if (campaignFormElementOptions.getMin() != null) {
+									numberField.setMin(campaignFormElementOptions.getMin().doubleValue());
+								}
+								if (campaignFormElementOptions.getMax() != null) {
+									numberField.setMax(campaignFormElementOptions.getMax().doubleValue());
+								}
+
+								if (campaignFormElementOptions.getMin() == null) {
+									validationMessageTag = Validations.numberTooBig;
+									validationMessageArgs.put("value", campaignFormElementOptions.getMax());
+								} else if (campaignFormElementOptions.getMax() == null) {
+									validationMessageTag = Validations.numberTooSmall;
+									validationMessageArgs.put("value", campaignFormElementOptions.getMin());
+								} else {
+									validationMessageTag = Validations.numberNotInRange;
+									validationMessageArgs.put("min", campaignFormElementOptions.getMin());
+									validationMessageArgs.put("max", campaignFormElementOptions.getMax());
+								}
+
+								final Double minValue = numberField.getMin();
+								final Double maxValue = numberField.getMax();
+								final String errorMsg = I18nProperties.getValidationError(validationMessageTag,
+										validationMessageArgs);
+
+								numberField.addValueChangeListener(e -> {
+									Double val = e.getValue();
+									if (val != null) {
+										boolean isInvalid = false;
+
+										if (minValue != null && val < minValue) {
+											isInvalid = true;
+										}
+										if (maxValue != null && val > maxValue) {
+											isInvalid = true;
+										}
+
+										if (isInvalid) {
+											numberField.setInvalid(true);
+											numberField.setErrorMessage(errorMsg);
+										} else {
+											numberField.setInvalid(false);
+											numberField.setErrorMessage(null);
+										}
+									} else {
+										numberField.setInvalid(false);
+									}
+								});
+							}
 						}
 
-						constrainsVal.setExpression(false);
+						if (constrainsVal.isExpression()) {
 
-					} else {
+							if (!fieldIsRequired) {
 
-						if (constrainsVal.getMin() != null || constrainsVal.getMax() != null) {
-
-							numberField.setMin(constrainsVal.getMin());
-							numberField.setMax(constrainsVal.getMax());
-
-							if (constrainsVal.getMin() == null) {
-								validationMessageTag = Validations.numberTooBig;
-								validationMessageArgs.put("value", constrainsVal.getMax());
-							} else if (constrainsVal.getMax() == null) {
-								validationMessageTag = Validations.numberTooSmall;
-								validationMessageArgs.put("value", constrainsVal.getMin());
-							} else {
-								validationMessageTag = Validations.numberNotInRange;
-								validationMessageArgs.put("min", constrainsVal.getMin());
-								validationMessageArgs.put("max", constrainsVal.getMax());
 							}
 
+							constrainsVal.setExpression(false);
+
 						} else {
 
-						}
-					}
+							if (constrainsVal.getMin() != null || constrainsVal.getMax() != null) {
 
-					if (dependingOnId != null && dependingOnValues != null) {
-						// needed
-						setVisibilityDependency(numberField, dependingOnId, dependingOnValues, type,
-								formElement.isImportant());
-					} else {
-						numberField.setRequiredIndicatorVisible(formElement.isImportant());
-					}
- 
-					
-					numberField.addValueChangeListener(e -> {
-				        if (e.getValue() != null && e.getValue() < 0) {
+								numberField.setMin(constrainsVal.getMin());
+								numberField.setMax(constrainsVal.getMax());
+
+								if (constrainsVal.getMin() == null) {
+									validationMessageTag = Validations.numberTooBig;
+									validationMessageArgs.put("value", constrainsVal.getMax());
+								} else if (constrainsVal.getMax() == null) {
+									validationMessageTag = Validations.numberTooSmall;
+									validationMessageArgs.put("value", constrainsVal.getMin());
+								} else {
+									validationMessageTag = Validations.numberNotInRange;
+									validationMessageArgs.put("min", constrainsVal.getMin());
+									validationMessageArgs.put("max", constrainsVal.getMax());
+								}
+
+							} else {
+
+							}
+						}
+
+						if (dependingOnId != null && dependingOnValues != null) {
+							// needed
+							setVisibilityDependency(numberField, dependingOnId, dependingOnValues, type,
+									formElement.isImportant());
+						} else {
+							numberField.setRequiredIndicatorVisible(formElement.isImportant());
+						}
+
+						numberField.addValueChangeListener(e -> {
+							if (e.getValue() != null && e.getValue() < 0) {
 //				        	integerField.setValue(0.0); // Reset to 0 if negative
-				        	numberField.setInvalid(true);
-				        	numberField.setErrorMessage("Negative values are not allowed");
-				        }
-				    });
+								numberField.setInvalid(true);
+								numberField.setErrorMessage("Negative values are not allowed");
+							}
+						});
 
-				} else if (type == CampaignFormElementType.TEXTBOX) {
-					TextArea textArea = new TextArea();
-					textArea.setWidthFull();
-					textArea.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-					textArea.setClassName("customTextWrap");
-					textArea.setId(formElement.getId());
-					textArea.setSizeFull();
-					setFieldValue(textArea, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
-					vertical.add(textArea);
-					fields.put(formElement.getId(), textArea);
+					} else if (type == CampaignFormElementType.TEXTBOX) {
+						TextArea textArea = new TextArea();
+						textArea.setWidthFull();
+						textArea.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+						textArea.setClassName("customTextWrap");
+						textArea.setId(formElement.getId());
+						textArea.setSizeFull();
+						setFieldValue(textArea, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
+						vertical.add(textArea);
+						fields.put(formElement.getId(), textArea);
 
-					if (dependingOnId != null && dependingOnValues != null) {
-						// needed
-						setVisibilityDependency(textArea, dependingOnId, dependingOnValues, type,
-								formElement.isImportant());
-					} else {
-						textArea.setRequiredIndicatorVisible(formElement.isImportant());
-					}
-
-				} else if (type == CampaignFormElementType.RADIO) {
-					RadioButtonGroup<String> radioGroup = new RadioButtonGroup<>();
-					radioGroup.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-					radioGroup.setClassName("customTextWrap");
-
-//					data = (HashMap<String, String>) campaignFormElementOptions
-//							.getOptionsListValues();
-					radioGroup.setItems(data.keySet().stream().collect(Collectors.toList()));
-
-					radioGroup.setItemLabelGenerator(itm -> data.get(itm.toString().trim()));
-					radioGroup.setId(formElement.getId());
-					radioGroup.setSizeFull();
-					setFieldValue(radioGroup, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
-					vertical.add(radioGroup);
-					fields.put(formElement.getId(), radioGroup);
-
-					if (dependingOnId != null && dependingOnValues != null) {
-						// needed
-						setVisibilityDependency(radioGroup, dependingOnId, dependingOnValues, type,
-								formElement.isImportant());
-					} else {
-						radioGroup.setRequiredIndicatorVisible(formElement.isImportant());
-					}
-
-				} else if (type == CampaignFormElementType.RADIOBASIC) {
-					RadioButtonGroup<String> radioGroupVert = new RadioButtonGroup<>();
-					radioGroupVert.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
-					radioGroupVert.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-					radioGroupVert.setClassName("customTextWrap");
-
-//					data = (HashMap<String, String>) campaignFormElementOptions
-//							.getOptionsListValues();
-					radioGroupVert.setItems(data.keySet().stream().collect(Collectors.toList()));
-					radioGroupVert.setItemLabelGenerator(itm -> data.get(itm.toString().trim()));
-
-					radioGroupVert.setId(formElement.getId());
-					radioGroupVert.setSizeFull();
-					setFieldValue(radioGroupVert, type, value, optionsValues, formElement.getDefaultvalue(), false,
-							null);
-					vertical.add(radioGroupVert);
-					fields.put(formElement.getId(), radioGroupVert);
-
-					if (dependingOnId != null && dependingOnValues != null) {
-						// needed
-						setVisibilityDependency(radioGroupVert, dependingOnId, dependingOnValues, type,
-								formElement.isImportant());
-					} else {
-						radioGroupVert.setRequiredIndicatorVisible(formElement.isImportant());
-					}
-
-				} else if (type == CampaignFormElementType.DROPDOWN) {
-					// Note: carrying out the option sorting only i the dropdown
-					// to avoid getting a null pointer fro other input types with the
-					// option method because making all the checks global would require including
-					// the order value in other
-					// input types that are not dropdown
-
-					// get the order valuie, do a null check incase order wouldnt be specified
-					boolean isNotSorted = false;
-					try {
-						if (formElement.getOptions().stream()
-								.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getOrder)) != null) {
-							optionsOrder.clear();
-							// pop the map with the order based off the key
-							optionsOrder = formElement.getOptions().stream()
-									.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getOrder));
-						}
-						;
-					} catch (NullPointerException ex) {
-						optionsOrder.clear();
-						optionsOrder = formElement.getOptions().stream()
-								.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));
-						isNotSorted = true;
-					}
-
-					if (userOptTranslations.size() == 0) {
-						campaignFormElementOptions.setOptionsListValues(optionsValues);
-
- 
-					} else {
-						campaignFormElementOptions.setOptionsListValues(userOptTranslations);
-					}
-					// Trying toGetting order when using translation(not adequately tes)
-					if (optionsOrder != null) {
-						if (userOptTranslations.size() == 0) {
-							campaignFormElementOptions.setOptionsListOrder(optionsOrder);
+						if (dependingOnId != null && dependingOnValues != null) {
+							// needed
+							setVisibilityDependency(textArea, dependingOnId, dependingOnValues, type,
+									formElement.isImportant());
 						} else {
-							campaignFormElementOptions.setOptionsListOrder(optionsOrder);
+							textArea.setRequiredIndicatorVisible(formElement.isImportant());
 						}
 
-					}
-
-					final HashMap<String, String> dataOrder = (HashMap<String, String>) campaignFormElementOptions
-							.getOptionsListOrder();
-
-					ComboBox<String> select = new ComboBox<>(
-							get18nCaption(formElement.getId(), formElement.getCaption()));
-					select.setClassName("customTextWrap");
-
-					List<String> sortedKeys = new ArrayList<>(data.keySet()); // Create a list of keys
-					if (!isNotSorted) {
-						if (dataOrder != null) {
-							Comparator<String> orderComparator = (key1, key2) -> {
-								String order1 = getOrderValue(dataOrder, key1);
-								String order2 = getOrderValue(dataOrder, key2);
-								return Integer.compare(Integer.parseInt(order1), Integer.parseInt(order2));
-							};
-
-							sortedKeys.sort(orderComparator);
-						}
-					}
-
-					select.setItems(sortedKeys);
-
-					select.setItemLabelGenerator(itm -> data.get(itm.toString().trim()));
-					select.setClearButtonVisible(true);
-
-					select.addValueChangeListener(ee -> {
-					});
-
-					setFieldValue(select, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
-
-					vertical.add(select);
-					fields.put(formElement.getId(), select);
-
-					System.out.println(dependingOnId + " dependingOnId 3333333333333333333333333" + dependingOnValues);
-
-					if (dependingOnId != null && dependingOnValues != null) {
-						// needed
-
-						System.out.println(dependingOnId + " dependingOnId 44444444444444444444444" + dependingOnValues
-								+ "44444444444444444444444" + formElement.isImportant());
-
-						setVisibilityDependency(select, dependingOnId, dependingOnValues, type,
-								formElement.isImportant());
-
-					} else {
-						select.setRequiredIndicatorVisible(formElement.isImportant());
-					}
-
-				} else if (type == CampaignFormElementType.CHECKBOX) {
-					CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>();
-					checkboxGroup.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-					checkboxGroup.setClassName("customTextWrap");
+					} else if (type == CampaignFormElementType.RADIO) {
+						RadioButtonGroup<String> radioGroup = new RadioButtonGroup<>();
+						radioGroup.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+						radioGroup.setClassName("customTextWrap");
 
 //					data = (HashMap<String, String>) campaignFormElementOptions
 //							.getOptionsListValues();
-					checkboxGroup.setItems(data.keySet().stream().collect(Collectors.toList()));
-					checkboxGroup.setItemLabelGenerator(itm -> data.get(itm.toString().trim()));
+						radioGroup.setItems(data.keySet().stream().collect(Collectors.toList()));
 
-					checkboxGroup.setId(formElement.getId());
-					checkboxGroup.setSizeFull();
-					setFieldValue(checkboxGroup, type, value, optionsValues, formElement.getDefaultvalue(), false,
-							null);
-					vertical.add(checkboxGroup);
-					fields.put(formElement.getId(), checkboxGroup);
+						radioGroup.setItemLabelGenerator(itm -> data.get(itm.toString().trim()));
+						radioGroup.setId(formElement.getId());
+						radioGroup.setSizeFull();
+						setFieldValue(radioGroup, type, value, optionsValues, formElement.getDefaultvalue(), false,
+								null);
+						vertical.add(radioGroup);
+						fields.put(formElement.getId(), radioGroup);
 
-					if (dependingOnId != null && dependingOnValues != null) {
-						// needed
-						setVisibilityDependency(checkboxGroup, dependingOnId, dependingOnValues, type,
-								formElement.isImportant());
-					} else {
-						checkboxGroup.setRequiredIndicatorVisible(formElement.isImportant());
-					}
+						if (dependingOnId != null && dependingOnValues != null) {
+							// needed
+							setVisibilityDependency(radioGroup, dependingOnId, dependingOnValues, type,
+									formElement.isImportant());
+						} else {
+							radioGroup.setRequiredIndicatorVisible(formElement.isImportant());
+						}
 
-				} else if (type == CampaignFormElementType.CHECKBOXBASIC) {
-					CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>();
-					checkboxGroup.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-					checkboxGroup.setClassName("customTextWrap");
+					} else if (type == CampaignFormElementType.RADIOBASIC) {
+						RadioButtonGroup<String> radioGroupVert = new RadioButtonGroup<>();
+						radioGroupVert.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+						radioGroupVert.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+						radioGroupVert.setClassName("customTextWrap");
 
 //					data = (HashMap<String, String>) campaignFormElementOptions
 //							.getOptionsListValues();
-					checkboxGroup.setItems(data.keySet().stream().collect(Collectors.toList()));
-					checkboxGroup.setItemLabelGenerator(itm -> data.get(itm.toString().trim()));
+						radioGroupVert.setItems(data.keySet().stream().collect(Collectors.toList()));
+						radioGroupVert.setItemLabelGenerator(itm -> data.get(itm.toString().trim()));
 
-					checkboxGroup.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
-					checkboxGroup.setId(formElement.getId());
-					checkboxGroup.setSizeFull();
-					setFieldValue(checkboxGroup, type, value, optionsValues, formElement.getDefaultvalue(), false,
-							null);
-					
-				    checkboxGroup.addValueChangeListener(event -> {
-				        if (checkboxGroup.isInvalid()) {
-				            checkboxGroup.setInvalid(false);
-				        }
-				        // Clear error background when value is selected
-				        if (!event.getValue().isEmpty()) {
-				            checkboxGroup.getElement().getStyle().remove("background");
-				            checkboxGroup.getElement().setProperty("error-background-set", null);
-				        }
-				    });
-				    
-					vertical.add(checkboxGroup);
-					fields.put(formElement.getId(), checkboxGroup);
+						radioGroupVert.setId(formElement.getId());
+						radioGroupVert.setSizeFull();
+						setFieldValue(radioGroupVert, type, value, optionsValues, formElement.getDefaultvalue(), false,
+								null);
+						vertical.add(radioGroupVert);
+						fields.put(formElement.getId(), radioGroupVert);
 
-					if (dependingOnId != null && dependingOnValues != null) {
-						// needed
-						setVisibilityDependency(checkboxGroup, dependingOnId, dependingOnValues, type,
-								formElement.isImportant());
-					} else {
-						checkboxGroup.setRequiredIndicatorVisible(formElement.isImportant());
-					}
+						if (dependingOnId != null && dependingOnValues != null) {
+							// needed
+							setVisibilityDependency(radioGroupVert, dependingOnId, dependingOnValues, type,
+									formElement.isImportant());
+						} else {
+							radioGroupVert.setRequiredIndicatorVisible(formElement.isImportant());
+						}
 
-				} else if (type == CampaignFormElementType.DATE) {
-					DatePicker.DatePickerI18n singleFormatI18n = new DatePicker.DatePickerI18n();
-					singleFormatI18n.setDateFormat("dd-MM-yyyy");
+					} else if (type == CampaignFormElementType.DROPDOWN) {
+						// Note: carrying out the option sorting only i the dropdown
+						// to avoid getting a null pointer fro other input types with the
+						// option method because making all the checks global would require including
+						// the order value in other
+						// input types that are not dropdown
 
-					DatePicker datePicker = new DatePicker(
-							get18nCaption(formElement.getId(), formElement.getCaption()));
-					datePicker.setClassName("customTextWrap");
+						// get the order valuie, do a null check incase order wouldnt be specified
+						boolean isNotSorted = false;
+						try {
+							if (formElement.getOptions().stream()
+									.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getOrder)) != null) {
+								optionsOrder.clear();
+								// pop the map with the order based off the key
+								optionsOrder = formElement.getOptions().stream()
+										.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getOrder));
+							}
+							;
+						} catch (NullPointerException ex) {
+							optionsOrder.clear();
+							optionsOrder = formElement.getOptions().stream()
+									.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));
+							isNotSorted = true;
+						}
 
-					datePicker.setI18n(singleFormatI18n);
-					datePicker.setSizeFull();
-					datePicker.setPlaceholder("DD-MM-YYYY");
-					datePicker.setId(formElement.getId());
-					setFieldValue(datePicker, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
-					vertical.add(datePicker);
-					fields.put(formElement.getId(), datePicker);
+						if (userOptTranslations.size() == 0) {
+							campaignFormElementOptions.setOptionsListValues(optionsValues);
 
-					if (dependingOnId != null && dependingOnValues != null) {
-						// needed
-						setVisibilityDependency(datePicker, dependingOnId, dependingOnValues, type,
-								formElement.isImportant());
-					} else {
-						datePicker.setRequiredIndicatorVisible(formElement.isImportant());
-					}
+						} else {
+							campaignFormElementOptions.setOptionsListValues(userOptTranslations);
+						}
+						// Trying toGetting order when using translation(not adequately tes)
+						if (optionsOrder != null) {
+							if (userOptTranslations.size() == 0) {
+								campaignFormElementOptions.setOptionsListOrder(optionsOrder);
+							} else {
+								campaignFormElementOptions.setOptionsListOrder(optionsOrder);
+							}
 
-				} else if (type == CampaignFormElementType.EMAIL) {
+						}
 
-					EmailField validEmailField = new EmailField();
-					validEmailField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-					validEmailField.setWidth("240px");
-					validEmailField.setId(formElement.getId());
+						final HashMap<String, String> dataOrder = (HashMap<String, String>) campaignFormElementOptions
+								.getOptionsListOrder();
 
-					setFieldValue(validEmailField, type, value, optionsValues, formElement.getDefaultvalue(), false,
-							null);
-					vertical.add(validEmailField);
-					fields.put(formElement.getId(), validEmailField);
+						ComboBox<String> select = new ComboBox<>(
+								get18nCaption(formElement.getId(), formElement.getCaption()));
+						select.setClassName("customTextWrap");
 
-					validEmailField.getElement().setAttribute("name", "email");
+						List<String> sortedKeys = new ArrayList<>(data.keySet()); // Create a list of keys
+						if (!isNotSorted) {
+							if (dataOrder != null) {
+								Comparator<String> orderComparator = (key1, key2) -> {
+									String order1 = getOrderValue(dataOrder, key1);
+									String order2 = getOrderValue(dataOrder, key2);
+									return Integer.compare(Integer.parseInt(order1), Integer.parseInt(order2));
+								};
+
+								sortedKeys.sort(orderComparator);
+							}
+						}
+
+						select.setItems(sortedKeys);
+
+						select.setItemLabelGenerator(itm -> data.get(itm.toString().trim()));
+						select.setClearButtonVisible(true);
+
+						select.addValueChangeListener(ee -> {
+						});
+
+						setFieldValue(select, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
+
+						vertical.add(select);
+						fields.put(formElement.getId(), select);
+
+						System.out.println(
+								dependingOnId + " dependingOnId 3333333333333333333333333" + dependingOnValues);
+
+						if (dependingOnId != null && dependingOnValues != null) {
+							// needed
+
+							System.out.println(dependingOnId + " dependingOnId 44444444444444444444444"
+									+ dependingOnValues + "44444444444444444444444" + formElement.isImportant());
+
+							setVisibilityDependency(select, dependingOnId, dependingOnValues, type,
+									formElement.isImportant());
+
+						} else {
+							select.setRequiredIndicatorVisible(formElement.isImportant());
+						}
+
+					} else if (type == CampaignFormElementType.CHECKBOX) {
+						CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>();
+						checkboxGroup.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+						checkboxGroup.setClassName("customTextWrap");
+
+//					data = (HashMap<String, String>) campaignFormElementOptions
+//							.getOptionsListValues();
+						checkboxGroup.setItems(data.keySet().stream().collect(Collectors.toList()));
+						checkboxGroup.setItemLabelGenerator(itm -> data.get(itm.toString().trim()));
+
+						checkboxGroup.setId(formElement.getId());
+						checkboxGroup.setSizeFull();
+						setFieldValue(checkboxGroup, type, value, optionsValues, formElement.getDefaultvalue(), false,
+								null);
+						vertical.add(checkboxGroup);
+						fields.put(formElement.getId(), checkboxGroup);
+
+						if (dependingOnId != null && dependingOnValues != null) {
+							// needed
+							setVisibilityDependency(checkboxGroup, dependingOnId, dependingOnValues, type,
+									formElement.isImportant());
+						} else {
+							checkboxGroup.setRequiredIndicatorVisible(formElement.isImportant());
+						}
+
+					} else if (type == CampaignFormElementType.CHECKBOXBASIC) {
+						CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>();
+						checkboxGroup.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+						checkboxGroup.setClassName("customTextWrap");
+
+//					data = (HashMap<String, String>) campaignFormElementOptions
+//							.getOptionsListValues();
+						checkboxGroup.setItems(data.keySet().stream().collect(Collectors.toList()));
+						checkboxGroup.setItemLabelGenerator(itm -> data.get(itm.toString().trim()));
+
+						checkboxGroup.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
+						checkboxGroup.setId(formElement.getId());
+						checkboxGroup.setSizeFull();
+						setFieldValue(checkboxGroup, type, value, optionsValues, formElement.getDefaultvalue(), false,
+								null);
+
+						checkboxGroup.addValueChangeListener(event -> {
+							if (checkboxGroup.isInvalid()) {
+								checkboxGroup.setInvalid(false);
+							}
+							// Clear error background when value is selected
+							if (!event.getValue().isEmpty()) {
+								checkboxGroup.getElement().getStyle().remove("background");
+								checkboxGroup.getElement().setProperty("error-background-set", null);
+							}
+						});
+
+						vertical.add(checkboxGroup);
+						fields.put(formElement.getId(), checkboxGroup);
+
+						if (dependingOnId != null && dependingOnValues != null) {
+							// needed
+							setVisibilityDependency(checkboxGroup, dependingOnId, dependingOnValues, type,
+									formElement.isImportant());
+						} else {
+							checkboxGroup.setRequiredIndicatorVisible(formElement.isImportant());
+						}
+
+					} else if (type == CampaignFormElementType.DATE) {
+						DatePicker.DatePickerI18n singleFormatI18n = new DatePicker.DatePickerI18n();
+						singleFormatI18n.setDateFormat("dd-MM-yyyy");
+
+						DatePicker datePicker = new DatePicker(
+								get18nCaption(formElement.getId(), formElement.getCaption()));
+						datePicker.setClassName("customTextWrap");
+
+						datePicker.setI18n(singleFormatI18n);
+						datePicker.setSizeFull();
+						datePicker.setPlaceholder("DD-MM-YYYY");
+						datePicker.setId(formElement.getId());
+
+						if (campaignFormMeta.getFormType().equalsIgnoreCase("pre-campaign")) {
+							datePicker.setMin(campaignDto.getPreCampStartDate().toInstant()
+									.atZone(ZoneId.systemDefault()).toLocalDate());
+						} else if (campaignFormMeta.getFormType().equalsIgnoreCase("intra-campaign")) {
+							datePicker.setMin(campaignDto.getStartDate().toInstant().atZone(ZoneId.systemDefault())
+									.toLocalDate());
+						} else if (campaignFormMeta.getFormType().equalsIgnoreCase("post-campaign")) {
+							datePicker.setMin(campaignDto.getPostCampStartDate().toInstant()
+									.atZone(ZoneId.systemDefault()).toLocalDate());
+						}
+
+						if (formEndDate != null) {
+							if (formEndDate instanceof java.sql.Date) {
+								datePicker.setMax(((java.sql.Date) formEndDate).toLocalDate());
+							} else {
+								datePicker.setMax(formEndDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+							}
+						}
+
+						setFieldValue(datePicker, type, value, optionsValues, formElement.getDefaultvalue(), false,
+								null);
+						vertical.add(datePicker);
+						fields.put(formElement.getId(), datePicker);
+
+						if (dependingOnId != null && dependingOnValues != null) {
+							// needed
+							setVisibilityDependency(datePicker, dependingOnId, dependingOnValues, type,
+									formElement.isImportant());
+						} else {
+							datePicker.setRequiredIndicatorVisible(formElement.isImportant());
+						}
+
+					} else if (type == CampaignFormElementType.EMAIL) {
+
+						EmailField validEmailField = new EmailField();
+						validEmailField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+						validEmailField.setWidth("240px");
+						validEmailField.setId(formElement.getId());
+
+						setFieldValue(validEmailField, type, value, optionsValues, formElement.getDefaultvalue(), false,
+								null);
+						vertical.add(validEmailField);
+						fields.put(formElement.getId(), validEmailField);
+
+						validEmailField.getElement().setAttribute("name", "email");
 //					validEmailField.setValue("julia.scheider@email.com");
-					validEmailField.setErrorMessage("Enter a valid email address");
-					validEmailField.setClearButtonVisible(true);
+						validEmailField.setErrorMessage("Enter a valid email address");
+						validEmailField.setClearButtonVisible(true);
 
-				} else if (type == CampaignFormElementType.TIME) {
+					} else if (type == CampaignFormElementType.TIME) {
 
-					TimePicker timePicker = new TimePicker();
-					timePicker.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
-					timePicker.setStep(Duration.ofMinutes(30));
-					timePicker.setLocale(Locale.forLanguageTag("fi"));
+						TimePicker timePicker = new TimePicker();
+						timePicker.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+						timePicker.setStep(Duration.ofMinutes(30));
+						timePicker.setLocale(Locale.forLanguageTag("fi"));
 //				timePickear.setValue(LocalTime.of(5, 30));
-					timePicker.setAutoOpen(true);
+						timePicker.setAutoOpen(true);
 
-					timePicker.addValueChangeListener(e -> {
-						System.out.println("Value Changed-------" + e.getValue());
+						timePicker.addValueChangeListener(e -> {
+							System.out.println("Value Changed-------" + e.getValue());
 
-						timePicker.setValue(e.getValue());
-					});
+							timePicker.setValue(e.getValue());
+						});
 //				add(timePicker);
 
-					setFieldValue(timePicker, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
+						setFieldValue(timePicker, type, value, optionsValues, formElement.getDefaultvalue(), false,
+								null);
 
-					vertical.add(timePicker);
-					fields.put(formElement.getId(), timePicker);
+						vertical.add(timePicker);
+						fields.put(formElement.getId(), timePicker);
+
+					}
 
 				}
 
-			}
+				if (accrd_count == 0) {
+					vertical.setVisible(false);
+					add(vertical);
+				} else {
 
-			if (accrd_count == 0) {
-				vertical.setVisible(false);
-				add(vertical);
+					add(accrd);
+				}
+
+				userOptTranslations = new HashMap<String, String>();
 			} else {
+				System.out.println(formElement + "Check elements for nulll types");
 
-				add(accrd);
+				System.out.println(formElement.getCaption() + "Check elements caption for nulll types");
 			}
-
-			userOptTranslations = new HashMap<String, String>();
-		}else {
-			System.out.println( formElement + "Check elements for nulll types");
-
-			System.out.println( formElement.getCaption() + "Check elements caption for nulll types");
-		}
 		}
 		checkExpression();
 		disableExpressionFieldsForEditing();
@@ -1957,7 +1999,7 @@ if (!selectedAreas.isEmpty()) {
 			}
 
 			if (value != null) {
-				if (value.toString().equals("") ||  value.toString().equals("false")) {
+				if (value.toString().equals("") || value.toString().equals("false")) {
 					((IntegerField) field).setValue(null);
 				} else {
 					String cleanValue = value.toString().replace(".0", "");
@@ -1974,7 +2016,7 @@ if (!selectedAreas.isEmpty()) {
 			} else {
 				((IntegerField) field).setValue(null);
 			}
- 
+
 			break;
 		case TEXT:
 
@@ -1991,7 +2033,7 @@ if (!selectedAreas.isEmpty()) {
 				NumberField numberField = (NumberField) field;
 
 				if (value != null) {
-					String cvalue =  value.toString().replace("null", "").trim();
+					String cvalue = value.toString().replace("null", "").trim();
 					if (cvalue.equals("") || cvalue.equals("null") || cvalue.equals("false")) {
 						numberField.setValue(null);
 					} else {
@@ -2050,48 +2092,43 @@ if (!selectedAreas.isEmpty()) {
 			}
 			break;
 
- 
-
 		case DECIMAL:
 			boolean isExpression = false;
 
-		    if (defaultErrorMsgr != null && defaultErrorMsgr.toString().endsWith("..")) {
-		        isExpression = true;
-		        defaultErrorMsgr = defaultErrorMsgr.toString().equals("..") ? null
-		                : defaultErrorMsgr.toString().replace("..", "");		      
-		    }
+			if (defaultErrorMsgr != null && defaultErrorMsgr.toString().endsWith("..")) {
+				isExpression = true;
+				defaultErrorMsgr = defaultErrorMsgr.toString().equals("..") ? null
+						: defaultErrorMsgr.toString().replace("..", "");
+			}
 
-		    NumberField decimalField = (NumberField) field;
-			  
- 
+			NumberField decimalField = (NumberField) field;
 
-		    // Show error but DO NOT continue processing
-		    if (isExpression && isErrored && value == null) {
+			// Show error but DO NOT continue processing
+			if (isExpression && isErrored && value == null) {
 
-		        decimalField.setInvalid(true);
-		        decimalField.setErrorMessage(defaultErrorMsgr != null
-		                ? defaultErrorMsgr.toString()
-		                : "Decimal value is not within the allowed range");		       
-		        return;
-		    }
+				decimalField.setInvalid(true);
+				decimalField.setErrorMessage(defaultErrorMsgr != null ? defaultErrorMsgr.toString()
+						: "Decimal value is not within the allowed range");
+				return;
+			}
 
-		    if (value != null) {
-		        String v = value.toString().trim();
+			if (value != null) {
+				String v = value.toString().trim();
 
-		        if (v.equals("")) {
-		            decimalField.setValue(null);		           
-		        } else {
-		            decimalField.setValue(Double.parseDouble(v));		        
-		        }
+				if (v.equals("")) {
+					decimalField.setValue(null);
+				} else {
+					decimalField.setValue(Double.parseDouble(v));
+				}
 
-		    } else if (defaultvalue != null) {
-		        // ORIGINAL BUG: you used value instead of defaultvalue
-		        decimalField.setValue(Double.parseDouble(defaultvalue));		        
-		    } else {
-		        decimalField.setValue(null);		       
-		    }
-		    break; 
-		    
+			} else if (defaultvalue != null) {
+				// ORIGINAL BUG: you used value instead of defaultvalue
+				decimalField.setValue(Double.parseDouble(defaultvalue));
+			} else {
+				decimalField.setValue(null);
+			}
+			break;
+
 		case TEXTBOX:
 
 			if (value != null) {
@@ -2106,63 +2143,61 @@ if (!selectedAreas.isEmpty()) {
 			}
 			;
 			((TextArea) field).setValue(value != null ? value.toString() : null);
-			break; 
+			break;
 		case DATE:
-		    DatePicker datePicker = (DatePicker) field;
-		    
-		    if (value != null) {
-		        try {
-		            LocalDate localDate = null;
-		            
-		            // Handle LocalDate instances directly
-		            if (value instanceof LocalDate) {
-		                localDate = (LocalDate) value;
-		            }
-		            // Handle Date instances
-		            else if (value instanceof Date) {
-		                localDate = ((Date) value).toInstant()
-		                    .atZone(ZoneId.systemDefault())
-		                    .toLocalDate();
-		            }
-		            // Handle String values - multiple formats
-		            else if (value instanceof String) {
-		                String dateStr = ((String) value).trim();
-		                
-		                // Normalize Persian/Dari/Pashto digits to ASCII
-		                dateStr = normalizeDigits(dateStr);
-		                
-		                localDate = parseMultiFormatDate(dateStr);
-		            }
-		            // Handle other types (Long timestamps, etc.)
-		            else {
-		                logger.warn("Unexpected date type: {}. Attempting toString conversion.", 
-		                           value.getClass().getName());
-		                String dateStr = normalizeDigits(value.toString().trim());
-		                localDate = parseMultiFormatDate(dateStr);
-		            }
-		            
-		            if (localDate != null) {
-		                // Set locale and format pattern to dd-MM-yyyy
-		                datePicker.setLocale(new Locale("en", "GB")); // UK locale uses dd-MM-yyyy
-		                datePicker.setValue(localDate);
-		                
-		                // Optionally log the formatted output
-		                logger.debug("Date set to: {}", localDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
-		            } else {
-		                datePicker.setValue(null);
-		                logger.error("Could not parse date value: {}", value);
-		            }
-		            
-		        } catch (Exception e) {
-		            logger.error("Error parsing date value: " + value, e);
-		            datePicker.setValue(null);
-		            datePicker.setInvalid(true);
-		            datePicker.setErrorMessage("Invalid date format. Expected dd-MM-yyyy");
-		        }
-		    } else {
-		        datePicker.setValue(null);
-		    }
-		    break;
+			DatePicker datePicker = (DatePicker) field;
+
+			if (value != null) {
+				try {
+					LocalDate localDate = null;
+
+					// Handle LocalDate instances directly
+					if (value instanceof LocalDate) {
+						localDate = (LocalDate) value;
+					}
+					// Handle Date instances
+					else if (value instanceof Date) {
+						localDate = ((Date) value).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+					}
+					// Handle String values - multiple formats
+					else if (value instanceof String) {
+						String dateStr = ((String) value).trim();
+
+						// Normalize Persian/Dari/Pashto digits to ASCII
+						dateStr = normalizeDigits(dateStr);
+
+						localDate = parseMultiFormatDate(dateStr);
+					}
+					// Handle other types (Long timestamps, etc.)
+					else {
+						logger.warn("Unexpected date type: {}. Attempting toString conversion.",
+								value.getClass().getName());
+						String dateStr = normalizeDigits(value.toString().trim());
+						localDate = parseMultiFormatDate(dateStr);
+					}
+
+					if (localDate != null) {
+						// Set locale and format pattern to dd-MM-yyyy
+						datePicker.setLocale(new Locale("en", "GB")); // UK locale uses dd-MM-yyyy
+						datePicker.setValue(localDate);
+
+						// Optionally log the formatted output
+						logger.debug("Date set to: {}", localDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+					} else {
+						datePicker.setValue(null);
+						logger.error("Could not parse date value: {}", value);
+					}
+
+				} catch (Exception e) {
+					logger.error("Error parsing date value: " + value, e);
+					datePicker.setValue(null);
+					datePicker.setInvalid(true);
+					datePicker.setErrorMessage("Invalid date format. Expected dd-MM-yyyy");
+				}
+			} else {
+				datePicker.setValue(null);
+			}
+			break;
 //		case DATE:
 //			if (value != null) {
 //				try {
@@ -2204,15 +2239,14 @@ if (!selectedAreas.isEmpty()) {
 				String strArraxy[] = dcxs.split(",");
 				for (int i = 0; i < strArraxy.length; i++) {
 					((CheckboxGroup) field).select(strArraxy[i]);
-					
-					
+
 				}
 			}
 			;
 			break;
 		case DROPDOWN:
 
-			final HashMap<String, String> data_ = (HashMap<String, String>) options; 
+			final HashMap<String, String> data_ = (HashMap<String, String>) options;
 
 			if (defaultvalue != null) {
 				// String dxz = options.get(defaultvalue);
@@ -2242,69 +2276,68 @@ if (!selectedAreas.isEmpty()) {
 			break;
 
 		case TIME:
-		    TimePicker timePicker = (TimePicker) field;
-		    
-		    if (value != null) {
-		        System.out.println("time value is not null");
-		        
-		        // Handle LocalTime instances directly
-		        if (value instanceof LocalTime) {
-		            timePicker.setValue((LocalTime) value);
-		        } 
-		        // Handle String values with digit normalization
-		        else if (value instanceof String) {
-		            String timeStr = ((String) value).trim();
-		            
-		            // Normalize Persian/Dari/Pashto digits to ASCII
-		            String normalizedTime = normalizeDigits(timeStr);
-		            
-		            if (normalizedTime.isEmpty() || normalizedTime.equalsIgnoreCase("null")) {
-		                timePicker.setValue(null);
-		            } else {
-		                try {
-		                    timePicker.setValue(LocalTime.parse(normalizedTime));
-		                    logger.debug("Successfully parsed time: '{}' (original: '{}')", 
-		                                normalizedTime, timeStr);
-		                } catch (DateTimeParseException e) {
-		                    timePicker.setValue(null);
-		                    logger.error("Failed to parse time value: '{}' (normalized: '{}'). Error: {}", 
-		                                timeStr, normalizedTime, e.getMessage());
-		                    
-		                    // Set error state
-		                    timePicker.setInvalid(true);
-		                    timePicker.setErrorMessage("Invalid time format. Expected HH:mm or HH:mm:ss");
-		                }
-		            }
-		        }
-		        // Handle unexpected types
-		        else {
-		            timePicker.setValue(null);
-		            logger.warn("Unexpected type for TIME field: {}. Expected LocalTime or String.", 
-		                       value.getClass().getName());
-		        }
-		    } 
-		    // Handle default value with normalization
-		    else if (defaultvalue != null) {
-		        String defaultTimeStr = defaultvalue.trim();
-		        String normalizedDefault = normalizeDigits(defaultTimeStr);
-		        
-		        if (!normalizedDefault.isEmpty()) {
-		            try {
-		                timePicker.setValue(LocalTime.parse(normalizedDefault));
-		            } catch (DateTimeParseException e) {
-		                timePicker.setValue(null);
-		                logger.error("Failed to parse default time value: '{}' (normalized: '{}')", 
-		                            defaultTimeStr, normalizedDefault);
-		            }
-		        } else {
-		            timePicker.setValue(null);
-		        }
-		    } 
-		    // No value or default - clear the field
-		    else {
-		        timePicker.setValue(null);
-		    }
-		    break;
+			TimePicker timePicker = (TimePicker) field;
+
+			if (value != null) {
+				System.out.println("time value is not null");
+
+				// Handle LocalTime instances directly
+				if (value instanceof LocalTime) {
+					timePicker.setValue((LocalTime) value);
+				}
+				// Handle String values with digit normalization
+				else if (value instanceof String) {
+					String timeStr = ((String) value).trim();
+
+					// Normalize Persian/Dari/Pashto digits to ASCII
+					String normalizedTime = normalizeDigits(timeStr);
+
+					if (normalizedTime.isEmpty() || normalizedTime.equalsIgnoreCase("null")) {
+						timePicker.setValue(null);
+					} else {
+						try {
+							timePicker.setValue(LocalTime.parse(normalizedTime));
+							logger.debug("Successfully parsed time: '{}' (original: '{}')", normalizedTime, timeStr);
+						} catch (DateTimeParseException e) {
+							timePicker.setValue(null);
+							logger.error("Failed to parse time value: '{}' (normalized: '{}'). Error: {}", timeStr,
+									normalizedTime, e.getMessage());
+
+							// Set error state
+							timePicker.setInvalid(true);
+							timePicker.setErrorMessage("Invalid time format. Expected HH:mm or HH:mm:ss");
+						}
+					}
+				}
+				// Handle unexpected types
+				else {
+					timePicker.setValue(null);
+					logger.warn("Unexpected type for TIME field: {}. Expected LocalTime or String.",
+							value.getClass().getName());
+				}
+			}
+			// Handle default value with normalization
+			else if (defaultvalue != null) {
+				String defaultTimeStr = defaultvalue.trim();
+				String normalizedDefault = normalizeDigits(defaultTimeStr);
+
+				if (!normalizedDefault.isEmpty()) {
+					try {
+						timePicker.setValue(LocalTime.parse(normalizedDefault));
+					} catch (DateTimeParseException e) {
+						timePicker.setValue(null);
+						logger.error("Failed to parse default time value: '{}' (normalized: '{}')", defaultTimeStr,
+								normalizedDefault);
+					}
+				} else {
+					timePicker.setValue(null);
+				}
+			}
+			// No value or default - clear the field
+			else {
+				timePicker.setValue(null);
+			}
+			break;
 //			if (value != null) {
 //				System.out.println(" time value is not null ");
 //				if (value instanceof LocalTime) {
@@ -2330,154 +2363,148 @@ if (!selectedAreas.isEmpty()) {
 			throw new IllegalArgumentException(type.toString());
 		}
 	}
-	
+
 	/**
-	 * Normalizes Persian/Dari/Pashto/Arabic-Indic digits to ASCII digits
-	 * Supports both Eastern Arabic (٠-٩) and Persian (۰-۹) numerals
+	 * Normalizes Persian/Dari/Pashto/Arabic-Indic digits to ASCII digits Supports
+	 * both Eastern Arabic (٠-٩) and Persian (۰-۹) numerals
 	 */
 	private String normalizeDigits(String input) {
-	    if (input == null || input.isEmpty()) {
-	        return input;
-	    }
-	    
-	    StringBuilder normalized = new StringBuilder();
-	    
-	    for (char c : input.toCharArray()) {
-	        // Persian/Dari digits (U+06F0 to U+06F9)
-	        if (c >= '\u06F0' && c <= '\u06F9') {
-	            normalized.append((char) ('0' + (c - '\u06F0')));
-	        }
-	        // Arabic-Indic digits (U+0660 to U+0669)
-	        else if (c >= '\u0660' && c <= '\u0669') {
-	            normalized.append((char) ('0' + (c - '\u0660')));
-	        }
-	        // Keep everything else (colons, spaces, etc.)
-	        else {
-	            normalized.append(c);
-	        }
-	    }
-	    
-	    return normalized.toString();
+		if (input == null || input.isEmpty()) {
+			return input;
+		}
+
+		StringBuilder normalized = new StringBuilder();
+
+		for (char c : input.toCharArray()) {
+			// Persian/Dari digits (U+06F0 to U+06F9)
+			if (c >= '\u06F0' && c <= '\u06F9') {
+				normalized.append((char) ('0' + (c - '\u06F0')));
+			}
+			// Arabic-Indic digits (U+0660 to U+0669)
+			else if (c >= '\u0660' && c <= '\u0669') {
+				normalized.append((char) ('0' + (c - '\u0660')));
+			}
+			// Keep everything else (colons, spaces, etc.)
+			else {
+				normalized.append(c);
+			}
+		}
+
+		return normalized.toString();
 	}
 
-	
 	/**
-	 * Parses dates from multiple common formats including:
-	 * - "Tue Dec 09 00:00:00 GMT+01:00 2025" (Java Date.toString() format)
-	 * - "10-12-2025" (dd-MM-yyyy)
-	 * - "2025-12-10" (ISO format yyyy-MM-dd)
-	 * - "10/12/2025" (dd/MM/yyyy)
-	 * - "Dec 09, 2025" (MMM dd, yyyy)
+	 * Parses dates from multiple common formats including: - "Tue Dec 09 00:00:00
+	 * GMT+01:00 2025" (Java Date.toString() format) - "10-12-2025" (dd-MM-yyyy) -
+	 * "2025-12-10" (ISO format yyyy-MM-dd) - "10/12/2025" (dd/MM/yyyy) - "Dec 09,
+	 * 2025" (MMM dd, yyyy)
 	 * 
-	 * All inputs are normalized and returned as LocalDate which will be displayed as dd-MM-yyyy
+	 * All inputs are normalized and returned as LocalDate which will be displayed
+	 * as dd-MM-yyyy
 	 * 
 	 * @param dateStr The date string to parse
 	 * @return LocalDate or null if parsing fails
 	 */
 	private LocalDate parseMultiFormatDate(String dateStr) {
-	    if (dateStr == null || dateStr.isEmpty() || dateStr.equalsIgnoreCase("null")) {
-	        return null;
-	    }
-	    
-	    // List of formatters to try in order
-	    // Note: All inputs are parsed to LocalDate, which DatePicker will display as dd-MM-yyyy
-	    DateTimeFormatter[] formatters = {
-	        // Handle "Tue Dec 09 00:00:00 GMT+01:00 2025" format
-	        // This is the output of Java's Date.toString()
-	        DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH),
-	        DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss 'GMT'XXX yyyy", Locale.ENGLISH),
-	        
-	        // dd-MM-yyyy format (PRIMARY format - try first)
-	        DateTimeFormatter.ofPattern("dd-MM-yyyy"),           // 10-12-2025
-	        DateTimeFormatter.ofPattern("d-M-yyyy"),             // 9-12-2025 (single digit)
-	        
-	        // Other common formats
-	        DateTimeFormatter.ofPattern("yyyy-MM-dd"),           // 2025-12-10 (ISO)
-	        DateTimeFormatter.ofPattern("dd/MM/yyyy"),           // 10/12/2025
-	        DateTimeFormatter.ofPattern("d/M/yyyy"),             // 9/12/2025
-	        
-	        // With time components
-	        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"),
-	        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
-	        DateTimeFormatter.ofPattern("dd-MM-yyyy'T'HH:mm:ss"),
-	        
-	        // Month name formats
-	        DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.ENGLISH),  // Dec 09, 2025
-	        DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH),   // 09 Dec 2025
-	        DateTimeFormatter.ofPattern("MMMM dd, yyyy", Locale.ENGLISH), // December 09, 2025
-	        
-	        // ISO formats
-	        DateTimeFormatter.ISO_LOCAL_DATE,
-	        DateTimeFormatter.ISO_DATE_TIME,
-	        DateTimeFormatter.ISO_OFFSET_DATE_TIME
-	    };
-	    
-	    // Try each formatter
-	    for (DateTimeFormatter formatter : formatters) {
-	        try {
-	            // For formatters that include time/zone info
-	            if (dateStr.contains("GMT") || dateStr.contains("Z") || 
-	                (dateStr.contains(":") && dateStr.length() > 15)) {
-	                try {
-	                    // Try parsing as ZonedDateTime first
-	                    ZonedDateTime zdt = ZonedDateTime.parse(dateStr, formatter);
-	                    LocalDate result = zdt.toLocalDate();
-	                    logger.debug("Parsed '{}' to {} (will display as dd-MM-yyyy)", 
-	                                dateStr, result.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
-	                    return result;
-	                } catch (DateTimeParseException e1) {
-	                    try {
-	                        // Try parsing with different approaches
-	                        TemporalAccessor temporal = formatter.parse(dateStr);
-	                        LocalDate result = LocalDate.from(temporal);
-	                        logger.debug("Parsed '{}' to {} (will display as dd-MM-yyyy)", 
-	                                    dateStr, result.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
-	                        return result;
-	                    } catch (DateTimeParseException e2) {
-	                        // Continue to next formatter
-	                    }
-	                }
-	            } else {
-	                // Direct LocalDate parsing for simple date formats
-	                LocalDate result = LocalDate.parse(dateStr, formatter);
-	                logger.debug("Parsed '{}' to {} (will display as dd-MM-yyyy)", 
-	                            dateStr, result.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
-	                return result;
-	            }
-	        } catch (DateTimeParseException e) {
-	            // Continue to next formatter
-	        }
-	    }
-	    
-	    // If all formatters fail, try using SimpleDateFormat as fallback
-	    // This handles edge cases that DateTimeFormatter might miss
-	    try {
-	        SimpleDateFormat[] legacyFormatters = {
-	            new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH),
-	            new SimpleDateFormat("dd-MM-yyyy"),
-	            new SimpleDateFormat("yyyy-MM-dd"),
-	            new SimpleDateFormat("dd/MM/yyyy")
-	        };
-	        
-	        for (SimpleDateFormat sdf : legacyFormatters) {
-	            try {
-	                Date date = sdf.parse(dateStr);
-	                LocalDate result = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-	                logger.debug("Parsed '{}' to {} using legacy formatter (will display as dd-MM-yyyy)", 
-	                            dateStr, result.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
-	                return result;
-	            } catch (ParseException e) {
-	                // Continue
-	            }
-	        }
-	    } catch (Exception e) {
-	        logger.debug("Legacy date parsing also failed for: {}", dateStr);
-	    }
-	    
-	    logger.error("Could not parse date string with any known format: '{}'", dateStr);
-	    return null;
+		if (dateStr == null || dateStr.isEmpty() || dateStr.equalsIgnoreCase("null")) {
+			return null;
+		}
+
+		// List of formatters to try in order
+		// Note: All inputs are parsed to LocalDate, which DatePicker will display as
+		// dd-MM-yyyy
+		DateTimeFormatter[] formatters = {
+				// Handle "Tue Dec 09 00:00:00 GMT+01:00 2025" format
+				// This is the output of Java's Date.toString()
+				DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH),
+				DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss 'GMT'XXX yyyy", Locale.ENGLISH),
+
+				// dd-MM-yyyy format (PRIMARY format - try first)
+				DateTimeFormatter.ofPattern("dd-MM-yyyy"), // 10-12-2025
+				DateTimeFormatter.ofPattern("d-M-yyyy"), // 9-12-2025 (single digit)
+
+				// Other common formats
+				DateTimeFormatter.ofPattern("yyyy-MM-dd"), // 2025-12-10 (ISO)
+				DateTimeFormatter.ofPattern("dd/MM/yyyy"), // 10/12/2025
+				DateTimeFormatter.ofPattern("d/M/yyyy"), // 9/12/2025
+
+				// With time components
+				DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
+				DateTimeFormatter.ofPattern("dd-MM-yyyy'T'HH:mm:ss"),
+
+				// Month name formats
+				DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.ENGLISH), // Dec 09, 2025
+				DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH), // 09 Dec 2025
+				DateTimeFormatter.ofPattern("MMMM dd, yyyy", Locale.ENGLISH), // December 09, 2025
+
+				// ISO formats
+				DateTimeFormatter.ISO_LOCAL_DATE, DateTimeFormatter.ISO_DATE_TIME,
+				DateTimeFormatter.ISO_OFFSET_DATE_TIME };
+
+		// Try each formatter
+		for (DateTimeFormatter formatter : formatters) {
+			try {
+				// For formatters that include time/zone info
+				if (dateStr.contains("GMT") || dateStr.contains("Z")
+						|| (dateStr.contains(":") && dateStr.length() > 15)) {
+					try {
+						// Try parsing as ZonedDateTime first
+						ZonedDateTime zdt = ZonedDateTime.parse(dateStr, formatter);
+						LocalDate result = zdt.toLocalDate();
+						logger.debug("Parsed '{}' to {} (will display as dd-MM-yyyy)", dateStr,
+								result.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+						return result;
+					} catch (DateTimeParseException e1) {
+						try {
+							// Try parsing with different approaches
+							TemporalAccessor temporal = formatter.parse(dateStr);
+							LocalDate result = LocalDate.from(temporal);
+							logger.debug("Parsed '{}' to {} (will display as dd-MM-yyyy)", dateStr,
+									result.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+							return result;
+						} catch (DateTimeParseException e2) {
+							// Continue to next formatter
+						}
+					}
+				} else {
+					// Direct LocalDate parsing for simple date formats
+					LocalDate result = LocalDate.parse(dateStr, formatter);
+					logger.debug("Parsed '{}' to {} (will display as dd-MM-yyyy)", dateStr,
+							result.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+					return result;
+				}
+			} catch (DateTimeParseException e) {
+				// Continue to next formatter
+			}
+		}
+
+		// If all formatters fail, try using SimpleDateFormat as fallback
+		// This handles edge cases that DateTimeFormatter might miss
+		try {
+			SimpleDateFormat[] legacyFormatters = {
+					new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH),
+					new SimpleDateFormat("dd-MM-yyyy"), new SimpleDateFormat("yyyy-MM-dd"),
+					new SimpleDateFormat("dd/MM/yyyy") };
+
+			for (SimpleDateFormat sdf : legacyFormatters) {
+				try {
+					Date date = sdf.parse(dateStr);
+					LocalDate result = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+					logger.debug("Parsed '{}' to {} using legacy formatter (will display as dd-MM-yyyy)", dateStr,
+							result.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+					return result;
+				} catch (ParseException e) {
+					// Continue
+				}
+			}
+		} catch (Exception e) {
+			logger.debug("Legacy date parsing also failed for: {}", dateStr);
+		}
+
+		logger.error("Could not parse date string with any known format: '{}'", dateStr);
+		return null;
 	}
-	
+
 	private int getOccupiedColumns(CampaignFormElementType type, List<CampaignFormElementStyle> styles) {
 		List<CampaignFormElementStyle> colStyles = styles.stream().filter(s -> s.toString().startsWith("col"))
 				.collect(Collectors.toList());
@@ -2844,30 +2871,285 @@ if (!selectedAreas.isEmpty()) {
 				}
 			}
 		}).collect(Collectors.toList());
-	} 
-	private void checkForNegativeValuesSimple() {
-	    for (Map.Entry<String, Component> entry : fields.entrySet()) {
-	        Component component = entry.getValue();
-	        
-	        if (component instanceof NumberField) {
-	            NumberField field = (NumberField) component;
-	            if (field.getValue() != null && field.getValue() < 0) {
-	                field.setInvalid(true);
-	                field.setErrorMessage("Negative values are not allowed");
-	                hasErrorFormValues(8);
-	            }
-	        } else if (component instanceof IntegerField) {
-	            IntegerField field = (IntegerField) component;
-	            if (field.getValue() != null && field.getValue() < 0) {
-	                field.setInvalid(true);
-	                field.setErrorMessage("Negative values are not allowed");
-	                hasErrorFormValues(8);
-	            }
-	        }
-	        // Add similar checks for other numeric field types if needed
-	    }
 	}
- 
+
+	private void checkForNegativeValuesSimple() {
+		for (Map.Entry<String, Component> entry : fields.entrySet()) {
+			Component component = entry.getValue();
+
+			if (component instanceof NumberField) {
+				NumberField field = (NumberField) component;
+				if (field.getValue() != null && field.getValue() < 0) {
+					field.setInvalid(true);
+					field.setErrorMessage("Negative values are not allowed");
+					hasErrorFormValues(8);
+				}
+			} else if (component instanceof IntegerField) {
+				IntegerField field = (IntegerField) component;
+				if (field.getValue() != null && field.getValue() < 0) {
+					field.setInvalid(true);
+					field.setErrorMessage("Negative values are not allowed");
+					hasErrorFormValues(8);
+				}
+			}
+			// Add similar checks for other numeric field types if needed
+		}
+	}
+
+	
+	private boolean validateTextInputFormDate(String formDateFieldValue) {
+	    LocalDate minDate = null;
+	    LocalDate maxDate = null;
+
+	    Date formEndDate = FacadeProvider.getCampaignFormMetaWithExpFacade()
+	            .getFormExpiryByCampaignAndFormUuid(campaignDto.getUuid(), campaignFormMeta.getUuid());
+
+	    if (formEndDate != null) {
+	        if (formEndDate instanceof java.sql.Date) {
+	            maxDate = ((java.sql.Date) formEndDate).toLocalDate();
+	        } else {
+	            maxDate = formEndDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	        }
+	    }
+
+	    if ("pre-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+	        minDate = campaignDto.getPreCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	    } else if ("intra-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+	        minDate = campaignDto.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	    } else if ("post-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+	        minDate = campaignDto.getPostCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	    }
+
+	    String value = formDateFieldValue;
+
+	    // Reset previous error state
+	    formDate.setInvalid(false);
+	    formDate.setErrorMessage(null);
+	    
+	    // Remove error styling if it exists
+	    formDate.getElement().getStyle().remove("border-color");
+	    formDate.getElement().getStyle().remove("color");
+
+	    if (value == null || value.isBlank()) {
+	        return false;
+	    }
+
+	    try {
+	    	
+	    	System.out.println("----------------HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
+	        LocalDate inputDate = LocalDate.parse(value.trim(), dateformatter);
+	        
+	        if ((minDate != null && inputDate.isBefore(minDate)) || 
+	            (maxDate != null && inputDate.isAfter(maxDate))) {
+	            
+	            // Force validation indicator even for read-only fields
+	        	formDate.setInvalid(true);
+	            
+	            // Build error message
+	            String errorMsg = "Date must be between " + 
+	                minDate.format(dateformatter) + " and " + 
+	                maxDate.format(dateformatter);
+	            
+	            formDate.setErrorMessage(errorMsg);
+	            
+	            return false;
+	            
+//		    	System.out.println(minDate +"----------------error mesage set HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH" + maxDate);
+
+	            
+//	            // For read-only fields, we need to manually show the error
+//	            if (formDateField.isReadOnly()) {
+//	            	
+//			    	System.out.println(minDate +"-------------BBBBVVVVVVVVVVVVVHHHHHHH" + maxDate);
+//
+//	                // Temporarily enable to show validation state
+//	                formDateField.setReadOnly(false);
+//	                formDateField.setInvalid(true);
+//	                formDateField.setReadOnly(true);
+//	                
+//	                // Add visual indicators for read-only error state
+//	                formDateField.getElement().getStyle().set("border-color", "var(--lumo-error-color)");
+//	                formDateField.getElement().getStyle().set("color", "var(--lumo-error-color)");
+//			    	System.out.println(minDate +"-------------NNNNVVVVVVVVVVVVVHHHHHHH" + maxDate);
+//
+//	                // Show notification as additional feedback
+//	                Notification.show(errorMsg, 5000, Position.MIDDLE);
+//	            }else {
+//			    	System.out.println(minDate +"-------------VVVVVVVVVVVVVHHHHHHH" + maxDate);
+//			    	
+//			        formDateField.setReadOnly(false);
+//	                formDateField.setInvalid(true);
+//	                formDateField.setReadOnly(true);
+//	                
+//	             ;
+//
+//	                // Add visual indicators for read-only error state
+//	                formDateField.getElement().getStyle().set("border-color", "var(--lumo-error-color)");
+//	                formDateField.getElement().getStyle().set("color", "var(--lumo-error-color)");
+//	                
+//	                
+//					formDate.getElement().setProperty("invalid", true);
+//
+//	            }
+//	            
+//	            hasErrorFormValues(12);
+	        }
+	        return true;
+	    } catch (Exception ex) {
+	        logger.error("Error validating form date for value: " + value, ex);
+	        
+	        formDate.setInvalid(true);
+	        formDate.setErrorMessage("Invalid date format. Use DD-MM-YYYY");
+	        
+	        if (formDate.isReadOnly()) {
+	        	formDate.setReadOnly(false);
+	        	formDate.setInvalid(true);
+	        	formDate.setReadOnly(true);
+	        	formDate.getElement().getStyle().set("border-color", "var(--lumo-error-color)");
+	        	formDate.getElement().getStyle().set("color", "var(--lumo-error-color)");
+	            Notification.show("Invalid date format. Use DD-MM-YYYY", 5000, Position.MIDDLE);
+	        }
+	        
+	        hasErrorFormValues(13);
+	        
+	        return false;
+	    }
+	    
+	}
+	
+//	private void validateTextInputFormDate(TextField formDateField) {
+//
+//		LocalDate minDate = null;
+//		
+//		LocalDate maxDate = null;
+//
+////    LocalDate minValidDate = null;
+//		
+//		System.out.println(campaignDto.getUuid() + "getFormExpiryByCampaignAndFormUuid validatin date from formdate input-----" );
+//		
+//		System.out.println(campaignFormMeta.getUuid() + "getFormExpiryByCampaignAndFormUuid validatin date from formdate input-----" );
+//
+//		
+//		Date formEndDate = FacadeProvider.getCampaignFormMetaWithExpFacade()
+//				.getFormExpiryByCampaignAndFormUuid(campaignDto.getUuid(), campaignFormMeta.getUuid());
+//
+////	LocalDate maxValidDate = null;
+//
+//		if (formEndDate != null) {
+//			if (formEndDate instanceof java.sql.Date) {
+//				maxDate = ((java.sql.Date) formEndDate).toLocalDate();
+//			} else {
+//				maxDate = formEndDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//			}
+//		}
+//		
+//		System.out.println(maxDate + "maxdategetFormExpiryByCampaignAndFormUuid validatin date from formdate input-----max dte " );
+//
+//
+//		if ("pre-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+//			minDate = campaignDto.getPreCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//
+//		} else if ("intra-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+//			minDate = campaignDto.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//
+//		} else if ("post-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+//			minDate = campaignDto.getPostCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//		}
+//
+//		
+//		System.out.println(minDate + "minDateminDateminDate" + maxDate + "maxDatemaxDatemaxDatemaxDate");
+//		String value = formDateField.getValue();
+//
+//// Reset previous error
+//    	formDateField.getElement().setProperty("invalid", false);
+//
+//		formDateField.setInvalid(false);
+//		formDateField.setErrorMessage(null);
+//
+//		if (value == null || value.isBlank()) {
+//			return;
+//		}
+//		
+//		System.out.println(value + "valuevaluevaluevaluevaluevalue-------" );
+//
+//
+//		try {
+//            System.out.println(value + "YYYxxxvaluevaluevaluevaluevaluevalue-------" );
+//
+//            LocalDate inputDate = LocalDate.parse(value.trim(), dateformatter);
+//            
+//            System.out.println("Parsed date successfully: " + inputDate); // Added debug log
+//            if ((minDate != null && inputDate.isBefore(minDate)) || (maxDate != null && inputDate.isAfter(maxDate))) {
+//            	formDateField.getElement().setProperty("invalid", true);
+//
+//            	formDateField.setInvalid(true);
+//                formDateField.setErrorMessage("Date must be between " + minDate + " and " + maxDate);
+//                hasErrorFormValues(12);
+//            }
+//        } catch (Exception ex) { // Changed to catch Exception
+//            logger.error("Error validating form date for value: " + value, ex); // Added logging
+//            ex.printStackTrace(); // Print stack trace for immediate visibility in console
+//        	formDateField.getElement().setProperty("invalid", true);
+//
+//            formDateField.setInvalid(true);
+//            formDateField.setErrorMessage("Invalid date format. Use DD-MM-YYYY");
+//            hasErrorFormValues(13);
+//        }
+//	}
+
+	private void checkForDateFieldValuesOutsideValidityPeriod() {
+
+		LocalDate minDate = null;
+		Date formEndDate = FacadeProvider.getCampaignFormMetaWithExpFacade()
+				.getFormExpiryByCampaignAndFormUuid(campaignDto.getUuid(), campaignFormMeta.getUuid());
+
+		LocalDate maxDate = null;
+
+		if (formEndDate != null) {
+			if (formEndDate instanceof java.sql.Date) {
+				maxDate = ((java.sql.Date) formEndDate).toLocalDate();
+			} else {
+				maxDate = formEndDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			}
+		}
+
+		// Determine validity period based on form type
+		if ("pre-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+			minDate = campaignDto.getPreCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+		} else if ("intra-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+			minDate = campaignDto.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+		} else if ("post-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+			minDate = campaignDto.getPostCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		}
+
+		for (Map.Entry<String, Component> entry : fields.entrySet()) {
+			Component component = entry.getValue();
+
+			if (component instanceof DatePicker) {
+				DatePicker field = (DatePicker) component;
+				LocalDate selectedDate = field.getValue();
+
+				// Reset previous error state
+				field.setInvalid(false);
+				field.setErrorMessage(null);
+
+				if (selectedDate == null) {
+					continue;
+				}
+
+				boolean beforeMin = minDate != null && selectedDate.isBefore(minDate);
+				boolean afterMax = maxDate != null && selectedDate.isAfter(maxDate);
+
+				if (beforeMin || afterMax) {
+					field.setInvalid(true);
+					field.setErrorMessage("Date must be between " + minDate + " and " + maxDate);
+					hasErrorFormValues(11);
+				}
+			}
+		}
+	}
 
 	private boolean validateAndSave() {
 		hasErrorFormValuesReset();
@@ -2899,19 +3181,27 @@ if (!selectedAreas.isEmpty()) {
 			if (formDate.getValue() == null) {
 				formDate.getElement().setProperty("invalid", true);
 				hasErrorFormValues(5);
+			}else {
+			if(!validateTextInputFormDate(formDate.getValue())) {
+				formDate.getElement().setProperty("invalid", true);
+				hasErrorFormValues(13);
+			}
+				
 			}
 
 			if (((AbstractField) formField).isRequiredIndicatorVisible()) {
-				logger.debug(((AbstractField) formField).getValue() + "++++++++++" + ((AbstractField) formField).getId());
+				logger.debug(
+						((AbstractField) formField).getValue() + "++++++++++" + ((AbstractField) formField).getId());
 
-				if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == "" || 
-						(((AbstractField) formField).getValue() instanceof Set && ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())
-						) {
-					
-					if((((AbstractField) formField).getValue() instanceof Set && ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())){
-					formField.getElement().getStyle().set("background", "#ffe5e5");	
+				if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == ""
+						|| (((AbstractField) formField).getValue() instanceof Set
+								&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+
+					if ((((AbstractField) formField).getValue() instanceof Set
+							&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+						formField.getElement().getStyle().set("background", "#ffe5e5");
 					}
-					
+
 					hasErrorFormValues(6);
 					formField.getElement().setProperty("invalid", true);
 				} else {
@@ -2952,7 +3242,6 @@ if (!selectedAreas.isEmpty()) {
 //			    }
 //			}
 
-
 		});
 
 		fields.forEach((key, value) -> {
@@ -2964,11 +3253,11 @@ if (!selectedAreas.isEmpty()) {
 			}
 
 		});
- 
-		
-	    checkForNegativeValuesSimple();
 
- 
+		checkForDateFieldValuesOutsideValidityPeriod();
+
+		checkForNegativeValuesSimple();
+
 		return invalidForm;
 	}
 
@@ -3284,12 +3573,12 @@ if (!selectedAreas.isEmpty()) {
 											: "..");
 							// return;
 						} else if (value.toString().equals("false")) {
-								setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
-										null, null, null, false,
-										e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() + ".."
-												: "..");
-								// return;
-							} else {
+							setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
+									null, null, null, false,
+									e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() + ".."
+											: "..");
+							// return;
+						} else {
 
 							Boolean isErrored = value.toString().endsWith(".0");
 
@@ -3301,23 +3590,21 @@ if (!selectedAreas.isEmpty()) {
 							// return;
 						}
 
- 
-					} else if (e.getType().toString().equals("decimal")) {																						
-						
+					} else if (e.getType().toString().equals("decimal")) {
+
 						if (value.toString().equals("0")) {
 							setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
 									Double.valueOf(String.format("%.1f", Double.valueOf(value.toString()))), null, null,
 									false,
-									e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() : null);						
+									e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() : null);
 						} else {
 
-							Boolean isErrored = value.toString().endsWith(".0");							
+							Boolean isErrored = value.toString().endsWith(".0");
 							setFieldValue(getFields().get(e.getId()), CampaignFormElementType.fromString(e.getType()),
 									Double.valueOf(String.format("%.1f", Double.valueOf(value.toString()))), null, null,
 									isErrored,
 									e.getErrormessage() != null ? e.getCaption() + " : " + e.getErrormessage() : null);
 						}
- 
 
 					} else if (valueType.isAssignableFrom(Double.class)) {
 						// logger.debug("yes double detected "+Double.isFinite((double) value) +"

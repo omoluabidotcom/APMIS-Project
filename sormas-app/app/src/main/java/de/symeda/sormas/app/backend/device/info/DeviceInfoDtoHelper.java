@@ -22,6 +22,10 @@ import java.util.List;
 import de.symeda.sormas.api.PushResult;
 import de.symeda.sormas.api.devicemanager.DeviceManagerDto;
 import de.symeda.sormas.app.backend.common.AdoDtoHelper;
+import de.symeda.sormas.app.backend.common.DatabaseHelper;
+import de.symeda.sormas.app.backend.region.AreaDtoHelper;
+import de.symeda.sormas.app.backend.region.DistrictDtoHelper;
+import de.symeda.sormas.app.backend.region.RegionDtoHelper;
 import de.symeda.sormas.app.rest.NoConnectionException;
 import de.symeda.sormas.app.rest.RetroProvider;
 import okhttp3.Request;
@@ -160,6 +164,11 @@ public class DeviceInfoDtoHelper extends AdoDtoHelper<DeviceInfo, DeviceManagerD
         target.setApkVersion(source.getApkVersion());
         target.setUserLocation(source.getUserLocation());
         target.setDeviceId(source.getDeviceId());
+
+        target.setArea(DatabaseHelper.getAreaDao().getByReferenceDto(source.getArea()));
+        target.setRegion(DatabaseHelper.getRegionDao().getByReferenceDto(source.getRegion()));
+        target.setDistrict(DatabaseHelper.getDistrictDao().getByReferenceDto(source.getDistrict()));
+        
     }
 
     @Override
@@ -204,7 +213,12 @@ public class DeviceInfoDtoHelper extends AdoDtoHelper<DeviceInfo, DeviceManagerD
         target.setNetworkProvider(source.getNetworkProvider());
         target.setActiveFormCount(source.getActiveFormCount());
         target.setActiveCampaigns(source.getActiveCampaigns());
- 
+
+
+        target.setArea(AreaDtoHelper.toReferenceDto(source.getArea()));
+        target.setRegion(RegionDtoHelper.toReferenceDto(source.getRegion()));
+        target.setDistrict(DistrictDtoHelper.toReferenceDto(source.getDistrict()));
+
         // Timestamps
 //        target.setLoginTimestamp(source.getLoginTimestamp());
 //        target.setLastUpdated(source.getLastUpdated());

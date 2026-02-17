@@ -106,6 +106,8 @@ public class CampaignFormMetaDialog extends FormDialog {
                     DatabaseHelper.getCampaignFormMetaRegionDao().getSelectedFormsByRegion(campaignFormMeta.getUuid(), user.getRegion().getArea().getUuid());
 
             if (preCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+
+                System.out.println("cuurentdate " + currentDate + "expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())" + expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() + "---"  + campaign.getPreCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate() + " precampaign start date ");
                 if ((!currentDate.isBefore(campaign.getPreCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
                         && !currentDate.isAfter(expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()))) {
                     if (formsSelectedForCampaign.size() > 0) {
@@ -113,6 +115,9 @@ public class CampaignFormMetaDialog extends FormDialog {
                     }
                 }
             } else if (intraCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+
+                System.out.println( "cuurentdate " + currentDate + "expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())" + expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() + "---"  +campaign.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate() + " intracampaign start date  start date ");
+
                 if ((!currentDate.isBefore(campaign.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) &&
                         !currentDate.isAfter(expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()))) {
                     if (formsSelectedForCampaign.size() > 0) {
@@ -121,6 +126,9 @@ public class CampaignFormMetaDialog extends FormDialog {
 //                    }
                 }
             } else if (postCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+
+                System.out.println( "cuurentdate " + currentDate + "expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())" + expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() + "---"  + campaign.getPostCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate() + " post - campaign start date ");
+
                 if (((!currentDate.isBefore(campaign.getPostCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
                         && !currentDate.isAfter(expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())))) {
                     if (formsSelectedForCampaign.size() > 0) {
@@ -140,19 +148,13 @@ public class CampaignFormMetaDialog extends FormDialog {
 
     @Override
     protected void onPositiveClick() {
-
-
-
         try {
             System.out.println("Positvite ccallback clicked -------------------------");
             setLiveValidationDisabled(false);
-
             FragmentValidator.validate(getContext(), contentBinding);
         } catch (ValidationException  e) {
             NotificationHelper.showDialogNotification(CampaignFormMetaDialog.this, ERROR, e.getMessage());
-
             System.out.println("META DIALOG  Fragment Error Logged--------------------");
-
             ErrorReportingHelper.logAndStoreDeviceError( "New Form : " + e.getMessage(), e); // replaced sendCaughtException
 
             return;

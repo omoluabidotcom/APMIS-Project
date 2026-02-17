@@ -50,6 +50,8 @@ public interface ImportFacade {
 
 	void generatePopulationDataImportTemplateFile() throws IOException;
 	
+	void generateClusterLevelPopulationDataImportTemplateFile() throws IOException;
+	
 	void generateUserImportTemplateFile() throws IOException;
 
 	void generateAreaImportTemplateFile() throws IOException;
@@ -95,6 +97,10 @@ public interface ImportFacade {
 	String getPopulationDataImportTemplateFileName();
 
 	String getPopulationDataImportTemplateFilePath();
+	
+	String getClusterLevelPopulationDataImportTemplateFileName();
+
+	String getClusterLevelPopulationDataImportTemplateFilePath();
 
 	String getCaseLineListingImportTemplateFileName();
 

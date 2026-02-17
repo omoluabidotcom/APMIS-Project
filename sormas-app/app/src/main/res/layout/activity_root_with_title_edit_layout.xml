@@ -94,7 +94,7 @@
                             app:layout_widthPercent="@dimen/preloaderWidthPercent"
                             android:layout_height="wrap_content"
                             android:minHeight="@dimen/preloaderMinHeight"
-                            />
+                             android:layout_width="@dimen/preloaderWidthPercent"/>
 
 
                         <!--<android.support.design.widget.FloatingActionButton

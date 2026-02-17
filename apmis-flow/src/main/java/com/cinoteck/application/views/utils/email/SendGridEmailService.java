@@ -23,7 +23,7 @@ public class SendGridEmailService {
     
     
     public SendGridEmailService(
-            @Value("${sendgrid.api.key}") String apiKey,
+           String apiKey,
             @Value("${mail.from.email}") String fromEmail,
             @Value("${mail.from.name}") String fromName,
             @Value("${app.base.url}") String appBaseUrl) {

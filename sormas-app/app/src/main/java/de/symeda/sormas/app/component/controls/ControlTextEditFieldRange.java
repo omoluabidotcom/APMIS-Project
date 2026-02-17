@@ -770,4 +770,5 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     public void setMinLength(int minLength) {
         this.minLength = minLength;
     }
+
 }

@@ -49,6 +49,7 @@ public class CampaignFormMeta extends PseudonymizableAdo {
 
 
 
+
 	@Column(length = CHARACTER_LIMIT_DEFAULT)
 	private String formId;
 

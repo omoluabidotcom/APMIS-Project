@@ -48,6 +48,7 @@ import de.symeda.sormas.app.rest.RetroProvider;
 import de.symeda.sormas.app.rest.ServerCommunicationException;
 import de.symeda.sormas.app.rest.ServerConnectionException;
 import de.symeda.sormas.app.rest.SynchronizeDataAsync;
+import de.symeda.sormas.app.settings.SettingsActivity;
 import de.symeda.sormas.app.util.NavigationHelper;
 
 public class EnterPinActivity extends AppCompatActivity implements NotificationContext {
@@ -396,7 +397,7 @@ try {
 				System.out.println("Syncronizing data  calll ");
 
 
-				SynchronizeDataAsync.call(SynchronizeDataAsync.SyncMode.Changes, getApplicationContext(), (syncFailed, syncFailedMessage) -> {
+				SynchronizeDataAsync.call(SynchronizeDataAsync.SyncMode.CompleteAndRepull, getApplicationContext(), (syncFailed, syncFailedMessage) -> {
 
 					// Always disconnect after sync
 					RetroProvider.disconnect();
@@ -421,19 +422,20 @@ try {
 								new android.os.Handler().postDelayed(() -> {
 									if (!isFinishing() && !isDestroyed() && reInitializeprogressDialog != null) {
 										// Update dialog for database clearing phase
-										reInitializeprogressDialog.setTitle("Clearing Database");
-										reInitializeprogressDialog.setMessage("Removing local data and preparing for restart...");
+										reInitializeprogressDialog.setTitle("Restoring Database");
+										reInitializeprogressDialog.setMessage("Restoring device data ...");
 
 										// Wait another 7 seconds before actually clearing
 										new android.os.Handler().postDelayed(() -> {
 											if (!isFinishing() && !isDestroyed() && reInitializeprogressDialog != null) {
-												reInitializeprogressDialog.setTitle("Almost Done");
-												reInitializeprogressDialog.setMessage("✓ Database cleared successfully! Restarting app...");
+												reInitializeprogressDialog.setTitle("Restore Successful");
+												reInitializeprogressDialog.setMessage("✓ App restored successfully! Restarting APMIS...");
 
 												// Final delay before restart
 												new android.os.Handler().postDelayed(() -> {
 													if (!isFinishing() && !isDestroyed() && reInitializeprogressDialog != null) {
 														reInitializeprogressDialog.dismiss();
+//														restartApp();
 														clearDatabaseAndRestart();
 													}
 												}, 7000); // 7 seconds
@@ -462,6 +464,26 @@ try {
 			}
 		});
 	}
+
+
+	private void restartApp() {
+		Intent intent = getPackageManager()
+				.getLaunchIntentForPackage(getPackageName());
+
+//		Intent intent = new Intent(this, SettingsActivity.class);
+
+		if (intent != null) {
+			intent.addFlags(
+					Intent.FLAG_ACTIVITY_CLEAR_TOP |
+							Intent.FLAG_ACTIVITY_CLEAR_TASK |
+							Intent.FLAG_ACTIVITY_NEW_TASK
+			);
+			startActivity(intent);
+		}
+
+		finishAffinity(); // Close all existing activities
+	}
+
 
 	private void showConnectionErrorWithRetry() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);

@@ -490,6 +490,30 @@ System.out.println("YESSSS");
 	}
 	
 	@Override
+	public void generateClusterLevelPopulationDataImportTemplateFile() throws IOException {
+
+		createExportDirectoryIfNecessary();
+
+		char separator = configFacade.getCsvSeparator();
+
+		List<ImportColumn> importColumns = new ArrayList<>();
+		importColumns.add(ImportColumn.from(PopulationDataDto.class, "PCODE", RegionReferenceDto.class, separator));
+		importColumns.add(ImportColumn.from(PopulationDataDto.class, "DCODE", DistrictReferenceDto.class, separator));
+		importColumns.add(ImportColumn.from(PopulationDataDto.class, "CCODE", CommunityReferenceDto.class, separator));
+		importColumns.add(ImportColumn.from(PopulationDataDto.class, PopulationDataDto.CAMPAIGN, CampaignReferenceDto.class, separator));
+		
+		
+			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TARGET_0_59M", Integer.class, separator));
+			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TARGET_60_120M", Integer.class, separator));
+			importColumns.add(ImportColumn.from(PopulationDataDto.class, PopulationDataDto.MODALITY, String.class, separator));
+			importColumns.add(ImportColumn.from(PopulationDataDto.class, "campaignstatus", String.class, separator));
+			importColumns.add(ImportColumn.from(PopulationDataDto.class, PopulationDataDto.CAMPAIGN_STATUS, String.class, separator));
+
+
+			writePopulationTemplate(Paths.get(getPopulationDataImportTemplateFilePath()), importColumns, false);
+	}
+	
+	@Override
 	public void generateUserImportTemplateFile() throws IOException {
 
 		createExportDirectoryIfNecessary();
@@ -588,7 +612,8 @@ System.out.println("YESSSS");
 		importColumns.add(ImportColumn.from(CommunityDto.class, "ClusterNo", Integer.class, separator));
 		importColumns.add(ImportColumn.from(CommunityDto.class, "Float_Status",String.class, separator));
 		importColumns.add(ImportColumn.from(CommunityDto.class, "Active_Status",String.class, separator));
-		
+		importColumns.add(ImportColumn.from(CommunityDto.class, "International_Border",String.class, separator));
+
 		writeTemplate(Paths.get(getCommunityImportTemplateFilePath()), importColumns, false);
 	}
 	
@@ -739,6 +764,18 @@ System.out.println("YESSSS");
 	@Override
 	public String getPopulationDataImportTemplateFilePath() {
 		return getImportTemplateFilePath(POPULATION_DATA_IMPORT_TEMPLATE_FILE_NAME);
+	}
+	
+	@Override
+	public String getClusterLevelPopulationDataImportTemplateFileName() {
+		return getImportTemplateFileName(POPULATION_DATA_IMPORT_TEMPLATE_FILE_NAME);
+
+	}
+
+	@Override
+	public String getClusterLevelPopulationDataImportTemplateFilePath() {
+		return getImportTemplateFilePath(POPULATION_DATA_IMPORT_TEMPLATE_FILE_NAME);
+
 	}
 
 	@Override
@@ -1052,7 +1089,14 @@ System.out.println("YESSSS");
 				    importColumns.stream()
 				        .map(importColumn -> {
 				            String dataDescription = importColumn.getDataDescription();
-				            return dataDescription.equalsIgnoreCase("Code of Region") ? "Code of Province" : dataDescription;
+				            if(dataDescription.equalsIgnoreCase("Code of Region")) {
+				            	dataDescription =  "Province_Code";
+				            }else if(dataDescription.equalsIgnoreCase("Code of District")) {
+				            	dataDescription =  "District_Code";
+				            }else if(dataDescription.equalsIgnoreCase("Code of Community")) {
+				            	dataDescription =  "Cluster_Code";
+				            }
+				            return dataDescription;
 				        })
 				        .toArray(String[]::new)
 				);
@@ -1154,4 +1198,6 @@ System.out.println("YESSSS");
 	@Stateless
 	public static class ImportFacadeEjbLocal extends ImportFacadeEjb {
 	}
+
+
 }

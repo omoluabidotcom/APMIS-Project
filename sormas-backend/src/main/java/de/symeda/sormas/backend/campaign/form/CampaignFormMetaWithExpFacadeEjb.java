@@ -153,6 +153,19 @@ public class CampaignFormMetaWithExpFacadeEjb implements CampaignFormMetaExpiryF
 
 
 		}
+	
+	
+	@Override
+	public Date getFormExpiryByCampaignAndFormUuid(String campaignUuid , String formUuid) {
+		String nQuery = "select enddate from campaignformmetawithexp exp where campaignid  = '" + campaignUuid + "' and formid = '" + formUuid + "'";
+		
+		System.out.println( " VVVVVVVV "+ nQuery);
+
+		Query getFormsWithExpiryQuery = em.createNativeQuery(nQuery);
+
+		return (Date) getFormsWithExpiryQuery.getSingleResult();
+
+	}
 
 
 

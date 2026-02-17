@@ -21,6 +21,7 @@
 package de.symeda.sormas.backend.devicemanager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,26 +32,34 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-
-import com.vladmihalcea.hibernate.type.util.SQLExtractor;
 
 import de.symeda.sormas.api.devicemanager.DeviceManagerDto;
 import de.symeda.sormas.api.devicemanager.DeviceManagerFacade;
 import de.symeda.sormas.api.devicemanager.DeviceManagerReferenceDto;
 import de.symeda.sormas.api.devicemanager.DeviceMangerCriteria;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
+import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
+import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
 import de.symeda.sormas.api.user.UserReferenceDto;
 import de.symeda.sormas.api.utils.SortProperty;
 import de.symeda.sormas.api.utils.ValidationRuntimeException;
-import de.symeda.sormas.backend.infrastructure.community.Community;
+import de.symeda.sormas.backend.infrastructure.area.Area;
+import de.symeda.sormas.backend.infrastructure.area.AreaFacadeEjb;
+import de.symeda.sormas.backend.infrastructure.area.AreaService;
 import de.symeda.sormas.backend.infrastructure.community.CommunityService;
+import de.symeda.sormas.backend.infrastructure.district.District;
 import de.symeda.sormas.backend.infrastructure.district.DistrictFacadeEjb;
 import de.symeda.sormas.backend.infrastructure.district.DistrictService;
+import de.symeda.sormas.backend.infrastructure.region.Region;
+import de.symeda.sormas.backend.infrastructure.region.RegionFacadeEjb;
+import de.symeda.sormas.backend.infrastructure.region.RegionService;
 import de.symeda.sormas.backend.user.User;
 import de.symeda.sormas.backend.user.UserFacadeEjb;
 import de.symeda.sormas.backend.user.UserService;
@@ -69,9 +78,6 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
 	private DeviceManagerService deviceManagerService;
 
 	@EJB
-	private DistrictService districtService;
-
-	@EJB
 	private CommunityService communityService;
 
 	@EJB
@@ -85,6 +91,15 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
 
 	@EJB
 	private UserRoleConfigFacadeEjbLocal userRoleConfigFacade;
+	
+	@EJB
+	private AreaService areaService;
+	
+	@EJB
+	private RegionService regionService;
+	
+	@EJB
+	private DistrictService districtService;
 
 	public DeviceManager fromDto(@NotNull DeviceManagerDto source, boolean checkChangeDate) {
 		DeviceManager target = DtoHelper.fillOrBuildEntity(source, deviceManagerService.getByUuid(source.getUuid()),
@@ -109,9 +124,13 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
 
         target.setNetworkProvider(source.getNetworkProvider());
         target.setActiveCampaigns(source.getActiveCampaigns());
-        target.setActiveFormCount(source.getActiveFormCount());
+        target.setActiveFormCount(source.getActiveFormCount());        
+		target.setArea(areaService.getByReferenceDto(source.getArea()));
+		target.setRegion(regionService.getByReferenceDto(source.getRegion()));
+		if (source.getDistricts() != null) {
+			target.setDistricts(districtService.getByReferenceDto(source.getDistricts()));
+		}
 
-        
 //        target.setTotal_int_storage_gb(source.getInternalStorageTotalGb());
 //        target.setFree_int_storage_gb(source.getInternalStorageFreeGb());
 //        target.setTotal_ext_storage_gb(source.getExternalStorageTotalGb());
@@ -168,10 +187,12 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
         target.setNetworkProvider(source.getNetworkProvider());
         target.setActiveCampaigns(source.getActiveCampaigns());
         target.setActiveFormCount(source.getActiveFormCount());
-
-
-
- 
+        target.setArea(AreaFacadeEjb.toReferenceDto(source.getArea()));
+		target.setRegion(RegionFacadeEjb.toReferenceDto(source.getRegion()));
+		if (source.getDistricts() != null) {
+			target.setDistricts(DistrictFacadeEjb.toReferenceDto(new HashSet<District>(source.getDistricts())));
+		}
+		
 //        if (source.getUser_id() != null) {
 //            target.setUser(new UserReferenceDto(source.getUser_id().getUuid(), source.getUser_id().getFirstName(), source.getUser_id().getLastName()));
 //        } else {
@@ -198,7 +219,6 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
 		UserReferenceDto currtUsr = userServiceEBJ.getCurrentUserAsReference();
 
 		DeviceManager deviceInfoData = fromDto(deviceManagerDto, true);
-
 		validate(deviceManagerDto);
 
 		deviceManagerService.ensurePersisted(deviceInfoData);
@@ -216,7 +236,6 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
 		return toDto(deviceManagerService.getByUuid(uuid));
 	}
 	
-	
 	@Override
 	public List<DeviceManagerDto> getIndexList(DeviceMangerCriteria criteria, Integer first, Integer max,
 	                                           List<SortProperty> sortProperties) {
@@ -225,55 +244,86 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
 	    CriteriaQuery<DeviceManager> cq = cb.createQuery(DeviceManager.class);
 	    Root<DeviceManager> root = cq.from(DeviceManager.class);
 
-	    Predicate filter = null;
+	    List<Predicate> predicates = new ArrayList<>();
 
+	    System.out.println("DEBUG BACKEND - Criteria is null? " + (criteria == null));
 	    if (criteria != null) {
-	        // Example: if criteria has filters, add them here
-	        List<Predicate> predicates = new ArrayList<>();
-
-//	        if (criteria.getDeviceModel() != null && !criteria.getDeviceModel().isEmpty()) {
-//	            predicates.add(cb.equal(root.get("deviceModel"), criteria.getDeviceModel()));
-//	        }
-//
-//	        if (criteria.getUserName() != null && !criteria.getUserName().isEmpty()) {
-//	            predicates.add(cb.equal(root.get("userName"), criteria.getUserName()));
-//	        }
-//
-//	        if (criteria.getUserLocation() != null && !criteria.getUserLocation().isEmpty()) {
-//	            predicates.add(cb.equal(root.get("userLocation"), criteria.getUserLocation()));
-//	        }
-//
-//	        if (criteria.getApkVersion() != null && !criteria.getApkVersion().isEmpty()) {
-//	            predicates.add(cb.equal(root.get("apkVersion"), criteria.getApkVersion()));
-//	        }
-
-	        if (!predicates.isEmpty()) {
-	            filter = cb.and(predicates.toArray(new Predicate[0]));
+	        System.out.println("DEBUG: Criteria received - Area: " + (criteria.getArea() != null ? criteria.getArea().size() : 0) + 
+	                          ", Region: " + (criteria.getRegion() != null ? criteria.getRegion().size() : 0) + 
+	                          ", District: " + (criteria.getDistrict() != null ? criteria.getDistrict().size() : 0));
+	        
+	        // Check if ANY filters are applied
+	        boolean hasFilters = (criteria.getArea() != null && !criteria.getArea().isEmpty()) ||
+	                            (criteria.getRegion() != null && !criteria.getRegion().isEmpty()) ||
+	                            (criteria.getDistrict() != null && !criteria.getDistrict().isEmpty());
+	        
+	        if (hasFilters) {
+	            // Create a subquery to handle filtering through User
+	            Subquery<Long> subquery = cq.subquery(Long.class);
+	            Root<DeviceManager> subRoot = subquery.from(DeviceManager.class);
+	            Join<DeviceManager, User> subUserJoin = subRoot.join("user_id", JoinType.LEFT);
+	            
+	            List<Predicate> subPredicates = new ArrayList<>();
+	            
+	            // Area filter
+	            if (criteria.getArea() != null && !criteria.getArea().isEmpty()) {
+	                System.out.println("AREAFILTERING - Areas selected: " + criteria.getArea().size());
+	                
+	                List<String> areaUuids = criteria.getArea().stream()																													
+	                    .map(AreaReferenceDto::getUuid)
+	                    .collect(Collectors.toList());
+	                
+	                Join<User, Area> areaJoin = subUserJoin.join("area", JoinType.LEFT);
+	                subPredicates.add(areaJoin.get("uuid").in(areaUuids));
+	            }
+	            
+	            // Region filter
+	            if (criteria.getRegion() != null && !criteria.getRegion().isEmpty()) {
+	                System.out.println("REGIONFILTERING - Regions selected: " + criteria.getRegion().size());
+	                
+	                List<String> regionUuids = criteria.getRegion().stream()
+	                    .map(RegionReferenceDto::getUuid)
+	                    .collect(Collectors.toList());
+	                
+	                Join<User, Region> regionJoin = subUserJoin.join("region", JoinType.LEFT);
+	                subPredicates.add(regionJoin.get("uuid").in(regionUuids));
+	            }
+	            
+	            // District filter  
+	            if (criteria.getDistrict() != null && !criteria.getDistrict().isEmpty()) {
+	                System.out.println("DISTRICTFILTERING - Districts selected: " + criteria.getDistrict().size());
+	                
+	                List<String> districtUuids = criteria.getDistrict().stream()
+	                    .map(DistrictReferenceDto::getUuid)
+	                    .collect(Collectors.toList());
+	                
+	                Join<User, District> districtJoin = subUserJoin.join("district", JoinType.LEFT);
+	                subPredicates.add(districtJoin.get("uuid").in(districtUuids));
+	            }
+	            
+	            // The subquery selects DeviceManager IDs that match the filters
+	            subquery.select(subRoot.get("id"));
+	            
+	            // Link subquery to main query
+	            if (!subPredicates.isEmpty()) {
+	                subquery.where(cb.and(subPredicates.toArray(new Predicate[0])));
+	                // Include records that match the filter OR have no user (if you want to show them)
+	                predicates.add(cb.or(
+	                    cb.in(root.get("id")).value(subquery),  // Matches filter
+	                    cb.isNull(root.get("user_id"))          // OR has no user
+	                ));
+	            }
 	        }
 	    }
 
-	    if (filter != null) {
-	        cq.where(filter);
+	    // Apply predicates if any
+	    if (!predicates.isEmpty()) {
+	        cq.where(cb.and(predicates.toArray(new Predicate[0])));
 	    }
 
-	    // Sorting
-	    if (sortProperties != null && !sortProperties.isEmpty()) {
-	        List<Order> orderList = new ArrayList<>();
-	        for (SortProperty sortProperty : sortProperties) {
-	            Expression<?> expression = root.get(sortProperty.propertyName);
-	            orderList.add(sortProperty.ascending ? cb.asc(expression) : cb.desc(expression));
-	        }
-	        cq.orderBy(orderList);
-	    } else {
-	        cq.orderBy(cb.asc(root.get("user_name"))); // default sort
-	    }
-
+	    cq.orderBy(cb.asc(root.get("user_name")));
 	    cq.select(root);
 
-	    // Debug SQL (like your Community example)
-	    System.out.println("DEBUGGER DeviceManager Query: " + SQLExtractor.from(em.createQuery(cq)));
-
-	    // Convert to DTO
 	    return QueryHelper.getResultList(em, cq, first, max, this::toDto);
 	}
 

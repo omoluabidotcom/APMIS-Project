@@ -2510,6 +2510,7 @@ public interface Captions {
 	String View_configuration_pointsofentry_short = "View.configuration.pointsofentry.short";
 	String View_configuration_populationdata = "View.configuration.populationdata";
 	String View_configuration_populationdata_short = "View.configuration.populationdata.short";
+	String View_configuration_populationdata_target = "View.configuration.populationdata.target";
 	String View_configuration_regions = "View.configuration.regions";
 	String View_configuration_regions_short = "View.configuration.regions.short";
 	String View_configuration_subcontinents = "View.configuration.subcontinents";

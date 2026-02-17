@@ -280,7 +280,10 @@ public abstract class ControlPropertyEditField<T> extends ControlPropertyField<T
 			return true;
 		}
 
-
+		if (this instanceof ControlTextEditFieldRange && ((String) getValue()).isEmpty() && required) {
+			enableErrorState(R.string.validation_error_required);
+			return true;
+		}
 
 		return false;
 	}

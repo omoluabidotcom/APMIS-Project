@@ -24,3 +24,5 @@ error-screenshots/
 frontend/generated/
 
 webpack.generated.js
+/.apt_generated/
+/.apt_generated_tests/

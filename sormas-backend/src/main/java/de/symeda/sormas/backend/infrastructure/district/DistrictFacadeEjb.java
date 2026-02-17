@@ -627,28 +627,10 @@ public class DistrictFacadeEjb extends AbstractInfrastructureEjb<District, Distr
 				.map((result) -> new DistrictDto((String) result[0].toString(), ((BigInteger) result[1]).longValue(),
 						((BigInteger) result[2]).longValue(), ((BigInteger) result[3]).longValue(),
 						(String) result[4].toString(), (String) result[5].toString(), (String) result[6].toString(),
-						(String) result[7].toString(), (String) result[8].toString()))
+						(String) result[7].toString(), result[8] != null ? (String) result[8].toString() : ""))
 //						,
 //						(String) result[9].toString() ))
 				.collect(Collectors.toList()));
-
-//		resultData.addAll(resultList.stream()
-//				.map((result) -> new DistrictDto(
-//						(String) result[0].toString(), 
-//						((Integer) result[1]).longValue(),
-//						((BigInteger) result[2]).longValue(), 
-//						(String) result[3].toString(),
-//						(String) result[4].toString(), 
-//						(String) result[5].toString(), 
-//						(String) result[6].toString(),
-//						(String) result[7].toString(),
-//						(String) result[8].toString() ))
-//				.collect(Collectors.toList()));
-
-		// System.out.println("ending...." +resultData.size());
-
-//		 System.out.println(//"resultData - "+ resultData.toString());
-//				 "DUMBGFyyresultData - "+SQLExtractor.from(seriesDataQuery));
 		return resultData;
 	}
 
@@ -673,7 +655,7 @@ public class DistrictFacadeEjb extends AbstractInfrastructureEjb<District, Distr
 				.map((result) -> new DistrictDto((String) result[0].toString(), ((BigInteger) result[1]).longValue(),
 						((BigInteger) result[2]).longValue(), ((BigInteger) result[3]).longValue(),
 						(String) result[4].toString(), (String) result[5].toString(), (String) result[6].toString(),
-						(String) result[7].toString(), (String) result[8].toString()))
+						(String) result[7].toString(),  result[8] != null ? (String) result[8].toString() : ""))
 
 				.collect(Collectors.toList()));
 
@@ -702,7 +684,7 @@ public class DistrictFacadeEjb extends AbstractInfrastructureEjb<District, Distr
 				.map((result) -> new DistrictDto((String) result[0].toString(), ((BigInteger) result[1]).longValue(),
 						((BigInteger) result[2]).longValue(), ((BigInteger) result[3]).longValue(),
 						(String) result[4].toString(), (String) result[5].toString(), (String) result[6].toString(),
-						(String) result[7].toString(), (String) result[8].toString()))
+						(String) result[7].toString(), result[8] != null ? (String) result[8].toString() : ""))
 				.collect(Collectors.toList()));
 
 		return resultData;

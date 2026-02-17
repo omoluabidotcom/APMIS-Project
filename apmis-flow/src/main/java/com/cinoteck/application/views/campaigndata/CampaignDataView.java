@@ -3558,7 +3558,7 @@ public class CampaignDataView extends VerticalLayout
 								boolean fff = formDatax.isDistrictentry();
 
 								CampaignFormDataEditForm cam = new CampaignFormDataEditForm(e.getValue(),
-										campaignz.getValue(), false, null, grid, fff);
+										campaignz.getValue(), false, null, grid, fff, campaign, expiryDto);
 								// add(cam);
 
 								newForm.setValue(null);
@@ -4894,7 +4894,7 @@ public class CampaignDataView extends VerticalLayout
 									.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
 
 							CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
-									campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());	
+									campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry(), campaign, expiryDto);	
 						}
 					}else {
 						Notification notification = new Notification();
@@ -4939,7 +4939,7 @@ public class CampaignDataView extends VerticalLayout
 							.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
 
 					CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
-							campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry());
+							campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry(), campaign, expiryDto);
 
 				} else {
 				Notification notification = new Notification();

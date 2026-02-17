@@ -19,6 +19,7 @@ package de.symeda.sormas.api.devicemanager;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -27,6 +28,7 @@ import de.symeda.sormas.api.ClusterFloatStatus;
 import de.symeda.sormas.api.EntityDto;
 import de.symeda.sormas.api.ImportIgnore;
 import de.symeda.sormas.api.i18n.Validations;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
@@ -118,9 +120,9 @@ public class DeviceManagerDto extends EntityDto {
 	
     private Integer activeCampaigns;
     private Integer activeFormCount;
-
- 
-
+    private AreaReferenceDto area;
+	private RegionReferenceDto region;		
+	private Set<DistrictReferenceDto> districts;
 	
 	public DeviceManagerDto() {
 		super();
@@ -382,11 +384,33 @@ public class DeviceManagerDto extends EntityDto {
 	}
  
 
+	public AreaReferenceDto getArea() {
+		return area;
+	}
+
+	public void setArea(AreaReferenceDto area) {
+		this.area = area;
+	}
+
+	public RegionReferenceDto getRegion() {
+		return region;
+	}
+
+	public void setRegion(RegionReferenceDto region) {
+		this.region = region;
+	}
+
+	public Set<DistrictReferenceDto> getDistricts() {
+		return districts;
+	}
+
+	public void setDistricts(Set<DistrictReferenceDto> districts) {
+		this.districts = districts;
+	}
+
 	@Override
 	public String toString() {
 		return getUserName();
 	}
-
-
 
 }

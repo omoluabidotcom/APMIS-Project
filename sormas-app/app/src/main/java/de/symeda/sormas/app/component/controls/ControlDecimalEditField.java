@@ -210,7 +210,7 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
 
     @Override
     protected void setFieldValue(String value) {
-        input.setText(value);
+        input.setText(convertToEnglishNumerals(value));
     }
 
     @Override
@@ -326,7 +326,7 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
                 System.out.println("===================================================== "+editablex.toString());
                 System.out.println("===================================================== "+input.getId());
 
-                String text = editablex.toString();
+                String text = convertToEnglishNumerals(editablex.toString());
 
                 if (inverseBindingListener != null) {
                     inverseBindingListener.onChange();
@@ -751,5 +751,26 @@ public class ControlDecimalEditField extends ControlPropertyEditField<String> {
 
     public void setInput(EditText input) {
         this.input = input;
+    }
+
+    private String convertToEnglishNumerals(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (char c : input.toCharArray()) {
+            // Check if character is a digit in any script
+            if (Character.isDigit(c)) {
+                // Get the numeric value and convert to English digit
+                int digitValue = Character.getNumericValue(c);
+                if (digitValue >= 0 && digitValue <= 9) {
+                    builder.append((char) ('0' + digitValue));
+                    continue;
+                }
+            }
+            builder.append(c);
+        }
+        return builder.toString();
     }
 }

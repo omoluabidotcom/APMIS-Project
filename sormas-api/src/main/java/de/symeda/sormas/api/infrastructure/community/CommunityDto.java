@@ -53,6 +53,8 @@ public class CommunityDto extends EntityDto {
 	public static final String REGION_EXTERNALID = "regionexternalId";
 	public static final String DISTRICT_EXTERNALID = "districtexternalId";
 	public static final String FLOATING_ATTRIBUTE = "floating";
+	public static final String INTERNATIONAL_BORDER = "internationalborder";
+
 
 	
 
@@ -74,6 +76,21 @@ public class CommunityDto extends EntityDto {
 	private Long areaexternalId;
 	private String areaname;
 	private String floating;
+	
+	private Long populationData;
+	private Long populationData5_10;
+	private String selectedPopulationData;
+	private String districtModality;
+	private String districtStatus;
+	private String floatStatus;
+	private String ageGroup;
+	private Long clusterId;
+	private String regionUuid;
+	private String districtUuid;
+	private String clusterUuid;
+	
+	private boolean internationalborder;
+
 	
 	
 	public CommunityDto(
@@ -220,6 +237,26 @@ public class CommunityDto extends EntityDto {
 			this.clusterNumber = clusterNumber;
 			this.floating = floating; 
 		}
+	
+	
+	
+	
+	public CommunityDto(String name, Long populationData, Long populationData5_10, Long clusterId,String regionUuid, String districtUuid, String clusterUuid,  String selectedPopulationData, String districtModality, String districtStatus, String floating) {
+		this.name = name;
+		this.populationData = populationData;
+		this.populationData5_10 = populationData5_10;
+		this.clusterId = clusterId;
+		this.regionUuid = regionUuid;
+		this.districtUuid = districtUuid;
+		this.clusterUuid = clusterUuid;
+		this.selectedPopulationData = selectedPopulationData;
+		this.districtModality = districtModality;
+		this.districtStatus = districtStatus;
+		this.floating = floating; 
+
+//		this.ageGroup = ageGroup;
+	};
+	
 
 	public CommunityDto() {
 		super();
@@ -391,6 +428,121 @@ public class CommunityDto extends EntityDto {
 		
 	}
 	
+
+	public Long getPopulationData() {
+		return populationData;
+	}
+
+	public void setPopulationData(Long populationData) {
+		this.populationData = populationData;
+	}
+	
+	public Long getPopulationData5_10() {
+		return populationData5_10;
+	}
+
+	public void setPopulationData5_10(Long populationData5_10) {
+		this.populationData5_10 = populationData5_10;
+	}
+	
+	public String getSelectedPopulationData() {
+		return selectedPopulationData;
+	}
+
+	public void setSelectedPopulationData(String selectedPopulationData) {
+		this.selectedPopulationData = selectedPopulationData;
+	}
+	
+
+	public String getDistrictModality() {
+		return districtModality;
+	}
+
+
+	public void setDistrictModality(String districtModality) {
+		this.districtModality = districtModality;
+	}
+
+
+	public String getDistrictStatus() {
+		return districtStatus;
+	}
+
+
+	public void setDistrictStatus(String districtStatus) {
+		this.districtStatus = districtStatus;
+	}
+	
+
+	public String getAgeGroup() {
+		return ageGroup;
+	}
+
+
+	public void setAgeGroup(String ageGroup) {
+		this.ageGroup = ageGroup;
+	}
+
+
+	public Long getClusterId() {
+		return clusterId;
+	}
+
+
+	public void setClusterId(Long clusterId) {
+		this.clusterId = clusterId;
+	}
+
+
+	public String getRegionUuid() {
+		return regionUuid;
+	}
+
+
+	public void setRegionUuid(String regionUuid) {
+		this.regionUuid = regionUuid;
+	}
+
+
+	public String getDistrictUuid() {
+		return districtUuid;
+	}
+
+
+	public void setDistrictUuid(String districtUuid) {
+		this.districtUuid = districtUuid;
+	}
+
+
+	public String getClusterUuid() {
+		return clusterUuid;
+	}
+
+
+	public void setClusterUuid(String clusterUuid) {
+		this.clusterUuid = clusterUuid;
+	}
+
+
+	public boolean isInternationalborder() {
+		return internationalborder;
+	}
+
+
+	public void setInternationalborder(boolean internationalborder) {
+		this.internationalborder = internationalborder;
+	}
+	
+	public String provideInternationalborder() {
+		if(isInternationalborder()) {
+			return "Yes";
+
+		}else {
+			return "No";
+
+		}	
+	}
+
 
 	@Override
 	public String toString() {

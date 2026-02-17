@@ -30,6 +30,8 @@ import androidx.annotation.Nullable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
  
 import java.util.Calendar;
@@ -79,6 +81,13 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
     private Locale currentLocale;
 
     private CampaignFormDataCriteria criteria = new CampaignFormDataCriteria();
+
+    List<String> preCampaignsCategories = List.of("FLW", "MODALITY_PRE", "TRAINING");
+    List<String> intraCampaignsCategories = List.of("ICM", "ADMIN", "EAG-ICM", "EAG-ADMIN");
+    List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION");
+    LocalDate minDate = null;
+    LocalDate maxDate = null;
+
 
     public static void startActivity(Context context, String campaignUUID, String campaignFormMetaUUID) {
         BaseEditActivity.startActivity(context, CampaignFormDataNewActivity.class,
@@ -133,15 +142,24 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
             criteria.setCommunity(campaignFormDataToSave.getCommunity());
 //            criteria.setCommunity(null);
         }
-        System.out.println(campaignFormDataToSave.getFormDate()  + "campaignFormDataToSave.getFormDate()campaignFormDataToSave.getFormDate()campaignFormDataToSave.getFormDate()campaignFormDataToSave.getFormDate()");
 
 
 //        campaignFormDataToSave.setRecordversion(1L);
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
 
 
+//        try {
+//            FragmentValidator.validate(getContext(), getActiveFragment().getContentBinding());
+//        } catch (ValidationException e) {
+//            NotificationHelper.showNotification(this, ERROR, e.getMessage());
+//            return;
+//        }
+
+        CampaignFormDataNewFragment fragment =
+                (CampaignFormDataNewFragment) getActiveFragment();
+
         try {
-            FragmentValidator.validate(getContext(), getActiveFragment().getContentBinding());
+            fragment.validateForSave(getContext());
         } catch (ValidationException e) {
             NotificationHelper.showNotification(this, ERROR, e.getMessage());
             return;
@@ -165,6 +183,16 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
                         CampaignFormDataEntry timeEntry = new CampaignFormDataEntry();
                         timeEntry.setId(entry.getId());
                         timeEntry.setValue(convertedTime);
+                        cleanedFormValues.add(timeEntry);
+                    } else {
+                        cleanedFormValues.add(entry);
+                    }
+                } else if ("date".equalsIgnoreCase(entry.getId())) {
+                    String convertedDate = convertToEnglishNumbers(String.valueOf(entry.getValue()));
+                    if (!convertedDate.equals(entry.getValue())) {
+                        CampaignFormDataEntry timeEntry = new CampaignFormDataEntry();
+                        timeEntry.setId(entry.getId());
+                        timeEntry.setValue(convertedDate);
                         cleanedFormValues.add(timeEntry);
                     } else {
                         cleanedFormValues.add(entry);
@@ -292,6 +320,40 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
                     saveChecker = false;
                 }
             }
+
+            if(campaignFormDataToSave.getFormDate() == null) {
+                try {
+                    Date expiryDate = DatabaseHelper.getCampaignFormMetaWithExpDao().getCampaignFormExpiryDateByCampaignIdAndFormId(campaignFormDataToSave.getCampaign().getUuid(), campaignFormDataToSave.getCampaignFormMeta().getUuid());
+
+                    if (preCampaignsCategories.contains(campaignFormDataToSave.getCampaignFormMeta().getFormCategory())) {
+                        minDate = campaign.getPreCampStartDate().toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
+                    } else if (intraCampaignsCategories.contains(campaignFormDataToSave.getCampaignFormMeta().getFormCategory())) {
+                        minDate = campaign.getStartDate().toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
+                    } else if (postCampaignsCategories.contains(campaignFormDataToSave.getCampaignFormMeta().getFormCategory())) {
+                        minDate = campaign.getPostCampStartDate().toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
+                    }
+
+                    maxDate = expiryDate.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+
+                    LocalDate formDate = campaignFormDataToSave.getFormDate().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+
+
+                    FragmentValidator.validate(getContext(), getActiveFragment().getContentBinding(), minDate, maxDate, formDate);
+                }catch (ValidationException e) {
+                        NotificationHelper.showNotification(this, ERROR, e.getMessage());
+                        return;
+                }
+            }
         }
 
 
@@ -323,9 +385,19 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
             }else if(campaignFormDataToSave.getCommunity() == null){
                 NotificationHelper.showNotification(this, ERROR, "Cluster cannot be left Empty. Please select a cluster to proceed.");
-            }else{
-                NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number.");
+            }else if(campaignFormDataToSave.getFormDate() != null ){
+                LocalDate formDatetoCheck = campaignFormDataToSave.getFormDate().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                if ((minDate != null && formDatetoCheck.isBefore(minDate)) ||
+                        (maxDate != null && formDatetoCheck.isAfter(maxDate))) {
+                    // Handle the case when date is outside the allowed range
 
+                    NotificationHelper.showNotification(this, ERROR, "Form Date is Outside Validity Period.");
+                }
+
+            } else{
+                NotificationHelper.showNotification(this, WARNING, "Lot Cluster Number Already Exist for this Lot Number.");
             }
             return;
         }

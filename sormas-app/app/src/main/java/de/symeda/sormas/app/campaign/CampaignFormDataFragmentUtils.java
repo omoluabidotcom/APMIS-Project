@@ -1990,6 +1990,7 @@ public class CampaignFormDataFragmentUtils {
     }
 
 
+
     public static ControlCheckBoxGroupField createControlMultiSelectCheckBoxEditField(
             CampaignFormElement campaignFormElement,
             Context context,
@@ -1999,6 +2000,7 @@ public class CampaignFormDataFragmentUtils {
             boolean isRequired) {
 
         return new ControlCheckBoxGroupField(context) {
+            @Override
             protected String getPrefixDescription() {
                 return getUserLanguageCaption(userTranslations, campaignFormElement);
             }
@@ -2022,11 +2024,6 @@ public class CampaignFormDataFragmentUtils {
             protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
                 super.inflateView(context, attrs, defStyle);
 
-                // Add debug logging
-                System.out.println("DEBUG Creating checkbox field for: " + campaignFormElement.getId());
-                System.out.println("DEBUG Selected keys passed: " + selectedKeys);
-                System.out.println("DEBUG Options available: " + optionValues);
-
                 // Initialize the parent field components
                 initLabel();
                 initLabelAndValidationListeners();
@@ -2042,34 +2039,29 @@ public class CampaignFormDataFragmentUtils {
                     setRequired(true);
                 }
 
-                // Set up the checkbox options
-                if (optionValues != null && !optionValues.isEmpty()) {
-                    // Convert selectedKeys to proper format for the field
-                    List<String> finalSelectedKeys = new ArrayList<>();
-                    if (selectedKeys != null && !selectedKeys.isEmpty()) {
-                        for (Object key : selectedKeys) {
-                            if (key != null) {
-                                String strKey = key.toString().trim();
-                                if (!strKey.isEmpty()) {
-                                    finalSelectedKeys.add(strKey);
-                                }
+                // Convert selectedKeys to proper format
+                List<String> finalSelectedKeys = new ArrayList<>();
+                if (selectedKeys != null && !selectedKeys.isEmpty()) {
+                    for (Object key : selectedKeys) {
+                        if (key != null) {
+                            String strKey = key.toString().trim();
+                            if (!strKey.isEmpty()) {
+                                finalSelectedKeys.add(strKey);
                             }
                         }
                     }
+                }
 
+                // Set up the checkbox options with values
+                if (optionValues != null && !optionValues.isEmpty()) {
                     System.out.println("DEBUG - Setting options with selected keys: " + finalSelectedKeys);
                     setOptionsAndValue(optionValues, finalSelectedKeys);
-
-//                    // Double-check after setting
-//                    new Handler().postDelayed(() -> {
-//                        System.out.println("DEBUG - After setOptionsAndValue, selectedElements: " + getSelectedElements());
-//                    }, 100);
                 }
             }
         };
     }
 
-    //    public static ControlCheckBoxGroupField createControlMultiSelectCheckBoxEditField(
+//    public static ControlCheckBoxGroupField createControlMultiSelectCheckBoxEditField(
 //            CampaignFormElement campaignFormElement,
 //            Context context,
 //            Map<String, String> userTranslations,
@@ -2078,7 +2070,6 @@ public class CampaignFormDataFragmentUtils {
 //            boolean isRequired) {
 //
 //        return new ControlCheckBoxGroupField(context) {
-//            @Override
 //            protected String getPrefixDescription() {
 //                return getUserLanguageCaption(userTranslations, campaignFormElement);
 //            }
@@ -2102,6 +2093,11 @@ public class CampaignFormDataFragmentUtils {
 //            protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
 //                super.inflateView(context, attrs, defStyle);
 //
+//                // Add debug logging
+//                System.out.println("DEBUG Creating checkbox field for: " + campaignFormElement.getId());
+//                System.out.println("DEBUG Selected keys passed: " + selectedKeys);
+//                System.out.println("DEBUG Options available: " + optionValues);
+//
 //                // Initialize the parent field components
 //                initLabel();
 //                initLabelAndValidationListeners();
@@ -2119,39 +2115,28 @@ public class CampaignFormDataFragmentUtils {
 //
 //                // Set up the checkbox options
 //                if (optionValues != null && !optionValues.isEmpty()) {
-//                    System.out.println("DEBUG - Options: " + optionValues);
-//
-//
-//
 //                    // Convert selectedKeys to proper format for the field
 //                    List<String> finalSelectedKeys = new ArrayList<>();
-//                    // In your CampaignFragmentUtil.createControlMultiSelectCheckBoxEditField method:
-//// Make sure selectedKeys contains the saved values from database
 //                    if (selectedKeys != null && !selectedKeys.isEmpty()) {
-//                        System.out.println("DEBUG - Passing selectedKeys to field: " + selectedKeys);
-//                        // Convert to List<String> properly
-//                        List<String> stringKeys = new ArrayList<>();
 //                        for (Object key : selectedKeys) {
 //                            if (key != null) {
-//                                stringKeys.add(key.toString());
+//                                String strKey = key.toString().trim();
+//                                if (!strKey.isEmpty()) {
+//                                    finalSelectedKeys.add(strKey);
+//                                }
 //                            }
 //                        }
-//                        setOptionsAndValue(optionValues, stringKeys);
-//                    } else {
-//                        // If no saved values, pass empty list
-//                        setOptionsAndValue(optionValues, new ArrayList<>());
 //                    }
 //
-//                    System.out.println("DEBUG - Setting selected keys: " + finalSelectedKeys);
-//                    setOptionsAndValue(optionValues, finalSelectedKeys);
-////                    System.out.println("DEBUG - After setOptionsAndValue, selectedElements size: " + ((ControlCheckBoxGroupField) ControlCheckBoxGroupField.this).getSelectedElementsSize());
+//                    System.out.println("DEBUG - Setting options with selected keys: " + finalSelectedKeys);
+////                    setOptionsAndValue(optionValues, finalSelectedKeys);
+//
 //                }
 //            }
-//
-//
 //        };
 //    }
-//
+
+
     public static ControlCheckBoxGroupField createControlMultiSelectCheckBoxField(
             CampaignFormElement campaignFormElement,
             Context context,
@@ -2321,7 +2306,7 @@ public class CampaignFormDataFragmentUtils {
 
             @Override
             public int getMaxLines() {
-                return 1;
+                return 5;
             }
 
             @Override

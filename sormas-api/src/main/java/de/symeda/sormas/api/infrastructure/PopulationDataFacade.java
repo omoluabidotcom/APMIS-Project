@@ -20,8 +20,12 @@ public interface PopulationDataFacade {
 	
 	List<PopulationDataDto> getDistrictPopulationByTypeUsingUUIDs(String districtUuid, String campaignUuid, AgeGroup ageGroup);
 	
+	List<PopulationDataDto> getClusterPopulationByTypeUsingUUIDs(String clusterUuid, String campaignUuid, AgeGroup ageGroup);
+
 	List<PopulationDataDto> getDistrictModalityByUUIDsandCampaignUUIdAndAgeGroup(String districtUuid, String campaignUuid, AgeGroup ageGroup);
 	
+	List<PopulationDataDto> getDistrictModalityByclusterUUIDsandCampaignUUIdAndAgeGroup(String clusterUuid, String campaignUuid, AgeGroup ageGroup);
+
 //	List<PopulationDataDto> getDistrictStatusByDistrictUuidandCampaignUUIdAndAgeGroup(String districtUuid, String campaignUuid, AgeGroup ageGroup);
 
 	
@@ -78,6 +82,13 @@ public interface PopulationDataFacade {
 //	void deletePopulationDataByDistrict(Long populationDataList,String ageGroup, String campaignUUID);
 	
 	void deletePopulationDataByUUId(String populationDataList,String ageGroup, String campaignUUID);
+	
+	
+	void deletePopulationDataByClusters(List<Long> populationDataList, String campaignUUID);
+	void deletePopulationDataByClusterAndAgeGroup(List<Long> populationDataList, String campaignUUID, String ageGroup);
+
+
+	
 
 	List<PopulationDataDto> fetchPopulationDataSelectionByUserDistricts(List<String> uuids);
 	
