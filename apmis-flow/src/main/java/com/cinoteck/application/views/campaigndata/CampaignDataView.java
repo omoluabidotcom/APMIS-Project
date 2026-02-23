@@ -5090,7 +5090,9 @@ public class CampaignDataView extends VerticalLayout
 			grid.addColumn(e -> {
 				CampaignFormDataEntry formValue = e.getFormValues().stream().filter(v -> v.getId().equals(property))
 						.findFirst().orElse(null);
-				if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
+				if (property.equalsIgnoreCase("villagecode")) {					
+					return formValue.getValue().toString();
+				} else if (fieldsType != null && (fieldsType.equalsIgnoreCase("number"))) {
 					if (formValue != null) {
 						return removeTrailingDecimalFromString(formValue.getValue().toString());// (e.getFormValues().stream().filter(v
 																								// ->
