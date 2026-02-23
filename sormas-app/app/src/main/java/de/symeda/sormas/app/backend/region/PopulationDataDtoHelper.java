@@ -63,6 +63,7 @@ public class PopulationDataDtoHelper extends AdoDtoHelper<PopulationData, Popula
         target.setUuid(source.getUuid());
         target.setCampaign_id(source.getCampaign_id());
         target.setDistrict_id(source.getDistrict_id());
+        target.setCluster_id(source.getCluster_id());
         target.setSelected(source.getSelected());
     }
 
@@ -70,6 +71,7 @@ public class PopulationDataDtoHelper extends AdoDtoHelper<PopulationData, Popula
     protected void fillInnerFromAdo(PopulationDataDto target, PopulationData source) {
         target.setCampaign_id(source.getCampaign_id());
         target.setDistrict_id(source.getDistrict_id());
+        target.setDistrict_id(source.getCluster_id());
         target.setSelected(source.isSelected());
     }
 

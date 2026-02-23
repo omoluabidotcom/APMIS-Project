@@ -164,6 +164,36 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 
 		return QueryHelper.getSingleResult(em, cq);
 	}
+	
+		@Override
+		public Long getDistrictPopulationCountByType(String districtUuid,
+		                                             String campaignUuid,
+		                                             AgeGroup ageGroup) {
+
+		    CriteriaBuilder cb = em.getCriteriaBuilder();
+		    CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+		    Root<PopulationData> root = cq.from(PopulationData.class);
+
+		    Join<PopulationData, Campaign> campaignJoin = root.join(PopulationData.CAMPAIGN);
+		    Join<PopulationData, District> districtJoin = root.join(PopulationData.DISTRICT);
+
+		    Predicate campaignFilter =
+		            cb.equal(campaignJoin.get(Campaign.UUID), campaignUuid);
+
+		    Predicate districtFilter =
+		            cb.equal(districtJoin.get(District.UUID), districtUuid);
+
+		    Predicate ageFilter =
+		            cb.equal(root.get(PopulationData.AGE_GROUP), ageGroup);
+
+		    cq.where(campaignFilter, districtFilter, ageFilter);
+
+		    cq.select(cb.count(root));
+
+		    System.out.println("Generated SQL: " + SQLExtractor.from(em.createQuery(cq)));
+
+		    return em.createQuery(cq).getSingleResult();
+		}
 
 	@Override
 	public Integer getDistrictPopulationByType(String districtUuid, String campaignUuid, AgeGroup ageGroup) {
@@ -780,6 +810,9 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		target.setCollectionDate(source.getCollectionDate());
 		target.setModality(source.getModality());
 		target.setDistrictStatus(source.getDistrictStatus());
+		
+//		target.setc (communityService.getByReferenceDto(source.getCommunity()));
+		target.setSelected(source.getSelected());
 
 		return target;
 	}
@@ -840,6 +873,10 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		target.setCollectionDate(source.getCollectionDate());
 		target.setModality(source.getModality());
 		target.setDistrictStatus(source.getDistrictStatus());
+		
+		target.setCluster_id(source.getCommunity().getUuid());
+		target.setSelected(source.isSelected());
+
 
 		return target;
 	}
@@ -853,8 +890,9 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		DtoHelper.fillDto(target, source);
 
 		target.setDistrict(DistrictFacadeEjb.toReferenceDto(source.getDistrict()));
+		target.setCommunity(CommunityFacadeEjb.toReferenceDto(source.getCommunity()));
 		target.setCampaign(CampaignFacadeEjb.toReferenceDto(source.getCampaign()));
-		target.setSelected(source.isSelected() == true ? "True" : "False");
+		target.setSelected(source.isSelected());
 
 		return target;
 	}
@@ -1265,9 +1303,10 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	    }
 
 	    // Base query using IN clause for multiple UUIDs
-	    String executeQuery = "SELECT DISTINCT ON (p.campaign_id) c.uuid as campaign_id, d.uuid as district_id, p.selected, p.uuid , p.changedate " +
+	    String executeQuery = "SELECT DISTINCT ON (p.campaign_id) c.uuid as campaign_id, d.uuid as district_id, com.uuid AS cluster_id, p.selected, p.uuid , p.changedate " +
 	                          "FROM public.populationdata p " +
-	                          "JOIN public.district d ON p.district_id = d.id " +
+	                          "JOIN public.district d ON p.district_id = d.id  " +
+	                          "LEFT JOIN public.community com ON p.community_id = com.id "+
 	                          "left join public.campaigns c ON p.campaign_id = c.id " +
 	                          "WHERE d.uuid IN :uuids AND p.selected = TRUE " +
 	                          "ORDER BY p.campaign_id, " +
@@ -1287,9 +1326,10 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 				.map((result) -> new PopulationDataDto(
 						result[0] != null ? (String) result[0].toString() : "",
 						result[1] != null ? (String) result[1].toString() : "",
-						result[2] != null ? (String) result[2].toString() : "True", 
-						result[3] != null ? (String) result[3].toString() : "",
-						result[4] != null ? (Date) result[4] : new Date()
+						result[2] != null ? (String) result[2].toString() : "",
+						result[3] != null ? (boolean) result[3].toString().equalsIgnoreCase("true") ? true : false : false, 
+						result[4] != null ? (String) result[4].toString() : "",
+						result[5] != null ? (Date) result[5] : new Date()
 								)).collect(Collectors.toList()));
 		
 

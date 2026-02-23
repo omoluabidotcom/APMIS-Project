@@ -148,6 +148,11 @@ public final class InfrastructureDaoHelper {
 		return toItems(DatabaseHelper.getDistrictDao().queryActiveForAll());
 	}
 
+	public static List<Item> loadDistrictsByCampaignSelection() {
+		return toItems(DatabaseHelper.getDistrictDao().queryActiveForAll());
+	}
+
+
 	public static List<Item> loadDistricts(Region region) {
 		return toItems(isEmptyRegion(region) ? new ArrayList<>() : DatabaseHelper.getDistrictDao().getByRegion(region), true);
 	}
@@ -199,9 +204,25 @@ public final class InfrastructureDaoHelper {
 		if (regionItem != null && !initialRegions.contains(regionItem)) {
 			initialRegions.add(regionItem);
 		}
-		if (districtItem != null && !initialDistricts.contains(districtItem)) {
-			initialDistricts.add(districtItem);
+//		if (districtItem != null && !initialDistricts.contains(districtItem)) {
+//			initialDistricts.add(districtItem);
+//		}
+
+		if (districtItem != null) {
+
+			boolean alreadyExists = initialDistricts.stream()
+					.anyMatch(item -> {
+						District d = (District) item.getValue();
+						return d.getUuid().equals(initialDistrict.getUuid());
+					});
+
+			if (!alreadyExists) {
+				initialDistricts.add(districtItem);
+			}
 		}
+
+
+
 		if (communityItem != null && !initialCommunities.contains(communityItem)) {
 			initialCommunities.add(communityItem);
 		}
@@ -222,10 +243,20 @@ public final class InfrastructureDaoHelper {
 		regionField.initializeSpinner(initialRegions, field -> {
 			Region selectedRegion = (Region) field.getValue();
 			if (selectedRegion != null) {
-				List<Item> newDistricts = loadDistricts(selectedRegion);
+				List<Item> newDistricts;
+
+				if (ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
+						&& initialRegion != null
+						&& selectedRegion.equals(initialRegion)) {
+					newDistricts = new ArrayList<>(initialDistricts);
+				} else {
+					newDistricts = loadDistricts(selectedRegion);
+				}
+
 				if (initialDistrict != null && selectedRegion.equals(initialDistrict.getRegion()) && !newDistricts.contains(districtItem)) {
 					newDistricts.add(districtItem);
 				}
+
 				districtField.setSpinnerData(newDistricts, districtField.getValue());
 
 				areaField.setValue(selectedRegion.getArea());
@@ -251,14 +282,6 @@ public final class InfrastructureDaoHelper {
 
 					if(ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)){ // District Officer
 						districtField.addValueChangedListener(e -> {
-//							if (e.getValue() != null){
-//								List<Item> newCommunities_ = loadCommunities((District) e.getValue());
-//								if (newCommunities_.get(0) != null){
-//									communityField.setValue(newCommunities_.get(0));
-//								} else {
-//									System.err.println("District without community has been detected from the system.");
-//								}
-//							}
 						});
 						// Set the value of communityField before hiding it
 						if (districtField.getValue() != null){
@@ -299,24 +322,6 @@ public final class InfrastructureDaoHelper {
 		//temp fix
 
 		if(ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)){ // District Officer
-//			districtField.addValueChangedListener(e -> {
-//				if (e.getValue() != null){
-//					List<Item> newCommunities_ = loadCommunities((District) e.getValue());
-//					if (newCommunities_.get(0) != null){
-//						communityField.setValue(newCommunities_.get(0));
-//					} else {
-//						System.err.println("District without community has been detected from the system.");
-//					}
-//				}
-//			});
-			// Set the value of communityField before hiding it
-//			if (districtField.getValue() != null){
-//				List<Item> newCommunities_ = loadCommunities((District) districtField.getValue());
-//				if (newCommunities_.get(0) != null){
-//					communityField.setValue(newCommunities_.get(0));
-//				}
-//			}
-			// Hide the communityField
 			communityField.setVisibility(GONE);
 		}else{
 			communityField.setVisibility(VISIBLE);

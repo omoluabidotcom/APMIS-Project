@@ -18,6 +18,8 @@ public interface PopulationDataFacade {
 	
 	Integer getDistrictPopulationByType(String districtUuid, String campaignUuid, AgeGroup ageGroup);
 	
+	Long getDistrictPopulationCountByType(String districtUuid, String campaignUuid, AgeGroup ageGroup);
+	
 	List<PopulationDataDto> getDistrictPopulationByTypeUsingUUIDs(String districtUuid, String campaignUuid, AgeGroup ageGroup);
 	
 	List<PopulationDataDto> getClusterPopulationByTypeUsingUUIDs(String clusterUuid, String campaignUuid, AgeGroup ageGroup);

@@ -11481,7 +11481,7 @@ ADD COLUMN activeFormCount int8 NULL;
 
 INSERT INTO schema_version (version_number, comment) VALUES (489, 'Implementing Pre Campaign Na Post Campaign STart Date' );
 
-
+DROP MATERIALIZED VIEW IF EXISTS public.mv_flw_duplicate_error_analysis;
 
 CREATE MATERIALIZED VIEW public.mv_flw_duplicate_error_analysis
 TABLESPACE pg_default
@@ -11669,8 +11669,6 @@ ADD COLUMN internationalborder BOOLEAN DEFAULT FALSE;
 
 INSERT INTO schema_version (version_number, comment)
 VALUES (492, 'Add "International Border" column to Cluster table in Geography #908');
-
-
 
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***
 
