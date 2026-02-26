@@ -126,10 +126,8 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
         target.setActiveCampaigns(source.getActiveCampaigns());
         target.setActiveFormCount(source.getActiveFormCount());        
 		target.setArea(areaService.getByReferenceDto(source.getArea()));
-		target.setRegion(regionService.getByReferenceDto(source.getRegion()));
-		if (source.getDistricts() != null) {
-			target.setDistricts(districtService.getByReferenceDto(source.getDistricts()));
-		}
+		target.setRegion(regionService.getByReferenceDto(source.getRegion()));	
+		target.setDistrict(districtService.getByReferenceDto(source.getDistrict()));
 
 //        target.setTotal_int_storage_gb(source.getInternalStorageTotalGb());
 //        target.setFree_int_storage_gb(source.getInternalStorageFreeGb());
@@ -188,10 +186,9 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
         target.setActiveCampaigns(source.getActiveCampaigns());
         target.setActiveFormCount(source.getActiveFormCount());
         target.setArea(AreaFacadeEjb.toReferenceDto(source.getArea()));
-		target.setRegion(RegionFacadeEjb.toReferenceDto(source.getRegion()));
-		if (source.getDistricts() != null) {
-			target.setDistricts(DistrictFacadeEjb.toReferenceDto(new HashSet<District>(source.getDistricts())));
-		}
+		target.setRegion(RegionFacadeEjb.toReferenceDto(source.getRegion()));		
+		target.setDistrict(DistrictFacadeEjb.toReferenceDto(source.getDistrict()));
+		
 		
 //        if (source.getUser_id() != null) {
 //            target.setUser(new UserReferenceDto(source.getUser_id().getUuid(), source.getUser_id().getFirstName(), source.getUser_id().getLastName()));
@@ -276,22 +273,8 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
 	                .map(DistrictReferenceDto::getUuid)
 	                .collect(Collectors.toList());
 
-	            Join<DeviceManager, District> districtJoin =
-	                root.join("districts", JoinType.LEFT);
-
-	            // Filter by the selected districts
-	            Predicate districtPredicate = districtJoin.get("uuid").in(districtUuids);
-
-	            // Also filter by the regions linked to those districts (under the hood via District.region)
-	            Subquery<String> regionSubquery = cq.subquery(String.class);
-	            Root<District> districtSubRoot = regionSubquery.from(District.class);
-	            regionSubquery.select(districtSubRoot.get("region").get("uuid"))
-	                .where(districtSubRoot.get("uuid").in(districtUuids));
-
-	            Predicate regionFromDistrictPredicate = root.get("region").get("uuid").in(regionSubquery);
-
-	            // Both must hold: the device's district matches AND its region matches the district's region
-	            predicates.add(cb.and(districtPredicate, regionFromDistrictPredicate));
+	            predicates.add(
+		                root.get("district").get("uuid").in(districtUuids));       
 	        }
 	    }
 

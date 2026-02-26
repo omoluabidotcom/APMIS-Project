@@ -3,7 +3,6 @@ package com.cinoteck.application.views.deviceinformation;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.List;
 import com.cinoteck.application.UserProvider;
 import com.cinoteck.application.views.MainLayout;
@@ -11,7 +10,6 @@ import com.cinoteck.application.views.utils.gridexporter.GridExporter;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
@@ -26,7 +24,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -287,14 +284,37 @@ public class DeviceInformationView extends VerticalLayout {
 			reload();
 			updateRowCount();
 			
-		});
-			
+		});	
 		
+		Icon icon = VaadinIcon.UPLOAD_ALT.create();
 		
-		
-		
+		Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
+		anchor.getStyle().set("display", "none");
 		
 		Button exportDevicesInfo = new Button(I18nProperties.getCaption(Captions.export));
+		exportDevicesInfo.setIcon(new Icon(VaadinIcon.UPLOAD));
+		exportDevicesInfo.addClickListener(e -> {
+			anchor.getElement().callJsFunction("click");
+
+		});
+		
+		GridExporter<DeviceManagerDto> exporter = GridExporter.createFor(grid);
+		exporter.setAutoAttachExportButtons(false);
+		exporter.setTitle(I18nProperties.getCaption(Captions.campaignDataInformation));
+		
+		exporter.setFileName(
+				"APMIS_devices_" + new SimpleDateFormat("ddMMyyyy").format(Calendar.getInstance().getTime()));
+
+		anchor.setHref(exporter.getCsvStreamResource());
+		anchor.getElement().setAttribute("download", true);
+		anchor.setClassName("exportJsonGLoss");
+		anchor.setId("devicesAnchor");
+		anchor.getStyle().set("width", "100px");
+
+		icon.getStyle().set("margin-right", "8px");
+		icon.getStyle().set("font-size", "10px");
+		
+		anchor.getElement().insertChild(0, icon.getElement());
 
 		searchField.addClassName("filterBar");
 		searchField.setPlaceholder(I18nProperties.getCaption(Captions.actionSearch));
@@ -341,7 +361,7 @@ public class DeviceInformationView extends VerticalLayout {
 //		layout.add(geographyUnitTypeFilter);
 
 		layout.add(resetFilters);
-		layout.add(exportDevicesInfo);
+		layout.add(exportDevicesInfo, anchor);
 
 		relevancelayout.add(countRowItems);
 

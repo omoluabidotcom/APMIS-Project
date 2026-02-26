@@ -21,43 +21,22 @@
 package de.symeda.sormas.backend.devicemanager;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
 
 import javax.persistence.Access;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.persistence.AccessType;
 
-
-import org.hibernate.annotations.Type;
-
 import de.symeda.auditlog.api.Audited;
-import de.symeda.auditlog.api.AuditedIgnore;
-import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
-import de.symeda.sormas.api.campaign.data.CampaignFormDataReferenceDto;
-import de.symeda.sormas.api.campaign.data.PlatformEnum;
 import de.symeda.sormas.api.devicemanager.DeviceManagerReferenceDto;
-import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
-import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
-import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
-import de.symeda.sormas.api.user.UserReferenceDto;
-import de.symeda.sormas.backend.campaign.Campaign;
-import de.symeda.sormas.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.backend.common.AbstractDomainObject;
 import de.symeda.sormas.backend.infrastructure.area.Area;
-import de.symeda.sormas.backend.infrastructure.community.Community;
 import de.symeda.sormas.backend.infrastructure.district.District;
 import de.symeda.sormas.backend.infrastructure.region.Region;
 import de.symeda.sormas.backend.user.User;
-import de.symeda.sormas.backend.util.ModelConstants;
 
 @Access(AccessType.FIELD)
 @Entity(name = "device_manager")
@@ -159,14 +138,8 @@ public class DeviceManager extends AbstractDomainObject{
 	@ManyToOne(cascade = {})
 	private Region region;
 	
-//	@ManyToMany
-//	@JoinTable(
-//	    name = "device_manager_district",
-//	    joinColumns = @JoinColumn(name = "device_manager_id"),
-//	    inverseJoinColumns = @JoinColumn(name = "districts_id")
-//	)
-	@ManyToMany(cascade = {})
-	private Set<District> districts;
+	@ManyToOne(cascade = {})
+	private District district;
 
 	public DeviceManagerReferenceDto toReference() {
 		return new DeviceManagerReferenceDto(getUuid());
@@ -383,12 +356,12 @@ public class DeviceManager extends AbstractDomainObject{
 		this.region = region;
 	}
 	
-	public Set<District> getDistricts() {
-		return districts;
+	public District getDistrict() {
+		return district;
 	}
 
-	public void setDistricts(Set<District> districts) {
-		this.districts = districts;
+	public void setDistrict(District district) {
+		this.district = district;
 	}		
 	
 }
