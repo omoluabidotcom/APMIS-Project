@@ -3,7 +3,6 @@ package com.cinoteck.application.views.deviceinformation;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.List;
 import com.cinoteck.application.UserProvider;
 import com.cinoteck.application.views.MainLayout;
@@ -11,7 +10,7 @@ import com.cinoteck.application.views.utils.gridexporter.GridExporter;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
@@ -22,13 +21,15 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 
 import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.Language;
@@ -43,7 +44,7 @@ import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
 import de.symeda.sormas.api.user.UserRight;
 
-@PageTitle("APMIS-Device Manager")
+@PageTitle("APMIS-Device List")
 @Route(value = "deviceManager", layout = MainLayout.class)
 public class DeviceInformationView extends VerticalLayout {
 
@@ -63,6 +64,7 @@ public class DeviceInformationView extends VerticalLayout {
 	private List<RegionReferenceDto> provinces = FacadeProvider.getRegionFacade().getAllActiveAsReference();
 	private List<DistrictReferenceDto> districts = FacadeProvider.getDistrictFacade().getAllActiveAsReference();
 
+	private Button exportDevicesInfo = new Button(I18nProperties.getCaption(Captions.export));
 	public DeviceInformationView() {
 
 		if (I18nProperties.getUserLanguage() == null) {
@@ -77,6 +79,7 @@ public class DeviceInformationView extends VerticalLayout {
 		setHeightFull();
 		setSizeFull();
 		addFilters();
+		exportHelper();
 		configureGrid();
 
 	}
@@ -121,9 +124,6 @@ public class DeviceInformationView extends VerticalLayout {
 		layout.setPadding(false);
 
 		TextField searchField = new TextField();
-
-//		ComboBox<?> geographyUnitTypeFilter = new ComboBox<>(I18nProperties.getCaption("Unit Type"));
-
 		Button resetFilters = new Button(I18nProperties.getCaption(Captions.resetFilters));
 		
 		areaFilter.setId(CaseDataDto.AREA);
@@ -147,7 +147,6 @@ public class DeviceInformationView extends VerticalLayout {
 						provinces = FacadeProvider.getRegionFacade().getAllActiveByAreaPashto(uuid);
 						allProvinces.addAll(provinces);
 					}
-//						provinces = FacadeProvider.getRegionFacade().getAllActiveByAreaPashto(e.getValue().getUuid());
 					regionFilter.setItems(allProvinces);
 					areaFilter.setValue(e.getValue());
 				} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
@@ -156,7 +155,6 @@ public class DeviceInformationView extends VerticalLayout {
 						provinces = FacadeProvider.getRegionFacade().getAllActiveByAreaDari(uuid);
 						allProvinces.addAll(provinces);
 					}
-//						provinces = FacadeProvider.getRegionFacade().getAllActiveByAreaDari(e.getValue().getUuid());
 					regionFilter.setItems(allProvinces);
 					areaFilter.setValue(e.getValue());
 				} else {
@@ -164,18 +162,11 @@ public class DeviceInformationView extends VerticalLayout {
 						String uuid = selectedUUID.getUuid();
 						provinces = FacadeProvider.getRegionFacade().getAllActiveByArea(uuid);
 						allProvinces.addAll(provinces);
-						System.out.println(selectedUUID.getCaption() + " CAPTIONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
 					}
-//						provinces = FacadeProvider.getRegionFacade().getAllActiveByArea(e.getValue().getUuid());
 					regionFilter.setItems(allProvinces);
 					areaFilter.setValue(e.getValue());					
 				}
 				regionFilter.setEnabled(true);
-			} else {
-//				if (regionFilter.getValue() != null) {
-//					regionFilter.clear();
-//				}
-//				regionFilter.setEnabled(false);
 			}
 			reload();
 			updateRowCount();
@@ -191,10 +182,6 @@ public class DeviceInformationView extends VerticalLayout {
 		regionFilter.getStyle().set("margin-left", "0.1rem");
 		regionFilter.getStyle().set("padding-top", "0px!important");
 		regionFilter.setClearButtonVisible(true);
-		
-		
-//		dataView.setFilter((SerializablePredicate<DeviceManagerDto>) criteria.region(userProvider.getUser().getRegion()));
-
 
 		regionFilter.addValueChangeListener(e -> {
 			if (e.getValue() != null) {
@@ -205,7 +192,6 @@ public class DeviceInformationView extends VerticalLayout {
 						districts = FacadeProvider.getDistrictFacade().getAllActiveByRegionPashto(uuid);
 						allDistricts.addAll(districts);
 					}
-//					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegionPashto(e.getValue().getUuid());
 					districtFilter.setItems(allDistricts);
 					regionFilter.setValue(e.getValue());
 				} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
@@ -214,8 +200,6 @@ public class DeviceInformationView extends VerticalLayout {
 						districts = FacadeProvider.getDistrictFacade().getAllActiveByRegionDari(uuid);
 						allDistricts.addAll(districts);
 					}
-
-//					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegionDari(e.getValue().getUuid());
 					districtFilter.setItems(allDistricts);
 					regionFilter.setValue(e.getValue());
 				} else {
@@ -223,18 +207,11 @@ public class DeviceInformationView extends VerticalLayout {
 						String uuid = selectedUUID.getUuid();
 						districts = FacadeProvider.getDistrictFacade().getAllActiveByRegion(uuid);
 						allDistricts.addAll(districts);
-						System.out.println(selectedUUID.getCaption() + " CAPTIONPROVINCEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
 					}
-//					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegion(e.getValue().getUuid());
 					districtFilter.setItems(allDistricts);
 					regionFilter.setValue(e.getValue());
 				}
 				districtFilter.setEnabled(true);
-			} else {
-//				if (districtFilter.getValue() != null) {
-//					districtFilter.clear();
-//				}
-//				districtFilter.setEnabled(false);
 			}
 			reload();
 			updateRowCount();
@@ -248,53 +225,48 @@ public class DeviceInformationView extends VerticalLayout {
 		districtFilter.getStyle().set("margin-left", "0.1rem");
 		districtFilter.getStyle().set("padding-top", "0px!important");
 		districtFilter.setClearButtonVisible(true);
-//		districtFilter.setReadOnly(true);	
 
 		districtFilter.addValueChangeListener(e -> {
 			if (e.getValue() != null) {
 				List<CommunityReferenceDto> allClusters = new ArrayList<>();
 
-//				for (DistrictReferenceDto selectedUUID : e.getValue()) {
-//					String uuid = selectedUUID.getUuid();
-//					communities = FacadeProvider.getCommunityFacade().getAllActiveByDistrict(uuid);
-//					allClusters.addAll(communities);
-//				}
-
-//				communities = FacadeProvider.getCommunityFacade().getAllActiveByDistrict(e.getValue().getUuid());
-//				clusterCombo.setItemLabelGenerator(itm -> {
-//					CommunityReferenceDto dcfv = (CommunityReferenceDto) itm;
-//					return dcfv.getNumber() + " | " + dcfv.getCaption();
-//				});
-//				allClusters.sort(Comparator.comparing(CommunityReferenceDto::getNumber));
-//				clusterCombo.setItems(allClusters);
-//
-//				clusterCombo.setEnabled(true);
-
-				districtFilter.setValue(e.getValue());
-				
-				for (DistrictReferenceDto districtReferenceDto : e.getValue()) {
-					
-				}
-				System.out.println(DistrictReferenceDto.CAPTION + " CA[TOONDISTRICTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
-
-			} else {
-//				if (clusterCombo.getValue() != null) {
-//					clusterCombo.clear();
-//				}
-//				clusterCombo.setEnabled(false);
+				districtFilter.setValue(e.getValue());								
 			}
 
 			reload();
 			updateRowCount();
 			
-		});
-			
+		});	
 		
+//		Icon icon = VaadinIcon.UPLOAD_ALT.create();
+//		
+//		Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
+//		anchor.getStyle().set("display", "none");
+//		
+//		Button exportDevicesInfo = new Button(I18nProperties.getCaption(Captions.export));
+//		exportDevicesInfo.setIcon(new Icon(VaadinIcon.UPLOAD));
+//		exportDevicesInfo.addClickListener(e -> {
+//			anchor.getElement().callJsFunction("click");
+//
+//		});
 		
-		
-		
-		
-		Button exportDevicesInfo = new Button(I18nProperties.getCaption(Captions.export));
+//		GridExporter<DeviceManagerDto> exporter = GridExporter.createFor(grid);
+//		exporter.setAutoAttachExportButtons(false);
+//		exporter.setTitle(I18nProperties.getCaption(Captions.campaignDataInformation));
+//		
+//		exporter.setFileName(
+//				"APMIS_devices_" + new SimpleDateFormat("ddMMyyyy").format(Calendar.getInstance().getTime()));
+//
+//		anchor.setHref(exporter.getCsvStreamResource());
+//		anchor.getElement().setAttribute("download", true);
+//		anchor.setClassName("exportJsonGLoss");
+//		anchor.setId("devicesAnchor");
+//		anchor.getStyle().set("width", "100px");
+//
+//		icon.getStyle().set("margin-right", "8px");
+//		icon.getStyle().set("font-size", "10px");
+//		
+//		anchor.getElement().insertChild(0, icon.getElement());				
 
 		searchField.addClassName("filterBar");
 		searchField.setPlaceholder(I18nProperties.getCaption(Captions.actionSearch));
@@ -341,7 +313,7 @@ public class DeviceInformationView extends VerticalLayout {
 //		layout.add(geographyUnitTypeFilter);
 
 		layout.add(resetFilters);
-		layout.add(exportDevicesInfo);
+		layout.add(exportDevicesInfo, anchor);
 
 		relevancelayout.add(countRowItems);
 
@@ -462,26 +434,98 @@ public class DeviceInformationView extends VerticalLayout {
 	    if (criteria == null) {
 	        criteria = new DeviceMangerCriteria();
 	    }
-	    
-	    // Set filter values
+	    	
 	    criteria.area(areaFilter.getValue());
 	    criteria.region(regionFilter.getValue());
 	    criteria.district(districtFilter.getValue());
-	    
-	    // DEBUG: Print what we're sending
-	    System.out.println("DEBUG - Sending to backend:");
-	    System.out.println("  Area count: " + (areaFilter.getValue() != null ? areaFilter.getValue().size() : 0));
-	    System.out.println("  Region count: " + (regionFilter.getValue() != null ? regionFilter.getValue().size() : 0));
-	    System.out.println("  District count: " + (districtFilter.getValue() != null ? districtFilter.getValue().size() : 0));
-	    
-	    // Fetch new data with updated criteria
+	    	 
 	    List<DeviceManagerDto> newData = fetchDevicesInfoData();
-	    
-	    // Update grid data
 	    grid.setItems(newData);
 	    dataView = grid.getListDataView();
 	    
 	    updateRowCount();
+	}
+	
+	private void exportHelper() {
+		
+		Icon icon = VaadinIcon.UPLOAD_ALT.create();
+		
+		Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
+		anchor.getStyle().set("display", "none");
+				
+		exportDevicesInfo.setIcon(new Icon(VaadinIcon.UPLOAD));
+		exportDevicesInfo.addClickListener(e -> {
+			anchor.getElement().callJsFunction("click");
+
+		});
+		
+		try {
+		    if (grid.getListDataView().getItemCount() == 0) {
+		        showErrorNotification("Export failed: No data available to export.");
+		        return;
+		    }
+
+		    GridExporter<DeviceManagerDto> exporter = GridExporter.createFor(grid);
+		    exporter.setAutoAttachExportButtons(false);
+		    exporter.setTitle(I18nProperties.getCaption(Captions.campaignDataInformation));
+
+		    exporter.setFileName(
+		        "APMIS_devices_" + new SimpleDateFormat("ddMMyyyy")
+		            .format(Calendar.getInstance().getTime()));
+
+		    anchor.setHref(exporter.getCsvStreamResource());
+		    anchor.getElement().setAttribute("download", true);
+		    anchor.setClassName("exportJsonGLoss");
+		    anchor.setId("devicesAnchor");
+
+		    icon.getStyle().set("margin-right", "8px");
+		    icon.getStyle().set("font-size", "10px");
+
+		    anchor.getElement().insertChild(0, icon.getElement());	
+		    showSuccessNotification("Export started successfully.");
+
+		} catch (Exception e) {		  
+		    showErrorNotification("Export failed: " + e.getMessage());
+		}
+	}
+	
+	private void showSuccessNotification(String message) {
+	    Notification notification = new Notification();
+	    notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+	    notification.setPosition(Notification.Position.MIDDLE);
+	    notification.setDuration(4000); // auto close after 4s
+
+	    Button closeButton = new Button(new Icon("lumo", "cross"));
+	    closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+	    closeButton.getElement().setAttribute("aria-label", "Close");
+	    closeButton.addClickListener(event -> notification.close());
+
+	    Paragraph text = new Paragraph(message);
+
+	    HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+	    layout.setAlignItems(FlexComponent.Alignment.CENTER);
+
+	    notification.add(layout);
+	    notification.open();
+	}
+	
+	private void showErrorNotification(String message) {
+	    Notification notification = new Notification();
+	    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+	    notification.setPosition(Notification.Position.MIDDLE);
+
+	    Button closeButton = new Button(new Icon("lumo", "cross"));
+	    closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+	    closeButton.getElement().setAttribute("aria-label", "Close");
+	    closeButton.addClickListener(event -> notification.close());
+
+	    Paragraph text = new Paragraph(message);
+
+	    HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+	    layout.setAlignItems(FlexComponent.Alignment.CENTER);
+
+	    notification.add(layout);
+	    notification.open();
 	}
 
 }
