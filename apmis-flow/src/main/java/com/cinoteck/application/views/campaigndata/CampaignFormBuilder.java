@@ -283,6 +283,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 		});
 
 		//
+		logger.debug("++++++++++++++++++++++++++++++++campaignReferenceDto.getUuid(" + campaignReferenceDto.getUuid());
+
 
 		popDto = FacadeProvider.getPopulationDataFacade().getPopulationDataWithCriteria(campaignReferenceDto.getUuid());
 
@@ -1003,8 +1005,24 @@ public class CampaignFormBuilder extends VerticalLayout {
 				if (formElement.getOptions() != null) {
 					campaignFormElementOptions = new CampaignFormElementOptions();
 
-					optionsValues = formElement.getOptions().stream()
-							.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));
+//					optionsValues = formElement.getOptions().stream()
+//							.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));
+					
+					//Updating the method that fetchest opttion for multiselects and dropdowns to always follow 
+					//order if it's provided 
+					
+				optionsValues = formElement.getOptions().stream()
+						    .sorted(Comparator.comparing(o -> {
+						        if (o.getOrder() == null || o.getOrder().isEmpty()) {
+						            return Integer.MAX_VALUE;
+						        }
+						        try {
+						            return Integer.parseInt(o.getOrder());
+						        } catch (NumberFormatException e) {
+						            return Integer.MAX_VALUE;
+						        }
+						    }))
+						    .collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption, (e1, e2) -> e1, LinkedHashMap::new));
 
 					if (userLocale != null) {
 						if (translationsOpt != null) {
@@ -1014,10 +1032,24 @@ public class CampaignFormBuilder extends VerticalLayout {
 											.filter(cd -> cd.getElementId().equals(formElement.getId())).findFirst()
 											.ifPresent(optionsList -> {
 												if (optionsList.getOptions() != null) {
+//													userOptTranslations = optionsList.getOptions().stream()
+//															.filter(c -> c != null && c.getCaption() != null)
+//															.collect(Collectors.toMap(MapperUtil::getKey,
+//																	MapperUtil::getCaption));
+													//DOing the same update to the ordering with translation
 													userOptTranslations = optionsList.getOptions().stream()
-															.filter(c -> c != null && c.getCaption() != null)
-															.collect(Collectors.toMap(MapperUtil::getKey,
-																	MapperUtil::getCaption));
+														    .sorted(Comparator.comparing(o -> {
+														        if (o.getOrder() == null || o.getOrder().isEmpty()) {
+														            return Integer.MAX_VALUE;
+														        }
+														        try {
+														            return Integer.parseInt(o.getOrder());
+														        } catch (NumberFormatException e) {
+														            return Integer.MAX_VALUE;
+														        }
+														    }))
+														    .collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption, (e1, e2) -> e1, LinkedHashMap::new));
+
 												}
 											}));
 						}
@@ -1832,13 +1864,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 						List<String> sortedKeys = new ArrayList<>(data.keySet()); // Create a list of keys
 						if (!isNotSorted) {
 							if (dataOrder != null) {
-								Comparator<String> orderComparator = (key1, key2) -> {
-									String order1 = getOrderValue(dataOrder, key1);
-									String order2 = getOrderValue(dataOrder, key2);
-									return Integer.compare(Integer.parseInt(order1), Integer.parseInt(order2));
-								};
-
-								sortedKeys.sort(orderComparator);
+								data.keySet();		 
 							}
 						}
 
@@ -1901,9 +1927,36 @@ public class CampaignFormBuilder extends VerticalLayout {
 						checkboxGroup.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
 						checkboxGroup.setClassName("customTextWrap");
 
-//					data = (HashMap<String, String>) campaignFormElementOptions
-//							.getOptionsListValues();
-						checkboxGroup.setItems(data.keySet().stream().collect(Collectors.toList()));
+						boolean isNotSorted = false;
+						try {
+							if (formElement.getOptions().stream()
+									.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getOrder)) != null) {
+								optionsOrder.clear();
+								// pop the map with the order based off the key
+								optionsOrder = formElement.getOptions().stream()
+										.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getOrder));
+							}
+							;
+						} catch (NullPointerException ex) {
+							optionsOrder.clear();
+							optionsOrder = formElement.getOptions().stream()
+									.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));
+							isNotSorted = true;
+						}
+						
+						final HashMap<String, String> dataOrder = (HashMap<String, String>) campaignFormElementOptions
+								.getOptionsListOrder();
+						
+						List<String> sortedKeys = new ArrayList<>(data.keySet()); // Create a list of keys
+						if (!isNotSorted) {
+							if (dataOrder != null) {
+								data.keySet();
+							}
+						}
+
+						checkboxGroup.setItems(sortedKeys);
+
+//						checkboxGroup.setItems(data.keySet().stream().collect(Collectors.toList()));
 						checkboxGroup.setItemLabelGenerator(itm -> data.get(itm.toString().trim()));
 
 						checkboxGroup.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);

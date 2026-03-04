@@ -52,6 +52,8 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexDirection;
+import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -315,6 +317,21 @@ public class ClusterView extends VerticalLayout {
 		grid.addColumn(CommunityDto::provideActiveStatus).setHeader(I18nProperties.getCaption(Captions.relevanceStatus))
 				.setResizable(true).setSortable(true).setAutoWidth(true)
 				.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.relevanceStatus));
+		
+		
+		grid.addColumn(CommunityDto::getPopulationData).setHeader(I18nProperties.getCaption("Target 0-59M"))
+		.setResizable(true).setSortable(true).setAutoWidth(true)
+		.setTooltipGenerator(e -> I18nProperties.getCaption("Target 0-59M"));
+		
+		
+		grid.addColumn(CommunityDto::getPopulationData5_10).setHeader(I18nProperties.getCaption("Target 60-120M"))
+		.setResizable(true).setSortable(true).setAutoWidth(true)
+		.setTooltipGenerator(e -> I18nProperties.getCaption("Target 60-120M"));
+		
+		grid.addColumn(CommunityDto::getPopulationData4_23M).setHeader(I18nProperties.getCaption("Targe 4_23M"))
+		.setResizable(true).setSortable(true).setAutoWidth(true)
+		.setTooltipGenerator(e -> I18nProperties.getCaption("Target 4_23M"));
+
 
 		grid.setVisible(true);
 
@@ -915,6 +932,19 @@ public class ClusterView extends VerticalLayout {
 		ComboBox<DistrictReferenceDto> districtOfCluster = new ComboBox<>(I18nProperties.getCaption(Captions.district));
 		ComboBox<String> floatStatus = new ComboBox<>(I18nProperties.getCaption(Captions.floatStatus));
 		ComboBox<String> intlBorderStatus = new ComboBox<>(I18nProperties.getCaption("International Border"));
+		
+		IntegerField populationData0_4 = new IntegerField(I18nProperties.getCaption("Target 0-59M"));
+		populationData0_4.setMin(0);
+		populationData0_4.setErrorMessage("Negative values are not allowed");
+
+		IntegerField populationData5_10 = new IntegerField(I18nProperties.getCaption("Target 60-120M"));
+		populationData5_10.setMin(0);
+		populationData5_10.setErrorMessage("Negative values are not allowed");
+		
+		IntegerField populationData4_23M = new IntegerField(I18nProperties.getCaption("Target 4-23M"));
+		populationData4_23M.setMin(0);
+		populationData4_23M.setErrorMessage("Negative values are not allowed");
+
 
 		
 		List<String> floatStatusesAvailable = new ArrayList<String>();
@@ -946,6 +976,15 @@ public class ClusterView extends VerticalLayout {
 			
 			intlBorderStatus.setValue(communityDto.provideInternationalborder());
 			intlBorderStatus.setEnabled(true);
+			
+			populationData0_4.setValue(Integer.parseInt(communityDto.getPopulationData().toString()));
+			intlBorderStatus.setEnabled(true);
+			
+			populationData5_10.setValue(Integer.parseInt(communityDto.getPopulationData5_10().toString()));
+			populationData5_10.setEnabled(true);
+			
+			populationData4_23M.setValue(Integer.parseInt(communityDto.getPopulationData4_23M().toString()));
+			populationData4_23M.setEnabled(true);
 		}
 
 		
@@ -1034,20 +1073,32 @@ public class ClusterView extends VerticalLayout {
 		}
 
 		saveButton.addClickListener(saveEvent -> {
+			
+
+			if (populationData0_4.isInvalid() || populationData5_10.isInvalid() || populationData4_23M.isInvalid()) {
+				Notification.show("Negative Values are not allowed").addThemeVariants(NotificationVariant.LUMO_ERROR);
+				return;
+			}
+			
 			System.out.println(intlBorderStatus.getValue() + "intlBorderStatus.getValue()intlBorderStatus.getValue()intlBorderStatus.getValue()");
 			boolean isErrored =  false;
 			
 			if(intlBorderStatus.getValue() != null  || intlBorderStatus.getValue() != ""  ) {
 				if(intlBorderStatus.getValue() != null ) {
 					
-				}else {
-					
+				}else {					
 					intlBorderStatus.setErrorMessage("International Border cannot be left Empty.");	
 					isErrored = true;
 				}
 			}
 
 			
+			if (populationData0_4.isInvalid() || populationData5_10.isInvalid() || populationData4_23M.isInvalid()) {
+				Notification.show("Please correct the errors in the form", 3000, Notification.Position.TOP_CENTER)
+						.addThemeVariants(NotificationVariant.LUMO_ERROR);
+				return;
+			}
+
 			if(!isErrored) {
 			String name = nameField.getValue();
 			String clusterNum = clusterNumber.getValue();
@@ -1056,6 +1107,14 @@ public class ClusterView extends VerticalLayout {
 			String clusterFloatStatus = floatStatus.getValue() != null ? floatStatus.getValue().toString() : "Normal";
 
 			String clusterIntlBorderStatus = intlBorderStatus.getValue() != null ? intlBorderStatus.getValue().toString() : "No";
+			
+			String clusterPopulation0_4 = populationData0_4.getValue() != null ? populationData0_4.getValue().toString() : "0";
+
+			String clusterPopulation5_10 = populationData5_10.getValue() != null ? populationData5_10.getValue().toString() : "0";
+			
+			String clusterPopulation4_23M = populationData4_23M.getValue() != null ? populationData4_23M.getValue().toString() : "0";
+
+			
 
 			String uuids = "";
 			if (communityDto != null) {
@@ -1077,7 +1136,34 @@ public class ClusterView extends VerticalLayout {
 					dce.setDistrict(districtOfCluster.getValue());
 					dce.setFloating(clusterFloatStatus);
 					dce.setInternationalborder(clusterIntlBorderStatus.equalsIgnoreCase("Yes") ? true : false);
+					
+//					dce.setPopulationData(populationData0_4.getValue() == null ? 0 : Long.parseLong(populationData0_4.getValue().toString())); 
+//					dce.setPopulationData5_10(populationData5_10.getValue() == null ? 0 : Long.parseLong(populationData5_10.getValue().toString()));
 
+					dce.setPopulationData(
+						    populationData0_4.getValue() == null 
+						        ? 0 
+						        : populationData0_4.getValue() instanceof Integer
+						            ? ((Integer) populationData0_4.getValue()).longValue() // removes the .0
+						            : Long.parseLong(populationData0_4.getValue().toString())
+						);
+
+						dce.setPopulationData5_10(
+						    populationData5_10.getValue() == null 
+						        ? 0 
+						        : populationData5_10.getValue() instanceof Integer
+						            ? ((Integer) populationData5_10.getValue()).longValue() // removes the .0
+						            : Long.parseLong(populationData5_10.getValue().toString())
+						);
+
+						
+						dce.setPopulationData4_23M(
+							    populationData4_23M.getValue() == null 
+							        ? 0 
+							        : populationData4_23M.getValue() instanceof Integer
+							            ? ((Integer) populationData4_23M.getValue()).longValue() // removes the .0
+							            : Long.parseLong(populationData4_23M.getValue().toString())
+							);
 
 					
 					List<DistrictIndexDto> pcode = FacadeProvider.getDistrictFacade().getAllDistricts();
@@ -1207,6 +1293,33 @@ public class ClusterView extends VerticalLayout {
 
 					dcex.setFloating(clusterFloatStatus);
 					dcex.setInternationalborder(clusterIntlBorderStatus.equalsIgnoreCase("Yes") ? true : false);
+					
+//					dcex.setPopulationData(populationData0_4.getValue() == null ? 0 : Long.parseLong(populationData0_4.getValue().toString())); 
+//					dcex.setPopulationData5_10(populationData5_10.getValue() == null ? 0 : Long.parseLong(populationData5_10.getValue().toString()));
+					
+					dcex.setPopulationData(
+						    populationData0_4.getValue() == null 
+						        ? 0 
+						        : populationData0_4.getValue() instanceof Integer
+						            ? ((Integer) populationData0_4.getValue()).longValue() // removes the .0
+						            : Long.parseLong(populationData0_4.getValue().toString())
+						);
+
+						dcex.setPopulationData5_10(
+						    populationData5_10.getValue() == null 
+						        ? 0 
+						        : populationData5_10.getValue() instanceof Integer
+						            ? ((Integer) populationData5_10.getValue()).longValue() // removes the .0
+						            : Long.parseLong(populationData5_10.getValue().toString())
+						);
+						
+						dcex.setPopulationData4_23M(
+							    populationData4_23M.getValue() == null 
+							        ? 0 
+							        : populationData4_23M.getValue() instanceof Integer
+							            ? ((Integer) populationData4_23M.getValue()).longValue() // removes the .0
+							            : Long.parseLong(populationData4_23M.getValue().toString())
+							);
 
 
 //					List<DistrictIndexDto> pcode = FacadeProvider.getDistrictFacade().getAllDistricts();
@@ -1367,7 +1480,7 @@ FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(selectedDistrictUu
 //			dialog.getFooter().add(archiveButton, discardButton, saveButton);
 
 		}
-		fmr.add(nameField, cCodeField, clusterNumber, provinceOfDistrict, districtOfCluster, floatStatus, intlBorderStatus);
+		fmr.add(nameField, cCodeField, clusterNumber, provinceOfDistrict, districtOfCluster, floatStatus, intlBorderStatus, populationData0_4, populationData5_10, populationData4_23M);
 		dialog.add(fmr);
 
 //      getStyle().set("position", "fixed").set("top", "0").set("right", "0").set("bottom", "0").set("left", "0")

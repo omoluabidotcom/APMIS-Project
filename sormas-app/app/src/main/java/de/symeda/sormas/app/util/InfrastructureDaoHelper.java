@@ -209,7 +209,6 @@ public final class InfrastructureDaoHelper {
 //		}
 
 		if (districtItem != null) {
-
 			boolean alreadyExists = initialDistricts.stream()
 					.anyMatch(item -> {
 						District d = (District) item.getValue();

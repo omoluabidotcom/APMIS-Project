@@ -201,25 +201,7 @@ private char csvSeparator;
 		UserDto userDto = usr.getUser();
 //		DistrictDto regionDto = new DistrictDto();
 		CommunityDto clusterDto = new CommunityDto();
-//		startDataImport.addClickListener(ed -> {
-//
-//			startIntervalCallback();
-//			try {
-//
-//				//CampaignDto campaignDto = FacadeProvider.getCampaignFacade().getByUuid(campaignFilter.getValue().getUuid());
-//				
-//				DataImporter importer = new ClusterDataImporter(file_, false, regionDto, ValueSeparator.COMMA, overWrite);
-//				
-//				
-//				importer.startImport(this::extendDownloadErrorReportButton, null, true, UI.getCurrent(), true);
-//			} catch (IOException | CsvValidationException e) {
-//				Notification.show(
-//					I18nProperties.getString(Strings.headingImportFailed) +" : "+
-//					I18nProperties.getString(Strings.messageImportFailed));
-//			}
-//			
-//			
-//		});
+
 
 		startDataImport.addClickListener(ed -> {
 			startIntervalCallback();
@@ -285,24 +267,14 @@ private char csvSeparator;
 		});
 
 		downloadErrorReportButton = new Anchor("beforechange");
-//		downloadCredntialsReportButton = new Anchor("beforechange");
-		// downloadErrorReportButton.setVisible(false);
 
 		Icon downloadErrorButtonIcon = new Icon(VaadinIcon.DOWNLOAD);
-//		donloadUserLodReport.setIcon(downloadErrorButtonIcon);
-//		donloadUserLodReport.setVisible(false);
-//		donloadUserLodReport.addClickListener(e -> {
-//			Notification.show("Button clicke to download error "+downloadCredntialsReportButton.getHref());
-//			
-//			downloadCredntialsReportButton.getElement().callJsFunction("click");
-//		});
+
 
 		H3 step5 = new H3();
 		step5.add(I18nProperties.getString(Strings.step3));
 		Label lblDnldErrorReport = new Label(I18nProperties.getString(Strings.infoDownloadErrorReport));
-//		downloadErrorReportButton = new Anchor("beforechange");
-//		downloadCredntialsReportButton = new Anchor("beforechange");
-		// downloadErrorReportButton.setVisible(false);
+ 
 		donloadErrorReport.setVisible(false);
 		donloadErrorReport.setIcon(downloadErrorButtonIcon);
 		donloadErrorReport.addClickListener(e -> {
@@ -312,21 +284,7 @@ private char csvSeparator;
 		});
 
 		anchorSpan.add(downloadErrorReportButton);
-//		anchorSpanCredential.add(downloadCredntialsReportButton);
-
-//		anchorSpan.setVisible(false);
-//		Button startButton = new Button("Start Interval__ Callback");
-//		startButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//		startButton.setId("pokers");
-//		startButton.addClickListener(e -> {
-//			startIntervalCallback();
-//		});
-
-//		startIntervalCallback();
-
-//		Button stopButton = new Button("Stop Interval Callback");
-//		stopButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//		stopButton.addClickListener(e -> stopIntervalCallback());
+ 
 		startIntervalCallback();
 		UI.getCurrent().addPollListener(event -> {
 			if (callbackRunning) {

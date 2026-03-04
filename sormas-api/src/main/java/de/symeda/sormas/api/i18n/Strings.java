@@ -1400,4 +1400,6 @@ public interface Strings {
 	String warningNotInRange = "warningNotInRange";
 	String warningHead = "warningHead";
 	String okayCont = "okayCont";
+	String infoSelectAtLeastOneCategory = "infoSelectAtLeastOneCategory";
+//	String infoSaveCampaignFirst = "infoSaveCampaignFirst";
 }

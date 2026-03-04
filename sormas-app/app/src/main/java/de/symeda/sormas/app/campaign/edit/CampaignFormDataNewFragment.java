@@ -48,8 +48,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
@@ -244,8 +246,19 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                 }
 
 
-                optionsValues = campaignFormElement.getOptions().stream().collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));  // .collect(Collectors.toList());
+//                optionsValues = campaignFormElement.getOptions().stream().collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));  // .collect(Collectors.toList());
 
+                optionsValues = campaignFormElement.getOptions().stream().sorted(Comparator.comparing(
+                        o -> {
+                            if (o.getOrder() == null || o.getOrder().isEmpty()) {
+                    return Integer.MAX_VALUE;
+                    }
+                    try {
+                        return Integer.parseInt(o.getOrder());
+                        } catch (NumberFormatException e) {
+                        return Integer.MAX_VALUE;
+                         }
+                     })).collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption, (e1, e2) -> e1, LinkedHashMap::new));
                 if (userOptTranslations == null) {
                     campaignFormElementOptions.setOptionsListValues(optionsValues);
                     //get18nOptCaption(formElement.getId(), optionsValues));

@@ -54,6 +54,9 @@ public class CommunityDto extends EntityDto {
 	public static final String DISTRICT_EXTERNALID = "districtexternalId";
 	public static final String FLOATING_ATTRIBUTE = "floating";
 	public static final String INTERNATIONAL_BORDER = "internationalborder";
+	public static final String POPULATIONDATA_0_4 = "populationdata_0_4";
+	public static final String POPULATIONDATA_5_10 = "populationdata_5_10";
+	public static final String POPULATIONDATA_4_23M = "populationdata_4_23M";
 
 
 	
@@ -79,6 +82,7 @@ public class CommunityDto extends EntityDto {
 	
 	private Long populationData;
 	private Long populationData5_10;
+	private Long populationData4_23M;
 	private String selectedPopulationData;
 	private String districtModality;
 	private String districtStatus;
@@ -241,10 +245,11 @@ public class CommunityDto extends EntityDto {
 	
 	
 	
-	public CommunityDto(String name, Long populationData, Long populationData5_10, Long clusterId,String regionUuid, String districtUuid, String clusterUuid,  String selectedPopulationData, String districtModality, String districtStatus, String floating) {
+	public CommunityDto(String name, Long populationData, Long populationData5_10, Long populationData4_23M, Long clusterId,String regionUuid, String districtUuid, String clusterUuid,  String selectedPopulationData, String districtModality, String districtStatus, String floating) {
 		this.name = name;
 		this.populationData = populationData;
 		this.populationData5_10 = populationData5_10;
+		this.populationData4_23M = populationData4_23M;
 		this.clusterId = clusterId;
 		this.regionUuid = regionUuid;
 		this.districtUuid = districtUuid;
@@ -254,7 +259,6 @@ public class CommunityDto extends EntityDto {
 		this.districtStatus = districtStatus;
 		this.floating = floating; 
 
-//		this.ageGroup = ageGroup;
 	};
 	
 
@@ -444,7 +448,16 @@ public class CommunityDto extends EntityDto {
 	public void setPopulationData5_10(Long populationData5_10) {
 		this.populationData5_10 = populationData5_10;
 	}
-	
+		
+	public Long getPopulationData4_23M() {
+		return populationData4_23M;
+	}
+
+
+	public void setPopulationData4_23M(Long populationData4_23M) {
+		this.populationData4_23M = populationData4_23M;
+	}
+
 	public String getSelectedPopulationData() {
 		return selectedPopulationData;
 	}

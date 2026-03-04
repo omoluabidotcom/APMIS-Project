@@ -44,6 +44,11 @@ public class Community extends InfrastructureAdo {
 	public static final String CLUSTER_NUMBER = "clusterNumber";
 	public static final String FLOATING_STATUS = "floating";
 	public static final String INTERNATIONAL_BORDER = "internationalborder";
+	public static final String POPULATIONDATA_0_4 = "populationdata_0_4";
+	public static final String POPULATIONDATA_5_10 = "populationdata_5_10";
+	public static final String POPULATIONDATA_4_23M = "populationdata_4_23M";
+
+
 
 	private String name;
 	private String fa_af;
@@ -55,6 +60,11 @@ public class Community extends InfrastructureAdo {
 	private String floating;
 	
 	private boolean internationalBorder;
+	
+	private Long populationdata_0_4;
+	private Long populationdata_5_10;
+	private Long populationdata_4_23M;
+
 
 	public String getName() {
 			return name;
@@ -134,9 +144,37 @@ public class Community extends InfrastructureAdo {
 	public void setInternationalBorder(boolean internationalBorder) {
 		this.internationalBorder = internationalBorder;
 	}
+	
+
+	public Long getPopulationdata_0_4() {
+		return populationdata_0_4;
+	}
+
+	public void setPopulationdata_0_4(Long populationdata_0_4) {
+		this.populationdata_0_4 = populationdata_0_4;
+	}
+
+	public Long getPopulationdata_5_10() {
+		return populationdata_5_10;
+	}
+
+	public void setPopulationdata_5_10(Long populationdata_5_10) {
+		this.populationdata_5_10 = populationdata_5_10;
+	}
+	
+	public Long getPopulationdata_4_23M() {
+		return populationdata_4_23M;
+	}
+
+	public void setPopulationdata_4_23M(Long populationdata_4_23M) {
+		this.populationdata_4_23M = populationdata_4_23M;
+	}
 
 	@Override
 	public String toString() {
 		return getName();
 	}
 }
+
+
+

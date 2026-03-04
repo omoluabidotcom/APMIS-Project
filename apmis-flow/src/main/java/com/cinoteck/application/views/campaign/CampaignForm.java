@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -33,6 +34,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -76,6 +78,7 @@ import de.symeda.sormas.api.AgeGroup;
 import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignIndexDto;
+import de.symeda.sormas.api.campaign.CampaignLogDto;
 import de.symeda.sormas.api.campaign.CampaignTreeGridDto;
 import de.symeda.sormas.api.campaign.CampaignTreeGridDtoImpl;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
@@ -543,68 +546,7 @@ public class CampaignForm extends VerticalLayout {
 				postCampaignendDate.setValue(localDatex);
 			}
 
-		}
-//		
-//		preCampaignstartDate.addValueChangeListener(e -> {
-//			LocalDate selectedDate = e.getValue();
-//			int selectedYear = selectedDate.getYear();
-//			String selectedYearAsString = Integer.toString(selectedYear);
-//
-//			if (preCampaignendDate.getValue() != null) {
-////				validateDates();
-//				validateDatesByPhase("pre-campaign");
-//
-////				campaaignYear.setValue(selectedYearAsString);
-//				// System.out.println(selectedYearAsString + "Selected Yearaaaaaaaaaaa: " +
-//				// selectedYear);
-//
-//			} else if (formData == null || formData != null) {
-////				campaaignYear.setValue(selectedYearAsString);
-//
-//				// System.out.println(selectedYearAsString + "Selected Year: " + selectedYear);
-//			}
-//		});
-//		
-// 		startDate.addValueChangeListener(e -> {
-//			LocalDate selectedDate = e.getValue();
-//			int selectedYear = selectedDate.getYear();
-//			String selectedYearAsString = Integer.toString(selectedYear);
-//
-//			if (endDate.getValue() != null) {
-////				validateDates();
-//				validateDatesByPhase("intra-campaign");
-//
-//				campaaignYear.setValue(selectedYearAsString);
-//				// System.out.println(selectedYearAsString + "Selected Yearaaaaaaaaaaa: " +
-//				// selectedYear);
-//
-//			} else if (formData == null || formData != null) {
-//				campaaignYear.setValue(selectedYearAsString);
-//
-//				// System.out.println(selectedYearAsString + "Selected Year: " + selectedYear);
-//			}
-//		});
-// 
-//		postCampaignstartDate.addValueChangeListener(e -> {
-//			LocalDate selectedDate = e.getValue();
-//			int selectedYear = selectedDate.getYear();
-//			String selectedYearAsString = Integer.toString(selectedYear);
-//
-//			if (postCampaignendDate.getValue() != null) {
-////				validateDates();
-//				validateDatesByPhase("post-campaign");
-//
-////				campaaignYear.setValue(selectedYearAsString);
-//				// System.out.println(selectedYearAsString + "Selected Yearaaaaaaaaaaa: " +
-//				// selectedYear);
-//
-//			} else if (formData == null || formData != null) {
-////				campaaignYear.setValue(selectedYearAsString);
-//
-//				// System.out.println(selectedYearAsString + "Selected Year: " + selectedYear);
-//			}
-//		});
-//		
+		} 
 
 		preCampaignstartDate.addValueChangeListener(e -> {
 			LocalDate selectedDate = e.getValue();
@@ -614,17 +556,7 @@ public class CampaignForm extends VerticalLayout {
 			if (preCampaignendDate.getValue() != null) {
 //				validateDates();
 				validateDatesByPhase("pre-campaign");
-
-//				campaaignYear.setValue(selectedYearAsString);
-				// System.out.println(selectedYearAsString + "Selected Yearaaaaaaaaaaa: " +
-				// selectedYear);
-
-//				if (preCampaignFormGridComponent != null) {
-//					preCampaignFormGridComponent.savedCampaignFormMetasForExpiry();
-////					campaignDto.setCampaignFormMetaExpiryDto(preCampaignFormGridComponent.recalculatedFormExpiryForPhase(campaignDto));
-////			        preCampaignFormGridComponent.recalculateExpiryForPhase(
-////			            campaignDto);
-//			    }
+ 
 			} else if (formData == null || formData != null) {
 //				campaaignYear.setValue(selectedYearAsString);
 
@@ -855,6 +787,129 @@ public class CampaignForm extends VerticalLayout {
 		poplayout.add(lblIntroduction);
 
 		poplayout.setHorizontalComponentAlignment(Alignment.CENTER, lblIntroduction);// .setHorizontalComponentAlignment(lblIntroduction,
+		
+		Button btnGeneratePopulationData = new Button(I18nProperties.getCaption("Generate Population Data"));// , e -> {
+
+		btnGeneratePopulationData.addClickListener(e -> {
+			if (campaignDto != null) {
+				Dialog genDialog = new Dialog();
+				genDialog.setHeaderTitle(I18nProperties.getCaption("Generate Population Data"));
+				genDialog.setWidth("40%");
+				
+				VerticalLayout dialogLayout = new VerticalLayout();
+				
+				TextField campaignName = new TextField(I18nProperties.getCaption("Campaign Name"));
+				campaignName.setValue(campaignDto.getName());
+				campaignName.setReadOnly(true);
+				campaignName.setWidthFull();
+				
+				Paragraph note = new Paragraph("Please select the population target group to generate population targets for this campaign");
+
+				MultiSelectComboBox<AgeGroup> ageGroupsSelection = new MultiSelectComboBox<>("Poulation Target Categories");
+				ageGroupsSelection.setItems(AgeGroup.AGE_0_4, AgeGroup.AGE_5_10, AgeGroup.AGE_4_23M);
+				ageGroupsSelection.setItemLabelGenerator(item -> {
+					if (item == AgeGroup.AGE_0_4) return "Target 0-59M";
+					if (item == AgeGroup.AGE_5_10) return "Target 60-120M";
+					if (item == AgeGroup.AGE_4_23M) return "Target 4-23M";
+					return item.toString();
+				});
+				ageGroupsSelection.setWidthFull();
+				ageGroupsSelection.setClearButtonVisible(true);
+
+				Button selectAllBtn = new Button("Select All", event -> {
+					ageGroupsSelection.setValue(Set.of(AgeGroup.AGE_0_4, AgeGroup.AGE_5_10, AgeGroup.AGE_4_23M));
+				});
+				selectAllBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+
+//				HorizontalLayout selectionHeader = new HorizontalLayout(new Span(I18nProperties.getCaption("Population Categories")), selectAllBtn);
+//				selectionHeader.setWidthFull();
+//				selectionHeader.setJustifyContentMode(JustifyContentMode.BETWEEN);
+//				selectionHeader.setAlignItems(Alignment.CENTER);
+
+				dialogLayout.add(campaignName, note, ageGroupsSelection, selectAllBtn);
+				genDialog.add(dialogLayout);
+
+				Button confirmBtn = new Button(I18nProperties.getCaption("Generate Data"), event -> {
+					if (ageGroupsSelection.getValue().isEmpty()) {
+						Notification.show(I18nProperties.getString(Strings.infoSelectAtLeastOneCategory));
+						return;
+					}
+
+					ConfirmDialog confirmGeneration = new ConfirmDialog();
+					confirmGeneration.setHeader(I18nProperties.getCaption("Confirm Generation"));
+					Paragraph textNote = new Paragraph("Are you sure you want to generate population data for the selected categories? This will overwrite existing data for this campaign.");
+					confirmGeneration.add(textNote);
+//					confirmGeneration.setText(I18nProperties.getString("Are you sure you want to generate population data for the selected categories? This will overwrite existing data for this campaign."));
+					confirmGeneration.setCancelable(true);
+					confirmGeneration.setConfirmText(I18nProperties.getCaption("Yes, Generate"));
+					confirmGeneration.addConfirmListener(confirmEvent -> {
+						genDialog.close();
+
+						List<AgeGroup> selectedGroups = new ArrayList<>(ageGroupsSelection.getValue());
+						if (FacadeProvider.getPopulationDataFacade().generatePopulationDataForCamapign(campaignDto, selectedGroups)) {
+							Notification.show("Population Data Generation Complete For Campaign");
+							
+							CampaignLogDto log = new CampaignLogDto();
+
+							// logging audit
+							if (campaignDto.getUuid() != null) {
+								log.setCampaign(campaignDto);
+								String slectedString=""; 
+								for (Iterator iterator = selectedGroups.iterator(); iterator.hasNext();) {
+									AgeGroup ageGroup = (AgeGroup) iterator.next();
+									String ageGroupString = ageGroup+"";
+									
+									
+									System.out.println(ageGroupString + "ageGroupStringageGroupStringageGroupStringageGroupStringageGroupString");
+									if (ageGroupString.equalsIgnoreCase("0--4")) 
+										ageGroupString = "Target 0-59M";
+									else if (ageGroupString.equalsIgnoreCase("5--10")) 
+										ageGroupString = "Target 60-120M";
+									else if (ageGroupString.equalsIgnoreCase("AGE_4_23")) 
+										ageGroupString = "Target 4-23M";
+	
+									slectedString = slectedString + " " + ageGroupString  + " ";
+	
+								}
+								log.setAction("Generated Population Targets Categories: " + slectedString);
+							}
+
+							FacadeProvider.getCampaignFacade().saveAuditLog(log);
+							
+						} else {
+							Notification.show("Population Data Generation could not be Complete For Campaign");
+						}
+					});
+					confirmGeneration.open();
+				});
+				
+				Button cancelBtn = new Button(I18nProperties.getCaption(Captions.actionCancel), event -> genDialog.close());
+				genDialog.getFooter().add(cancelBtn, confirmBtn);
+				genDialog.open();
+			} else {
+				Notification notification = new Notification();
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+
+				Div textx = new Div(new Text(I18nProperties.getString(Strings.infoSaveCampaignFirst)));
+
+				Button closeButton = new Button(new Icon("lumo", "cross"));
+				closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+				closeButton.getElement().setAttribute("aria-label", "Close");
+				closeButton.addClickListener(event -> {
+					notification.close();
+				});
+
+				HorizontalLayout layoutx = new HorizontalLayout(textx, closeButton);
+				layoutx.setAlignItems(Alignment.CENTER);
+				notification.setPosition(Notification.Position.MIDDLE);
+				notification.add(layoutx);
+				notification.open();
+			}
+		});
+
+		poplayout.add(btnGeneratePopulationData);
+		poplayout.setHorizontalComponentAlignment(Alignment.CENTER, btnGeneratePopulationData);
+		
 
 		Button btnImport = new Button(I18nProperties.getCaption(Captions.actionImport));// , e -> {
 
@@ -1034,65 +1089,6 @@ public class CampaignForm extends VerticalLayout {
 			districts.clear();
 			community.clear();
 			popopulationDataDtoSet.clear();
-
-//			for (int i = 0; i < treeGrid.getSelectionModel().getSelectedItems().size(); i++) {
-//				// TODO: let make thnis work faster by implementing a converion of
-//				// treeGrid.getSelectionModel().getSelectedItems() into a set of campaigngridto
-//				if (campaignDto != null) {
-//					if (((CampaignTreeGridDto) treeGrid.getSelectionModel().getSelectedItems().toArray()[i])
-//							.getLevelAssessed() == "area") {
-//						AreaReferenceDto selectedArea = FacadeProvider.getAreaFacade().getAreaReferenceByUuid(
-//								((CampaignTreeGridDto) treeGrid.getSelectionModel().getSelectedItems().toArray()[i])
-//										.getUuid());
-//						areass.add(selectedArea);
-//					}
-//					if (((CampaignTreeGridDto) treeGrid.getSelectionModel().getSelectedItems().toArray()[i])
-//							.getLevelAssessed() == "region") {
-//						RegionReferenceDto selectedRegion = FacadeProvider.getRegionFacade().getRegionReferenceByUuid(
-//								((CampaignTreeGridDto) treeGrid.getSelectionModel().getSelectedItems().toArray()[i])
-//										.getUuid());
-//						region.add(selectedRegion);
-//					}
-//					if (((CampaignTreeGridDto) treeGrid.getSelectionModel().getSelectedItems().toArray()[i])
-//							.getLevelAssessed() == "district") {
-//						DistrictReferenceDto selectedDistrict = FacadeProvider.getDistrictFacade()
-//								.getDistrictReferenceByUuid(((CampaignTreeGridDto) treeGrid.getSelectionModel()
-//										.getSelectedItems().toArray()[i]).getUuid());
-//						districts.add(selectedDistrict);
-//					}
-//					
-//					if (((CampaignTreeGridDto) treeGrid.getSelectionModel().getSelectedItems().toArray()[i])
-//							.getLevelAssessed() == "cluster") {
-//						CommunityReferenceDto selectedClusters = FacadeProvider.getCommunityFacade().getCommunityReferenceByUuid(
-//								((CampaignTreeGridDto) treeGrid.getSelectionModel()
-//										.getSelectedItems().toArray()[i]).getUuid());
-//						community.add(selectedClusters);
-//					}
-//
-//					if (((CampaignTreeGridDto) treeGrid.getSelectionModel().getSelectedItems().toArray()[i])
-//							.getLevelAssessed() == "cluster") {
-//
-//						PopulationDataDto popopulationDataDto = new PopulationDataDto();
-//
-//						popopulationDataDto.setCampaign(
-//								FacadeProvider.getCampaignFacade().getReferenceByUuid(campaignDto.getUuid()));
-////						popopulationDataDto.setDistrict(FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(
-////								((CampaignTreeGridDto) treeGrid.getSelectionModel().getSelectedItems().toArray()[i])
-////										.getUuid()));
-//						
-//						System.out.println(treeGrid.getSelectionModel().getSelectedItems().toArray() + "treeGrid.getSelectionModel().getSelectedItems().toArray()");
-//						
-//						popopulationDataDto.setCommunity(FacadeProvider.getCommunityFacade().getCommunityReferenceByUuid(
-//								((CampaignTreeGridDto) treeGrid.getSelectionModel().getSelectedItems().toArray()[i])
-//										.getUuid()));
-//						popopulationDataDtoSet.add(popopulationDataDto);
-//					}
-//
-//				} else {
-//
-//				}
-//
-//			}
 			
 			for (CampaignTreeGridDto item : treeGrid.getSelectionModel().getSelectedItems()) {
 
@@ -1276,386 +1272,6 @@ public class CampaignForm extends VerticalLayout {
 
 		}
 	}
-//	public HorizontalLayout configureTreeGrid(boolean isDeletePopulationData) {
-//
-//		ComponentRenderer<Span, CampaignTreeGridDto> populationGenerate = new ComponentRenderer<>(input -> {
-//
-//			NumberFormat arabicFormat = NumberFormat.getInstance();
-//			if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-//				arabicFormat = NumberFormat.getInstance(new Locale("ps"));
-//			} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-//				arabicFormat = NumberFormat.getInstance(new Locale("fa"));
-//			} else {
-//				arabicFormat = NumberFormat.getInstance(new Locale("en"));
-//			}
-//
-//			String value = String.valueOf(arabicFormat.format(input.getPopulationData()));
-//			Span label = new Span(value);
-//			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
-//			return label;
-//		});
-//
-//		ComponentRenderer<Span, CampaignTreeGridDto> populationGenerateTotal = new ComponentRenderer<>(input -> {
-//
-//			NumberFormat arabicFormat = NumberFormat.getInstance();
-//			if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-//				arabicFormat = NumberFormat.getInstance(new Locale("ps"));
-//			} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-//				arabicFormat = NumberFormat.getInstance(new Locale("fa"));
-//			} else {
-//				arabicFormat = NumberFormat.getInstance(new Locale("en"));
-//			}
-//
-//			String value = String.valueOf(arabicFormat.format(input.getPopulationDataTotal()));
-//			Span label = new Span(value);
-//			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
-//			return label;
-//		});
-//
-//		ComponentRenderer<Span, CampaignTreeGridDto> populationGenerate5_10 = new ComponentRenderer<>(input -> {
-//
-//			NumberFormat arabicFormat = NumberFormat.getInstance();
-//			if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-//				arabicFormat = NumberFormat.getInstance(new Locale("ps"));
-//			} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-//				arabicFormat = NumberFormat.getInstance(new Locale("fa"));
-//			} else {
-//				arabicFormat = NumberFormat.getInstance(new Locale("en"));
-//			}
-//
-//			String value = String.valueOf(arabicFormat.format(input.getPopulationData5_10()));
-//			Span label = new Span(value);
-//			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
-//			return label;
-//		});
-//
-//		treeGrid = new TreeGrid<>();
-//
-//		treeGrid.removeAllColumns();
-//		treeGrid.setWidthFull();
-//		treeGrid.setItems(generateTreeGridData(), CampaignTreeGridDto::getRegionData);
-//
-//		treeGrid.setWidthFull();
-//
-//		treeGrid.addHierarchyColumn(CampaignTreeGridDto::getName)
-//				.setHeader(I18nProperties.getCaption(Captions.Location));
-//
-//		treeGrid.addColumn(populationGenerateTotal)
-//				.setHeader(I18nProperties.getCaption(Captions.View_configuration_populationdata_short) + " Total");
-//
-//		treeGrid.addColumn(populationGenerate)
-//				.setHeader(I18nProperties.getCaption(Captions.View_configuration_populationdata_short) + " (Age 0-4)");
-//
-//		treeGrid.addColumn(populationGenerate5_10)
-//				.setHeader(I18nProperties.getCaption(Captions.View_configuration_populationdata_short) + " (Age 5-10)");
-//
-//		treeGrid.addColumn(CampaignTreeGridDto::getDistrictModality).setHeader("Modality");
-//
-//		treeGrid.addColumn(CampaignTreeGridDto::getDistrictStatus).setHeader("Status");
-//
-//		// Add a column with checkboxes for selection
-//
-//		ComponentRenderer<Component, CampaignTreeGridDto> componentRendererx = new ComponentRenderer<>(dto -> {
-//			if (dto.getLevelAssessed().equals("district")) {
-//				selectDistrictCheckbox = new Checkbox();
-//				// checkbox.setValue(treeGrid.getSelectionModel().isSelected(dto));
-//				selectDistrictCheckbox.addValueChangeListener(event -> {
-//					if (event.getValue()) {
-////						treeGrid.select(dto);
-////						populationDataUuid.add(dto.getUuid());
-//						deletelist.add(dto);
-//
-//						
-//					} else {
-////						treeGrid.deselect(dto);
-//						deletelist.remove(dto);
-//
-////						populationDataUuid.remove(dto.getUuid());
-//
-//					}
-//
-//				});
-//				return selectDistrictCheckbox;
-//			} else {
-//				return new Span();
-//			}
-//
-//		});
-//
-//		treeGrid.addColumn(componentRendererx).setHeader("Delete?");
-//		;
-//
-//		GridMultiSelectionModel<CampaignTreeGridDto> selectionModel = (GridMultiSelectionModel<CampaignTreeGridDto>) treeGrid
-//				.setSelectionMode(SelectionMode.MULTI);
-//
-//		selectionModel.setSelectAllCheckboxVisibility(SelectAllCheckboxVisibility.HIDDEN);
-//
-//		for (AreaReferenceDto root : campaignDto.getAreas()) {
-//
-//			for (CampaignTreeGridDto areax : treeGrid.getTreeData().getRootItems()) {
-//
-//				
-//				System.out.println(areax.getUuid() + "areax.getUuid()" + root.getUuid() + "root.getUuid(root.getUuid(" );
-//				if (areax.getUuid().equals(root.getUuid())) {
-//
-//					if (isDeletePopulationData) {
-//
-//					} else {
-//						treeGrid.select(areax);
-//					}
-//
-//				}
-//
-//				for (RegionReferenceDto region_root : campaignDto.getRegion()) {
-//
-//					for (CampaignTreeGridDto regionx : treeGrid.getTreeData().getChildren(areax)) {
-//
-//						if (regionx.getUuid().equals(region_root.getUuid())) {
-//
-//							if (isDeletePopulationData) {
-//
-//							} else {
-//								treeGrid.select(regionx);
-//							}
-//
-//						}
-//
-//						for (DistrictReferenceDto district_root : campaignDto.getDistricts()) {
-//
-//							for (CampaignTreeGridDto districtx : treeGrid.getTreeData().getChildren(regionx)) {
-//
-//								if (districtx.getUuid().equals(district_root.getUuid())) {
-//
-//									if (isDeletePopulationData) {
-//
-//									} else {
-//										treeGrid.select(districtx);
-//
-//									}
-//
-//								}
-//							}
-//						}
-//					}
-//				}
-//			}
-//		}
-//
-//		treeGrid.addItemClickListener(ee -> { // .addItemDoubleClickListener(ee -> {
-//
-//			isSingleSelectClickItemLock = true;
-//			if (campaignDto != null && ee.getItem().getLevelAssessed().equals("district")) {
-//
-//				if (ee.getItem().getPopulationData() != null) {
-//
-//					System.out.println("Age Group from item click " + ee.getItem().getAgeGroup());
-//					Integer popDataAge0_4 = FacadeProvider.getPopulationDataFacade()
-//							.getDistrictPopulationByUuidAndAgeGroup(ee.getItem().getUuid(), campaignDto.getUuid(),
-//									"AGE_0_4");
-//
-//					Integer popDataAge5_10 = FacadeProvider.getPopulationDataFacade()
-//							.getDistrictPopulationByUuidAndAgeGroup(ee.getItem().getUuid(), campaignDto.getUuid(),
-//									"AGE_5_10");
-////					};
-//
-//					String districtModality_0_4 = FacadeProvider.getPopulationDataFacade()
-//							.getDistrictModalityByUuidAndCampaignAndAgeGroup(ee.getItem().getUuid(),
-//									campaignDto.getUuid(), "AGE_0_4");
-//					String districtStatus_0_4 = FacadeProvider.getPopulationDataFacade()
-//							.getDistrictStatusByCampaign(ee.getItem().getUuid(), campaignDto.getUuid(), "AGE_0_4");
-//
-////					if (popDataAge5_10 == null) {
-////						popDataAge5_10 = 0;
-////					}
-//
-//					createDialogBasics(ee.getItem().getUuid(), ee.getItem().getPopulationData(), ee.getItem().getName(),
-//							"AGE_0_4", campaignDto, ee.getItem(), popDataAge0_4, popDataAge5_10, districtModality_0_4,
-//							districtStatus_0_4);
-//
-//				}
-//
-//				else if (ee.getItem().getPopulationData5_10() != null) {
-//					System.out.println("Age Group from item click " + ee.getItem().getAgeGroup());
-//
-//					Integer popDataAge5_10 = FacadeProvider.getPopulationDataFacade()
-//							.getDistrictPopulationByUuidAndAgeGroup(ee.getItem().getUuid(), campaignDto.getUuid(),
-//									"AGE_5_10");
-//
-//					Integer popDataAge0_4 = FacadeProvider.getPopulationDataFacade()
-//							.getDistrictPopulationByUuidAndAgeGroup(ee.getItem().getUuid(), campaignDto.getUuid(),
-//									"AGE_0_4");
-//
-//					String districtModality_5_10 = FacadeProvider.getPopulationDataFacade()
-//							.getDistrictModalityByUuidAndCampaignAndAgeGroup(ee.getItem().getUuid(),
-//									campaignDto.getUuid(), "AGE_5_10");
-//
-//					String districtStatus_5_10 = FacadeProvider.getPopulationDataFacade()
-//							.getDistrictStatusByCampaign(ee.getItem().getUuid(), campaignDto.getUuid(), "AGE_5_10");
-//
-////					if (popDataAge0_4 == null) {
-////						popDataAge0_4 = 0;
-////					}
-//
-//					createDialogBasics(ee.getItem().getUuid(), ee.getItem().getPopulationData(), ee.getItem().getName(),
-//							"AGE_5_10", campaignDto, ee.getItem(), popDataAge0_4, popDataAge5_10, districtModality_5_10,
-//							districtStatus_5_10);
-//
-////					createDialogBasics(ee.getItem().getUuid(), ee.getItem().getPopulationData(), ee.getItem().getName(),
-////							ee.getItem().getAgeGroup(), campaignDto, ee.getItem(), popDataAge5_10,
-////							districtModality_5_10, districtStatus_5_10);
-//				} else {
-//
-//				}
-//
-//			}
-//		});
-//
-//		treeGrid.asMultiSelect().addSelectionListener(eventx -> {
-//			isMultiSelectItemLock = true;
-//
-//			if (isSingleSelectClickItemLock) {
-//				isSelectItemLock = false;
-//				return;
-//			}
-//
-//			if (!isSelectItemLock) {
-//				isSelectItemLock = true;
-//				// debug
-//
-//				for (CampaignTreeGridDto camTrGrid : eventx.getAddedSelection()) {
-//					if (camTrGrid.getIsClicked() != null) {
-//						if (camTrGrid.getIsClicked() != 777L) {
-//							System.out.println("===XXXXXX else {" + eventx.getAddedSelection().size());
-//							camTrGrid.setIsClicked(777L);
-//
-//							if (isDeletePopulationData) {
-//
-//							} else {
-//
-//								treeGrid.select(camTrGrid);
-//
-//								treeGrid.getTreeData().getChildren(camTrGrid)
-//										.forEach(ee -> treeGrid.select((CampaignTreeGridDto) ee));
-//
-//							}
-//
-//							for (CampaignTreeGridDto firstChildren : treeGrid.getTreeData().getChildren(camTrGrid)) {
-//
-//								if (isDeletePopulationData) {
-//
-//								} else {
-//
-//									treeGrid.getTreeData().getChildren(firstChildren)
-//											.forEach(ee -> treeGrid.select((CampaignTreeGridDto) ee));
-//
-//								}
-//
-//							}
-//
-//						}
-//					} else {
-//						camTrGrid.setIsClicked(777L);
-//						treeGrid.select(camTrGrid);
-//						treeGrid.getTreeData().getChildren(camTrGrid)
-//								.forEach(ee -> treeGrid.select((CampaignTreeGridDto) ee));
-//
-//						for (CampaignTreeGridDto firstChildren : treeGrid.getTreeData().getChildren(camTrGrid)) {
-//
-//							if (isDeletePopulationData) {
-//
-//							} else {
-//
-//								treeGrid.getTreeData().getChildren(firstChildren)
-//										.forEach(ee -> treeGrid.select((CampaignTreeGridDto) ee));
-//
-//							}
-//
-//						}
-//
-//					}
-//
-//				}
-//
-//				// testing
-//				for (CampaignTreeGridDto camTrGrid : eventx.getRemovedSelection()) {
-//					if (camTrGrid.getIsClicked() != null) {
-//						if (camTrGrid.getIsClicked() == 777L) {
-//							treeGrid.deselect(camTrGrid);
-//							// deselect its children
-//
-//							if (isDeletePopulationData) {
-//
-//							} else {
-//
-//								treeGrid.getTreeData().getChildren(camTrGrid)
-//										.forEach(ee -> treeGrid.deselect((CampaignTreeGridDto) ee));
-//
-//							}
-//
-//							// deselect its grandchildren
-//							for (CampaignTreeGridDto firstChildren : treeGrid.getTreeData().getChildren(camTrGrid)) {
-//
-//								if (isDeletePopulationData) {
-//
-//								} else {
-//									treeGrid.getTreeData().getChildren(firstChildren)
-//											.forEach(ee -> treeGrid.deselect((CampaignTreeGridDto) ee));
-//
-//								}
-//
-//							}
-//
-//							if (!camTrGrid.getParentUuid().equals("Area")) {
-//								// treeGrid.deselect(treeGrid.getTreeData().getParent(e.getItem()));
-//							}
-//
-//							camTrGrid.setIsClicked(7L);
-//
-//						}
-//					} else {
-//
-//						if (isDeletePopulationData) {
-//
-//						} else {
-//							camTrGrid.setIsClicked(7L);
-//							treeGrid.deselect(camTrGrid);
-//							treeGrid.getTreeData().getChildren(camTrGrid)
-//									.forEach(ee -> treeGrid.deselect((CampaignTreeGridDto) ee));
-//
-//							for (CampaignTreeGridDto firstChildren : treeGrid.getTreeData().getChildren(camTrGrid)) {
-//
-//								treeGrid.getTreeData().getChildren(firstChildren)
-//										.forEach(ee -> treeGrid.deselect((CampaignTreeGridDto) ee));
-//							}
-//						}
-//
-//					}
-//				}
-//
-//				for (CampaignTreeGridDto ftg : treeGrid.getSelectionModel().getSelectedItems()) {
-//					ftg.setIsClicked(777L);
-//				}
-//
-//				isMultiSelectItemLock = false;
-//				isSelectItemLock = false;
-////		
-//
-//			}
-//
-//		});
-//
-//		for (CampaignTreeGridDto ftg : treeGrid.getSelectionModel().getSelectedItems()) {
-//			ftg.setIsClicked(777L);
-//		}
-//
-//		HorizontalLayout assocCampaignLayout = new HorizontalLayout();
-//		assocCampaignLayout.setWidthFull();
-//
-//		assocCampaignLayout.add(treeGrid, configurePopulationPopEdit());
-//		return assocCampaignLayout;
-//
-//	}
-//
 
 	public HorizontalLayout configureTreeGrid(boolean isDeletePopulationData) {
 
@@ -1675,24 +1291,7 @@ public class CampaignForm extends VerticalLayout {
 			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
 			return label;
 		});
-
-//		ComponentRenderer<Span, CampaignTreeGridDto> populationGenerateTotal = new ComponentRenderer<>(input -> {
-//
-//			NumberFormat arabicFormat = NumberFormat.getInstance();
-//			if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-//				arabicFormat = NumberFormat.getInstance(new Locale("ps"));
-//			} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-//				arabicFormat = NumberFormat.getInstance(new Locale("fa"));
-//			} else {
-//				arabicFormat = NumberFormat.getInstance(new Locale("en"));
-//			}
-//
-//			String value = String.valueOf(arabicFormat.format(input.getPopulationDataTotal()));
-//			Span label = new Span(value);
-//			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
-//			return label;
-//		});
-
+ 
 		ComponentRenderer<Span, CampaignTreeGridDto> populationGenerate5_10 = new ComponentRenderer<>(input -> {
 
 			NumberFormat arabicFormat = NumberFormat.getInstance();
@@ -1705,6 +1304,23 @@ public class CampaignForm extends VerticalLayout {
 			}
 
 			String value = String.valueOf(arabicFormat.format(input.getPopulationData5_10()));
+			Span label = new Span(value);
+			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
+			return label;
+		});
+		
+		ComponentRenderer<Span, CampaignTreeGridDto> populationGenerate4_23M = new ComponentRenderer<>(input -> {
+
+			NumberFormat arabicFormat = NumberFormat.getInstance();
+			if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
+				arabicFormat = NumberFormat.getInstance(new Locale("ps"));
+			} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
+				arabicFormat = NumberFormat.getInstance(new Locale("fa"));
+			} else {
+				arabicFormat = NumberFormat.getInstance(new Locale("en"));
+			}
+
+			String value = String.valueOf(arabicFormat.format(input.getPopulationData4_23M()));
 			Span label = new Span(value);
 			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
 			return label;
@@ -1753,9 +1369,12 @@ public class CampaignForm extends VerticalLayout {
 		treeGrid.addColumn(populationGenerate5_10)
 				.setHeader("Target (60-120M)");
 
+		treeGrid.addColumn(populationGenerate4_23M)
+		.setHeader("Target (4_23M)");
+		
 		treeGrid.addColumn(CampaignTreeGridDto::getDistrictModality).setHeader("Modality");
 
-		treeGrid.addColumn(CampaignTreeGridDto::getDistrictStatus).setHeader("Campaign Status");
+		treeGrid.addColumn(CampaignTreeGridDto::getDistrictStatus).setHeader("Status");
 		
 //		treeGrid.addColumn(CampaignTreeGridDto::getFloatStatus).setHeader("Float Status");
 
@@ -1883,17 +1502,22 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 							.getDistrictPopulationByUuidAndAgeGroup(ee.getItem().getUuid(), campaignDto.getUuid(),
 									"AGE_5_10");
 //					};
+					
+					Integer popDataAge4_23M = FacadeProvider.getPopulationDataFacade()
+							.getDistrictPopulationByUuidAndAgeGroup(ee.getItem().getUuid(), campaignDto.getUuid(),
+									"AGE_4_23M");
+//					};
 
 					String districtModality_0_4 = FacadeProvider.getPopulationDataFacade()
 							.getDistrictModalityByUuidAndCampaignAndAgeGroup(ee.getItem().getUuid(),
 									campaignDto.getUuid(), "AGE_0_4");
 					String districtStatus_0_4 = FacadeProvider.getPopulationDataFacade()
 							.getDistrictStatusByCampaign(ee.getItem().getUuid(), campaignDto.getUuid(), "AGE_0_4");
-
+					
+		
 					createDialogBasics(ee.getItem().getUuid(), ee.getItem().getPopulationData(), ee.getItem().getName(),
-							"AGE_0_4", campaignDto, ee.getItem(), popDataAge0_4, popDataAge5_10, districtModality_0_4,
+							"AGE_0_4", campaignDto, ee.getItem(), popDataAge0_4, popDataAge5_10, popDataAge4_23M, districtModality_0_4,
 							districtStatus_0_4);
-
 				}
 
 				else if (ee.getItem().getPopulationData5_10() != null) {
@@ -1906,6 +1530,11 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 					Integer popDataAge0_4 = FacadeProvider.getPopulationDataFacade()
 							.getDistrictPopulationByUuidAndAgeGroup(ee.getItem().getUuid(), campaignDto.getUuid(),
 									"AGE_0_4");
+					
+					Integer popDataAge4_23M = FacadeProvider.getPopulationDataFacade()
+							.getDistrictPopulationByUuidAndAgeGroup(ee.getItem().getUuid(), campaignDto.getUuid(),
+									"AGE_4_23M");
+//					};
 
 					String districtModality_5_10 = FacadeProvider.getPopulationDataFacade()
 							.getDistrictModalityByUuidAndCampaignAndAgeGroup(ee.getItem().getUuid(),
@@ -1919,12 +1548,41 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 //					}
 
 					createDialogBasics(ee.getItem().getUuid(), ee.getItem().getPopulationData(), ee.getItem().getName(),
-							"AGE_5_10", campaignDto, ee.getItem(), popDataAge0_4, popDataAge5_10, districtModality_5_10,
+							"AGE_5_10", campaignDto, ee.getItem(), popDataAge0_4, popDataAge5_10, popDataAge4_23M, districtModality_5_10,
 							districtStatus_5_10);
 
 //					createDialogBasics(ee.getItem().getUuid(), ee.getItem().getPopulationData(), ee.getItem().getName(),
 //							ee.getItem().getAgeGroup(), campaignDto, ee.getItem(), popDataAge5_10,
 //							districtModality_5_10, districtStatus_5_10);
+				} 				else if (ee.getItem().getPopulationData4_23M() != null) {
+					System.out.println("Age Group from item click " + ee.getItem().getAgeGroup());
+
+					Integer popDataAge5_10 = FacadeProvider.getPopulationDataFacade()
+							.getDistrictPopulationByUuidAndAgeGroup(ee.getItem().getUuid(), campaignDto.getUuid(),
+									"AGE_5_10");
+
+					Integer popDataAge0_4 = FacadeProvider.getPopulationDataFacade()
+							.getDistrictPopulationByUuidAndAgeGroup(ee.getItem().getUuid(), campaignDto.getUuid(),
+									"AGE_0_4");
+					
+					Integer popDataAge4_23M = FacadeProvider.getPopulationDataFacade()
+							.getDistrictPopulationByUuidAndAgeGroup(ee.getItem().getUuid(), campaignDto.getUuid(),
+									"AGE_4_23M");
+//					};
+
+					String districtModality_4_23M = FacadeProvider.getPopulationDataFacade()
+							.getDistrictModalityByUuidAndCampaignAndAgeGroup(ee.getItem().getUuid(),
+									campaignDto.getUuid(), "AGE_4_23M");
+
+					String districtStatus_4_23M = FacadeProvider.getPopulationDataFacade()
+							.getDistrictStatusByCampaign(ee.getItem().getUuid(), campaignDto.getUuid(), "AGE_4_23M");
+
+ 
+					createDialogBasics(ee.getItem().getUuid(), ee.getItem().getPopulationData(), ee.getItem().getName(),
+							"AGE_4_23M", campaignDto, ee.getItem(), popDataAge0_4, popDataAge5_10, popDataAge4_23M, districtModality_4_23M,
+							districtStatus_4_23M);
+
+ 
 				} else {
 
 				}
@@ -1947,210 +1605,7 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 		        }
 		    }
 		});
-
-//		treeGrid.asMultiSelect().addSelectionListener(eventx -> {
-//			isMultiSelectItemLock = true;
-//
-//			if (isSingleSelectClickItemLock) {
-//				isSelectItemLock = false;
-//				return;
-//			}
-//
-//			if (!isSelectItemLock) {
-//				isSelectItemLock = true;
-//				// debug
-//
-////				for (CampaignTreeGridDto camTrGrid : eventx.getAddedSelection()) {
-////					if (camTrGrid.getIsClicked() != null) {
-////						if (camTrGrid.getIsClicked() != 777L) {
-////							System.out.println("===XXXXXX else {" + eventx.getAddedSelection().size());
-////							camTrGrid.setIsClicked(777L);
-////
-////							if (isDeletePopulationData) {
-////
-////							} else {
-////
-////								treeGrid.select(camTrGrid);
-////
-////								treeGrid.getTreeData().getChildren(camTrGrid)
-////										.forEach(ee -> treeGrid.select((CampaignTreeGridDto) ee));
-////
-////							}
-////
-////							for (CampaignTreeGridDto firstChildren : treeGrid.getTreeData().getChildren(camTrGrid)) {
-////
-////								if (isDeletePopulationData) {
-////
-////								} else {
-////
-////									treeGrid.getTreeData().getChildren(firstChildren)
-////											.forEach(ee -> treeGrid.select((CampaignTreeGridDto) ee));
-////
-////								}
-////
-////							}
-////
-////						}
-////					} else {
-////						camTrGrid.setIsClicked(777L);
-////						treeGrid.select(camTrGrid);
-////						treeGrid.getTreeData().getChildren(camTrGrid)
-////								.forEach(ee -> treeGrid.select((CampaignTreeGridDto) ee));
-////
-////						for (CampaignTreeGridDto firstChildren : treeGrid.getTreeData().getChildren(camTrGrid)) {
-////
-////							if (isDeletePopulationData) {
-////
-////							} else {
-////
-////								treeGrid.getTreeData().getChildren(firstChildren)
-////										.forEach(ee -> treeGrid.select((CampaignTreeGridDto) ee));
-////
-////							}
-////
-////						}
-////
-////					}
-////
-////				}
-//				
-//				for (CampaignTreeGridDto camTrGrid : eventx.getAddedSelection()) {
-//				    if (camTrGrid.getIsClicked() != null) {
-//				        if (camTrGrid.getIsClicked() != 777L) {
-//							System.out.println("===XXXXXX else {" + eventx.getAddedSelection().size());
-//				            camTrGrid.setIsClicked(777L);
-//
-//				            if (isDeletePopulationData) {
-//				                // Handle delete logic if needed
-//				            } else {
-//				                // Use the new method that includes clusters
-//				                selectItemAndDescendantsWithClusters(camTrGrid, true);
-//				            }
-//				        }
-//				    } else {
-//				        camTrGrid.setIsClicked(777L);
-//				        if (!isDeletePopulationData) {
-//				            // Use the new method that includes clusters
-//				            selectItemAndDescendantsWithClusters(camTrGrid, true);
-//				        }
-//				    }
-//				}
-//
-//				// testing
-////				for (CampaignTreeGridDto camTrGrid : eventx.getRemovedSelection()) {
-////					if (camTrGrid.getIsClicked() != null) {
-////						if (camTrGrid.getIsClicked() == 777L) {
-////							treeGrid.deselect(camTrGrid);
-////							// deselect its children
-////
-////							if (isDeletePopulationData) {
-////
-////							} else {
-////
-////								treeGrid.getTreeData().getChildren(camTrGrid)
-////										.forEach(ee -> treeGrid.deselect((CampaignTreeGridDto) ee));
-////
-////							}
-////
-////							// deselect its grandchildren
-////							for (CampaignTreeGridDto firstChildren : treeGrid.getTreeData().getChildren(camTrGrid)) {
-////
-////								if (isDeletePopulationData) {
-////
-////								} else {
-////									treeGrid.getTreeData().getChildren(firstChildren)
-////											.forEach(ee -> treeGrid.deselect((CampaignTreeGridDto) ee));
-////
-////								}
-////
-////							}
-////
-////							if (!camTrGrid.getParentUuid().equals("Area")) {
-////								// treeGrid.deselect(treeGrid.getTreeData().getParent(e.getItem()));
-////							}
-////
-////							camTrGrid.setIsClicked(7L);
-////
-////						}
-////					} else {
-////
-////						if (isDeletePopulationData) {
-////
-////						} else {
-////							camTrGrid.setIsClicked(7L);
-////							treeGrid.deselect(camTrGrid);
-////							treeGrid.getTreeData().getChildren(camTrGrid)
-////									.forEach(ee -> treeGrid.deselect((CampaignTreeGridDto) ee));
-////
-////							for (CampaignTreeGridDto firstChildren : treeGrid.getTreeData().getChildren(camTrGrid)) {
-////
-////								treeGrid.getTreeData().getChildren(firstChildren)
-////										.forEach(ee -> treeGrid.deselect((CampaignTreeGridDto) ee));
-////							}
-////						}
-////
-////					}
-////				}
-//				
-//				for (CampaignTreeGridDto camTrGrid : eventx.getRemovedSelection()) {
-//					if (camTrGrid.getIsClicked() != null) {
-//						if (camTrGrid.getIsClicked() == 777L) {
-//							treeGrid.deselect(camTrGrid);
-//							// deselect its children
-//
-//							if (isDeletePopulationData) {
-//							    // Handle delete logic if needed
-//							} else {
-//							    camTrGrid.setIsClicked(7L);
-//							    // Use the new method that includes clusters
-//							    selectItemAndDescendantsWithClusters(camTrGrid, false);
-//							}
-//
-//							// deselect its grandchildren
-//							for (CampaignTreeGridDto firstChildren : treeGrid.getTreeData().getChildren(camTrGrid)) {
-//
-//								if (isDeletePopulationData) {
-//								    // Handle delete logic if needed
-//								} else {
-//								    camTrGrid.setIsClicked(7L);
-//								    // Use the new method that includes clusters
-//								    selectItemAndDescendantsWithClusters(camTrGrid, false);
-//								}
-//
-//							}
-//
-//							if (!camTrGrid.getParentUuid().equals("Area")) {
-//								// treeGrid.deselect(treeGrid.getTreeData().getParent(e.getItem()));
-//							}
-//
-//							camTrGrid.setIsClicked(7L);
-//
-//						}
-//					} else {
-//
-//						if (isDeletePopulationData) {
-//						    // Handle delete logic if needed
-//						} else {
-//						    camTrGrid.setIsClicked(7L);
-//						    // Use the new method that includes clusters
-//						    selectItemAndDescendantsWithClusters(camTrGrid, false);
-//						}
-//
-//					}
-//				}
-//
-//				for (CampaignTreeGridDto ftg : treeGrid.getSelectionModel().getSelectedItems()) {
-//					ftg.setIsClicked(777L);
-//				}
-//
-//				isMultiSelectItemLock = false;
-//				isSelectItemLock = false;
-////		
-//
-//			}
-//
-//		});
-
+ 
 		for (CampaignTreeGridDto ftg : treeGrid.getSelectionModel().getSelectedItems()) {
 			ftg.setIsClicked(777L);
 		}
@@ -2250,6 +1705,15 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 
 		IntegerField popDataAge5_10 = new IntegerField("Target 60-120M");
 //				I18nProperties.getCaption(Captions.District_population) + " Age 5_10");
+		
+		IntegerField popDataAge4_23M = new IntegerField("Target 4_23M");
+		popDataAge4_23M.setMin(0);
+		popData0_4.setMin(0);
+		popDataAge5_10.setMin(0);
+		
+		popDataAge4_23M.setErrorMessage("Negative Values not Allowed");
+		popData0_4.setErrorMessage("Negative Values not Allowed");
+		popDataAge5_10.setErrorMessage("Negative Values not Allowed");
 
 		ComboBox<String> districtModality = new ComboBox<String>("Modality");
 		districtModality.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed");
@@ -2260,11 +1724,13 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 
 		popData0_4.setVisible(false);
 		popDataAge5_10.setVisible(false);
+		popDataAge4_23M.setVisible(false);
 		districtModality.setVisible(false);
 		districtStatus.setVisible(false);
 
 		popData0_4.setValue(null);
 		popDataAge5_10.setValue(null);
+		popDataAge4_23M.setValue(null);
 		districtModality.setValue(null);
 		districtStatus.setValue(null);
 
@@ -2338,6 +1804,7 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 					CommunityReferenceDto cluster = e.getValue();
 					popData0_4.setVisible(true);
 					popDataAge5_10.setVisible(true);
+					popDataAge4_23M.setVisible(true);
 					districtModality.setVisible(true);
 					districtStatus.setVisible(true);
 
@@ -2352,6 +1819,13 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 							.getClusterPopulationByTypeUsingUUIDs(clusterFilter.getValue().getUuid(),
 									campaignDto.getUuid(), AgeGroup.AGE_5_10)) {
 						popDataAge5_10.setValue(xx.getPopulation());
+						System.out.println(xx.getPopulation() + "666666666666666666666666666666666666666666666");
+					}
+					
+					for (PopulationDataDto xx : FacadeProvider.getPopulationDataFacade()
+							.getClusterPopulationByTypeUsingUUIDs(clusterFilter.getValue().getUuid(),
+									campaignDto.getUuid(), AgeGroup.AGE_4_23M)) {
+						popDataAge4_23M.setValue(xx.getPopulation());
 						System.out.println(xx.getPopulation() + "666666666666666666666666666666666666666666666");
 					}
 
@@ -2384,6 +1858,11 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 
 			System.out.println(popDataAge5_10.getValue() + "GGGGGGGGGGGG" + popData0_4.getValue());
 
+			if (popData0_4.isInvalid() || popDataAge5_10.isInvalid() || popDataAge4_23M.isInvalid()) {
+				Notification.show("Negative Values are not allowed").addThemeVariants(NotificationVariant.LUMO_ERROR);
+				return;
+			}
+
 			if (clusterFilter.getValue() != null) {
 
 				System.out.println(FacadeProvider.getCampaignFacade().getReferenceByUuid(campaignDto.getUuid())
@@ -2395,12 +1874,33 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 
 				PopulationDataDto newPopulationData_10 = PopulationDataDto.build(collectionDate);
 				PopulationDataDto newPopulationData_0_4 = PopulationDataDto.build(collectionDate);
+				PopulationDataDto newPopulationData_423M = PopulationDataDto.build(collectionDate);
+
 
 				List<PopulationDataDto> itirationList = new ArrayList<PopulationDataDto>();
 				itirationList.add(newPopulationData_0_4);
 				itirationList.add(newPopulationData_10);
+				itirationList.add(newPopulationData_423M);
 
 				System.out.println("Age Group rom ope  is age 0_4");
+				if (popDataAge4_23M.getValue() != null) {
+					newPopulationData_423M
+							.setCampaign(FacadeProvider.getCampaignFacade().getReferenceByUuid(campaignDto.getUuid()));
+					newPopulationData_423M.setRegion(FacadeProvider.getRegionFacade()
+							.getRegionReferenceByUuid(provinceFilter.getValue().getUuid()));
+					newPopulationData_423M.setDistrict(FacadeProvider.getDistrictFacade()
+							.getDistrictReferenceByUuid(districtFilter.getValue().getUuid()));
+					newPopulationData_423M.setCommunity(FacadeProvider.getCommunityFacade().getCommunityReferenceByUuid(
+							clusterFilter.getValue().getUuid()));
+					newPopulationData_423M.setModality(districtModality.getValue());
+					newPopulationData_423M.setDistrictStatus(districtStatus.getValue());
+					newPopulationData_423M.setAgeGroup(AgeGroup.AGE_4_23M);
+					newPopulationData_423M.setPopulation(popDataAge4_23M.getValue());
+
+					populationDataList.add(newPopulationData_423M);
+
+				}
+				
 				if (popData0_4.getValue() != null) {
 					newPopulationData_0_4
 							.setCampaign(FacadeProvider.getCampaignFacade().getReferenceByUuid(campaignDto.getUuid()));
@@ -2450,6 +1950,19 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 								popDataAge5_10.getValue() + "GGGGGGGGGGGG IN THE TRY " + popData0_4.getValue());
 
 						try {
+							
+							if (popDataAge4_23M.getValue() != null) {
+								try {
+									FacadeProvider.getPopulationDataFacade().savePopulationData(populationDataList);
+								} catch (Exception ex) {
+									System.out.println(ex + "Exception");
+								} finally {
+									populationDataList.remove(newPopulationData_423M);
+
+								}
+
+							}
+							
 							if (popData0_4.getValue() != null) {
 								try {
 									FacadeProvider.getPopulationDataFacade().savePopulationData(populationDataList);
@@ -2493,6 +2006,7 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 							clusterFilter.clear();
 							popData0_4.clear();
 							popDataAge5_10.clear();
+							popDataAge4_23M.clear();
 							districtModality.clear();
 							districtStatus.clear();
 							formx.setVisible(false);
@@ -2514,14 +2028,15 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 
 		});
 
-		formx.add(regionFilter, provinceFilter, districtFilter,clusterFilter, popData0_4, popDataAge5_10, districtModality,
-				districtStatus);
+		formx.add(regionFilter, provinceFilter, districtFilter, clusterFilter, popData0_4, popDataAge5_10,
+				popDataAge4_23M, districtModality, districtStatus);
 		formx.setColspan(regionFilter, 1);
 		formx.setColspan(provinceFilter, 1);
 		formx.setColspan(districtFilter, 1);
 		formx.setColspan(clusterFilter, 1);
 		formx.setColspan(popData0_4, 1);
 		formx.setColspan(popDataAge5_10, 1);
+		formx.setColspan(popDataAge4_23M, 1);
 		formx.setColspan(districtModality, 1);
 		formx.setColspan(districtStatus, 2);
 
@@ -2609,7 +2124,7 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 
 	private void createDialogBasics(String Uuid, Long selectedPopData, String name_, String ageGroup,
 			CampaignDto campaignDto_, CampaignTreeGridDto campaignTreeGridDto, Integer populationByAgeGroup,
-			Integer populationByAgeGroup5_10, String districtModalityByAgeGroup, String districtStatusByAgeGroup) {
+			Integer populationByAgeGroup5_10, Integer populationByAgeGroup4_23M, String districtModalityByAgeGroup, String districtStatusByAgeGroup) {
 		Dialog dialog = new Dialog();
 
 		dialog.removeAll();
@@ -2624,7 +2139,7 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 		dialog.getFooter().add(saveButton);
 
 		VerticalLayout dialogLayout = createDialogLayoutByAge(name_, ageGroup, selectedPopData, saveButton, Uuid,
-				campaignDto_, dialog, campaignTreeGridDto, populationByAgeGroup, populationByAgeGroup5_10,
+				campaignDto_, dialog, campaignTreeGridDto, populationByAgeGroup, populationByAgeGroup5_10, populationByAgeGroup4_23M,
 				districtModalityByAgeGroup, districtStatusByAgeGroup);
 
 		dialog.add(dialogLayout);
@@ -2638,7 +2153,7 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 
 	private static VerticalLayout createDialogLayoutByAge(String name_, String ageGroup, Long selectedPopData,
 			Button saveButton, String Uuid, CampaignDto campaignDto_, Dialog dialog,
-			CampaignTreeGridDto campaignTreeGridDto, Integer populationByAgeGroup, Integer populationByAgeGroup5_10,
+			CampaignTreeGridDto campaignTreeGridDto, Integer populationByAgeGroup, Integer populationByAgeGroup5_10,Integer populationByAgeGroup4_23M,
 			String districtModalityByAgeGroup, String districtStatusByAgeGroup) {
 
 		TextField district = new TextField(I18nProperties.getCaption(Captions.community));
@@ -2649,6 +2164,10 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 
 		IntegerField popData5_10 = new IntegerField(
 				I18nProperties.getCaption(Captions.District_population) + " " + "5_10");
+		
+		IntegerField popData4_23M = new IntegerField(
+				I18nProperties.getCaption(Captions.District_population) + " " + "4_23M");
+
 
 		ComboBox<String> districtModalityCombo = new ComboBox<String>("Modality");
 		districtModalityCombo.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed");
@@ -2672,6 +2191,16 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 
 		popData.setWidthFull();
 		popData5_10.setWidthFull();
+		popData4_23M.setWidthFull();
+		
+		popData4_23M.setMin(0);
+		popData5_10.setMin(0);
+		popData.setMin(0);
+
+		popData4_23M.setErrorMessage("Negative Values not Allowed");
+		popData5_10.setErrorMessage("Negative Values not Allowed");
+		popData.setErrorMessage("Negative Values not Allowed");
+
 
 		districtStatusCombo.setWidthFull();
 		districtModalityCombo.setWidthFull();
@@ -2687,6 +2216,12 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 		} else {
 			popData5_10.setValue(null);
 		}
+		
+		if (populationByAgeGroup4_23M != null) {
+			popData4_23M.setValue(populationByAgeGroup4_23M);
+		} else {
+			popData4_23M.setValue(null);
+		}
 
 		if (districtModalityByAgeGroup != null) {
 			districtModalityCombo.setValue(districtModalityByAgeGroup);
@@ -2701,8 +2236,13 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 		}
 
 		saveButton.addClickListener(e -> {
+			if (popData.isInvalid() || popData5_10.isInvalid() || popData4_23M.isInvalid()) {
+				Notification.show("Negative Values are not allowed").addThemeVariants(NotificationVariant.LUMO_ERROR);
+				return;
+			}
 			List<PopulationDataDto> popDataDto;
 			List<PopulationDataDto> popDataDto5_10;
+			List<PopulationDataDto> popDataDto4_23M;
 			List<PopulationDataDto> district_Modality;
 			List<PopulationDataDto> district_Status;
 
@@ -2716,16 +2256,20 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 
 				popDataDto5_10 = FacadeProvider.getPopulationDataFacade().getClusterPopulationByTypeUsingUUIDs(Uuid,
 						campaignDto_.getUuid(), AgeGroup.AGE_5_10);
+				
+				popDataDto4_23M = FacadeProvider.getPopulationDataFacade().getClusterPopulationByTypeUsingUUIDs(Uuid,
+						campaignDto_.getUuid(), AgeGroup.AGE_4_23M);
 
 				district_Modality = FacadeProvider.getPopulationDataFacade()
 						.getDistrictModalityByclusterUUIDsandCampaignUUIdAndAgeGroup(Uuid, campaignDto_.getUuid(),
-								ageGroup.equals("Age_0_4") ? AgeGroup.AGE_0_4
-										: ageGroup.equals("AGE_5_10") ? AgeGroup.AGE_5_10 : AgeGroup.AGE_0_4);
+								ageGroup.equals("Age_0_4") ? AgeGroup.AGE_0_4 : ageGroup.equals("AGE_5_10") ? AgeGroup.AGE_5_10 : ageGroup.equals("AGE_4_23M") ? AgeGroup.AGE_4_23M : AgeGroup.AGE_0_4);
 
 				district_Status = FacadeProvider.getPopulationDataFacade()
 						.getDistrictModalityByclusterUUIDsandCampaignUUIdAndAgeGroup(Uuid, campaignDto_.getUuid(),
-								ageGroup.equals("Age_0_4") ? AgeGroup.AGE_0_4
-										: ageGroup.equals("AGE_5_10") ? AgeGroup.AGE_5_10 : AgeGroup.AGE_0_4);
+								ageGroup.equals("Age_0_4") ? AgeGroup.AGE_0_4 : ageGroup.equals("AGE_5_10") ? AgeGroup.AGE_5_10 : ageGroup.equals("AGE_4_23M") ? AgeGroup.AGE_4_23M : AgeGroup.AGE_0_4);
+
+//								ageGroup.equals("Age_0_4") ? AgeGroup.AGE_0_4
+//										: ageGroup.equals("AGE_5_10") ? AgeGroup.AGE_5_10 : AgeGroup.AGE_0_4);
 
 				if (popData.getValue() != null
 						&& (districtModalityCombo.getValue() != null || districtModalityCombo.getValue() != "")
@@ -2749,6 +2293,18 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 						popDataDto5_10.get(0).setDistrictStatus(districtStatusCombo.getValue().toString());
 
 						popDataDtotoList.add(popDataDto5_10.get(0));
+
+					}
+					
+					if (populationByAgeGroup4_23M != null) {
+
+						popDataDto4_23M.get(0).setPopulation(popData4_23M.getValue());
+
+						popDataDto4_23M.get(0).setModality(districtModalityCombo.getValue().toString());
+
+						popDataDto4_23M.get(0).setDistrictStatus(districtStatusCombo.getValue().toString());
+
+						popDataDtotoList.add(popDataDto4_23M.get(0));
 
 					}
 
@@ -2788,7 +2344,7 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 
 		});
 
-		VerticalLayout dialogLayout = new VerticalLayout(district, popData, popData5_10, districtModalityCombo,
+		VerticalLayout dialogLayout = new VerticalLayout(district, popData, popData5_10, popData4_23M, districtModalityCombo,
 				districtStatusCombo);
 		dialogLayout.setPadding(false);
 		dialogLayout.setSpacing(false);
@@ -3058,7 +2614,7 @@ System.out.println(ee.getItem().getName() + "nameeeee");
             	        );
 
             	    System.out.println("      Clusters in district: " + clusters_.size());
-if(clusters_.size() > 0 ) {
+            	   if(clusters_.size() > 0 ) {
             	    for (CommunityDto clusterdto : clusters_) {
             	        if (clusterdto.getName() != null) {
 
@@ -3067,20 +2623,37 @@ if(clusters_.size() > 0 ) {
             	            Long totalPopulation =
             	                (clusterdto.getPopulationData() != null ? clusterdto.getPopulationData() : 0L)
             	                + (clusterdto.getPopulationData5_10() != null ? clusterdto.getPopulationData5_10() : 0L);
+            	            
+//            	            CampaignTreeGridDto clusterData = new CampaignTreeGridDtoImpl(
+//            	                clusterdto.getName(),
+//            	                clusterdto.getPopulationData(),
+//            	                clusterdto.getPopulationData5_10(),
+//            	                clusterdto.getClusterId(),
+//            	                clusterdto.getDistrictUuid(), // Parent is district UUID
+//            	                clusterdto.getClusterUuid(),
+//            	                "cluster",
+//            	                clusterdto.getSelectedPopulationData(),
+//            	                clusterdto.getDistrictModality(),
+//            	                clusterdto.getDistrictStatus(),
+//            	                clusterdto.provideFloatStatus(),
+//            	                totalPopulation
+//            	            );
+            	            
             	            CampaignTreeGridDto clusterData = new CampaignTreeGridDtoImpl(
-            	                clusterdto.getName(),
-            	                clusterdto.getPopulationData(),
-            	                clusterdto.getPopulationData5_10(),
-            	                clusterdto.getClusterId(),
-            	                clusterdto.getDistrictUuid(), // Parent is district UUID
-            	                clusterdto.getClusterUuid(),
-            	                "cluster",
-            	                clusterdto.getSelectedPopulationData(),
-            	                clusterdto.getDistrictModality(),
-            	                clusterdto.getDistrictStatus(),
-            	                clusterdto.provideFloatStatus(),
-            	                totalPopulation
-            	            );
+                	                clusterdto.getName(),
+                	                clusterdto.getPopulationData(),
+                	                clusterdto.getPopulationData5_10(),
+                	                clusterdto.getPopulationData4_23M(),
+                	                clusterdto.getClusterId(),
+                	                clusterdto.getDistrictUuid(), // Parent is district UUID
+                	                clusterdto.getClusterUuid(),
+                	                "cluster",
+                	                clusterdto.getSelectedPopulationData(),
+                	                clusterdto.getDistrictModality(),
+                	                clusterdto.getDistrictStatus(),
+                	                clusterdto.provideFloatStatus(),
+                	                totalPopulation
+                	            );
 
             	            // Add cluster to district
             	            districtData.addClusterData(clusterData);
@@ -3089,15 +2662,19 @@ if(clusters_.size() > 0 ) {
             	}else {
             		
             		if (district_x.getPopulationData() != null) {
-            			districtData = new CampaignTreeGridDtoImpl(district_x.getName(), district_x.getPopulationData(),
-								district_x.getPopulationData5_10(), district_x.getRegionId(),
-								district_x.getRegionUuid_(), district_x.getUuid_(), "district",
-								district_x.getSelectedPopulationData(), district_x.getDistrictModality(),
+            			districtData = new CampaignTreeGridDtoImpl(
+            					district_x.getName(), 
+            					district_x.getPopulationData(),
+								district_x.getPopulationData5_10(), 
+								district_x.getRegionId(),
+								district_x.getRegionUuid_(), 
+								district_x.getUuid_(), 
+								"district",
+								district_x.getSelectedPopulationData(), 
+								district_x.getDistrictModality(),
 								district_x.getDistrictStatus(),
-								((district_x.getPopulationData() != null ? district_x.getPopulationData() : 0L)
-										+ (district_x.getPopulationData5_10() != null
-												? district_x.getPopulationData5_10()
-												: 0L)));
+								((district_x.getPopulationData() != null ? district_x.getPopulationData() : 0L) + (district_x.getPopulationData5_10() != null ? district_x.getPopulationData5_10() : 0L))
+								);
 					} 
             		
             	}

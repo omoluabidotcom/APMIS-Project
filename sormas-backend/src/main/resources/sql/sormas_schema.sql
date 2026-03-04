@@ -11666,9 +11666,49 @@ VALUES (491, 'Materialized View Update for FLW Operation performance #811');
 ALTER TABLE community 
 ADD COLUMN internationalborder BOOLEAN DEFAULT FALSE;
 
+ALTER TABLE community 
+ADD COLUMN populationdata_0_4 int8 NOT NULL DEFAULT 0;
+
+ALTER TABLE community 
+ADD COLUMN populationdata_5_10 int8 NOT NULL DEFAULT 0;
+
 
 INSERT INTO schema_version (version_number, comment)
 VALUES (492, 'Add "International Border" column to Cluster table in Geography #908');
+
+
+CREATE SEQUENCE IF NOT EXISTS public.populationdata_id_seq;
+
+ALTER TABLE public.populationdata
+ALTER COLUMN id SET DEFAULT nextval('public.populationdata_id_seq');
+
+SELECT setval(
+    'public.populationdata_id_seq',
+    COALESCE((SELECT MAX(id) FROM public.populationdata), 1)
+);
+
+ALTER SEQUENCE public.populationdata_id_seq
+OWNED BY public.populationdata.id;
+
+ALTER TABLE public.populationdata
+DROP CONSTRAINT populationdata_un;
+
+ALTER TABLE public.populationdata
+ADD CONSTRAINT populationdata_un
+UNIQUE (community_id, agegroup, campaign_id);
+
+ALTER TABLE community 
+ADD COLUMN populationdata_4_23M int8 NOT NULL DEFAULT 0;
+
+
+INSERT INTO schema_version (version_number, comment)
+VALUES (493, 'Improving Population Data for Cluster Level target');
+
+
+
+
+
+
 
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***
 

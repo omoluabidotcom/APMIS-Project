@@ -610,23 +610,14 @@ public class CampaignsView extends VerticalLayout {
 	private void logButton(CampaignForm.LogCampaignEvent event) {
 
 		Dialog dialog = new Dialog();
-//		dialog.setCancelable(true);
-//		dialog.setConfirmText("Close");
-//		dialog.addCancelListener(e -> dialog.close());
+ 
 		dialog.setWidthFull();
 		dialog.open();
 
 		CampaignForm formLayout = (CampaignForm) event.getSource();
 
 		dialog.setHeaderTitle("Campaign Log");
-//		CampaignLogDto logDto = new CampaignLogDto();
-//		Date timestamp = logDto.getActionDate();
-//
-//		TextRenderer<CampaignLogDto> timeStampRenderer = new TextRenderer<>(dto -> {
-//			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");//new SimpleDateFormat("dd/MM/yyyy");
-//			String formatted = dateFormat.format(timestamp);
-//			return formatted;
-//		});
+ 
 
 		Grid<CampaignLogDto> grid = new Grid<>(CampaignLogDto.class, false);
 		grid.setItems(FacadeProvider.getCampaignFacade()
@@ -637,24 +628,11 @@ public class CampaignsView extends VerticalLayout {
 		grid.addColumn(CampaignLogDto::getActionDate).setHeader("Timestamp").setAutoWidth(true);
 		grid.setWidthFull();
 
-//		grid.getStyle().set("width", "auto").set("max-width", "100%");
-
+ 
 		dialog.add(grid);
-//		dialog.addConfirmListener(e -> {
-//			FacadeProvider.getCampaignFacade().publishandUnPublishCampaign(event.getCampaign().getUuid(), false);
-//			formLayout.updatePublishButtonText(false);
-//		});
-
+ 
 		formLayout.getChildren().forEach(child -> child.getElement().executeJs("this.requestLayout()"));
-
-//		Dialog dialogxd = new Dialog();
-//
-//		dialogxd.add(createDialogContent(dialogxd));
-//
-//		dialogxd.addThemeVariants(DialogVariant.LUMO_NO_PADDING);
-//		CampaignForm formLayout = (CampaignForm) event.getSource();
-//		formLayout.getChildren().forEach(child -> child.getElement().executeJs("this.requestLayout()"));
-
+  
 	}
 
 	private void openCloseCampaign(CampaignForm.OpenCloseEvent event) {
