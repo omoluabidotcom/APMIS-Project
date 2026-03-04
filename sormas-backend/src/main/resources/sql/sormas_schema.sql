@@ -11701,6 +11701,13 @@ ALTER TABLE community
 ADD COLUMN populationdata_4_23M int8 NOT NULL DEFAULT 0;
 
 
+alter table public.device_manager add column district_id int8 NULL;
+
+ALTER TABLE public.device_manager ADD CONSTRAINT fk_device_manager_district_id FOREIGN KEY (district_id) REFERENCES public.district(id);
+
+DROP TABLE device_manager_district;
+
+
 INSERT INTO schema_version (version_number, comment)
 VALUES (493, 'Improving Population Data for Cluster Level target');
 
