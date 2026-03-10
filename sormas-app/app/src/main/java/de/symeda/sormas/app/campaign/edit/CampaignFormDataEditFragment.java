@@ -2931,21 +2931,44 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
         validateDayWise(context);
     }
 
-    private void validateDayWise(Context context) throws ValidationException {
+//    private void validateDayWise(Context context) throws ValidationException {
+//
+//        int currentDay = mTabHost.getCurrentTab() + 1;
+//        ValidationErrorInfo errorInfo = new ValidationErrorInfo(context);
+//
+//        // Always validate Day-1
+//        ViewGroup day1 = getDayContainer(1);
+//        FragmentValidator.validatePropertyEditFields(day1, errorInfo);
+//
+//        // Validate current day if different
+//        if (currentDay != 1) {
+//            System.out.println("NOTDAYONEVALIDATIONNNNNNNNNNNNNNNNNNNNNNNNNNNNEDITTTTTTTTTTTTTTT");
+//            ViewGroup current = getDayContainer(currentDay);
+//            System.out.println(current.getChildCount());
+//            FragmentValidator.validatePropertyEditFields(current, errorInfo);
+//        }
+//
+//        if (errorInfo.hasError()) {
+//            throw new ValidationException(errorInfo.toString());
+//        }
+//    }
 
+    private void validateDayWise(Context context) throws ValidationException {
         int currentDay = mTabHost.getCurrentTab() + 1;
         ValidationErrorInfo errorInfo = new ValidationErrorInfo(context);
 
-        // Always validate Day-1
-        ViewGroup day1 = getDayContainer(1);
-        FragmentValidator.validatePropertyEditFields(day1, errorInfo);
-
-        // Validate current day if different
-        if (currentDay != 1) {
-            System.out.println("NOTDAYONEVALIDATIONNNNNNNNNNNNNNNNNNNNNNNNNNNNEDITTTTTTTTTTTTTTT");
-            ViewGroup current = getDayContainer(currentDay);
-            System.out.println(current.getChildCount());
-            FragmentValidator.validatePropertyEditFields(current, errorInfo);
+        // Validate all days from day 1 up to and including the current day
+        // e.g. currentDay = 3 -> validates day1, day2, day3
+        System.out.println("CURRENTDAYYYYYYYYYYYYYYYYYYYYYYYYYY " + currentDay);
+        for (int day = 1; day <= currentDay; day++) {
+            System.out.println("VALIDATING DAY: " + day);
+            ViewGroup dayContainer = getDayContainer(day);
+            if (dayContainer != null) {
+                System.out.println("Day " + day + " child count: " + dayContainer.getChildCount());
+                FragmentValidator.validatePropertyEditFields(dayContainer, errorInfo);
+            } else {
+                System.out.println("WARNING: No container found for day " + day);
+            }
         }
 
         if (errorInfo.hasError()) {
@@ -2954,14 +2977,18 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
     }
 
     private ViewGroup getDayContainer(int day) {
-        System.out.println("DAYYYYYYYYYYYYYYYYYYYYEDITTTTTTTTTTT " +day);
+        System.out.println("DAYYYYYYYYYYYYYYYYYYYY " +day);
         switch (day) {
             case 1: return mTabHost.findViewById(R.id.tabSheet1);
             case 2: return mTabHost.findViewById(R.id.tabSheet2);
             case 3: return mTabHost.findViewById(R.id.tabSheet3);
             case 4: return mTabHost.findViewById(R.id.tabSheet4);
             case 5: return mTabHost.findViewById(R.id.tabSheet5);
+            case 6: return mTabHost.findViewById(R.id.tabSheet6);
+            case 7: return mTabHost.findViewById(R.id.tabSheet7);
+            case 8: return mTabHost.findViewById(R.id.tabSheet8);
             default: return null;
         }
     }
+
 }
