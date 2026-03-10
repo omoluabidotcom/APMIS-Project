@@ -271,15 +271,16 @@ public class CampaignFormBuilder extends VerticalLayout {
 		formDate.setRequired(true);
 //		formDate.setId("my-disabled-textfield");
 		formDate.getStyle().set("-webkit-text-fill-color", "green !important");
-		
+
 		formDate.setErrorMessage(""); // Initialize error message
-		formDate.setInvalid(false); 
+		formDate.setInvalid(false);
 
 		formDate.addValueChangeListener(e -> {
-			
-			System.out.println(validateTextInputFormDate(e.getValue()) + "validateTextInputFormDate(e.getValue())validateTextInputFormDate(e.getValue())");
+
+			System.out.println(validateTextInputFormDate(e.getValue())
+					+ "validateTextInputFormDate(e.getValue())validateTextInputFormDate(e.getValue())");
 			validateTextInputFormDate(e.getValue());
-			});
+		});
 
 		//
 
@@ -843,12 +844,13 @@ public class CampaignFormBuilder extends VerticalLayout {
 		int ii = 0;
 
 		TabSheet accrd = new TabSheet();
-		
+
 		accrd.addSelectedChangeListener(event -> {
 			Tab selectedTab = accrd.getSelectedTab();
 			if (selectedTab != null) {
 				currentDay = selectedTab.getLabel().toLowerCase().replace("-", "");
-				System.out.println("SWITCHHHHHHHHHHHHHHHHHHH " + currentDay.toLowerCase() + " ENDDDDDDDDDDDDDDDDDDDDDDDD");
+				System.out.println(
+						"SWITCHHHHHHHHHHHHHHHHHHH " + currentDay.toLowerCase() + " ENDDDDDDDDDDDDDDDDDDDDDDDD");
 			}
 		});
 		accrd.setHeight(750, Unit.PIXELS);
@@ -2908,67 +2910,63 @@ public class CampaignFormBuilder extends VerticalLayout {
 		}
 	}
 
-	
 	private boolean validateTextInputFormDate(String formDateFieldValue) {
-	    LocalDate minDate = null;
-	    LocalDate maxDate = null;
+		LocalDate minDate = null;
+		LocalDate maxDate = null;
 
-	    Date formEndDate = FacadeProvider.getCampaignFormMetaWithExpFacade()
-	            .getFormExpiryByCampaignAndFormUuid(campaignDto.getUuid(), campaignFormMeta.getUuid());
+		Date formEndDate = FacadeProvider.getCampaignFormMetaWithExpFacade()
+				.getFormExpiryByCampaignAndFormUuid(campaignDto.getUuid(), campaignFormMeta.getUuid());
 
-	    if (formEndDate != null) {
-	        if (formEndDate instanceof java.sql.Date) {
-	            maxDate = ((java.sql.Date) formEndDate).toLocalDate();
-	        } else {
-	            maxDate = formEndDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-	        }
-	    }
+		if (formEndDate != null) {
+			if (formEndDate instanceof java.sql.Date) {
+				maxDate = ((java.sql.Date) formEndDate).toLocalDate();
+			} else {
+				maxDate = formEndDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			}
+		}
 
-	    if ("pre-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
-	        minDate = campaignDto.getPreCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-	    } else if ("intra-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
-	        minDate = campaignDto.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-	    } else if ("post-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
-	        minDate = campaignDto.getPostCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-	    }
+		if ("pre-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+			minDate = campaignDto.getPreCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		} else if ("intra-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+			minDate = campaignDto.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		} else if ("post-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+			minDate = campaignDto.getPostCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		}
 
-	    String value = formDateFieldValue;
+		String value = formDateFieldValue;
 
-	    // Reset previous error state
-	    formDate.setInvalid(false);
-	    formDate.setErrorMessage(null);
-	    
-	    // Remove error styling if it exists
-	    formDate.getElement().getStyle().remove("border-color");
-	    formDate.getElement().getStyle().remove("color");
+		// Reset previous error state
+		formDate.setInvalid(false);
+		formDate.setErrorMessage(null);
 
-	    if (value == null || value.isBlank()) {
-	        return false;
-	    }
+		// Remove error styling if it exists
+		formDate.getElement().getStyle().remove("border-color");
+		formDate.getElement().getStyle().remove("color");
 
-	    try {
-	    	
-	    	System.out.println("----------------HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
-	        LocalDate inputDate = LocalDate.parse(value.trim(), dateformatter);
-	        
-	        if ((minDate != null && inputDate.isBefore(minDate)) || 
-	            (maxDate != null && inputDate.isAfter(maxDate))) {
-	            
-	            // Force validation indicator even for read-only fields
-	        	formDate.setInvalid(true);
-	            
-	            // Build error message
-	            String errorMsg = "Date must be between " + 
-	                minDate.format(dateformatter) + " and " + 
-	                maxDate.format(dateformatter);
-	            
-	            formDate.setErrorMessage(errorMsg);
-	            
-	            return false;
-	            
+		if (value == null || value.isBlank()) {
+			return false;
+		}
+
+		try {
+
+			System.out.println("----------------HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
+			LocalDate inputDate = LocalDate.parse(value.trim(), dateformatter);
+
+			if ((minDate != null && inputDate.isBefore(minDate)) || (maxDate != null && inputDate.isAfter(maxDate))) {
+
+				// Force validation indicator even for read-only fields
+				formDate.setInvalid(true);
+
+				// Build error message
+				String errorMsg = "Date must be between " + minDate.format(dateformatter) + " and "
+						+ maxDate.format(dateformatter);
+
+				formDate.setErrorMessage(errorMsg);
+
+				return false;
+
 //		    	System.out.println(minDate +"----------------error mesage set HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH" + maxDate);
 
-	            
 //	            // For read-only fields, we need to manually show the error
 //	            if (formDateField.isReadOnly()) {
 //	            	
@@ -3005,30 +3003,30 @@ public class CampaignFormBuilder extends VerticalLayout {
 //	            }
 //	            
 //	            hasErrorFormValues(12);
-	        }
-	        return true;
-	    } catch (Exception ex) {
-	        logger.error("Error validating form date for value: " + value, ex);
-	        
-	        formDate.setInvalid(true);
-	        formDate.setErrorMessage("Invalid date format. Use DD-MM-YYYY");
-	        
-	        if (formDate.isReadOnly()) {
-	        	formDate.setReadOnly(false);
-	        	formDate.setInvalid(true);
-	        	formDate.setReadOnly(true);
-	        	formDate.getElement().getStyle().set("border-color", "var(--lumo-error-color)");
-	        	formDate.getElement().getStyle().set("color", "var(--lumo-error-color)");
-	            Notification.show("Invalid date format. Use DD-MM-YYYY", 5000, Position.MIDDLE);
-	        }
-	        
-	        hasErrorFormValues(13);
-	        
-	        return false;
-	    }
-	    
+			}
+			return true;
+		} catch (Exception ex) {
+			logger.error("Error validating form date for value: " + value, ex);
+
+			formDate.setInvalid(true);
+			formDate.setErrorMessage("Invalid date format. Use DD-MM-YYYY");
+
+			if (formDate.isReadOnly()) {
+				formDate.setReadOnly(false);
+				formDate.setInvalid(true);
+				formDate.setReadOnly(true);
+				formDate.getElement().getStyle().set("border-color", "var(--lumo-error-color)");
+				formDate.getElement().getStyle().set("color", "var(--lumo-error-color)");
+				Notification.show("Invalid date format. Use DD-MM-YYYY", 5000, Position.MIDDLE);
+			}
+
+			hasErrorFormValues(13);
+
+			return false;
+		}
+
 	}
-	
+
 //	private void validateTextInputFormDate(TextField formDateField) {
 //
 //		LocalDate minDate = null;
@@ -3165,9 +3163,10 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 	private boolean validateAndSave() {
 		hasErrorFormValuesReset();
-				
+
 		if (daywiseTracker) {
 
+			int currentDayNumber = Integer.parseInt(currentDay.replace("day", ""));
 			fields.forEach((key, value) -> {
 				Component formField = fields.get(key);
 
@@ -3184,7 +3183,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					hasErrorFormValues(3);
 				}
 				if (!isDistrictEntry) {
-					System.out.println(currentDay +" Not a district entry form QQQQQQQQQQQQQQQQ " + key);
+					System.out.println(currentDay + " Not a district entry form QQQQQQQQQQQQQQQQ " + key);
 					if (cbCommunity.getValue() == null) {
 						cbCommunity.getElement().setProperty("invalid", true);
 						hasErrorFormValues(4);
@@ -3198,62 +3197,39 @@ public class CampaignFormBuilder extends VerticalLayout {
 					hasErrorFormValues(5);
 				}
 
-				if (((AbstractField) formField).isRequiredIndicatorVisible() && key.contains(currentDay)) {
-					System.out.println(key + "FORMFIELDSSSSSSSS " + value);
-					logger.debug(((AbstractField) formField).getValue() + "++++++++++"
-							+ ((AbstractField) formField).getId());
+				for (int d = 1; d <= currentDayNumber; d++) {
+					String dayKey = "day" + d;
 
-					if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == ""
-							|| (((AbstractField) formField).getValue() instanceof Set
+					if (((AbstractField) formField).isRequiredIndicatorVisible() && key.contains(dayKey)) {
+						System.out.println(key + "FORMFIELDSSSSSSSS " + value);
+						logger.debug(((AbstractField) formField).getValue() + "++++++++++"
+								+ ((AbstractField) formField).getId());
+
+						if (((AbstractField) formField).getValue() == null
+								|| ((AbstractField) formField).getValue() == ""
+								|| (((AbstractField) formField).getValue() instanceof Set
+										&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+
+							if ((((AbstractField) formField).getValue() instanceof Set
 									&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+								formField.getElement().getStyle().set("background", "#ffe5e5");
+							}
 
-						if ((((AbstractField) formField).getValue() instanceof Set
-								&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
-							formField.getElement().getStyle().set("background", "#ffe5e5");
-						}
-
-						hasErrorFormValues(6);
-						formField.getElement().setProperty("invalid", true);
-					} else {
-						// Clear error state and background color when field has value
-						if (formField.getElement().getProperty("invalid", false)) {
-							formField.getElement().setProperty("invalid", false);
-						}
-						// Clear background if it was set due to error
-						if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
-							formField.getElement().getStyle().remove("background");
-							formField.getElement().setProperty("error-background-set", null);
+							hasErrorFormValues(6);
+							formField.getElement().setProperty("invalid", true);
+						} else {
+							// Clear error state and background color when field has value
+							if (formField.getElement().getProperty("invalid", false)) {
+								formField.getElement().setProperty("invalid", false);
+							}
+							// Clear background if it was set due to error
+							if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
+								formField.getElement().getStyle().remove("background");
+								formField.getElement().setProperty("error-background-set", null);
+							}
 						}
 					}
-				}
-				
-				if (((AbstractField) formField).isRequiredIndicatorVisible() && key.contains("day1")) {
-					System.out.println(key + "DAY111111111111111111111111111111111 " + value);
-					logger.debug(((AbstractField) formField).getValue() + "++++++++++"
-							+ ((AbstractField) formField).getId());
 
-					if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == ""
-							|| (((AbstractField) formField).getValue() instanceof Set
-									&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
-
-						if ((((AbstractField) formField).getValue() instanceof Set
-								&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
-							formField.getElement().getStyle().set("background", "#ffe5e5");
-						}
-
-						hasErrorFormValues(6);
-						formField.getElement().setProperty("invalid", true);
-					} else {
-						// Clear error state and background color when field has value
-						if (formField.getElement().getProperty("invalid", false)) {
-							formField.getElement().setProperty("invalid", false);
-						}
-						// Clear background if it was set due to error
-						if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
-							formField.getElement().getStyle().remove("background");
-							formField.getElement().setProperty("error-background-set", null);
-						}
-					}
 				}
 
 			});
