@@ -3345,6 +3345,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		if (daywiseTracker) {
 
+			int currentDayNumber = Integer.parseInt(currentDay.replace("day", ""));
 			fields.forEach((key, value) -> {
 				Component formField = fields.get(key);
 
@@ -3375,31 +3376,36 @@ public class CampaignFormBuilder extends VerticalLayout {
 					hasErrorFormValues(5);
 				}
 
-				if (((AbstractField) formField).isRequiredIndicatorVisible() && key.contains(currentDay)) {
-					System.out.println(key + "FORMFIELDSSSSSSSS " + value);
-					logger.debug(((AbstractField) formField).getValue() + "++++++++++"
-							+ ((AbstractField) formField).getId());
+				for (int d = 1; d <= currentDayNumber; d++) {
+					String dayKey = "day" + d;
 
-					if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == ""
-							|| (((AbstractField) formField).getValue() instanceof Set
+					if (((AbstractField) formField).isRequiredIndicatorVisible() && key.contains(dayKey)) {
+						System.out.println(key + "FORMFIELDSSSSSSSS " + value);
+						logger.debug(((AbstractField) formField).getValue() + "++++++++++"
+								+ ((AbstractField) formField).getId());
+
+						if (((AbstractField) formField).getValue() == null
+								|| ((AbstractField) formField).getValue() == ""
+								|| (((AbstractField) formField).getValue() instanceof Set
+										&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+
+							if ((((AbstractField) formField).getValue() instanceof Set
 									&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+								formField.getElement().getStyle().set("background", "#ffe5e5");
+							}
 
-						if ((((AbstractField) formField).getValue() instanceof Set
-								&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
-							formField.getElement().getStyle().set("background", "#ffe5e5");
-						}
-
-						hasErrorFormValues(6);
-						formField.getElement().setProperty("invalid", true);
-					} else {
-						// Clear error state and background color when field has value
-						if (formField.getElement().getProperty("invalid", false)) {
-							formField.getElement().setProperty("invalid", false);
-						}
-						// Clear background if it was set due to error
-						if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
-							formField.getElement().getStyle().remove("background");
-							formField.getElement().setProperty("error-background-set", null);
+							hasErrorFormValues(6);
+							formField.getElement().setProperty("invalid", true);
+						} else {
+							// Clear error state and background color when field has value
+							if (formField.getElement().getProperty("invalid", false)) {
+								formField.getElement().setProperty("invalid", false);
+							}
+							// Clear background if it was set due to error
+							if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
+								formField.getElement().getStyle().remove("background");
+								formField.getElement().setProperty("error-background-set", null);
+							}
 						}
 					}
 				}
@@ -3408,29 +3414,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 					System.out.println(key + "DAY111111111111111111111111111111111 " + value);
 					logger.debug(((AbstractField) formField).getValue() + "++++++++++"
 							+ ((AbstractField) formField).getId());
-
-					if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == ""
-							|| (((AbstractField) formField).getValue() instanceof Set
-									&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
-
-						if ((((AbstractField) formField).getValue() instanceof Set
-								&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
-							formField.getElement().getStyle().set("background", "#ffe5e5");
-						}
-
-						hasErrorFormValues(6);
-						formField.getElement().setProperty("invalid", true);
-					} else {
-						// Clear error state and background color when field has value
-						if (formField.getElement().getProperty("invalid", false)) {
-							formField.getElement().setProperty("invalid", false);
-						}
-						// Clear background if it was set due to error
-						if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
-							formField.getElement().getStyle().remove("background");
-							formField.getElement().setProperty("error-background-set", null);
-						}
-					}
 				}
 
 			});

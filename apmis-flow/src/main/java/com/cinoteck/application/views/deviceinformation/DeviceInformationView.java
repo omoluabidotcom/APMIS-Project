@@ -447,46 +447,43 @@ public class DeviceInformationView extends VerticalLayout {
 	}
 	
 	private void exportHelper() {
-		
-		Icon icon = VaadinIcon.UPLOAD_ALT.create();
-		
-		Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
-		anchor.getStyle().set("display", "none");
-				
-		exportDevicesInfo.setIcon(new Icon(VaadinIcon.UPLOAD));
-		exportDevicesInfo.addClickListener(e -> {
-			anchor.getElement().callJsFunction("click");
+	    Icon icon = VaadinIcon.UPLOAD_ALT.create();
+	    anchor.getStyle().set("display", "none");
 
-		});
-		
-		try {
-		    if (grid.getListDataView().getItemCount() == 0) {
-		        showErrorNotification("Export failed: No data available to export.");
-		        return;
-		    }
+	    exportDevicesInfo.setIcon(new Icon(VaadinIcon.UPLOAD));
+	    
+	    exportDevicesInfo.addClickListener(e -> {
+	        try {
+	            if (grid.getListDataView().getItemCount() == 0) {
+	                showErrorNotification("Export failed: No data available to export.");
+	                return;
+	            }
 
-		    GridExporter<DeviceManagerDto> exporter = GridExporter.createFor(grid);
-		    exporter.setAutoAttachExportButtons(false);
-		    exporter.setTitle(I18nProperties.getCaption(Captions.campaignDataInformation));
+	            GridExporter<DeviceManagerDto> exporter = GridExporter.createFor(grid);
+	            exporter.setAutoAttachExportButtons(false);
+	            exporter.setTitle(I18nProperties.getCaption(Captions.campaignDataInformation));
+	            exporter.setFileName(
+	                "APMIS_devices_" + new SimpleDateFormat("ddMMyyyy")
+	                    .format(Calendar.getInstance().getTime()));
 
-		    exporter.setFileName(
-		        "APMIS_devices_" + new SimpleDateFormat("ddMMyyyy")
-		            .format(Calendar.getInstance().getTime()));
+	            anchor.setHref(exporter.getCsvStreamResource());
+	            anchor.getElement().setAttribute("download", true);
+	            anchor.setClassName("exportJsonGLoss");
+	            anchor.setId("devicesAnchor");
 
-		    anchor.setHref(exporter.getCsvStreamResource());
-		    anchor.getElement().setAttribute("download", true);
-		    anchor.setClassName("exportJsonGLoss");
-		    anchor.setId("devicesAnchor");
+	            icon.getStyle().set("margin-right", "8px");
+	            icon.getStyle().set("font-size", "10px");
+	            anchor.getElement().insertChild(0, icon.getElement());
 
-		    icon.getStyle().set("margin-right", "8px");
-		    icon.getStyle().set("font-size", "10px");
+	            // Trigger the anchor click AFTER setting up the exporter
+	            anchor.getElement().callJsFunction("click");
 
-		    anchor.getElement().insertChild(0, icon.getElement());	
-		    showSuccessNotification("Export started successfully.");
+	            showSuccessNotification("Export started successfully.");
 
-		} catch (Exception e) {		  
-		    showErrorNotification("Export failed: " + e.getMessage());
-		}
+	        } catch (Exception ex) {
+	            showErrorNotification("Export failed: " + ex.getMessage());
+	        }
+	    });
 	}
 	
 	private void showSuccessNotification(String message) {
