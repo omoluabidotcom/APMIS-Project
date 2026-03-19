@@ -3087,7 +3087,6 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
     }
 
     private ViewGroup getDayContainer(int day) {
-        System.out.println("DAYYYYYYYYYYYYYYYYYYYY " +day);
         switch (day) {
             case 1: return mTabHost.findViewById(R.id.tabSheet1);
             case 2: return mTabHost.findViewById(R.id.tabSheet2);

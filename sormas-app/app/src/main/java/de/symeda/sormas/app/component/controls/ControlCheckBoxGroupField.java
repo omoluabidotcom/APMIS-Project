@@ -52,7 +52,7 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 	// New layout components for vertical structure
 	private LinearLayout dynamicCheckboxesContainer;
 	private TextView groupLabel;
-//	private LinearLayout errorIndicatorsLayout;
+	//	private LinearLayout errorIndicatorsLayout;
 	Set<String> selectedElements = new HashSet<>();
 
 	// Add this field to store the pending value
@@ -66,7 +66,7 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 	private Set<String> validOptionKeys = new HashSet<>();
 	// Constructors
 	public ControlCheckBoxGroupField(Context context) {
- 
+
 		super(context);
 		this.storedContext = context;
 		// In each constructor, add:
@@ -76,7 +76,7 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 		}
 //		this.selectedElements = new HashSet<>();
 //		logSelectedElementsChange("reset in constructor");
- 	}
+	}
 
 	public ControlCheckBoxGroupField(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -118,7 +118,7 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 			for (int i = 0; i < items.size(); i++) {
 				Item item = items.get(i);
 				// Use the enum value as key, display text as value (same pattern as setOptions)
- 
+
 				System.out.println( item.getValue().toString() + "1455555item.getValue().toString()  " + item.getKey());
 				addItem(item.getValue().toString(), i, item.getKey());
 			}
@@ -363,17 +363,20 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 	@Override
 	protected void setFieldValue(Object value) {
 		System.out.println("DEBUG setFieldValue called with: " + value + " (Type: " + (value != null ? value.getClass().getName() : "null") + ")");
+		if (value == null) {
+			value = new ArrayList<String>();
+		}
+
+		if (value instanceof Boolean) {
+			System.out.println("DEBUG setFieldValue: Boolean detected, converting to empty list");
+			value = new ArrayList<String>();
+		}
 
 		// Store as pending value if no checkboxes exist yet
 		if (checkBoxes.isEmpty()) {
 			pendingValue = value;
 			return;
 		}
-//
-//		if (!selectedElements.isEmpty() && valuesAreEqual(value, getFieldValue())) {
-//			System.out.println("DEBUG setFieldValue: Value already set, skipping reapplication");
-//			return;
-//		}
 
 		applyValueToCheckboxes(value);
 	}
@@ -383,15 +386,30 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 		try {
 			List<String> valuesToSet = new ArrayList<>();
 
+
+			if (value == null) {
+				// Keep empty list - do nothing
+			}  else if (value instanceof Boolean) {
+				System.out.println("DEBUG applyValueToCheckboxes - Boolean detected, treating as empty");
+				// Do nothing, valuesToSet remains empty
+			}
+
 			// Parse the value regardless of its format
-			if (value instanceof List) {
+			else  if (value instanceof List) {
 				List<?> valueList = (List<?>) value;
 				for (Object element : valueList) {
 					if (element != null) {
 						valuesToSet.add(element.toString().trim());
 					}
 				}
-			} else if (value instanceof String) {
+			 } else if (value instanceof Set) {
+			Set<?> valueSet = (Set<?>) value;
+			for (Object element : valueSet) {
+				if (element != null) {
+					valuesToSet.add(element.toString().trim());
+				}
+			}
+			}else if (value instanceof String) {
 				String strValue = ((String) value).trim();
 				if (!strValue.isEmpty()) {
 					// Handle string format like "[value1, value2, value3]"
@@ -539,6 +557,13 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 		}
 		System.out.println("BindingAdapter - value: " + value);
 
+		if (value instanceof Boolean) {
+			System.out.println("BindingAdapter - Boolean detected, setting empty list");
+			view.setFieldValue(new ArrayList<String>());
+			return;
+		}
+
+
 		List<String> flattened = new ArrayList<>();
 
 		if (value instanceof List) {
@@ -551,7 +576,14 @@ public class ControlCheckBoxGroupField extends ControlPropertyEditField<Object> 
 					flattened.add(element.toString());
 				}
 			}
-		} else if (value != null) {
+		} else if (value instanceof Set) {
+			for (Object element : (Set<?>) value) {
+				if (element != null) {
+					flattened.add(element.toString());
+				}
+			}
+		} else if (value != null && !(value instanceof Boolean)) {
+			// Handle single value but ignore booleans
 			flattened.add(value.toString());
 		}
 

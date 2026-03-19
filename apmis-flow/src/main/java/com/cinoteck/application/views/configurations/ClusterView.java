@@ -328,9 +328,9 @@ public class ClusterView extends VerticalLayout {
 		.setResizable(true).setSortable(true).setAutoWidth(true)
 		.setTooltipGenerator(e -> I18nProperties.getCaption("Target 60-120M"));
 		
-		grid.addColumn(CommunityDto::getPopulationData4_23M).setHeader(I18nProperties.getCaption("Targe 4_23M"))
+		grid.addColumn(CommunityDto::getPopulationData4_23M).setHeader(I18nProperties.getCaption("Target 4-23M"))
 		.setResizable(true).setSortable(true).setAutoWidth(true)
-		.setTooltipGenerator(e -> I18nProperties.getCaption("Target 4_23M"));
+		.setTooltipGenerator(e -> I18nProperties.getCaption("Target 4-23M"));
 
 
 		grid.setVisible(true);

@@ -805,3 +805,7 @@ vaadin-text-area#userRolesTextFieldID .vaadin-text-area-container vaadin-input-c
 	background-color: none !important;
 	
 }
+
+#assocCampaignTabsheet vaadin-tabs {
+	background : #434343;
+}

@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -189,11 +190,6 @@ public class CampaignForm extends VerticalLayout {
 
 	CampaignFormGridComponent postCampaignFormGridComponent;
 
-//	CampaignDashboardGridElementComponent comp1;
-//
-//	CampaignDashboardGridElementComponent compp2;
-//
-//	CampaignDashboardGridElementComponent comppp2;
 
 	private boolean isSingleSelectClickItemLock;
 	private boolean isMultiSelectItemLock;
@@ -747,7 +743,7 @@ public class CampaignForm extends VerticalLayout {
 //			tab2.add(comp1);
 //			tab2Intra.add(compp2);
 //			tab2Post.add(comppp2);
-			parentTab4.add(configureTreeGrid(false));
+//			parentTab4.add(configureTreeGrid(false));
 
 		} else {
 
@@ -788,7 +784,8 @@ public class CampaignForm extends VerticalLayout {
 
 		poplayout.setHorizontalComponentAlignment(Alignment.CENTER, lblIntroduction);// .setHorizontalComponentAlignment(lblIntroduction,
 		
-		Button btnGeneratePopulationData = new Button(I18nProperties.getCaption("Generate Population Data"));// , e -> {
+		if (campaignDto != null) {
+		Button btnGeneratePopulationData = new Button(I18nProperties.getCaption("Generate Population Data | " +  campaignDto.getName()));// , e -> {
 
 		btnGeneratePopulationData.addClickListener(e -> {
 			if (campaignDto != null) {
@@ -798,10 +795,10 @@ public class CampaignForm extends VerticalLayout {
 				
 				VerticalLayout dialogLayout = new VerticalLayout();
 				
-				TextField campaignName = new TextField(I18nProperties.getCaption("Campaign Name"));
-				campaignName.setValue(campaignDto.getName());
-				campaignName.setReadOnly(true);
-				campaignName.setWidthFull();
+//				TextField campaignName = new TextField(I18nProperties.getCaption("Campaign Name"));
+//				campaignName.setValue(campaignDto.getName());
+//				campaignName.setReadOnly(true);
+//				campaignName.setWidthFull();
 				
 				Paragraph note = new Paragraph("Please select the population target group to generate population targets for this campaign");
 
@@ -819,14 +816,14 @@ public class CampaignForm extends VerticalLayout {
 				Button selectAllBtn = new Button("Select All", event -> {
 					ageGroupsSelection.setValue(Set.of(AgeGroup.AGE_0_4, AgeGroup.AGE_5_10, AgeGroup.AGE_4_23M));
 				});
-				selectAllBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+				selectAllBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
 
 //				HorizontalLayout selectionHeader = new HorizontalLayout(new Span(I18nProperties.getCaption("Population Categories")), selectAllBtn);
 //				selectionHeader.setWidthFull();
 //				selectionHeader.setJustifyContentMode(JustifyContentMode.BETWEEN);
 //				selectionHeader.setAlignItems(Alignment.CENTER);
 
-				dialogLayout.add(campaignName, note, ageGroupsSelection, selectAllBtn);
+				dialogLayout.add(note, ageGroupsSelection, selectAllBtn);
 				genDialog.add(dialogLayout);
 
 				Button confirmBtn = new Button(I18nProperties.getCaption("Generate Data"), event -> {
@@ -861,11 +858,11 @@ public class CampaignForm extends VerticalLayout {
 									
 									
 									System.out.println(ageGroupString + "ageGroupStringageGroupStringageGroupStringageGroupStringageGroupString");
-									if (ageGroupString.equalsIgnoreCase("0--4")) 
+									if (ageGroupString.equalsIgnoreCase("0--4")) { 
 										ageGroupString = "Target 0-59M";
-									else if (ageGroupString.equalsIgnoreCase("5--10")) 
+									}else if (ageGroupString.equalsIgnoreCase("5--10")) {
 										ageGroupString = "Target 60-120M";
-									else if (ageGroupString.equalsIgnoreCase("AGE_4_23")) 
+									}else if (ageGroupString.equalsIgnoreCase("AGE_4_23M")) 
 										ageGroupString = "Target 4-23M";
 	
 									slectedString = slectedString + " " + ageGroupString  + " ";
@@ -909,7 +906,7 @@ public class CampaignForm extends VerticalLayout {
 
 		poplayout.add(btnGeneratePopulationData);
 		poplayout.setHorizontalComponentAlignment(Alignment.CENTER, btnGeneratePopulationData);
-		
+	}
 
 		Button btnImport = new Button(I18nProperties.getCaption(Captions.actionImport));// , e -> {
 
@@ -1309,22 +1306,46 @@ public class CampaignForm extends VerticalLayout {
 			return label;
 		});
 		
-		ComponentRenderer<Span, CampaignTreeGridDto> populationGenerate4_23M = new ComponentRenderer<>(input -> {
+//		ComponentRenderer<Span, CampaignTreeGridDto> populationGenerate4_23M = new ComponentRenderer<>(input -> {
+//
+//			NumberFormat arabicFormat = NumberFormat.getInstance();
+//			if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
+//				arabicFormat = NumberFormat.getInstance(new Locale("ps"));
+//			} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
+//				arabicFormat = NumberFormat.getInstance(new Locale("fa"));
+//			} else {
+//				arabicFormat = NumberFormat.getInstance(new Locale("en"));
+//			}
+//
+//			String value = String.valueOf(arabicFormat.format(input.getPopulationData4_23M()));
+//			Span label = new Span(value);
+//			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
+//			return label;
+//		});
+		
+		ComponentRenderer<Span, CampaignTreeGridDto> populationGenerate4_23M =
+			    new ComponentRenderer<>(input -> {
 
-			NumberFormat arabicFormat = NumberFormat.getInstance();
-			if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-				arabicFormat = NumberFormat.getInstance(new Locale("ps"));
-			} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-				arabicFormat = NumberFormat.getInstance(new Locale("fa"));
-			} else {
-				arabicFormat = NumberFormat.getInstance(new Locale("en"));
-			}
+			        Locale locale;
+			        String lang = userProvider.getUser().getLanguage().toString();
 
-			String value = String.valueOf(arabicFormat.format(input.getPopulationData4_23M()));
-			Span label = new Span(value);
-			label.getStyle().set("color", "var(--lumo-body-text-color) !important");
-			return label;
-		});
+			        if ("Pashto".equals(lang)) {
+			            locale = new Locale("ps");
+			        } else if ("Dari".equals(lang)) {
+			            locale = new Locale("fa");
+			        } else {
+			            locale = Locale.ENGLISH;
+			        }
+
+			        NumberFormat format = NumberFormat.getInstance(locale);
+
+			        Number population = input.getPopulationData4_23M();
+			        String value = population != null ? format.format(population) : "0";
+
+			        Span label = new Span(value);
+			        label.getStyle().set("color", "var(--lumo-body-text-color)");
+			        return label;
+			});
 
 		treeGrid = new TreeGrid<>();
 
@@ -1771,19 +1792,33 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 		districtFilter.addValueChangeListener(e -> {
 			if (districtFilter.getValue() != null) {
 
-//			filteredDataProvider.setFilter(criteria);
+				List<CommunityReferenceDto> allClusters =  FacadeProvider.getCommunityFacade().getAllActiveByDistrict(e.getValue().getUuid());
 				if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-					clusterFilter.setItems(
-							FacadeProvider.getCommunityFacade().getAllActiveByDistrict(e.getValue().getUuid()));
+					clusterFilter.setItemLabelGenerator(itm -> {
+						CommunityReferenceDto dcfv = (CommunityReferenceDto) itm;
+						return dcfv.getNumber() + " | " + dcfv.getPs_af();
+					});
+					allClusters.sort(Comparator.comparing(CommunityReferenceDto::getNumber));
+					clusterFilter.setItems(allClusters);
 				} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-					clusterFilter.setItems(
-							FacadeProvider.getCommunityFacade().getAllActiveByDistrict(e.getValue().getUuid()));
-
-//							FacadeProvider.getDistrictFacade().getAllActiveByRegionDari(e.getValue().getUuid()));
+					clusterFilter.setItemLabelGenerator(itm -> {
+						CommunityReferenceDto dcfv = (CommunityReferenceDto) itm;
+						return dcfv.getNumber() + " | " + dcfv.getFa_af();
+					});
+					allClusters.sort(Comparator.comparing(CommunityReferenceDto::getNumber));
+					clusterFilter.setItems(allClusters);
 				} else {
-					clusterFilter
-							.setItems(
-									FacadeProvider.getCommunityFacade().getAllActiveByDistrict(e.getValue().getUuid()));
+					
+					clusterFilter.setItemLabelGenerator(itm -> {
+						CommunityReferenceDto dcfv = (CommunityReferenceDto) itm;
+						return dcfv.getNumber() + " | " + dcfv.getCaption();
+					});
+					allClusters.sort(Comparator.comparing(CommunityReferenceDto::getNumber));
+					clusterFilter.setItems(allClusters);
+					
+//					clusterFilter
+//							.setItems(
+//									FacadeProvider.getCommunityFacade().getAllActiveByDistrict(e.getValue().getUuid()));
 
 //									FacadeProvider.getDistrictFacade().getAllActiveByRegion(e.getValue().getUuid()));
 				}
