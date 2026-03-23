@@ -23,10 +23,10 @@ public class SendGridEmailService {
     
     
     public SendGridEmailService(
-           String apiKey,
-            @Value("${mail.from.email}") String fromEmail,
-            @Value("${mail.from.name}") String fromName,
-            @Value("${app.base.url}") String appBaseUrl) {
+            String apiKey,
+            String fromEmail,
+            String fromName,
+            String appBaseUrl) {
 
         this.apiKey = apiKey;
         this.fromEmail = fromEmail;
@@ -34,10 +34,10 @@ public class SendGridEmailService {
         this.appBaseUrl = appBaseUrl;
 
         if (this.apiKey == null || this.apiKey.isBlank()) {
-            throw new IllegalStateException("SendGrid API key not configured. Check application.properties or environment variables.");
+            throw new IllegalStateException(
+                "SendGrid API key not configured. Set the SENDGRID_API_KEY environment variable.");
         }
     }
-
 
 
     

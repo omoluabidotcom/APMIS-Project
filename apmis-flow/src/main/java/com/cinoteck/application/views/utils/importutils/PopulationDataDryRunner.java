@@ -276,8 +276,14 @@ public class PopulationDataDryRunner extends DataImporter {
 									new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Population Data Values Cannot be Empty");
 							return ImportLineResult.ERROR;
 						} else {
-
-				
+							try {
+								if (Integer.parseInt(values[i]) < 0) {
+									writeImportError(values, "Negative values are not allowed for " + entityProperties[i] + ": " + values[i]);
+									return ImportLineResult.ERROR;
+								}
+							} catch (NumberFormatException nfe) {
+								// Will be caught by later validation
+							}
 						}
 					}
 					
@@ -880,7 +886,11 @@ public class PopulationDataDryRunner extends DataImporter {
 	private void insertPopulationIntoPopulationData(PopulationDataDryRunDto populationData, String entry)
 			throws ImportErrorException {
 		try {
-			populationData.setPopulation(Integer.parseInt(entry));
+			int population = Integer.parseInt(entry);
+			if (population < 0) {
+				throw new ImportErrorException("Negative values are not allowed for population data: " + entry);
+			}
+			populationData.setPopulation(population);
 		} catch (NumberFormatException e) {
 			throw new ImportErrorException(e.getMessage());
 		}

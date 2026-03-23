@@ -162,52 +162,6 @@ public class ImportPopulationDataDialog extends Dialog {
 
 		);
 		
-//		downloadImportTemplate.addClickListener(e -> {
-//
-//			try {
-//
-//				String templateFilePath;
-//				String templateFileName;
-//				String fileNameAddition;
-//				ImportFacade importFacade = FacadeProvider.getImportFacade();
-//
-//				templateFilePath = importFacade.getPopulationDataImportTemplateFilePath();
-//				templateFileName = importFacade.getPopulationDataImportTemplateFileName();
-//				fileNameAddition = camapigndto.getName().replace(" ", "_") + "_population_data_import_";
-//
-//				String content = FacadeProvider.getImportFacade().getImportTemplateContent(templateFilePath);
-//
-//				InputStream inputStream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
-//
-//				// Create a StreamResource
-//				StreamResource streamResource = new StreamResource(templateFileName, () -> inputStream);
-//
-//				// Open the StreamResource in browser for download
-//				streamResource.setContentType("text/csv");
-//				streamResource.setCacheTime(0); // Disable caching
-//
-//				// Create an anchor to trigger the download
-//				Anchor downloadAnchor = new Anchor(streamResource, "Download CSV");
-//				downloadAnchor.getElement().setAttribute("download", true);
-//				downloadAnchor.getStyle().set("display", "none");
-//
-//				step1.add(downloadAnchor);
-//
-//				// Simulate a click event on the hidden anchor to trigger the download
-//				downloadAnchor.getElement().callJsFunction("click");
-//				Notification.show("downloading...");
-//
-//			} catch (IOException ioException) {
-//				ioException.printStackTrace();
-//
-//				Notification.show(I18nProperties.getString(Strings.headingTemplateNotAvailable) + ": "
-//						+ I18nProperties.getString(Strings.messageTemplateNotAvailable));
-//
-//			}
-//
-//		}
-//
-//		);
 
 		H3 step2 = new H3();
 		step2.add("Step 2: Import CSV File");

@@ -44,6 +44,8 @@ public class PopulationData extends AbstractDomainObject implements Serializable
 	// Column constants
 	public static final String COLUMN_CAMPAIGN_ID = "campaign_id";
 	public static final String COLUMN_DISTRICT_ID = "district_id";
+
+	public static final String COLUMN_CLUSTER_ID = "cluster_id";
 	public static final String COLUMN_SELECTED = "selected";
 
 
@@ -55,8 +57,12 @@ public class PopulationData extends AbstractDomainObject implements Serializable
 	@Column(name = "district_id")
 	private String district_id;  // Change to Long to match server
 
+	@Column(name = "cluster_id")
+	private String cluster_id;  // Change to Long to match server
+
+
 	@Column(name = "selected")
-	private String selected;
+	private Boolean selected;
 
 
 	public String getCampaign_id() {
@@ -75,11 +81,19 @@ public class PopulationData extends AbstractDomainObject implements Serializable
 		this.district_id = district_id;
 	}
 
-	public String isSelected() {
+	public String getCluster_id() {
+		return cluster_id;
+	}
+
+	public void setCluster_id(String cluster_id) {
+		this.cluster_id = cluster_id;
+	}
+
+	public boolean isSelected() {
 		return selected;
 	}
 
-	public void setSelected(String selected) {
+	public void setSelected(boolean selected) {
 		this.selected = selected;
 	}
 

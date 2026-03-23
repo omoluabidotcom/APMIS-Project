@@ -223,7 +223,10 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
             System.out.println("after user role contains surv Officer --------------------"
                     + list);
         } else {
-            // Original logic for other user roles
+
+            System.out.println(ConfigProvider.getUser().getDistrict().getUuid() + "User role is not  surv Officer --------------------" + criteria.getCampaign().getUuid());
+
+                    // Original logic for other user roles
             list = DatabaseHelper.getPopulationDataDao().getSelectedDistrictByUsersDistrict(
                     ConfigProvider.getUser().getDistrict().getUuid(), criteria.getCampaign().getUuid());
         }

@@ -48,23 +48,29 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.symeda.sormas.api.MapperUtil;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
 import de.symeda.sormas.api.i18n.I18nProperties;
+import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.api.utils.ValidationException;
 import de.symeda.sormas.app.BaseEditFragment;
 import de.symeda.sormas.app.backend.campaign.data.CampaignFormData;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
+import de.symeda.sormas.app.backend.region.District;
+import de.symeda.sormas.app.backend.region.PopulationData;
 import de.symeda.sormas.app.backend.user.User;
 import de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils;
 import de.symeda.sormas.app.component.controls.ControlPropertyEditField;
@@ -240,8 +246,19 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                 }
 
 
-                optionsValues = campaignFormElement.getOptions().stream().collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));  // .collect(Collectors.toList());
+//                optionsValues = campaignFormElement.getOptions().stream().collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));  // .collect(Collectors.toList());
 
+                optionsValues = campaignFormElement.getOptions().stream().sorted(Comparator.comparing(
+                        o -> {
+                            if (o.getOrder() == null || o.getOrder().isEmpty()) {
+                    return Integer.MAX_VALUE;
+                    }
+                    try {
+                        return Integer.parseInt(o.getOrder());
+                        } catch (NumberFormatException e) {
+                        return Integer.MAX_VALUE;
+                         }
+                     })).collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption, (e1, e2) -> e1, LinkedHashMap::new));
                 if (userOptTranslations == null) {
                     campaignFormElementOptions.setOptionsListValues(optionsValues);
                     //get18nOptCaption(formElement.getId(), optionsValues));
@@ -1852,7 +1869,64 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
 
         initialAreas = InfrastructureDaoHelper.loadAreas();
         initialRegions = InfrastructureDaoHelper.loadRegionsByServerCountry();
-        initialDistricts = InfrastructureDaoHelper.loadAllDistricts();
+        List<Item> districtItemList = InfrastructureDaoHelper.loadAllDistricts();
+        districtItemList.removeIf(d -> d == null || d.getValue() == null || d.getValue().toString().trim().isEmpty());
+
+        if (ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
+            User user = ConfigProvider.getUser();
+            List<String> userDistrictUuids = new ArrayList<>();
+
+            if (user.getRegion() != null) {
+                userDistrictUuids = DatabaseHelper.getDistrictDao().getByRegion(user.getRegion()).stream()
+                        .map(District::getUuid)
+                        .collect(Collectors.toList());
+            } else if (user.getDistrict() != null) {
+                userDistrictUuids.add(user.getDistrict().getUuid());
+            }
+            //Fetch population data for this campaign & selected = true
+            if (!userDistrictUuids.isEmpty()) {
+                List<PopulationData> popDataSelectedDistrict = DatabaseHelper.getPopulationDataDao()
+                        .getSelectedDistrictsByMultipleUuids(userDistrictUuids, record.getCampaign().getUuid());
+
+                //Collect UUIDs of districts that actually exist in the population data
+                Set<String> selectedDistrictUuids = popDataSelectedDistrict.stream()
+                        .map(PopulationData::getDistrict_id)
+                        .collect(Collectors.toSet());
+
+                initialDistricts = districtItemList.stream()
+                        .filter(item -> item.getValue() instanceof District && selectedDistrictUuids.contains(((District) item.getValue()).getUuid()))
+                        .collect(Collectors.toList());
+            } else {
+                initialDistricts = new ArrayList<>();
+            }
+for(Item item : initialDistricts){
+    System.out.println(((District) item.getValue()).getUuid() +  "UUIDS OF INITIAL DISTRICTS ---------------------------");
+}
+
+
+        }else {
+
+            System.out.println(ConfigProvider.getUser().getDistrict().getUuid() + "User role is not  surv Officer --------------------" + record.getCampaign().getUuid());
+
+            //Fetch population data for this campaign & selected = true
+            List<PopulationData> popDataSelectedDistrict = DatabaseHelper.getPopulationDataDao()
+                    .getSelectedDistrictByUsersDistrict(ConfigProvider.getUser().getDistrict().getUuid(), record.getCampaign().getUuid());
+
+            //Collect UUIDs of districts that actually exist in the population data
+            Set<String> selectedDistrictUuids = popDataSelectedDistrict.stream()
+                    .map(PopulationData::getDistrict_id)
+                    .collect(Collectors.toSet());
+
+            List<Item> initialDistrictsFound = districtItemList.stream()
+                    .filter(item -> selectedDistrictUuids.contains(item.getValue().toString()))
+                    .collect(Collectors.toList());
+
+            initialDistricts = initialDistrictsFound;
+
+        }
+
+//        initialDistricts = InfrastructureDaoHelper.loadAllDistricts();
+
         initialCommunities = InfrastructureDaoHelper.loadAllCommunities();
 
         Calendar cal = Calendar.getInstance();
@@ -1934,6 +2008,13 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
             }
         }
 
+
+        if(ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)){
+
+        }
+        for(Item item : initialDistricts){
+            System.out.println(((District) item.getValue()).getUuid() +  "22222UUIDS OF INITIAL DISTRICTS ---------------------------");
+        }
         InfrastructureDaoHelper.initializeRegionAreaFields(
                 contentBinding.campaignFormDataArea,
                 initialAreas,

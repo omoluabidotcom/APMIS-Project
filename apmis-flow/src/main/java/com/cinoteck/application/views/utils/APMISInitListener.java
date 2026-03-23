@@ -2,7 +2,7 @@ package com.cinoteck.application.views.utils;
 
 import com.cinoteck.application.utils.authentication.AccessControl;
 import com.cinoteck.application.utils.authentication.AccessControlFactory;
- 
+
 //import com.cinoteck.application.utils.authentication.ForgotPasswordView;
 import com.cinoteck.application.utils.authentication.LoginView;
 import com.cinoteck.application.utils.authentication.ResetPasswordView;
@@ -35,24 +35,44 @@ public class APMISInitListener implements VaadinServiceInitListener {
 
 				System.out.println(accessControl.isUserSignedIn() + "+++++++++++++++++++++++++++________________"
 						+ enterEvent.getNavigationTarget());
-
+				
 				if (!accessControl.isUserSignedIn()) {
-					if (ResetPasswordView.class.equals(enterEvent.getNavigationTarget())) {
-						enterEvent.rerouteTo(ResetPasswordView.class);
- 
-					}
-					else if (UpdatePasswordView.class.equals(enterEvent.getNavigationTarget())) {
-						enterEvent.rerouteTo(UpdatePasswordView.class);
-					}
-					else if (!LoginView.class.equals(enterEvent.getNavigationTarget())) {
- 						enterEvent.rerouteTo(LoginView.class);
-					}
 
-				} else if (accessControl.isUserSignedIn() && LoginView.class.equals(enterEvent.getNavigationTarget())) {
+				    Class<?> target = enterEvent.getNavigationTarget();
 
+				    boolean isPublicRoute =
+				        ResetPasswordView.class.equals(target)  ||   // /passwordresetview
+				        UpdatePasswordView.class.equals(target) ||   // /resetuserpassword?token=...
+				        LoginView.class.equals(target)          ||
+				        RouteNotFoundError.class.equals(target);     // ✅ prevent 404 → login redirect
+
+				    if (!isPublicRoute) {
+				        enterEvent.rerouteTo(LoginView.class);
+				    }
+
+				} else if (accessControl.isUserSignedIn()
+				        && LoginView.class.equals(enterEvent.getNavigationTarget())) {
+				    // optionally redirect logged-in users away from login
 				}
+				
+
+//				if (!accessControl.isUserSignedIn()) {
+//					if (ResetPasswordView.class.equals(enterEvent.getNavigationTarget())) {
+//						// Allow access
+//						return;
+//
+//					} else if (UpdatePasswordView.class.equals(enterEvent.getNavigationTarget())) {
+//						// Allow access
+//						return;
+//					} else if (!LoginView.class.equals(enterEvent.getNavigationTarget())) {
+//						enterEvent.rerouteTo(LoginView.class);
+//					}
+//
+//				} else if (accessControl.isUserSignedIn() && LoginView.class.equals(enterEvent.getNavigationTarget())) {
+//
+//				}
 			});
 		});
 	}
- 
- }
+
+}

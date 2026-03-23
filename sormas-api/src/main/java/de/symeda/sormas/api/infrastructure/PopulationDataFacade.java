@@ -7,6 +7,7 @@ import javax.ejb.Remote;
 import javax.validation.Valid;
 
 import de.symeda.sormas.api.AgeGroup;
+import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignTreeGridDto;
 import de.symeda.sormas.api.statistics.StatisticsCaseCriteria;
 import de.symeda.sormas.api.utils.ValidationRuntimeException;
@@ -17,6 +18,8 @@ public interface PopulationDataFacade {
 	Integer getDistrictPopulation(String districtUuid, PopulationDataCriteria critariax);
 	
 	Integer getDistrictPopulationByType(String districtUuid, String campaignUuid, AgeGroup ageGroup);
+	
+	Long getDistrictPopulationCountByType(String districtUuid, String campaignUuid, AgeGroup ageGroup);
 	
 	List<PopulationDataDto> getDistrictPopulationByTypeUsingUUIDs(String districtUuid, String campaignUuid, AgeGroup ageGroup);
 	
@@ -92,6 +95,7 @@ public interface PopulationDataFacade {
 
 	List<PopulationDataDto> fetchPopulationDataSelectionByUserDistricts(List<String> uuids);
 	
-	
-	
+	boolean generatePopulationDataForCamapign(String campaignUuid);
+
+	boolean generatePopulationDataForCamapign(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups);
 }

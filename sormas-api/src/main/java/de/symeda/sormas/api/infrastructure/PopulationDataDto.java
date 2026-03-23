@@ -42,7 +42,7 @@ public class PopulationDataDto extends EntityDto {
 	private Integer population;
 	private Date collectionDate;
 	private CampaignReferenceDto campaign;
-	private String selected;
+	private Boolean selected;
 	private String modality;
 	private String districtStatus;
 	private String campaignStatus;
@@ -50,17 +50,28 @@ public class PopulationDataDto extends EntityDto {
 
 	private String campaign_id;
 	private String district_id;
+	private String cluster_id;
 
 	public PopulationDataDto() {
 		// TODO Auto-generated constructor stub
 	}
 
-    public PopulationDataDto(String campaign_id, String district_id, String selected, String uuid, Date changeDate) {
+    public PopulationDataDto(String campaign_id, String district_id, Boolean selected, String uuid, Date changeDate) {
         this.setUuid(uuid);
         this.setChangeDate(changeDate);
         this.campaign_id = campaign_id;
         this.district_id = district_id;
         this.selected = selected;
+    }
+    
+    public PopulationDataDto(String campaign_id, String district_id, String cluster_id, Boolean selected, String uuid, Date changeDate) {
+        this.setUuid(uuid);
+        this.setChangeDate(changeDate);
+        this.campaign_id = campaign_id;
+        this.district_id = district_id;
+        this.cluster_id = cluster_id;
+        this.selected = selected;
+        
     }
 
 
@@ -137,11 +148,11 @@ public class PopulationDataDto extends EntityDto {
 		this.campaign = campaign;
 	}
 
-	public String getSelected() {
+	public Boolean getSelected() {
 		return selected;
 	}
 
-	public void setSelected(String selected) {
+	public void setSelected(Boolean selected) {
 		this.selected = selected;
 	}
 
@@ -177,22 +188,13 @@ public class PopulationDataDto extends EntityDto {
 		this.district_id = district_id;
 	}
 	
-	
+	public String getCluster_id() {
+		return cluster_id;
+	}
 
-//	public String getUuid() {
-//		return uuid;
-//	}
-//
-//	public void setUuid(String uuid) {
-//		this.uuid = uuid;
-//	}
-//
-//	public Date getChangeDate() {
-//		return changeDate;
-//	}
-//
-//	public void setChangeDate(Date changeDate) {
-//		this.changeDate = changeDate;
-//	}
+	public void setCluster_id(String cluster_id) {
+		this.cluster_id = cluster_id;
+	}
+	
 
 }

@@ -46,6 +46,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -444,10 +446,36 @@ public class CampaignsView extends VerticalLayout {
 		dialog.setClassName("formI");
 	}
 
+	
+	private TabSheet openFormTabsheet(CampaignDto formData) {
+		final HorizontalLayout layoutParent = new HorizontalLayout();
+		layoutParent.setWidthFull();
+
+		TabSheet tabsheetParent = new TabSheet();
+		layoutParent.add(tabsheetParent);
+		
+		
+		VerticalLayout parentTab1 = new VerticalLayout();
+		final HorizontalLayout layout = new HorizontalLayout();
+		layout.setWidthFull();
+
+		TabSheet tabsheet = new TabSheet();
+		layout.add(tabsheet);
+
+ 		return tabsheet;
+		
+	}
+	
+	
 	private void openFormLayout(CampaignDto formData) {
-//		Dialog dialog = new Dialog();
 		String isclosedOpen = FacadeProvider.getCampaignFacade().isClosedd(formData.getUuid()) ? " (Closed)" : "";
+		
+
+		
 		CampaignForm formLayout = new CampaignForm(formData);
+		
+
+		
 		formLayout.setCampaign(formData);
 		formLayout.addSaveListener(this::saveCampaign);
 		formLayout.addArchiveListener(this::archiveDearchiveCampaign);
@@ -477,7 +505,42 @@ public class CampaignsView extends VerticalLayout {
 		headerText.addClassName("headingText");
 		header.add(headerText);
 		header.add(closeIcon);
-		VerticalLayout content = new VerticalLayout(header, formLayout);
+		VerticalLayout content = new VerticalLayout();// formLayout);
+		content.add(header);
+		
+		 // IMPLEMENTING TABS FOR ASSOC CAMPAIGN 
+		
+		VerticalLayout layoutParent = new VerticalLayout();
+
+		
+		TabSheet tabsheetParent = new TabSheet();
+		tabsheetParent.setSizeFull();
+		tabsheetParent.setId("assocCampaignTabsheet");
+ 
+		VerticalLayout campaignTab = new VerticalLayout();
+		campaignTab.setSizeFull();
+		campaignTab.add(formLayout);
+ 
+		VerticalLayout secondTab = new VerticalLayout();
+		secondTab.setSizeFull();
+		// you can replace this with your custom layout
+
+		tabsheetParent.add("Campaign Basics", campaignTab);
+		Tab assocTab = tabsheetParent.add("Associate Campaign", secondTab);
+
+		tabsheetParent.addSelectedChangeListener(event -> {
+			if (event.getSelectedTab() != null && event.getSelectedTab().equals(assocTab)) {
+				if (secondTab.getComponentCount() == 0) {
+					AssociateCampaign assoccampformLayout = new AssociateCampaign(formData);
+					secondTab.add(assoccampformLayout);
+				}
+			}
+		});
+
+		layoutParent.add(tabsheetParent);
+		
+		content.add(layoutParent);
+//		content.add(openFormTabsheet(formData));
 		content.setWidthFull();
 		dialog.add(content);
 //		dialog.add(formLayout);
@@ -610,23 +673,14 @@ public class CampaignsView extends VerticalLayout {
 	private void logButton(CampaignForm.LogCampaignEvent event) {
 
 		Dialog dialog = new Dialog();
-//		dialog.setCancelable(true);
-//		dialog.setConfirmText("Close");
-//		dialog.addCancelListener(e -> dialog.close());
+ 
 		dialog.setWidthFull();
 		dialog.open();
 
 		CampaignForm formLayout = (CampaignForm) event.getSource();
 
 		dialog.setHeaderTitle("Campaign Log");
-//		CampaignLogDto logDto = new CampaignLogDto();
-//		Date timestamp = logDto.getActionDate();
-//
-//		TextRenderer<CampaignLogDto> timeStampRenderer = new TextRenderer<>(dto -> {
-//			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");//new SimpleDateFormat("dd/MM/yyyy");
-//			String formatted = dateFormat.format(timestamp);
-//			return formatted;
-//		});
+ 
 
 		Grid<CampaignLogDto> grid = new Grid<>(CampaignLogDto.class, false);
 		grid.setItems(FacadeProvider.getCampaignFacade()
@@ -637,24 +691,11 @@ public class CampaignsView extends VerticalLayout {
 		grid.addColumn(CampaignLogDto::getActionDate).setHeader("Timestamp").setAutoWidth(true);
 		grid.setWidthFull();
 
-//		grid.getStyle().set("width", "auto").set("max-width", "100%");
-
+ 
 		dialog.add(grid);
-//		dialog.addConfirmListener(e -> {
-//			FacadeProvider.getCampaignFacade().publishandUnPublishCampaign(event.getCampaign().getUuid(), false);
-//			formLayout.updatePublishButtonText(false);
-//		});
-
+ 
 		formLayout.getChildren().forEach(child -> child.getElement().executeJs("this.requestLayout()"));
-
-//		Dialog dialogxd = new Dialog();
-//
-//		dialogxd.add(createDialogContent(dialogxd));
-//
-//		dialogxd.addThemeVariants(DialogVariant.LUMO_NO_PADDING);
-//		CampaignForm formLayout = (CampaignForm) event.getSource();
-//		formLayout.getChildren().forEach(child -> child.getElement().executeJs("this.requestLayout()"));
-
+  
 	}
 
 	private void openCloseCampaign(CampaignForm.OpenCloseEvent event) {

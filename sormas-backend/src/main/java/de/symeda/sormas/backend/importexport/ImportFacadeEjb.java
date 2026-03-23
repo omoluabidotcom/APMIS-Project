@@ -479,6 +479,7 @@ System.out.println("YESSSS");
 		//for (AgeGroup ageGroup : AgeGroup.values()) {
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TOTAL_AGE_0_4", Integer.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TOTAL_AGE_5_10", Integer.class, separator));
+			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TOTAL_AGE_4_23M", Integer.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, PopulationDataDto.MODALITY, String.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, PopulationDataDto.DISTRICT_STATUS, String.class, separator));
 
@@ -497,16 +498,14 @@ System.out.println("YESSSS");
 		char separator = configFacade.getCsvSeparator();
 
 		List<ImportColumn> importColumns = new ArrayList<>();
-		importColumns.add(ImportColumn.from(PopulationDataDto.class, "PCODE", RegionReferenceDto.class, separator));
-		importColumns.add(ImportColumn.from(PopulationDataDto.class, "DCODE", DistrictReferenceDto.class, separator));
-		importColumns.add(ImportColumn.from(PopulationDataDto.class, "CCODE", CommunityReferenceDto.class, separator));
-		importColumns.add(ImportColumn.from(PopulationDataDto.class, PopulationDataDto.CAMPAIGN, CampaignReferenceDto.class, separator));
-		
-		
+			importColumns.add(ImportColumn.from(PopulationDataDto.class, "PCODE", RegionReferenceDto.class, separator));
+			importColumns.add(ImportColumn.from(PopulationDataDto.class, "DCODE", DistrictReferenceDto.class, separator));
+			importColumns.add(ImportColumn.from(PopulationDataDto.class, "CCODE", CommunityReferenceDto.class, separator));
+			importColumns.add(ImportColumn.from(PopulationDataDto.class, PopulationDataDto.CAMPAIGN, CampaignReferenceDto.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TARGET_0_59M", Integer.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TARGET_60_120M", Integer.class, separator));
+			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TARGET_4_23M", Integer.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, PopulationDataDto.MODALITY, String.class, separator));
-			importColumns.add(ImportColumn.from(PopulationDataDto.class, "campaignstatus", String.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, PopulationDataDto.CAMPAIGN_STATUS, String.class, separator));
 
 
@@ -613,6 +612,11 @@ System.out.println("YESSSS");
 		importColumns.add(ImportColumn.from(CommunityDto.class, "Float_Status",String.class, separator));
 		importColumns.add(ImportColumn.from(CommunityDto.class, "Active_Status",String.class, separator));
 		importColumns.add(ImportColumn.from(CommunityDto.class, "International_Border",String.class, separator));
+
+		
+		importColumns.add(ImportColumn.from(CommunityDto.class, "PopulationData_0_4",Integer.class, separator));
+		importColumns.add(ImportColumn.from(CommunityDto.class, "PopulationData_5_10",Integer.class, separator));
+		importColumns.add(ImportColumn.from(CommunityDto.class, "PopulationData_4_23M",Integer.class, separator));
 
 		writeTemplate(Paths.get(getCommunityImportTemplateFilePath()), importColumns, false);
 	}

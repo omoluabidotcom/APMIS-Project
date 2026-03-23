@@ -195,7 +195,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	// any time you make changes to your database objects, you may have to increase the database version
 
 
-	public static final int DATABASE_VERSION = 356;
+	public static final int DATABASE_VERSION = 357;
 
 	private static DatabaseHelper instance = null;
 
@@ -3332,7 +3332,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 									" uuid varchar not null, "
 									+ " changeDate BIGINT NOT NULL , "
 									+" creationDate BIGINT NOT NULL ,"
-									+ "		selected varchar);");				
+									+ "		selected varchar);");
 
 				case 350:
 					currentVersion = 350;
@@ -3464,6 +3464,30 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 					getDao(DeviceInfo.class).executeRaw("ALTER TABLE device_info add column region_id BIGINT;");
 
 					getDao(DeviceInfo.class).executeRaw("ALTER TABLE device_info add column area_id BIGINT;");
+
+
+				case 356:
+
+					currentVersion = 356;
+
+					getDao(PopulationData.class).executeRaw("DROP TABLE IF EXISTS populationdata;");
+
+					getDao(PopulationData.class).executeRaw(
+							"CREATE TABLE IF NOT EXISTS populationdata (" +
+									" 	id INTEGER PRIMARY KEY,"
+									+"lastOpenedDate BIGINT , "
+									+"localChangeDate BIGINT, snapshot SMALLINT DEFAULT 0,"
+									+" modified SMALLINT DEFAULT 0, "
+									+ " pseudonymized SMALLINT, "
+									+ "		campaign_id VARCHAR NOT NULL,"
+									+ "		district_id VARCHAR NOT NULL," +
+									" uuid varchar not null, "
+									+ " changeDate BIGINT NOT NULL , "
+									+" creationDate BIGINT NOT NULL ,"
+									+ "		selected boolean, "
+									+ " cluster_id varchar);");
+
+
 					break;
 
 				default:

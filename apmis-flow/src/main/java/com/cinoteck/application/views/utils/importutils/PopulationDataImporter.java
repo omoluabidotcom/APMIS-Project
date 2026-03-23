@@ -63,6 +63,8 @@ public class PopulationDataImporter extends DataImporter {
 	private static final String PROVINCE = "province";
 	private static final String TOTAL_0_4 = "Target_0_59M";//"TOTAL_AGE_0_4"; 
 	private static final String TOTAL_5_10 = "Target_60_120M";
+	private static final String TOTAL_4_23M = "Target_4_23M";
+
 	
 	private static final String RCODE = "RCODE";
 	private static final String PCODE = "PCODE";
@@ -286,8 +288,12 @@ public class PopulationDataImporter extends DataImporter {
 								new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Population Data Values Cannot be Empty");
 						return ImportLineResult.ERROR;
 					} else {
-
-			
+						int population = Integer.parseInt(values[i]);
+						if (population < 0) {
+							writeImportError(values,
+									new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Population Data Values Cannot be Negative Value");
+							return ImportLineResult.ERROR;
+						}
 					}
 				}
 				
@@ -298,7 +304,28 @@ public class PopulationDataImporter extends DataImporter {
 								new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Population Data Values Cannot be Empty");
 						return ImportLineResult.ERROR;
 					} else {
-
+						int population = Integer.parseInt(values[i]);
+						if (population < 0) {
+							writeImportError(values,
+									new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Population Data Values Cannot be Negative Value");
+							return ImportLineResult.ERROR;
+						}
+					}
+				}
+				
+				if (TOTAL_4_23M.equalsIgnoreCase(entityProperties[i])) {
+					if (DataHelper.isNullOrEmpty(values[i])) {
+//						districtStatus_ = "Full District";
+						writeImportError(values,
+								new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Population Data Values Cannot be Empty");
+						return ImportLineResult.ERROR;
+					} else {
+						int population = Integer.parseInt(values[i]);
+						if (population < 0) {
+							writeImportError(values,
+									new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Population Data Values Cannot be Negative Value");
+							return ImportLineResult.ERROR;
+						}
 			
 					}
 				}
@@ -513,7 +540,12 @@ public class PopulationDataImporter extends DataImporter {
 						return ImportLineResult.ERROR;
 					} else {
 
-			
+						int population = Integer.parseInt(values[i]);
+						if (population < 0) {
+							writeImportError(values,
+									new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Population Data Values Cannot be Negative Value");
+							return ImportLineResult.ERROR;
+						}
 					}
 				}
 				
@@ -525,6 +557,30 @@ public class PopulationDataImporter extends DataImporter {
 						return ImportLineResult.ERROR;
 					} else {
 
+						int population = Integer.parseInt(values[i]);
+						if (population < 0) {
+							writeImportError(values,
+									new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Population Data Values Cannot be Negative Value");
+							return ImportLineResult.ERROR;
+						}
+			
+					}
+				}
+				
+				if (TOTAL_4_23M.equalsIgnoreCase(entityProperties[i])) {
+					if (DataHelper.isNullOrEmpty(values[i])) {
+//						districtStatus_ = "Full District";
+						writeImportError(values,
+								new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Population Data Values Cannot be Empty");
+						return ImportLineResult.ERROR;
+					} else {
+
+						int population = Integer.parseInt(values[i]);
+						if (population < 0) {
+							writeImportError(values,
+									new ImportErrorException(values[i], entityProperties[i]).getMessage() + " Population Data Values Cannot be Negative Value");
+							return ImportLineResult.ERROR;
+						}
 			
 					}
 				}
@@ -859,11 +915,10 @@ public class PopulationDataImporter extends DataImporter {
 					ageGroupString = "AGE_0_4";
 				}else if(entityPropertyPath.equalsIgnoreCase("TARGET_60_120M")) {
 					ageGroupString = "AGE_5_10";
+				}else if(entityPropertyPath.equalsIgnoreCase("TARGET_4_23M")) {
+					ageGroupString = "AGE_4_23M";
 				}
-				// Age group
-//				String ageGroupString = entityPropertyPath.substring(entityPropertyPath.indexOf("_") + 1,
-//						entityPropertyPaths[0].length());
-//				
+		
 				System.out.println( ageGroupString + "ageGroupStringentityPropertyPathentityPropertyPathentityPropertyPathentityPropertyPath");
 
 
@@ -897,7 +952,11 @@ public class PopulationDataImporter extends DataImporter {
 		
 		System.out.println("Attempting to inserr population data " + entry);
 		try {
-			populationData.setPopulation(Integer.parseInt(entry));
+			int population = Integer.parseInt(entry);
+			if (population < 0) {
+				throw new ImportErrorException("Negative values are not allowed for population data: " + entry);
+			}
+			populationData.setPopulation(population);
 		} catch (NumberFormatException e) {
 			throw new ImportErrorException(e.getMessage());
 		}

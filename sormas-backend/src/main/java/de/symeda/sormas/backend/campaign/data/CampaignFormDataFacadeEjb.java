@@ -228,6 +228,8 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 		target.setCreatingUser(UserFacadeEjb.toReferenceDto(source.getCreatingUser()));
 		target.setSource(source.getSource());
 //		target.setRecordgroupuuid(source.getRecordgroupuuid());
+		target.setIspublished(source.isIspublished());
+		target.setIsverified(source.isIsverified());
 		target.setRecordversion(source.getRecordversion());
 
 		return target;
@@ -4570,10 +4572,5 @@ resultData.addAll(resultList.stream()
 	public List<CampaignFormDataHistoryExtractDto> getAllActiveAfter(Date date, List<String> uuid) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-
-
-
-		
+	}		
 }

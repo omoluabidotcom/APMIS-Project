@@ -435,8 +435,8 @@ try {
 												new android.os.Handler().postDelayed(() -> {
 													if (!isFinishing() && !isDestroyed() && reInitializeprogressDialog != null) {
 														reInitializeprogressDialog.dismiss();
-//														restartApp();
-														clearDatabaseAndRestart();
+														restartApp();
+//														clearDatabaseAndRestart();
 													}
 												}, 7000); // 7 seconds
 											}
