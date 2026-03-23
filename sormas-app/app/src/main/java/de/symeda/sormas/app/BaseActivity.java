@@ -550,6 +550,20 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 				userDistrict.setText("District : " +InfrastructureDaoHelper.loadAllDistricts());
 				userClusters.setVisibility(View.GONE);
 				userFormAccesses.setText(Html.fromHtml("<b>Form Access : </b>" + user.getUserFormAccessString()));
+
+				System.out.println(InfrastructureDaoHelper.loadDistricts(user.getRegion()) +"Districts in this region  ------------- loadDistricts" + InfrastructureDaoHelper.loadDistricts(user.getRegion()).size());
+
+				List<Item> districts = InfrastructureDaoHelper.loadAllDistricts();
+
+				districts.removeIf(d ->
+						d == null ||
+								d.getValue() == null ||
+								d.getValue().toString().trim().isEmpty()
+				);
+
+				System.out.println(districts +
+						" Districts in this region ------------- loadAllDistricts() "
+						+ districts.size());
 			}
 
 			Menu menuNav = navView.getMenu();

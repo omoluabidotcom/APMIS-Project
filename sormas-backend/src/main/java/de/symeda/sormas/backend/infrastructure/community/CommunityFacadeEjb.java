@@ -721,42 +721,21 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		Predicate floatPredicate = null;
 		if(criteria.getFloatStatus() != null) {
 		floatPredicate = cb.and( cb.equal(community.get(Community.FLOATING_STATUS), (criteria.getFloatStatus().toString() != null ?  criteria.getFloatStatus().toString(): criteria.getFloatStatus().toString())));
-		}else {
-			
 		}
 
 		if (filter != null) {
-			
-//System.out.println(criteria.getRelevanceStatus() + "criteria.getRelevanceStatus()=====================");
 			if(criteria.getRelevanceStatus() == EntityRelevanceStatus.ARCHIVED) {
-				
-//				System.out.println(criteria.getRelevanceStatus() + "criteria.getRelevanceStatus()=====================");
-
 				cq.where(filter, filterxx);
 			} else if(criteria.getRelevanceStatus() == EntityRelevanceStatus.ALL) {
-				
-//				System.out.println(criteria.getRelevanceStatus() + "criteria.getRelevanceStatus()=====================");
-
 				cq.where(filter, filterxy);
 			} else {
-				
-//				System.out.println(criteria.getRelevanceStatus() + "criteria.getRelevanceStatus()=====================");
-
 				cq.where(filter, filterx);
 			}
 			
 			if(criteria.getFloatStatus() != null && floatPredicate != null ) {
 				cq.where(filter, floatPredicate);
-			} 
-			//else if(criteria.getRelevanceStatus() == EntityRelevanceStatus.ALL) {
-//				cq.where(filter, filterxx);
-//			} else {
-//				cq.where(filter, filterx);
-//			}
-			
-			
+			} 			
 		}else {
-	
 			cq.where(filterxy);
 		}	
 
@@ -1004,6 +983,13 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		dto.setAreaexternalId(entity.getDistrict().getRegion().getArea().getExternalId());
 		dto.setFloating(entity.getFloating());
 		dto.setInternationalborder(entity.isInternationalBorder());
+		
+		dto.setPopulationData(entity.getPopulationdata_0_4());
+		dto.setPopulationData5_10(entity.getPopulationdata_5_10());		
+		dto.setPopulationData4_23M(entity.getPopulationdata_4_23M());
+
+		
+
 		return dto;
 	}
 	
@@ -1013,10 +999,7 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		if (entity == null) {
 			return null;
 		}
-		
-		
-		//userService = new UserService();
-		
+
 		CommunityUserReportModelDto dto = new CommunityUserReportModelDto();
 		DtoHelper.fillDto(dto, entity);
 
@@ -1166,6 +1149,12 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		target.setClusterNumber(source.getClusterNumber());
 		target.setFloating(source.getFloating());
 		target.setInternationalBorder(source.isInternationalborder());
+		
+		target.setPopulationdata_0_4(source.getPopulationData());
+		target.setPopulationdata_5_10(source.getPopulationData5_10());
+		target.setPopulationdata_4_23M(source.getPopulationData4_23M());
+
+		
 
 		return target;
 	}
@@ -1466,6 +1455,7 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		String queryStringBuilder = "select a.name,"
 				+ " SUM(CASE WHEN p.agegroup = 'AGE_0_4' THEN p.population ELSE 0 END) AS population_age_0_4,\n"
 				+ "    SUM(CASE WHEN p.agegroup = 'AGE_5_10' THEN p.population ELSE 0 END) AS population_age_5_10,"
+				+ "    SUM(CASE WHEN p.agegroup = 'AGE_4_23M' THEN p.population ELSE 0 END) AS population_age_4_23M,"
 				+ " a.id, ar.uuid as regionUuid, dr.uuid as districtUuid, a.uuid as clusterUuid, p.selected, p.modality, p.districtstatus, a.floating from community a\n"
 				+ " left outer join populationdata p on a.id = p.community_id\n"
 				
@@ -1473,7 +1463,7 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 
 				+ " left outer join region ar on ar.id = " + regionId + "\n"
 				+ " left outer join campaigns ca on p.campaign_id = ca.id \n"
-				+ " where a.archived = false and (p.agegroup = 'AGE_0_4' or p.agegroup = 'AGE_5_10') and a.district_id = (select id from district d where uuid = '"
+				+ " where a.archived = false and (p.agegroup = 'AGE_0_4' or p.agegroup = 'AGE_5_10' or p.agegroup = 'AGE_4_23M') and a.district_id = (select id from district d where uuid = '"
 				+ districtId + "') and ca.uuid = '" + campaignDt.getUuid() + "'\n"
 				+ " group by a.name,  a.id, ar.uuid, dr.uuid, a.uuid, p.selected, p.modality, p.districtstatus, a.floating";
 
@@ -1492,15 +1482,16 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 						result[1] != null ? ((BigInteger) result[1]).longValue() : 886L,
 						result[2] != null ? ((BigInteger) result[2]).longValue() : 887L,
 						result[3] != null ? ((BigInteger) result[3]).longValue() : 888L,
-						result[4] != null ? (String) result[4].toString() : "" , 
-						result[5] != null ? (String) result[5].toString() : "" ,
-
+						result[4] != null ? ((BigInteger) result[4]).longValue() : 888L,
+						result[5] != null ? (String) result[5].toString() : "" , 
 						result[6] != null ? (String) result[6].toString() : "" ,
-						result[7] != null ? (String) result[7].toString() : "false" , 
-						result[8] != null ? (String) result[8].toString() : "",
-						result[9] != null ? (String) result[9].toString() : "",	
+
+						result[7] != null ? (String) result[7].toString() : "" ,
+						result[8] != null ? (String) result[8].toString() : "false" , 
+						result[9] != null ? (String) result[9].toString() : "",
+						result[10] != null ? (String) result[10].toString() : "",	
 //						result[9] != null ? result[9].toString().equalsIgnoreCase("false") ? "Active" : "Archived" : "Archived",
-						result[10] != null ? (String) result[10].toString() : ""
+						result[11] != null ? (String) result[11].toString() : ""
 							))
 //						,
 //						(String) result[9].toString() ))

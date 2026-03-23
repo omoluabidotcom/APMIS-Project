@@ -66,13 +66,18 @@ public List<PopulationData> getSelectedDistrictsByMultipleUuids(List<String> dis
 
         // Create IN clause for districts
         where.and();
+        where.eq("selected", true);
+
 
         // Handle the IN condition for multiple districts
         if (districtUuids.size() == 1) {
+            where.and();
             where.eq("district_id", districtUuids.get(0));
         } else {
 
+
             System.out.println("District uuid size is greater than 0 -----------------");
+            where.and();
             where.in("district_id", districtUuids);
         }
 

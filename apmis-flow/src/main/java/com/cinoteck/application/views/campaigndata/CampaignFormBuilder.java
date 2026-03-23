@@ -80,6 +80,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.component.shared.Tooltip;
+import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.EmailField;
@@ -196,6 +197,8 @@ public class CampaignFormBuilder extends VerticalLayout {
 	private DialingCodeDto dialingCodeDto = new DialingCodeDto();
 	private int min = 0;
 	private int max = 0;
+	private String currentDay = "Day-1";
+	private boolean daywiseTracker = false;
 
 	private CampaignDto campaignDto;
 	CampaignFormMetaExpiryDto expiryDto;
@@ -268,17 +271,20 @@ public class CampaignFormBuilder extends VerticalLayout {
 		formDate.setRequired(true);
 //		formDate.setId("my-disabled-textfield");
 		formDate.getStyle().set("-webkit-text-fill-color", "green !important");
-		
+
 		formDate.setErrorMessage(""); // Initialize error message
-		formDate.setInvalid(false); 
+		formDate.setInvalid(false);
 
 		formDate.addValueChangeListener(e -> {
-			
-			System.out.println(validateTextInputFormDate(e.getValue()) + "validateTextInputFormDate(e.getValue())validateTextInputFormDate(e.getValue())");
+
+			System.out.println(validateTextInputFormDate(e.getValue())
+					+ "validateTextInputFormDate(e.getValue())validateTextInputFormDate(e.getValue())");
 			validateTextInputFormDate(e.getValue());
-			});
+		});
 
 		//
+		logger.debug("++++++++++++++++++++++++++++++++campaignReferenceDto.getUuid(" + campaignReferenceDto.getUuid());
+
 
 		popDto = FacadeProvider.getPopulationDataFacade().getPopulationDataWithCriteria(campaignReferenceDto.getUuid());
 
@@ -353,29 +359,40 @@ public class CampaignFormBuilder extends VerticalLayout {
 		// listeners logic
 		cbArea.addValueChangeListener(e -> {
 			if (e.getValue() != null) {
+				List<RegionReferenceDto> regionsList = new ArrayList<>();
+				List<RegionReferenceDto> allRegionList = new ArrayList<>();
 
 				if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-					provinces = FacadeProvider.getRegionFacade().getAllActiveByAreaPashto(e.getValue().getUuid());
-				} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-					provinces = FacadeProvider.getRegionFacade().getAllActiveByAreaDari(e.getValue().getUuid());
-				} else {
-
-					List<RegionReferenceDto> regionsList = FacadeProvider.getRegionFacade()
-							.getAllActiveByArea(e.getValue().getUuid());
-					List<RegionReferenceDto> allRegionList = new ArrayList<>();
-
+					regionsList = FacadeProvider.getRegionFacade().getAllActiveByAreaPashto(e.getValue().getUuid());
 					popDto.forEach(popDtoc -> allRegionList.add(popDtoc.getRegion()));
-
 					List<RegionReferenceDto> filteredRegionListwithDup = regionsList.stream()
 							.filter(allRegionList::contains).collect(Collectors.toList());
-
 					// Remove duplicates using Set
 					Set<RegionReferenceDto> uniqueSet = new HashSet<>(filteredRegionListwithDup);
-
 					// Convert the set back to a list (if needed)
 					List<RegionReferenceDto> filteredRegionList = new ArrayList<>(uniqueSet);
+					provinces = filteredRegionList;
 
-					provinces = filteredRegionList;// FacadeProvider.getRegionFacade().getAllActiveByArea(e.getValue().getUuid());
+				} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
+					regionsList = FacadeProvider.getRegionFacade().getAllActiveByAreaDari(e.getValue().getUuid());
+					popDto.forEach(popDtoc -> allRegionList.add(popDtoc.getRegion()));
+					List<RegionReferenceDto> filteredRegionListwithDup = regionsList.stream()
+							.filter(allRegionList::contains).collect(Collectors.toList());
+					// Remove duplicates using Set
+					Set<RegionReferenceDto> uniqueSet = new HashSet<>(filteredRegionListwithDup);
+					// Convert the set back to a list (if needed)
+					List<RegionReferenceDto> filteredRegionList = new ArrayList<>(uniqueSet);
+					provinces = filteredRegionList;
+				} else {
+					regionsList = FacadeProvider.getRegionFacade().getAllActiveByArea(e.getValue().getUuid());
+					popDto.forEach(popDtoc -> allRegionList.add(popDtoc.getRegion()));
+					List<RegionReferenceDto> filteredRegionListwithDup = regionsList.stream()
+							.filter(allRegionList::contains).collect(Collectors.toList());
+					// Remove duplicates using Set
+					Set<RegionReferenceDto> uniqueSet = new HashSet<>(filteredRegionListwithDup);
+					// Convert the set back to a list (if needed)
+					List<RegionReferenceDto> filteredRegionList = new ArrayList<>(uniqueSet);
+					provinces = filteredRegionList;
 
 				}
 
@@ -399,37 +416,110 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		cbRegion.addValueChangeListener(e -> {
 			if (e.getValue() != null) {
+				List<DistrictReferenceDto> districtsList = new ArrayList<>();
+				List<DistrictReferenceDto> allDistrictList = new ArrayList<>();
 
 				if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegionPashto(e.getValue().getUuid());
-				} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegionDari(e.getValue().getUuid());
-				} else {
-					List<DistrictReferenceDto> districtsList = FacadeProvider.getDistrictFacade()
-							.getAllActiveByRegion(e.getValue().getUuid());
-
-					System.out.println(districtsList
-							+ "districtsListdistrictsListdistrictsListdistrictsList============================");
-					List<DistrictReferenceDto> allDistrictList = new ArrayList<>();
-
+					districtsList = FacadeProvider.getDistrictFacade()
+							.getAllActiveByRegionPashto(e.getValue().getUuid());
 					popDto.forEach(popDtoc -> allDistrictList.add(popDtoc.getDistrict()));
-
-					System.out.println(allDistrictList
-							+ "allDistrictListallDistrictListallDistrictList=============2222222222222222222222");
-
 					List<DistrictReferenceDto> filteredDistrictListwithDup = districtsList.stream()
 							.filter(allDistrictList::contains).collect(Collectors.toList());
-
 					// Remove duplicates using Set
 					Set<DistrictReferenceDto> uniqueSet = new HashSet<>(filteredDistrictListwithDup);
-
-					// Convert the set back to a list (if needed)
+					// Convert the set back to a list
 					List<DistrictReferenceDto> filteredDistrictList = new ArrayList<>(uniqueSet);
-					System.out.println(filteredDistrictList
-							+ "filteredDistrictListfilteredDistrictListfilteredDistrictList=============3333333333333333");
 
-					districts = filteredDistrictList;
-//					districts = FacadeProvider.getDistrictFacade().getAllActiveByRegion(e.getValue().getUuid());
+					List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
+					if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
+						if (userProvider.getUser().getDistricts() != null
+								&& !userProvider.getUser().getDistricts().isEmpty()) {
+							// if the user selected district is amonths the active distgricts add them
+							for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
+								if (filteredDistrictList.contains(userDistrict)) {
+									filteredDistrictListByUserDistrict.add(userDistrict);
+								}
+							}
+							districts = filteredDistrictListByUserDistrict;
+						}
+					} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
+							&& userProvider.getUser().getDistrict() != null) {
+						DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
+						if (filteredDistrictList.contains(userDistrict)) {
+							filteredDistrictListByUserDistrict.add(userDistrict);
+						}
+						districts = filteredDistrictListByUserDistrict;
+					} else {
+						districts = filteredDistrictList;
+
+					}
+
+				} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
+					districtsList = FacadeProvider.getDistrictFacade().getAllActiveByRegionDari(e.getValue().getUuid());
+					popDto.forEach(popDtoc -> allDistrictList.add(popDtoc.getDistrict()));
+					List<DistrictReferenceDto> filteredDistrictListwithDup = districtsList.stream()
+							.filter(allDistrictList::contains).collect(Collectors.toList());
+					// Remove duplicates using Set
+					Set<DistrictReferenceDto> uniqueSet = new HashSet<>(filteredDistrictListwithDup);
+					// Convert the set back to a list
+					List<DistrictReferenceDto> filteredDistrictList = new ArrayList<>(uniqueSet);
+
+					List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
+					if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
+						if (userProvider.getUser().getDistricts() != null
+								&& !userProvider.getUser().getDistricts().isEmpty()) {
+							// if the user selected district is amonths the active distgricts add them
+							for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
+								if (filteredDistrictList.contains(userDistrict)) {
+									filteredDistrictListByUserDistrict.add(userDistrict);
+								}
+							}
+							districts = filteredDistrictListByUserDistrict;
+						}
+					} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
+							&& userProvider.getUser().getDistrict() != null) {
+						DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
+						if (filteredDistrictList.contains(userDistrict)) {
+							filteredDistrictListByUserDistrict.add(userDistrict);
+						}
+						districts = filteredDistrictListByUserDistrict;
+					} else {
+						districts = filteredDistrictList;
+
+					}
+				} else {
+					districtsList = FacadeProvider.getDistrictFacade().getAllActiveByRegion(e.getValue().getUuid());
+					popDto.forEach(popDtoc -> allDistrictList.add(popDtoc.getDistrict()));
+					List<DistrictReferenceDto> filteredDistrictListwithDup = districtsList.stream()
+							.filter(allDistrictList::contains).collect(Collectors.toList());
+					// Remove duplicates using Set
+					Set<DistrictReferenceDto> uniqueSet = new HashSet<>(filteredDistrictListwithDup);
+					// Convert the set back to a list
+					List<DistrictReferenceDto> filteredDistrictList = new ArrayList<>(uniqueSet);
+
+					List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
+					if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
+						if (userProvider.getUser().getDistricts() != null
+								&& !userProvider.getUser().getDistricts().isEmpty()) {
+							// if the user selected district is amonths the active distgricts add them
+							for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
+								if (filteredDistrictList.contains(userDistrict)) {
+									filteredDistrictListByUserDistrict.add(userDistrict);
+								}
+							}
+							districts = filteredDistrictListByUserDistrict;
+						}
+					} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
+							&& userProvider.getUser().getDistrict() != null) {
+						DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
+						if (filteredDistrictList.contains(userDistrict)) {
+							filteredDistrictListByUserDistrict.add(userDistrict);
+						}
+						districts = filteredDistrictListByUserDistrict;
+					} else {
+						districts = filteredDistrictList;
+
+					}
 				}
 				cbDistrict.setReadOnly(false);
 
@@ -466,8 +556,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 					logger.debug(e.getValue().getUuid() + "11111111-------- " + campaignReferenceDto.getUuid()
 							+ " ----!!!!!!!!!!!!!!!!!!!!!!: " + AgeGroup.AGE_0_4);
+					// Incase theses a problem with population group reenable this and set it up for
+					// clusters
+//					Integer comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationCountByType(
+//							e.getValue().getUuid(), campaignReferenceDto.getUuid(), AgeGroup.AGE_0_4);
 
-					Integer comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationByType(
+					Long comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationCountByType(
 							e.getValue().getUuid(), campaignReferenceDto.getUuid(), AgeGroup.AGE_0_4);
 
 					logger.debug(" ========================== " + campaignReferenceDto.getUuid());
@@ -498,7 +592,10 @@ public class CampaignFormBuilder extends VerticalLayout {
 							e.getValue().getUuid() + "11111111xxxxxxxxxxxx-------- " + campaignReferenceDto.getUuid()
 									+ " ----!!!!!!xxxxxxxxxxxxxxxxx!!!!!!!!!!!!!!!!: " + AgeGroup.AGE_0_4);
 
-					Integer comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationByType(
+//					Integer comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationByType(
+//							e.getValue().getUuid(), campaignReferenceDto.getUuid(), AgeGroup.AGE_0_4);
+
+					Long comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationCountByType(
 							e.getValue().getUuid(), campaignReferenceDto.getUuid(), AgeGroup.AGE_0_4);
 
 					logger.debug(" ============xxxxxxxxxxxxx============== " + campaignReferenceDto.getUuid());
@@ -717,10 +814,45 @@ public class CampaignFormBuilder extends VerticalLayout {
 			cbRegion.setReadOnly(true);
 			;
 
-			List<DistrictReferenceDto> districts = FacadeProvider.getDistrictFacade()
-					.getAllActiveByRegion(userProvider.getUser().getRegion().getUuid());
+//			List<DistrictReferenceDto> districts = FacadeProvider.getDistrictFacade()
+//					.getAllActiveByRegion(userProvider.getUser().getRegion().getUuid());
 			cbDistrict.clear();
 			cbDistrict.setReadOnly(false);
+
+			List<DistrictReferenceDto> districtsList = FacadeProvider.getDistrictFacade()
+					.getAllActiveByRegion(userProvider.getUuid());
+			List<DistrictReferenceDto> allDistrictList = new ArrayList<>();
+			popDto.forEach(popDtoc -> allDistrictList.add(popDtoc.getDistrict()));
+			List<DistrictReferenceDto> filteredDistrictListwithDup = districtsList.stream()
+					.filter(allDistrictList::contains).collect(Collectors.toList());
+			// Remove duplicates using Set
+			Set<DistrictReferenceDto> uniqueSet = new HashSet<>(filteredDistrictListwithDup);
+			// Convert the set back to a list
+			List<DistrictReferenceDto> filteredDistrictList = new ArrayList<>(uniqueSet);
+
+			List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
+
+			if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
+				if (userProvider.getUser().getDistricts() != null && !userProvider.getUser().getDistricts().isEmpty()) {
+					// if the user selected district is amonths the active distgricts add them
+					for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
+						if (filteredDistrictList.contains(userDistrict)) {
+							filteredDistrictListByUserDistrict.add(userDistrict);
+						}
+					}
+					districts = filteredDistrictListByUserDistrict;
+				}
+			} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
+					&& userProvider.getUser().getDistrict() != null) {
+				DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
+				if (filteredDistrictList.contains(userDistrict)) {
+					filteredDistrictListByUserDistrict.add(userDistrict);
+				}
+				districts = filteredDistrictListByUserDistrict;
+			} else {
+				districts = filteredDistrictList;
+
+			}
 			;
 			cbDistrict.setItems(districts);
 		}
@@ -840,6 +972,15 @@ public class CampaignFormBuilder extends VerticalLayout {
 		int ii = 0;
 
 		TabSheet accrd = new TabSheet();
+
+		accrd.addSelectedChangeListener(event -> {
+			Tab selectedTab = accrd.getSelectedTab();
+			if (selectedTab != null) {
+				currentDay = selectedTab.getLabel().toLowerCase().replace("-", "");
+				System.out.println(
+						"SWITCHHHHHHHHHHHHHHHHHHH " + currentDay.toLowerCase() + " ENDDDDDDDDDDDDDDDDDDDDDDDD");
+			}
+		});
 		accrd.setHeight(750, Unit.PIXELS);
 
 		int accrd_count = 0;
@@ -864,8 +1005,24 @@ public class CampaignFormBuilder extends VerticalLayout {
 				if (formElement.getOptions() != null) {
 					campaignFormElementOptions = new CampaignFormElementOptions();
 
-					optionsValues = formElement.getOptions().stream()
-							.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));
+//					optionsValues = formElement.getOptions().stream()
+//							.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));
+					
+					//Updating the method that fetchest opttion for multiselects and dropdowns to always follow 
+					//order if it's provided 
+					
+				optionsValues = formElement.getOptions().stream()
+						    .sorted(Comparator.comparing(o -> {
+						        if (o.getOrder() == null || o.getOrder().isEmpty()) {
+						            return Integer.MAX_VALUE;
+						        }
+						        try {
+						            return Integer.parseInt(o.getOrder());
+						        } catch (NumberFormatException e) {
+						            return Integer.MAX_VALUE;
+						        }
+						    }))
+						    .collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption, (e1, e2) -> e1, LinkedHashMap::new));
 
 					if (userLocale != null) {
 						if (translationsOpt != null) {
@@ -875,10 +1032,24 @@ public class CampaignFormBuilder extends VerticalLayout {
 											.filter(cd -> cd.getElementId().equals(formElement.getId())).findFirst()
 											.ifPresent(optionsList -> {
 												if (optionsList.getOptions() != null) {
+//													userOptTranslations = optionsList.getOptions().stream()
+//															.filter(c -> c != null && c.getCaption() != null)
+//															.collect(Collectors.toMap(MapperUtil::getKey,
+//																	MapperUtil::getCaption));
+													//DOing the same update to the ordering with translation
 													userOptTranslations = optionsList.getOptions().stream()
-															.filter(c -> c != null && c.getCaption() != null)
-															.collect(Collectors.toMap(MapperUtil::getKey,
-																	MapperUtil::getCaption));
+														    .sorted(Comparator.comparing(o -> {
+														        if (o.getOrder() == null || o.getOrder().isEmpty()) {
+														            return Integer.MAX_VALUE;
+														        }
+														        try {
+														            return Integer.parseInt(o.getOrder());
+														        } catch (NumberFormatException e) {
+														            return Integer.MAX_VALUE;
+														        }
+														    }))
+														    .collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption, (e1, e2) -> e1, LinkedHashMap::new));
+
 												}
 											}));
 						}
@@ -929,6 +1100,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 				if (type == CampaignFormElementType.DAYWISE) {
 					accrd_count++;
+					daywiseTracker = true;
 					if (accrd_count > 1) {
 
 						final FormLayout layout = new FormLayout(vertical);
@@ -1692,13 +1864,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 						List<String> sortedKeys = new ArrayList<>(data.keySet()); // Create a list of keys
 						if (!isNotSorted) {
 							if (dataOrder != null) {
-								Comparator<String> orderComparator = (key1, key2) -> {
-									String order1 = getOrderValue(dataOrder, key1);
-									String order2 = getOrderValue(dataOrder, key2);
-									return Integer.compare(Integer.parseInt(order1), Integer.parseInt(order2));
-								};
-
-								sortedKeys.sort(orderComparator);
+								data.keySet();		 
 							}
 						}
 
@@ -1761,9 +1927,36 @@ public class CampaignFormBuilder extends VerticalLayout {
 						checkboxGroup.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
 						checkboxGroup.setClassName("customTextWrap");
 
-//					data = (HashMap<String, String>) campaignFormElementOptions
-//							.getOptionsListValues();
-						checkboxGroup.setItems(data.keySet().stream().collect(Collectors.toList()));
+						boolean isNotSorted = false;
+						try {
+							if (formElement.getOptions().stream()
+									.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getOrder)) != null) {
+								optionsOrder.clear();
+								// pop the map with the order based off the key
+								optionsOrder = formElement.getOptions().stream()
+										.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getOrder));
+							}
+							;
+						} catch (NullPointerException ex) {
+							optionsOrder.clear();
+							optionsOrder = formElement.getOptions().stream()
+									.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));
+							isNotSorted = true;
+						}
+						
+						final HashMap<String, String> dataOrder = (HashMap<String, String>) campaignFormElementOptions
+								.getOptionsListOrder();
+						
+						List<String> sortedKeys = new ArrayList<>(data.keySet()); // Create a list of keys
+						if (!isNotSorted) {
+							if (dataOrder != null) {
+								data.keySet();
+							}
+						}
+
+						checkboxGroup.setItems(sortedKeys);
+
+//						checkboxGroup.setItems(data.keySet().stream().collect(Collectors.toList()));
 						checkboxGroup.setItemLabelGenerator(itm -> data.get(itm.toString().trim()));
 
 						checkboxGroup.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
@@ -2896,67 +3089,63 @@ public class CampaignFormBuilder extends VerticalLayout {
 		}
 	}
 
-	
 	private boolean validateTextInputFormDate(String formDateFieldValue) {
-	    LocalDate minDate = null;
-	    LocalDate maxDate = null;
+		LocalDate minDate = null;
+		LocalDate maxDate = null;
 
-	    Date formEndDate = FacadeProvider.getCampaignFormMetaWithExpFacade()
-	            .getFormExpiryByCampaignAndFormUuid(campaignDto.getUuid(), campaignFormMeta.getUuid());
+		Date formEndDate = FacadeProvider.getCampaignFormMetaWithExpFacade()
+				.getFormExpiryByCampaignAndFormUuid(campaignDto.getUuid(), campaignFormMeta.getUuid());
 
-	    if (formEndDate != null) {
-	        if (formEndDate instanceof java.sql.Date) {
-	            maxDate = ((java.sql.Date) formEndDate).toLocalDate();
-	        } else {
-	            maxDate = formEndDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-	        }
-	    }
+		if (formEndDate != null) {
+			if (formEndDate instanceof java.sql.Date) {
+				maxDate = ((java.sql.Date) formEndDate).toLocalDate();
+			} else {
+				maxDate = formEndDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			}
+		}
 
-	    if ("pre-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
-	        minDate = campaignDto.getPreCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-	    } else if ("intra-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
-	        minDate = campaignDto.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-	    } else if ("post-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
-	        minDate = campaignDto.getPostCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-	    }
+		if ("pre-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+			minDate = campaignDto.getPreCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		} else if ("intra-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+			minDate = campaignDto.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		} else if ("post-campaign".equalsIgnoreCase(campaignFormMeta.getFormType())) {
+			minDate = campaignDto.getPostCampStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		}
 
-	    String value = formDateFieldValue;
+		String value = formDateFieldValue;
 
-	    // Reset previous error state
-	    formDate.setInvalid(false);
-	    formDate.setErrorMessage(null);
-	    
-	    // Remove error styling if it exists
-	    formDate.getElement().getStyle().remove("border-color");
-	    formDate.getElement().getStyle().remove("color");
+		// Reset previous error state
+		formDate.setInvalid(false);
+		formDate.setErrorMessage(null);
 
-	    if (value == null || value.isBlank()) {
-	        return false;
-	    }
+		// Remove error styling if it exists
+		formDate.getElement().getStyle().remove("border-color");
+		formDate.getElement().getStyle().remove("color");
 
-	    try {
-	    	
-	    	System.out.println("----------------HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
-	        LocalDate inputDate = LocalDate.parse(value.trim(), dateformatter);
-	        
-	        if ((minDate != null && inputDate.isBefore(minDate)) || 
-	            (maxDate != null && inputDate.isAfter(maxDate))) {
-	            
-	            // Force validation indicator even for read-only fields
-	        	formDate.setInvalid(true);
-	            
-	            // Build error message
-	            String errorMsg = "Date must be between " + 
-	                minDate.format(dateformatter) + " and " + 
-	                maxDate.format(dateformatter);
-	            
-	            formDate.setErrorMessage(errorMsg);
-	            
-	            return false;
-	            
+		if (value == null || value.isBlank()) {
+			return false;
+		}
+
+		try {
+
+			System.out.println("----------------HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
+			LocalDate inputDate = LocalDate.parse(value.trim(), dateformatter);
+
+			if ((minDate != null && inputDate.isBefore(minDate)) || (maxDate != null && inputDate.isAfter(maxDate))) {
+
+				// Force validation indicator even for read-only fields
+				formDate.setInvalid(true);
+
+				// Build error message
+				String errorMsg = "Date must be between " + minDate.format(dateformatter) + " and "
+						+ maxDate.format(dateformatter);
+
+				formDate.setErrorMessage(errorMsg);
+
+				return false;
+
 //		    	System.out.println(minDate +"----------------error mesage set HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH" + maxDate);
 
-	            
 //	            // For read-only fields, we need to manually show the error
 //	            if (formDateField.isReadOnly()) {
 //	            	
@@ -2993,30 +3182,30 @@ public class CampaignFormBuilder extends VerticalLayout {
 //	            }
 //	            
 //	            hasErrorFormValues(12);
-	        }
-	        return true;
-	    } catch (Exception ex) {
-	        logger.error("Error validating form date for value: " + value, ex);
-	        
-	        formDate.setInvalid(true);
-	        formDate.setErrorMessage("Invalid date format. Use DD-MM-YYYY");
-	        
-	        if (formDate.isReadOnly()) {
-	        	formDate.setReadOnly(false);
-	        	formDate.setInvalid(true);
-	        	formDate.setReadOnly(true);
-	        	formDate.getElement().getStyle().set("border-color", "var(--lumo-error-color)");
-	        	formDate.getElement().getStyle().set("color", "var(--lumo-error-color)");
-	            Notification.show("Invalid date format. Use DD-MM-YYYY", 5000, Position.MIDDLE);
-	        }
-	        
-	        hasErrorFormValues(13);
-	        
-	        return false;
-	    }
-	    
+			}
+			return true;
+		} catch (Exception ex) {
+			logger.error("Error validating form date for value: " + value, ex);
+
+			formDate.setInvalid(true);
+			formDate.setErrorMessage("Invalid date format. Use DD-MM-YYYY");
+
+			if (formDate.isReadOnly()) {
+				formDate.setReadOnly(false);
+				formDate.setInvalid(true);
+				formDate.setReadOnly(true);
+				formDate.getElement().getStyle().set("border-color", "var(--lumo-error-color)");
+				formDate.getElement().getStyle().set("color", "var(--lumo-error-color)");
+				Notification.show("Invalid date format. Use DD-MM-YYYY", 5000, Position.MIDDLE);
+			}
+
+			hasErrorFormValues(13);
+
+			return false;
+		}
+
 	}
-	
+
 //	private void validateTextInputFormDate(TextField formDateField) {
 //
 //		LocalDate minDate = null;
@@ -3153,69 +3342,140 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 	private boolean validateAndSave() {
 		hasErrorFormValuesReset();
-		fields.forEach((key, value) -> {
-			Component formField = fields.get(key);
 
-			if (cbArea.getValue() == null) {
-				cbArea.getElement().setProperty("invalid", true);
-				hasErrorFormValues(1);
-			}
-			if (cbRegion.getValue() == null) {
-				cbRegion.getElement().setProperty("invalid", true);
-				hasErrorFormValues(2);
-			}
-			if (cbDistrict.getValue() == null) {
-				cbDistrict.getElement().setProperty("invalid", true);
-				hasErrorFormValues(3);
-			}
-			if (!isDistrictEntry) {
-				System.out.println("Not a district entry form 1111111");
-				if (cbCommunity.getValue() == null) {
-					cbCommunity.getElement().setProperty("invalid", true);
-					hasErrorFormValues(4);
+		if (daywiseTracker) {
+
+			int currentDayNumber = Integer.parseInt(currentDay.replace("day", ""));
+			fields.forEach((key, value) -> {
+				Component formField = fields.get(key);
+
+				if (cbArea.getValue() == null) {
+					cbArea.getElement().setProperty("invalid", true);
+					hasErrorFormValues(1);
 				}
-			} else {
-				System.out.println(" district entry form 1111111");
-
-			}
-			if (formDate.getValue() == null) {
-				formDate.getElement().setProperty("invalid", true);
-				hasErrorFormValues(5);
-			}else {
-			if(!validateTextInputFormDate(formDate.getValue())) {
-				formDate.getElement().setProperty("invalid", true);
-				hasErrorFormValues(13);
-			}
-				
-			}
-
-			if (((AbstractField) formField).isRequiredIndicatorVisible()) {
-				logger.debug(
-						((AbstractField) formField).getValue() + "++++++++++" + ((AbstractField) formField).getId());
-
-				if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == ""
-						|| (((AbstractField) formField).getValue() instanceof Set
-								&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
-
-					if ((((AbstractField) formField).getValue() instanceof Set
-							&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
-						formField.getElement().getStyle().set("background", "#ffe5e5");
+				if (cbRegion.getValue() == null) {
+					cbRegion.getElement().setProperty("invalid", true);
+					hasErrorFormValues(2);
+				}
+				if (cbDistrict.getValue() == null) {
+					cbDistrict.getElement().setProperty("invalid", true);
+					hasErrorFormValues(3);
+				}
+				if (!isDistrictEntry) {
+					System.out.println(currentDay + " Not a district entry form QQQQQQQQQQQQQQQQ " + key);
+					if (cbCommunity.getValue() == null) {
+						cbCommunity.getElement().setProperty("invalid", true);
+						hasErrorFormValues(4);
 					}
-
-					hasErrorFormValues(6);
-					formField.getElement().setProperty("invalid", true);
 				} else {
-					// Clear error state and background color when field has value
-					if (formField.getElement().getProperty("invalid", false)) {
-						formField.getElement().setProperty("invalid", false);
-					}
-					// Clear background if it was set due to error
-					if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
-						formField.getElement().getStyle().remove("background");
-						formField.getElement().setProperty("error-background-set", null);
+					System.out.println(currentDay + " district entry form QQQQQQQQQQQQQQQQQQQQQQ " + key);
+
+				}
+				if (formDate.getValue() == null) {
+					formDate.getElement().setProperty("invalid", true);
+					hasErrorFormValues(5);
+				}
+
+				for (int d = 1; d <= currentDayNumber; d++) {
+					String dayKey = "day" + d;
+
+					if (((AbstractField) formField).isRequiredIndicatorVisible() && key.contains(dayKey)) {
+						System.out.println(key + "FORMFIELDSSSSSSSS " + value);
+						logger.debug(((AbstractField) formField).getValue() + "++++++++++"
+								+ ((AbstractField) formField).getId());
+
+						if (((AbstractField) formField).getValue() == null
+								|| ((AbstractField) formField).getValue() == ""
+								|| (((AbstractField) formField).getValue() instanceof Set
+										&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+
+							if ((((AbstractField) formField).getValue() instanceof Set
+									&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+								formField.getElement().getStyle().set("background", "#ffe5e5");
+							}
+
+							hasErrorFormValues(6);
+							formField.getElement().setProperty("invalid", true);
+						} else {
+							// Clear error state and background color when field has value
+							if (formField.getElement().getProperty("invalid", false)) {
+								formField.getElement().setProperty("invalid", false);
+							}
+							// Clear background if it was set due to error
+							if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
+								formField.getElement().getStyle().remove("background");
+								formField.getElement().setProperty("error-background-set", null);
+							}
+						}
 					}
 				}
-			}
+
+				if (((AbstractField) formField).isRequiredIndicatorVisible() && key.contains("day1")) {
+					System.out.println(key + "DAY111111111111111111111111111111111 " + value);
+					logger.debug(((AbstractField) formField).getValue() + "++++++++++"
+							+ ((AbstractField) formField).getId());
+				}
+
+			});
+		} else {
+			System.out.println("NOTSUPPOSETORUNNINGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG");
+			fields.forEach((key, value) -> {
+				Component formField = fields.get(key);
+
+				if (cbArea.getValue() == null) {
+					cbArea.getElement().setProperty("invalid", true);
+					hasErrorFormValues(1);
+				}
+				if (cbRegion.getValue() == null) {
+					cbRegion.getElement().setProperty("invalid", true);
+					hasErrorFormValues(2);
+				}
+				if (cbDistrict.getValue() == null) {
+					cbDistrict.getElement().setProperty("invalid", true);
+					hasErrorFormValues(3);
+				}
+				if (!isDistrictEntry) {
+					System.out.println("Not a district entry form 1111111");
+					if (cbCommunity.getValue() == null) {
+						cbCommunity.getElement().setProperty("invalid", true);
+						hasErrorFormValues(4);
+					}
+				} else {
+					System.out.println(" district entry form 1111111");
+
+				}
+				if (formDate.getValue() == null) {
+					formDate.getElement().setProperty("invalid", true);
+					hasErrorFormValues(5);
+				}
+
+				if (((AbstractField) formField).isRequiredIndicatorVisible()) {
+					logger.debug(((AbstractField) formField).getValue() + "++++++++++"
+							+ ((AbstractField) formField).getId());
+
+					if (((AbstractField) formField).getValue() == null || ((AbstractField) formField).getValue() == ""
+							|| (((AbstractField) formField).getValue() instanceof Set
+									&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+
+						if ((((AbstractField) formField).getValue() instanceof Set
+								&& ((Set<?>) ((AbstractField) formField).getValue()).isEmpty())) {
+							formField.getElement().getStyle().set("background", "#ffe5e5");
+						}
+
+						hasErrorFormValues(6);
+						formField.getElement().setProperty("invalid", true);
+					} else {
+						// Clear error state and background color when field has value
+						if (formField.getElement().getProperty("invalid", false)) {
+							formField.getElement().setProperty("invalid", false);
+						}
+						// Clear background if it was set due to error
+						if ("true".equals(formField.getElement().getProperty("error-background-set"))) {
+							formField.getElement().getStyle().remove("background");
+							formField.getElement().setProperty("error-background-set", null);
+						}
+					}
+				}
 //			
 //			if (formField instanceof AbstractField) {
 //			    AbstractField<?, ?> field = (AbstractField<?, ?>) formField;
@@ -3242,7 +3502,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 //			    }
 //			}
 
-		});
+			});
+
+		}
 
 		fields.forEach((key, value) -> {
 			Component formField = fields.get(key);
@@ -3351,8 +3613,34 @@ public class CampaignFormBuilder extends VerticalLayout {
 //					dataDto.setRecordgroupuuid(dataDto.getRecordgroupuuid());
 					dataDto.setRecordversion(incrementedVersion);
 					dataDto.setFormValues(entries);
+					
+					boolean proceedWithUnPublishaandUnVerify = false;
+					try {
+						dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
+	
+						proceedWithUnPublishaandUnVerify = true;
+					} catch (Exception e){
+						proceedWithUnPublishaandUnVerify = false;
 
-					dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
+					}finally {
+						
+						if(proceedWithUnPublishaandUnVerify) {
+						List<String> uuidList = new ArrayList<>();
+						uuidList.add(dataDto.getUuid());
+	
+						if(dataDto.getCampaignFormMeta().getFormType().equalsIgnoreCase("post-campaign")) {
+							if(dataDto.isIsverified()) {
+								FacadeProvider.getCampaignFormDataFacade().verifyCampaignData(uuidList, true);
+							}
+							if(dataDto.isIspublished()) {
+								FacadeProvider.getCampaignFormDataFacade().publishCampaignData(uuidList, true);
+							}	
+						}
+						}
+					}
+
+
+					
 
 					Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
 					return true;

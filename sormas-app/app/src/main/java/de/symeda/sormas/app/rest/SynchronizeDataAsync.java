@@ -179,20 +179,15 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 					syncModeTrace = FirebasePerformance.getInstance().newTrace("syncModeReinitializeTraceAsync");
 					syncModeTrace.start();
 
-//					pullInfrastructure(); // do before missing, because we may have a completely empty database
-//					pullMissingAndDeleteInvalidInfrastructure();
 					if (ConfigProvider.getLastDeletedSyncDate() == null
 							|| DateHelper.getFullDaysBetween(ConfigProvider.getLastDeletedSyncDate(), new Date()) >= 1) {
-
 						pullAndRemoveDeletedUuidsSince(ConfigProvider.getLastDeletedSyncDate());
 					}
 					// pull and remove archived entities when the last time this has been done is more than 24 hours ago
 					if (ConfigProvider.getLastArchivedSyncDate() == null
 							|| DateHelper.getFullDaysBetween(ConfigProvider.getLastArchivedSyncDate(), new Date()) >= 1) {
-
 						pullAndRemoveArchivedUuidsSince(ConfigProvider.getLastArchivedSyncDate());
 					}
-
 
 					syncDeviceInfoAndErrorLogsOnly();
 
@@ -241,7 +236,7 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 				break;
 			case CompleteAndRepull:
 				break;
-				case Reinitialize:
+			case Reinitialize:
 				newSyncMode = SyncMode.Changes;
 				break;
 			default:
@@ -388,9 +383,9 @@ public class SynchronizeDataAsync extends AsyncTask<Void, Void, Void> {
 			if (populationDataDtoHelper.pullAndPushEntities())
 				populationDataDtoHelper.pullEntities(true);
 
-//			final FCMTokenDtoHelper fcmTokenDtoHelper = new FCMTokenDtoHelper();
-//			if (fcmTokenDtoHelper.pullAndPushEntities())
-//				fcmTokenDtoHelper.pullEntities(true);
+			final FCMTokenDtoHelper fcmTokenDtoHelper = new FCMTokenDtoHelper();
+			if (fcmTokenDtoHelper.pullAndPushEntities())
+				fcmTokenDtoHelper.pullEntities(true);
 
 			final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
 			if (deviceInfoDtoHelper.pullAndPushEntities())
@@ -691,7 +686,6 @@ if (1 == 3) {
 			final DeviceInfoDtoHelper deviceInfoDtoHelper = new DeviceInfoDtoHelper();
 			deviceInfoDtoHelper.pushEntities(true);
 
-
 			final DeviceErrorLogDtoHelper deviceErrorLogDtoHelper = new DeviceErrorLogDtoHelper();
 			deviceErrorLogDtoHelper.pushEntities(true);
 	}
@@ -708,25 +702,13 @@ if (1 == 3) {
 		// users
 		List<String> userUuids = executeUuidCall(RetroProvider.getUserFacade().pullUuids());
 		DatabaseHelper.getUserDao().deleteInvalid(userUuids);
-//		// disease configurations
-//		List<String> diseaseConfigurationUuids = executeUuidCall(RetroProvider.getDiseaseConfigurationFacade().pullUuids());
-//		DatabaseHelper.getDiseaseConfigurationDao().deleteInvalid(diseaseConfigurationUuids);
-//		// Disease variants
-//		List<String> customizableEnumValueUuids = executeUuidCall(RetroProvider.getCustomizableEnumValueFacade().pullUuids());
-//		DatabaseHelper.getCustomizableEnumValueDao().deleteInvalid(customizableEnumValueUuids);
-		// feature configurations
+
 		List<String> featureConfigurationUuids = executeUuidCall(RetroProvider.getFeatureConfigurationFacade().pullUuids());
 		DatabaseHelper.getFeatureConfigurationDao().deleteInvalid(featureConfigurationUuids);
 		// user role config
 		List<String> userRoleConfigUuids = executeUuidCall(RetroProvider.getUserRoleConfigFacade().pullUuids());
 		DatabaseHelper.getUserRoleConfigDao().deleteInvalid(userRoleConfigUuids);
-		// points of entry
-//		List<String> pointOfEntryUuids = executeUuidCall(RetroProvider.getPointOfEntryFacade().pullUuids());
-//		DatabaseHelper.getPointOfEntryDao().deleteInvalid(pointOfEntryUuids);
-		// facilities
-//		List<String> facilityUuids = executeUuidCall(RetroProvider.getFacilityFacade().pullUuids());
-	//	DatabaseHelper.getFacilityDao().deleteInvalid(facilityUuids);
-		// communities
+
 		List<String> communityUuids = executeUuidCall(RetroProvider.getCommunityFacade().pullUuids());
 		DatabaseHelper.getCommunityDao().deleteInvalid(communityUuids);
 		// districts

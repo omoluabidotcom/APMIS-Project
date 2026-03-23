@@ -126,10 +126,8 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
         target.setActiveCampaigns(source.getActiveCampaigns());
         target.setActiveFormCount(source.getActiveFormCount());        
 		target.setArea(areaService.getByReferenceDto(source.getArea()));
-		target.setRegion(regionService.getByReferenceDto(source.getRegion()));
-		if (source.getDistricts() != null) {
-			target.setDistricts(districtService.getByReferenceDto(source.getDistricts()));
-		}
+		target.setRegion(regionService.getByReferenceDto(source.getRegion()));	
+		target.setDistrict(districtService.getByReferenceDto(source.getDistrict()));
 
 //        target.setTotal_int_storage_gb(source.getInternalStorageTotalGb());
 //        target.setFree_int_storage_gb(source.getInternalStorageFreeGb());
@@ -188,10 +186,9 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
         target.setActiveCampaigns(source.getActiveCampaigns());
         target.setActiveFormCount(source.getActiveFormCount());
         target.setArea(AreaFacadeEjb.toReferenceDto(source.getArea()));
-		target.setRegion(RegionFacadeEjb.toReferenceDto(source.getRegion()));
-		if (source.getDistricts() != null) {
-			target.setDistricts(DistrictFacadeEjb.toReferenceDto(new HashSet<District>(source.getDistricts())));
-		}
+		target.setRegion(RegionFacadeEjb.toReferenceDto(source.getRegion()));		
+		target.setDistrict(DistrictFacadeEjb.toReferenceDto(source.getDistrict()));
+		
 		
 //        if (source.getUser_id() != null) {
 //            target.setUser(new UserReferenceDto(source.getUser_id().getUuid(), source.getUser_id().getFirstName(), source.getUser_id().getLastName()));
@@ -246,86 +243,51 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
 
 	    List<Predicate> predicates = new ArrayList<>();
 
-	    System.out.println("DEBUG BACKEND - Criteria is null? " + (criteria == null));
 	    if (criteria != null) {
-	        System.out.println("DEBUG: Criteria received - Area: " + (criteria.getArea() != null ? criteria.getArea().size() : 0) + 
-	                          ", Region: " + (criteria.getRegion() != null ? criteria.getRegion().size() : 0) + 
-	                          ", District: " + (criteria.getDistrict() != null ? criteria.getDistrict().size() : 0));
-	        
-	        // Check if ANY filters are applied
-	        boolean hasFilters = (criteria.getArea() != null && !criteria.getArea().isEmpty()) ||
-	                            (criteria.getRegion() != null && !criteria.getRegion().isEmpty()) ||
-	                            (criteria.getDistrict() != null && !criteria.getDistrict().isEmpty());
-	        
-	        if (hasFilters) {
-	            // Create a subquery to handle filtering through User
-	            Subquery<Long> subquery = cq.subquery(Long.class);
-	            Root<DeviceManager> subRoot = subquery.from(DeviceManager.class);
-	            Join<DeviceManager, User> subUserJoin = subRoot.join("user_id", JoinType.LEFT);
-	            
-	            List<Predicate> subPredicates = new ArrayList<>();
-	            
-	            // Area filter
-	            if (criteria.getArea() != null && !criteria.getArea().isEmpty()) {
-	                System.out.println("AREAFILTERING - Areas selected: " + criteria.getArea().size());
-	                
-	                List<String> areaUuids = criteria.getArea().stream()																													
-	                    .map(AreaReferenceDto::getUuid)
-	                    .collect(Collectors.toList());
-	                
-	                Join<User, Area> areaJoin = subUserJoin.join("area", JoinType.LEFT);
-	                subPredicates.add(areaJoin.get("uuid").in(areaUuids));
-	            }
-	            
-	            // Region filter
-	            if (criteria.getRegion() != null && !criteria.getRegion().isEmpty()) {
-	                System.out.println("REGIONFILTERING - Regions selected: " + criteria.getRegion().size());
-	                
-	                List<String> regionUuids = criteria.getRegion().stream()
-	                    .map(RegionReferenceDto::getUuid)
-	                    .collect(Collectors.toList());
-	                
-	                Join<User, Region> regionJoin = subUserJoin.join("region", JoinType.LEFT);
-	                subPredicates.add(regionJoin.get("uuid").in(regionUuids));
-	            }
-	            
-	            // District filter  
-	            if (criteria.getDistrict() != null && !criteria.getDistrict().isEmpty()) {
-	                System.out.println("DISTRICTFILTERING - Districts selected: " + criteria.getDistrict().size());
-	                
-	                List<String> districtUuids = criteria.getDistrict().stream()
-	                    .map(DistrictReferenceDto::getUuid)
-	                    .collect(Collectors.toList());
-	                
-	                Join<User, District> districtJoin = subUserJoin.join("district", JoinType.LEFT);
-	                subPredicates.add(districtJoin.get("uuid").in(districtUuids));
-	            }
-	            
-	            // The subquery selects DeviceManager IDs that match the filters
-	            subquery.select(subRoot.get("id"));
-	            
-	            // Link subquery to main query
-	            if (!subPredicates.isEmpty()) {
-	                subquery.where(cb.and(subPredicates.toArray(new Predicate[0])));
-	                // Include records that match the filter OR have no user (if you want to show them)
-	                predicates.add(cb.or(
-	                    cb.in(root.get("id")).value(subquery),  // Matches filter
-	                    cb.isNull(root.get("user_id"))          // OR has no user
-	                ));
-	            }
+
+	        if (criteria.getArea() != null && !criteria.getArea().isEmpty()) {
+
+	            List<String> areaUuids = criteria.getArea().stream()
+	                .map(AreaReferenceDto::getUuid)
+	                .collect(Collectors.toList());
+
+	            predicates.add(
+	                root.get("area").get("uuid").in(areaUuids)
+	            );
+	        }
+
+	        if (criteria.getRegion() != null && !criteria.getRegion().isEmpty()) {
+
+	            List<String> regionUuids = criteria.getRegion().stream()
+	                .map(RegionReferenceDto::getUuid)
+	                .collect(Collectors.toList());
+
+	            predicates.add(
+	                root.get("region").get("uuid").in(regionUuids)
+	            );
+	        }
+
+	        if (criteria.getDistrict() != null && !criteria.getDistrict().isEmpty()) {
+
+	            List<String> districtUuids = criteria.getDistrict().stream()
+	                .map(DistrictReferenceDto::getUuid)
+	                .collect(Collectors.toList());
+
+	            predicates.add(
+		                root.get("district").get("uuid").in(districtUuids));       
 	        }
 	    }
 
-	    // Apply predicates if any
 	    if (!predicates.isEmpty()) {
 	        cq.where(cb.and(predicates.toArray(new Predicate[0])));
 	    }
 
-	    cq.orderBy(cb.asc(root.get("user_name")));
+	    cq.orderBy(cb.asc(root.get(DeviceManager.CHANGE_DATE)));
 	    cq.select(root);
 
 	    return QueryHelper.getResultList(em, cq, first, max, this::toDto);
 	}
+
 
 
 	private DeviceManagerReferenceDto toReferenceDto(DeviceManager source) {

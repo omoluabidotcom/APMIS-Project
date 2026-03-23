@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.symeda.sormas.api.MapperUtil;
@@ -60,6 +61,7 @@ import de.symeda.sormas.api.campaign.form.CampaignFormElementOptions;
 import de.symeda.sormas.api.campaign.form.CampaignFormElementType;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
 import de.symeda.sormas.api.i18n.I18nProperties;
+import de.symeda.sormas.api.user.UserRole;
 import de.symeda.sormas.api.utils.DataHelper;
 import de.symeda.sormas.api.utils.ValidationException;
 import de.symeda.sormas.app.BaseEditFragment;
@@ -70,6 +72,8 @@ import de.symeda.sormas.app.backend.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
+import de.symeda.sormas.app.backend.region.District;
+import de.symeda.sormas.app.backend.region.PopulationData;
 import de.symeda.sormas.app.backend.user.User;
 import de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils;
 import de.symeda.sormas.app.component.Item;
@@ -2852,7 +2856,64 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
         initialAreas = InfrastructureDaoHelper.loadAreas();
         initialRegions = InfrastructureDaoHelper.loadRegionsByServerCountry();
-        initialDistricts = InfrastructureDaoHelper.loadDistricts(record.getRegion());
+//        initialDistricts = InfrastructureDaoHelper.loadDistricts(record.getRegion());
+
+         List<Item> districtItemList = InfrastructureDaoHelper.loadDistricts(record.getRegion());
+        districtItemList.removeIf(d -> d == null || d.getValue() == null || d.getValue().toString().trim().isEmpty());
+
+        if (ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
+            User user = ConfigProvider.getUser();
+            List<String> userDistrictUuids = new ArrayList<>();
+
+            if (user.getRegion() != null) {
+                userDistrictUuids = DatabaseHelper.getDistrictDao().getByRegion(user.getRegion()).stream()
+                        .map(District::getUuid)
+                        .collect(Collectors.toList());
+            } else if (user.getDistrict() != null) {
+                userDistrictUuids.add(user.getDistrict().getUuid());
+            }
+            //Fetch population data for this campaign & selected = true
+            if (!userDistrictUuids.isEmpty()) {
+                List<PopulationData> popDataSelectedDistrict = DatabaseHelper.getPopulationDataDao()
+                        .getSelectedDistrictsByMultipleUuids(userDistrictUuids, record.getCampaign().getUuid());
+
+                //Collect UUIDs of districts that actually exist in the population data
+                Set<String> selectedDistrictUuids = popDataSelectedDistrict.stream()
+                        .map(PopulationData::getDistrict_id)
+                        .collect(Collectors.toSet());
+
+                initialDistricts = districtItemList.stream()
+                        .filter(item -> item.getValue() instanceof District && selectedDistrictUuids.contains(((District) item.getValue()).getUuid()))
+                        .collect(Collectors.toList());
+            } else {
+                initialDistricts = new ArrayList<>();
+            }
+            for(Item item : initialDistricts){
+                System.out.println(((District) item.getValue()).getUuid() +  "UUIDS OF INITIAL DISTRICTS ---------------------------");
+            }
+
+
+        }else {
+
+            System.out.println(ConfigProvider.getUser().getDistrict().getUuid() + "User role is not  surv Officer --------------------" + record.getCampaign().getUuid());
+
+            //Fetch population data for this campaign & selected = true
+            List<PopulationData> popDataSelectedDistrict = DatabaseHelper.getPopulationDataDao()
+                    .getSelectedDistrictByUsersDistrict(ConfigProvider.getUser().getDistrict().getUuid(), record.getCampaign().getUuid());
+
+            //Collect UUIDs of districts that actually exist in the population data
+            Set<String> selectedDistrictUuids = popDataSelectedDistrict.stream()
+                    .map(PopulationData::getDistrict_id)
+                    .collect(Collectors.toSet());
+
+            List<Item> initialDistrictsFound = districtItemList.stream()
+                    .filter(item -> selectedDistrictUuids.contains(item.getValue().toString()))
+                    .collect(Collectors.toList());
+
+            initialDistricts = initialDistrictsFound;
+
+        }
+
         initialCommunities = InfrastructureDaoHelper.loadCommunities(record.getDistrict());
     }
 
@@ -2862,13 +2923,62 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
         contentBinding.setData(record);
 
         Item campaignItem = record.getCampaign() != null ? DataUtils.toItem(record.getCampaign()) : null;
-
         if (campaignItem != null && !initialCampaigns.contains(campaignItem)) {
             initialCampaigns.add(campaignItem);
         }
-
         contentBinding.campaignFormDataCampaign.initializeSpinner(initialCampaigns, record.getCampaign());
         contentBinding.campaignFormDataCampaign.setEnabled(false);
+
+        Calendar cal = Calendar.getInstance();
+        Date date = cal.getTime();
+        try {
+            // Initialize the date field with fragment manager and initial date
+            if (record.getCampaign() != null) {
+                final CampaignFormMeta campaignFormMeta = DatabaseHelper.getCampaignFormMetaDao().queryForId(record.getCampaignFormMeta().getId());
+                Date expiryDate = DatabaseHelper.getCampaignFormMetaWithExpDao().getCampaignFormExpiryDateByCampaignIdAndFormId(record.getCampaign().getUuid(), campaignFormMeta.getUuid());
+                Date minDate = null;
+                Date maxDate = null;
+
+                if (preCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                    minDate = record.getCampaign().getPreCampStartDate();
+                }else if (intraCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                    minDate = record.getCampaign().getStartDate();
+                }else if (postCampaignsCategories.contains(campaignFormMeta.getFormCategory())) {
+                    minDate = record.getCampaign().getPostCampStartDate();
+                }
+                maxDate = expiryDate;
+
+                if (minDate != null) {
+                    ((de.symeda.sormas.app.component.controls.ControlDateField) contentBinding.campaignFormDataFormDate).setMinDate(minDate);
+                }
+                if (maxDate != null) {
+                    ((de.symeda.sormas.app.component.controls.ControlDateField) contentBinding.campaignFormDataFormDate).setMaxDate(maxDate);
+                }
+            }
+            contentBinding.campaignFormDataFormDate.initializeDateField(getFragmentManager(), getDateValue(date.toString()));
+            contentBinding.campaignFormDataFormDate.setValue(getDateValue(date.toString()));
+            // Verify the value was set correctly
+            Date retrievedValue = contentBinding.campaignFormDataFormDate.getValue();
+            System.out.println("Date field value after initialization: " + retrievedValue);
+
+            // Only disable after successful initialization
+            contentBinding.campaignFormDataFormDate.setFieldValue(getDateValue(date.toString()));
+            System.out.println("Date field initialization completed successfully" +  contentBinding.campaignFormDataFormDate.getValue());
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            System.out.println("Date field Error during date field initialization: " + exception.getMessage());
+
+            // Fallback: try basic initialization
+            try {
+                contentBinding.campaignFormDataFormDate.initializeDateField(getFragmentManager());
+                contentBinding.campaignFormDataFormDate.setFieldValue(date);
+                contentBinding.campaignFormDataFormDate.setEnabled(false);
+                System.out.println("Date field Fallback initialization completed");
+            } catch (Exception fallbackException) {
+                System.out.println("Date field Fallback initialization also failed: " + fallbackException.getMessage());
+            }
+        }
 
         InfrastructureDaoHelper.initializeRegionAreaFields(
                 contentBinding.campaignFormDataArea,
@@ -2931,21 +3041,44 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
         validateDayWise(context);
     }
 
-    private void validateDayWise(Context context) throws ValidationException {
+//    private void validateDayWise(Context context) throws ValidationException {
+//
+//        int currentDay = mTabHost.getCurrentTab() + 1;
+//        ValidationErrorInfo errorInfo = new ValidationErrorInfo(context);
+//
+//        // Always validate Day-1
+//        ViewGroup day1 = getDayContainer(1);
+//        FragmentValidator.validatePropertyEditFields(day1, errorInfo);
+//
+//        // Validate current day if different
+//        if (currentDay != 1) {
+//            System.out.println("NOTDAYONEVALIDATIONNNNNNNNNNNNNNNNNNNNNNNNNNNNEDITTTTTTTTTTTTTTT");
+//            ViewGroup current = getDayContainer(currentDay);
+//            System.out.println(current.getChildCount());
+//            FragmentValidator.validatePropertyEditFields(current, errorInfo);
+//        }
+//
+//        if (errorInfo.hasError()) {
+//            throw new ValidationException(errorInfo.toString());
+//        }
+//    }
 
+    private void validateDayWise(Context context) throws ValidationException {
         int currentDay = mTabHost.getCurrentTab() + 1;
         ValidationErrorInfo errorInfo = new ValidationErrorInfo(context);
 
-        // Always validate Day-1
-        ViewGroup day1 = getDayContainer(1);
-        FragmentValidator.validatePropertyEditFields(day1, errorInfo);
-
-        // Validate current day if different
-        if (currentDay != 1) {
-            System.out.println("NOTDAYONEVALIDATIONNNNNNNNNNNNNNNNNNNNNNNNNNNNEDITTTTTTTTTTTTTTT");
-            ViewGroup current = getDayContainer(currentDay);
-            System.out.println(current.getChildCount());
-            FragmentValidator.validatePropertyEditFields(current, errorInfo);
+        // Validate all days from day 1 up to and including the current day
+        // e.g. currentDay = 3 -> validates day1, day2, day3
+        System.out.println("CURRENTDAYYYYYYYYYYYYYYYYYYYYYYYYYY " + currentDay);
+        for (int day = 1; day <= currentDay; day++) {
+            System.out.println("VALIDATING DAY: " + day);
+            ViewGroup dayContainer = getDayContainer(day);
+            if (dayContainer != null) {
+                System.out.println("Day " + day + " child count: " + dayContainer.getChildCount());
+                FragmentValidator.validatePropertyEditFields(dayContainer, errorInfo);
+            } else {
+                System.out.println("WARNING: No container found for day " + day);
+            }
         }
 
         if (errorInfo.hasError()) {
@@ -2954,14 +3087,17 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
     }
 
     private ViewGroup getDayContainer(int day) {
-        System.out.println("DAYYYYYYYYYYYYYYYYYYYYEDITTTTTTTTTTT " +day);
         switch (day) {
             case 1: return mTabHost.findViewById(R.id.tabSheet1);
             case 2: return mTabHost.findViewById(R.id.tabSheet2);
             case 3: return mTabHost.findViewById(R.id.tabSheet3);
             case 4: return mTabHost.findViewById(R.id.tabSheet4);
             case 5: return mTabHost.findViewById(R.id.tabSheet5);
+            case 6: return mTabHost.findViewById(R.id.tabSheet6);
+            case 7: return mTabHost.findViewById(R.id.tabSheet7);
+            case 8: return mTabHost.findViewById(R.id.tabSheet8);
             default: return null;
         }
     }
+
 }

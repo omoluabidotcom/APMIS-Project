@@ -1,10 +1,6 @@
 package de.symeda.sormas.app.backend.campaign.usertoken;
 
 import com.j256.ormlite.dao.Dao;
- 
-import com.j256.ormlite.stmt.PreparedQuery;
-import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.stmt.Where;
 
 import java.sql.SQLException;
 import java.util.Date;
@@ -54,25 +50,9 @@ public class FCMTokenDao extends AbstractAdoDao<FCMToken> {
             fcmtoken.setSnapshot(false);
 
             dao.createOrUpdate(fcmtoken);
-
         } catch (SQLException e) {
             throw new RuntimeException("Failed to update FCM Token for user: " + username, e);
         }
     }
 
-    public void saveOrUpdateToken(String username, String newToken) throws SQLException {
-        FCMToken token = dao.queryBuilder()
-                .where()
-                .eq(FCMToken.USER_NAME, username)
-                .queryForFirst();
-
-        if (token == null) {
-            token = new FCMToken();
-            token.setUserName(username);
-        }
-
-        token.setToken(newToken);
-
-        dao.createOrUpdate(token);
-    }
 }

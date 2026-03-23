@@ -146,20 +146,23 @@ public class ResetPasswordView extends VerticalLayout implements BeforeEnterObse
 		add(card);
 	}
 	
-    private SendGridEmailService getMailer() {
-        // Get values from application.properties or use defaults
-        // These values should match your application.properties
-        String apiKey = "";
+	private SendGridEmailService getMailer() {
+	    String apiKey = System.getenv("SENDGRID_API_KEY"); // Read from env variable
+	    
+	    System.out.println("API Key found: " + (apiKey != null ? "YES, length=" + apiKey.length() : "NULL/NOT SET"));
+	    System.out.println("API Key prefix: " + (apiKey != null && apiKey.length() > 10 ? apiKey.substring(0, 10) + "..." : "TOO SHORT"));
 
-        String fromEmail = System.getProperty("mail.from.email", 
-            "passwordreset@afghanistan-apmis.com");
-        String fromName = System.getProperty("mail.from.name", 
-            "APMIS Support");
-        String appBaseUrl = System.getProperty("app.base.url", 
-            "https://afghanistan-apmis.com");
-        
-        return new SendGridEmailService(apiKey, fromEmail, fromName, appBaseUrl);
-    }
+	    
+
+	    String fromEmail = System.getProperty("mail.from.email", 
+	        "passwordreset@afghanistan-apmis.com");
+	    String fromName = System.getProperty("mail.from.name", 
+	        "APMIS Support");
+	    String appBaseUrl = System.getProperty("app.base.url", 
+	        "https://afghanistan-apmis.com");
+	    
+	    return new SendGridEmailService(apiKey, fromEmail, fromName, appBaseUrl);
+	}
 
 	public void updatePasswordDialog(UserDto userDetails) {
 		if (!passwordDialogInitialized) {

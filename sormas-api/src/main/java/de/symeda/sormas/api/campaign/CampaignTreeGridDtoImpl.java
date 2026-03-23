@@ -10,6 +10,7 @@ import java.io.Serializable;
 
 	private Long populationData;
 	private Long populationData5_10;
+	private Long populationData4_23M;
 	private Long populationDataTotal;
 	private String savedSelectionData;
 	
@@ -55,6 +56,15 @@ import java.io.Serializable;
         this.populationDataTotal = populationData + populationData5_10;
     }
 	
+	public CampaignTreeGridDtoImpl(String name, Long populationData, Long populationData5_10, Long populationData4_23M, Long id, String parentUuid, String uuid, String levelAssessed, String savedSelectionData, String districtModality, String districtStatus, String floatStatus, Long populationDataTotal) {
+        super(name, id, parentUuid, uuid, levelAssessed, districtModality, districtStatus, floatStatus);
+        this.populationData = populationData;
+        this.populationData5_10 = populationData5_10;
+        this.populationData4_23M = populationData4_23M;
+        this.savedSelectionData = savedSelectionData;
+        this.populationDataTotal = populationData + populationData5_10;
+    }
+	
 
 	
 	
@@ -66,6 +76,11 @@ import java.io.Serializable;
 	 @Override
      public Long getPopulationData5_10() {
          return populationData5_10;
+     }
+	 
+	 @Override
+     public Long getPopulationData4_23M() {
+         return populationData4_23M;
      }
 	 
 	 public Long getPopulationDataTotal() {

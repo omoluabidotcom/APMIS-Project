@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -34,6 +36,8 @@ import com.vladmihalcea.hibernate.type.util.SQLExtractor;
 
 import de.symeda.sormas.api.AgeGroup;
 import de.symeda.sormas.api.FacadeProvider;
+import de.symeda.sormas.api.campaign.CampaignDto;
+import de.symeda.sormas.api.campaign.CampaignLogDto;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
 import de.symeda.sormas.api.campaign.CampaignTreeGridDto;
 import de.symeda.sormas.api.campaign.diagram.CampaignDiagramCriteria;
@@ -55,6 +59,7 @@ import de.symeda.sormas.api.statistics.StatisticsCaseCriteria;
 import de.symeda.sormas.api.utils.ValidationRuntimeException;
 import de.symeda.sormas.backend.campaign.Campaign;
 import de.symeda.sormas.backend.campaign.CampaignFacadeEjb;
+import de.symeda.sormas.backend.campaign.CampaignLog;
 import de.symeda.sormas.backend.campaign.CampaignService;
 import de.symeda.sormas.backend.common.AbstractDomainObject;
 import de.symeda.sormas.backend.common.CriteriaBuilderHelper;
@@ -164,6 +169,36 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 
 		return QueryHelper.getSingleResult(em, cq);
 	}
+	
+		@Override
+		public Long getDistrictPopulationCountByType(String districtUuid,
+		                                             String campaignUuid,
+		                                             AgeGroup ageGroup) {
+
+		    CriteriaBuilder cb = em.getCriteriaBuilder();
+		    CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+		    Root<PopulationData> root = cq.from(PopulationData.class);
+
+		    Join<PopulationData, Campaign> campaignJoin = root.join(PopulationData.CAMPAIGN);
+		    Join<PopulationData, District> districtJoin = root.join(PopulationData.DISTRICT);
+
+		    Predicate campaignFilter =
+		            cb.equal(campaignJoin.get(Campaign.UUID), campaignUuid);
+
+		    Predicate districtFilter =
+		            cb.equal(districtJoin.get(District.UUID), districtUuid);
+
+		    Predicate ageFilter =
+		            cb.equal(root.get(PopulationData.AGE_GROUP), ageGroup);
+
+		    cq.where(campaignFilter, districtFilter, ageFilter);
+
+		    cq.select(cb.count(root));
+
+		    System.out.println("Generated SQL: " + SQLExtractor.from(em.createQuery(cq)));
+
+		    return em.createQuery(cq).getSingleResult();
+		}
 
 	@Override
 	public Integer getDistrictPopulationByType(String districtUuid, String campaignUuid, AgeGroup ageGroup) {
@@ -780,48 +815,12 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		target.setCollectionDate(source.getCollectionDate());
 		target.setModality(source.getModality());
 		target.setDistrictStatus(source.getDistrictStatus());
+		target.setSelected(source.getSelected());
 
 		return target;
 	}
 
-//	public PopulationDataFaux fromDtox(@NotNull PopulationDataFauxDto source, boolean checkChangeDate) {
-//
-//		PopulationDataFaux target = (PopulationDataFaux) DtoHelper.fillOrBuildEntity(source, service.getByUuid(source.getUuid()),
-//				PopulationDataFaux::new, checkChangeDate);
-//
-//		target.setRegion(regionService.getByReferenceDto(source.getRegion()));
-//		target.setDistrict(districtService.getByReferenceDto(source.getDistrict()));
-//		target.setCommunity(communityService.getByReferenceDto(source.getCommunity()));
-//		target.setCampaign(campaignService.getByReferenceDto(source.getCampaign()));
-//		target.setAgeGroup(source.getAgeGroup());
-//		target.setSex(source.getSex());
-//		target.setPopulation(source.getPopulation());
-//		target.setCollectionDate(source.getCollectionDate());
-//		target.setModality(source.getModality());
-//		return target;
-//	}
-//
-//	public static PopulationDataFauxDto toDtox(PopulationDataFaux source) {
-//
-//		if (source == null) {
-//			return null;
-//		}
-//		PopulationDataFauxDto target = new PopulationDataFauxDto();
-//		DtoHelper.fillDto(target, source);
-//
-//		target.setRegion(RegionFacadeEjb.toReferenceDto(source.getRegion()));
-//		target.setDistrict(DistrictFacadeEjb.toReferenceDto(source.getDistrict()));
-//		target.setCommunity(CommunityFacadeEjb.toReferenceDto(source.getCommunity()));
-//		target.setCampaign(CampaignFacadeEjb.toReferenceDto(source.getCampaign()));
-//		target.setAgeGroup(source.getAgeGroup());
-//		target.setSex(source.getSex());
-//		target.setPopulation(source.getPopulation());
-//		target.setCollectionDate(source.getCollectionDate());
-//		target.setModality(source.getModality());
-//		
-//
-//		return target;
-//	}
+
 	public static PopulationDataDto toDto(PopulationData source) {
 
 		if (source == null) {
@@ -840,6 +839,10 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		target.setCollectionDate(source.getCollectionDate());
 		target.setModality(source.getModality());
 		target.setDistrictStatus(source.getDistrictStatus());
+		System.out.println(source.getCommunity() + "source.getCommunity()source.getCommunity()source.getCommunity()source.getCommunity()");
+		target.setCluster_id(source.getCommunity() == null ? "" : CommunityFacadeEjb.toReferenceDto(source.getCommunity()).getUuid());
+		target.setSelected(source.isSelected());
+
 
 		return target;
 	}
@@ -853,8 +856,9 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		DtoHelper.fillDto(target, source);
 
 		target.setDistrict(DistrictFacadeEjb.toReferenceDto(source.getDistrict()));
+		target.setCommunity(CommunityFacadeEjb.toReferenceDto(source.getCommunity()));
 		target.setCampaign(CampaignFacadeEjb.toReferenceDto(source.getCampaign()));
-		target.setSelected(source.isSelected() == true ? "True" : "False");
+		target.setSelected(source.isSelected());
 
 		return target;
 	}
@@ -1178,84 +1182,6 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 
 	}
 	
-//	@Override
-//	public List<PopulationDataDto> getPopulationDataByDistrictUuid(PopulationDataCriteria criteria) {
-//
-//		CriteriaBuilder cb = em.getCriteriaBuilder();
-//		CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
-//		Root<PopulationData> root = cq.from(PopulationData.class);
-//		// System.out.println("DEBUGGER ----- "+ criteria.getCampaign()!= null);
-//
-//		Predicate filter = service.buildCriteriaFilter(criteria, cb, root);
-//		if (criteria.getCampaign() != null) {
-//			Predicate filter_ = CriteriaBuilderHelper.and(cb, filter,
-//					cb.equal(root.join(PopulationData.CAMPAIGN, JoinType.LEFT).get(Campaign.UUID),
-//							criteria.getCampaign().getUuid()));
-//			Predicate filterx = CriteriaBuilderHelper.and(cb, filter_, cb.equal(root.get("selected"), true));
-//
-//			cq.where(filterx);
-//		} else {
-//			cq.where(filter);
-//		}
-//
-//		System.out.println("DEBUGGER 5678ijhyuio" + SQLExtractor.from(em.createQuery(cq)));
-//
-//		return em.createQuery(cq).getResultStream().map(populationData -> toDto(populationData))
-//				.collect(Collectors.toList());
-//	}
-////	
-//	@Override
-//	public List<PopulationDataDto> fetchPopulationDataSelectionByUserDistricts(List<String> uuids) {
-//	    // Validate input
-//	    if (uuids == null || uuids.isEmpty()) {
-//	        return Collections.emptyList();
-//	    }
-//		System.out.println("DEBUGGER uuuids " +  uuids);
-//
-//	    // Initialize Criteria Builder
-//	    // Initialize Criteria Builder
-//	    CriteriaBuilder cb = em.getCriteriaBuilder();
-//	    CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
-//	    Root<PopulationData> root = cq.from(PopulationData.class);
-//
-//	    // Joins
-//	    Join<PopulationData, Campaign> campaignJoin = root.join(PopulationData.CAMPAIGN);
-//	    Join<PopulationData, District> districtJoin = root.join(PopulationData.DISTRICT);
-//
-//	    // Filters
-//	    Predicate districtFilter = districtJoin.get(District.UUID).in(uuids);
-//
-//	    // Ordering based on the campaign ID and age group
-////	    Expression<Object> ageGroupOrder = cb.selectCase()
-////	            .when(cb.equal(root.get(PopulationData.AGE_GROUP), "0_4"), 1)
-////	            .otherwise(2);
-//	    Expression<Integer> ageGroupOrder = cb.selectCase()
-//	    	    .when(cb.equal(root.get(PopulationData.AGE_GROUP), AgeGroup.AGE_0_4), 1)
-//	    	    .otherwise(2).as(Integer.class);
-//
-//	    // Set distinct selection and ordering
-//	    cq.select(root).distinct(true);
-//	    cq.where(districtFilter);
-//	    cq.orderBy(
-//	            cb.asc(campaignJoin.get(Campaign.ID)),  // Order by campaign ID ascending
-//	            cb.asc(ageGroupOrder)                  // Order by custom age group case expression
-//	    );
-//
-//	    // Execute query
-////	    List<PopulationData> resultList = em.createQuery(cq).getResultList();
-//
-////	    // Convert results to DTOs
-////	    return resultList.stream()
-////	            .map(this::toDtoPopulationByDistrict)
-////	            .collect(Collectors.toList());
-//	    
-//		System.out.println("DEBUGGER 5678ijhyuiofetchPopulationDataSelectionByUserDistricts" + SQLExtractor.from(em.createQuery(cq)));
-//
-//	    
-//		return em.createQuery(cq).getResultStream().map(populationData -> toDtoPopulationByDistrict(populationData))
-//				.collect(Collectors.toList());
-//	}
-
 	
 	@Override
 	public List<PopulationDataDto> fetchPopulationDataSelectionByUserDistricts(List<String> uuids) {
@@ -1265,9 +1191,10 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	    }
 
 	    // Base query using IN clause for multiple UUIDs
-	    String executeQuery = "SELECT DISTINCT ON (p.campaign_id) c.uuid as campaign_id, d.uuid as district_id, p.selected, p.uuid , p.changedate " +
+	    String executeQuery = "SELECT DISTINCT ON (p.campaign_id) c.uuid as campaign_id, d.uuid as district_id, com.uuid AS cluster_id, p.selected, p.uuid , p.changedate " +
 	                          "FROM public.populationdata p " +
-	                          "JOIN public.district d ON p.district_id = d.id " +
+	                          "JOIN public.district d ON p.district_id = d.id  " +
+	                          "LEFT JOIN public.community com ON p.community_id = com.id "+
 	                          "left join public.campaigns c ON p.campaign_id = c.id " +
 	                          "WHERE d.uuid IN :uuids AND p.selected = TRUE " +
 	                          "ORDER BY p.campaign_id, " +
@@ -1287,14 +1214,140 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 				.map((result) -> new PopulationDataDto(
 						result[0] != null ? (String) result[0].toString() : "",
 						result[1] != null ? (String) result[1].toString() : "",
-						result[2] != null ? (String) result[2].toString() : "True", 
-						result[3] != null ? (String) result[3].toString() : "",
-						result[4] != null ? (Date) result[4] : new Date()
+						result[2] != null ? (String) result[2].toString() : "",
+						result[3] != null ? (boolean) result[3].toString().equalsIgnoreCase("true") ? true : false : false, 
+						result[4] != null ? (String) result[4].toString() : "",
+						result[5] != null ? (Date) result[5] : new Date()
 								)).collect(Collectors.toList()));
 		
 
 	    return resultData;
 	}
+	
+//	public void generatePopulationDataForCamapign(String campaignUuid) {
+//		
+//	}
 
+	
+	@Override
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public boolean generatePopulationDataForCamapign(String campaignUuid) {
+	    try {
+		String sql = "INSERT INTO public.populationdata (\n" + 
+				"    uuid,\n" + 
+				"    changedate,\n" + 
+				"    creationdate,\n" + 
+				"    region_id,\n" + 
+				"    district_id,\n" + 
+				"    community_id,\n" + 
+				"    agegroup,\n" + 
+				"    population,\n" + 
+				"    campaign_id,\n" + 
+				"    districtstatus,\n" + 
+				"    modality\n" + 
+				")\n" + 
+				"SELECT\n" + 
+				"    gen_random_uuid(),\n" + 
+				"    now(),\n" + 
+				"    now(),\n" + 
+				"    r.id,\n" + 
+				"    c.district_id,\n" + 
+				"    c.id,\n" + 
+				"    ag.agegroup,\n" + 
+				"    ag.population,\n" + 
+				"    c2.id,\n" + 
+				"    'Full Cluster',\n" + 
+				"    'H2H'\n" + 
+				"FROM community c\n" + 
+				"JOIN district d ON d.id = c.district_id\n" + 
+				"JOIN region r ON r.id = d.region_id\n" + 
+				"JOIN campaigns c2 \n" + 
+				"    ON c2.uuid = :campaignUuid\n" + 
+				"CROSS JOIN LATERAL (\n" + 
+				"    VALUES\n" + 
+				"        ('AGE_0_4',  c.populationdata_0_4),\n" + 
+				"        ('AGE_5_10', c.populationdata_5_10),\n" +
+				"        ('AGE_4_23M', c.populationdata_4_23M)\n" + 
+				") AS ag(agegroup, population)\n" + 
+				"WHERE c.archived = false\n" + 
+				"  AND ag.population IS NOT NULL\n" + 
+				"  AND ag.population >= 0;";
+
+		Query query = em.createNativeQuery(sql);
+		query.setParameter("campaignUuid", campaignUuid);
+		query.executeUpdate();
+		
+		return true;
+	    }catch(Exception e) {
+	    	return false;
+	    }
+	}
+	
+
+	@Override
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public boolean generatePopulationDataForCamapign(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups) {
+		try {
+			// First, delete existing population data for this campaign to avoid duplicates
+			String deleteSql = "DELETE FROM public.populationdata WHERE campaign_id = (SELECT id FROM campaigns WHERE uuid = :campaignUuid)";
+			Query deleteQuery = em.createNativeQuery(deleteSql);
+			deleteQuery.setParameter("campaignUuid", campaignDto.getUuid());
+			deleteQuery.executeUpdate();
+
+			List<String> selectedGroupNames = selectedAgeGroups.stream().map(AgeGroup::name).collect(Collectors.toList());
+
+			String sql = "INSERT INTO public.populationdata (\n" + 
+					"    uuid,\n" + 
+					"    changedate,\n" + 
+					"    creationdate,\n" + 
+					"    region_id,\n" + 
+					"    district_id,\n" + 
+					"    community_id,\n" + 
+					"    agegroup,\n" + 
+					"    population,\n" + 
+					"    campaign_id,\n" + 
+					"    districtstatus,\n" + 
+					"    modality\n" + 
+					")\n" + 
+					"SELECT\n" + 
+					"    gen_random_uuid(),\n" + 
+					"    now(),\n" + 
+					"    now(),\n" + 
+					"    r.id,\n" + 
+					"    c.district_id,\n" + 
+					"    c.id,\n" + 
+					"    ag.agegroup,\n" + 
+					"    CASE WHEN ag.agegroup IN (:selectedGroups) THEN COALESCE(ag.population, 0) ELSE 0 END,\n" + 
+					"    c2.id,\n" + 
+					"    'Full Cluster',\n" + 
+					"    'H2H'\n" + 
+					"FROM community c\n" + 
+					"JOIN district d ON d.id = c.district_id\n" + 
+					"JOIN region r ON r.id = d.region_id\n" + 
+					"JOIN campaigns c2 \n" + 
+					"    ON c2.uuid = :campaignUuid\n" + 
+					"CROSS JOIN LATERAL (\n" + 
+					"    VALUES\n" + 
+					"        ('AGE_0_4',  c.populationdata_0_4),\n" + 
+					"        ('AGE_5_10', c.populationdata_5_10),\n" + 
+					"        ('AGE_4_23M', c.populationdata_4_23M)\n" + 
+					") AS ag(agegroup, population)\n" + 
+					"WHERE c.archived = false;";
+
+			Query query = em.createNativeQuery(sql);
+			query.setParameter("campaignUuid", campaignDto.getUuid());
+			query.setParameter("selectedGroups", selectedGroupNames);
+			query.executeUpdate();
+			
+			
+	
+
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
 
 }

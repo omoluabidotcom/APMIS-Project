@@ -141,11 +141,18 @@ public class CampaignTreeGridDto {
                 .reduce(0L, Long::sum);
     }
     
+    public Long getPopulationData4_23M() {
+        return getRegionData().stream()
+                .map(region -> region.getPopulationData4_23M())
+                .reduce(0L, Long::sum);
+    }
+    
     
     public Long getPopulationDataTotal() {
         return getRegionData().stream()
                 .mapToLong(region -> (region.getPopulationData5_10() != null ? region.getPopulationData5_10() : 0) 
-                		+ (region.getPopulationData() != null ? region.getPopulationData() : 0))
+                		+ (region.getPopulationData() != null ? region.getPopulationData() : 0)
+            	+ (region.getPopulationData4_23M() != null ? region.getPopulationData4_23M() : 0))
                 .reduce(Long::sum)
                 .orElse(0L);
     }

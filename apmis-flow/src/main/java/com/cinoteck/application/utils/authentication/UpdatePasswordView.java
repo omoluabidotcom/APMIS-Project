@@ -34,6 +34,7 @@ import de.symeda.sormas.api.user.UserDto;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -46,6 +47,7 @@ import java.util.Scanner;
 
 @Route("resetuserpassword")
 @PageTitle("Reset Password")
+@Component
 public class UpdatePasswordView extends VerticalLayout implements BeforeEnterObserver {
 
 	private final ConfirmDialog passwordConfirmDialog = new ConfirmDialog();
@@ -72,68 +74,62 @@ public class UpdatePasswordView extends VerticalLayout implements BeforeEnterObs
         getStyle().set("background-color", "#f7f9fb");
     }
 	
-	
+//
 //	@Override
-//    public void beforeEnter(BeforeEnterEvent event) {
-//        QueryParameters queryParameters = event.getLocation().getQueryParameters();
-//        Map<String, List<String>> parametersMap = queryParameters.getParameters();
+//	public void beforeEnter(BeforeEnterEvent event) {
+//	    QueryParameters queryParameters = event.getLocation().getQueryParameters();
+//	    Map<String, List<String>> parametersMap = queryParameters.getParameters();
 //
-//        String token = parametersMap.getOrDefault("token", List.of()).stream().findFirst().orElse(null);
+//	    String token = parametersMap.getOrDefault("token", List.of()).stream().findFirst().orElse(null);
 //
-//        if (token == null || !checkTokenValidity(token)) {
-//            showErrorMessage(); // your existing notification logic
+//	    // If invalid token, show error and reroute after 5 seconds
+//	    if (token == null || !checkTokenValidity(token)) {
+//	        showErrorMessage();
 //
-//            new Thread(() -> {
-//                try {
-//                    Thread.sleep(5000);
-//                    UI currentUI = UI.getCurrent();
-//                    if (currentUI != null) {
-//                        currentUI.access(() -> currentUI.navigate(LoginView.class));
-//                    }
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }).start();
+//	        new Thread(() -> {
+//	            try {
+//	                Thread.sleep(5000);
+//	                UI currentUI = UI.getCurrent();
+//	                if (currentUI != null) {
+//	                    currentUI.access(() -> currentUI.navigate(LoginView.class));
+//	                }
+//	            } catch (InterruptedException e) {
+//	                e.printStackTrace();
+//	            }
+//	        }).start();
 //
-//            return;
-//        }
+//	        return;
+//	    }
 //
-//
-//        getUI().ifPresent(ui -> ui.access(() -> buildPasswordResetForm(token)));
-//    }
-//	
-	
-	@Override
-	public void beforeEnter(BeforeEnterEvent event) {
-	    QueryParameters queryParameters = event.getLocation().getQueryParameters();
-	    Map<String, List<String>> parametersMap = queryParameters.getParameters();
+//	    // ✅ If the token is valid, show the password reset form immediately
+//	    removeAll();
+//	    buildPasswordResetForm(token);
+//	}
 
-	    String token = parametersMap.getOrDefault("token", List.of()).stream().findFirst().orElse(null);
+    
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        QueryParameters queryParameters = event.getLocation().getQueryParameters();
+        Map<String, List<String>> parametersMap = queryParameters.getParameters();
 
-	    // If invalid token, show error and reroute after 5 seconds
-	    if (token == null || !checkTokenValidity(token)) {
-	        showErrorMessage();
+        String token = parametersMap.getOrDefault("token", List.of())
+                                    .stream().findFirst().orElse(null);
 
-	        new Thread(() -> {
-	            try {
-	                Thread.sleep(5000);
-	                UI currentUI = UI.getCurrent();
-	                if (currentUI != null) {
-	                    currentUI.access(() -> currentUI.navigate(LoginView.class));
-	                }
-	            } catch (InterruptedException e) {
-	                e.printStackTrace();
-	            }
-	        }).start();
+        if (token == null || !checkTokenValidity(token)) {
+            // ✅ Don't show Notification here — show it after UI renders
+            getUI().ifPresent(ui -> ui.access(() -> {
+                showErrorMessage();
+                ui.getPage().executeJs(
+                    "setTimeout(() => window.location.href='/login', 5000)"
+                ); // ✅ safer than spawning a raw Thread
+            }));
+            return;
+        }
 
-	        return;
-	    }
-
-	    // ✅ If the token is valid, show the password reset form immediately
-	    removeAll();
-	    buildPasswordResetForm(token);
-	}
-
+        removeAll();
+        buildPasswordResetForm(token);
+    }
+    
 	
     private void showErrorMessage() {
         removeAll();
@@ -305,20 +301,40 @@ public class UpdatePasswordView extends VerticalLayout implements BeforeEnterObs
 		}
 	}
 	
-	
-	private void handleResetPassword(String userUuid, String customPasswordField, String confirmPasswordField) {
-		// Validate inputs
-		if (isInputValid(userUuid, customPasswordField, confirmPasswordField)) {
-			try {				
-	            FacadeProvider.getUserFacade().setCustomPassword(userUuid, customPasswordField);
-
-				Notification.show("Password Reset Sucessfully);");
-			} catch (Exception e) {
-				Notification.show("An error occurred while resetting the password: " + e.getMessage(), 3000,
-						Notification.Position.MIDDLE);
-			}
-		}
+	private void handleResetPassword(String userUuid, String newPassword, String confirmPassword) {
+	    if (isInputValid(userUuid, newPassword, confirmPassword)) {
+	        try {
+	            FacadeProvider.getUserFacade().setCustomPassword(userUuid, newPassword);
+	            Notification.show("Password reset successfully! Redirecting to login...", 
+	                3000, Notification.Position.MIDDLE);
+	            
+	            //Redirect to login after reset
+	            getUI().ifPresent(ui -> ui.access(() ->
+	                ui.getPage().executeJs(
+	                    "setTimeout(() => window.location.href='/login', 3000)"
+	                )
+	            ));
+	        } catch (Exception e) {
+	            Notification.show("An error occurred: " + e.getMessage(), 
+	                3000, Notification.Position.MIDDLE);
+	        }
+	    }
 	}
+	
+//	
+//	private void handleResetPassword(String userUuid, String customPasswordField, String confirmPasswordField) {
+//		// Validate inputs
+//		if (isInputValid(userUuid, customPasswordField, confirmPasswordField)) {
+//			try {				
+//	            FacadeProvider.getUserFacade().setCustomPassword(userUuid, customPasswordField);
+//
+//				Notification.show("Password Reset Sucessfully.");
+//			} catch (Exception e) {
+//				Notification.show("An error occurred while resetting the password: " + e.getMessage(), 3000,
+//						Notification.Position.MIDDLE);
+//			}
+//		}
+//	}
 
 	private boolean isInputValid(String userUuid, String customPassword, String confirmPassword) {
 //		if (userUuid == null || userUuid.isEmpty()) {
