@@ -2091,5 +2091,3 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
     }
 
 }
-
-
