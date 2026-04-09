@@ -29,6 +29,7 @@ public class CampaignFormElement implements Serializable {
 	public static final String COMMENT = "comment";
 	public static final String DEFAULTVALUE = "defaultvalue";
 	public static final String EXPRESSIONZEROBEHAVIOUR = "expressionZeroBehavior";
+	public static final String HINT = "hint";
 
 
 	private static final long serialVersionUID = 5553496750859734167L;
@@ -77,7 +78,9 @@ public class CampaignFormElement implements Serializable {
 	private String comment;
 	private String defaultvalue;
 	private String expressionZeroBehavior;
-
+	@Size(max = CHARACTER_LIMIT_DEFAULT, message = Validations.textTooLong)
+	private String hint;
+	
 	public String getType() {
 		return type;
 	}
@@ -229,6 +232,14 @@ public class CampaignFormElement implements Serializable {
 
 	public void setExpressionZeroBehavior(String expressionZeroBehavior) {
 		this.expressionZeroBehavior = expressionZeroBehavior;
+	}		
+
+	public String getHint() {
+		return hint;
+	}
+
+	public void setHint(String hint) {
+		this.hint = hint;
 	}
 
 	/**
@@ -254,12 +265,13 @@ public class CampaignFormElement implements Serializable {
 				&& Objects.equals(errormessage, that.errormessage)
 				&& Objects.equals(comment, that.comment)
 				&& Objects.equals(defaultvalue, that.defaultvalue)
-				&& Objects.equals(expressionZeroBehavior, that.expressionZeroBehavior);
+				&& Objects.equals(expressionZeroBehavior, that.expressionZeroBehavior)
+				&& Objects.equals(hint, that.hint);
 	}
 
 	@Override
 	public int hashCode() {
-		int result = Objects.hash(type, id, caption, expression, dependingOn, important, warnonerror, errormessage, comment, defaultvalue, ignoredisable, expressionZeroBehavior);
+		int result = Objects.hash(type, id, caption, expression, dependingOn, important, warnonerror, errormessage, comment, defaultvalue, ignoredisable, expressionZeroBehavior, hint);
 		result = 31 * result + Arrays.hashCode(styles);
 	//	result = 31 * result + Arrays.hashCode(options);
 		result = 31 * result + Arrays.hashCode(constraints);

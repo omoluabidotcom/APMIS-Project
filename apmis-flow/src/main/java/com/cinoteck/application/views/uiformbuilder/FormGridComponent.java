@@ -62,6 +62,7 @@ public class FormGridComponent extends VerticalLayout {
 	ComboBox<CampaignFormElementType> formType = new ComboBox<CampaignFormElementType>("Type");
 	TextField formId = new TextField("Id *");
 	TextField caption = new TextField("Label");
+	TextField hint = new TextField("Hint");
 	ComboBox<Boolean> important = new ComboBox<Boolean>("Important");
 	TextField options = new TextField("Option");
 	TextField expression = new TextField("Expression");
@@ -117,6 +118,7 @@ public class FormGridComponent extends VerticalLayout {
 		defaultValues.setVisible(false);
 
 		caption.setValueChangeMode(ValueChangeMode.EAGER);
+		hint.setValueChangeMode(ValueChangeMode.EAGER);
 
 		setSizeFull();
 		valueChange();
@@ -146,6 +148,7 @@ public class FormGridComponent extends VerticalLayout {
 		formTypeAll.remove(CampaignFormElementType.ARRAY);
 //		formTypeAll.remove(CampaignFormElementType.RADIO);
 //		formTypeAll.remove(CampaignFormElementType.RADIOBASIC);
+		
 		caption.setHelperText("Enter the Label size by wrapping your Label with a <h1> to <h6> tag");
 		options.setHelperText("Enter your option in this format [[key:bike, caption:bike, order:0]]");
 		expression.setHelperText("Please use the Edit Expression button to enter Expression");
@@ -272,6 +275,11 @@ public class FormGridComponent extends VerticalLayout {
 				if (formBeenEdited.getCaption() != null) {
 					caption.setValue(formBeenEdited.getCaption());
 					caption.setVisible(true);
+				}
+				
+				if (formBeenEdited.getHint() != null) {
+					hint.setValue(formBeenEdited.getHint());
+					hint.setVisible(true);
 				}
 
 				important.setValue(formBeenEdited.isImportant());
@@ -463,6 +471,7 @@ public class FormGridComponent extends VerticalLayout {
 			formLayout.setVisible(false);
 			vr3.setVisible(false);
 			caption.setVisible(false);
+			hint.setVisible(false);
 			important.setVisible(false);
 			options.setVisible(false);
 			styles.setVisible(false);
@@ -500,6 +509,11 @@ public class FormGridComponent extends VerticalLayout {
 				if (!caption.getValue().isEmpty()) {
 
 					newForm.setCaption(caption.getValue());
+				}
+				
+				if (!hint.getValue().isEmpty()) {
+
+					newForm.setHint(hint.getValue());
 				}
 
 				if (important.getValue() != null) {
@@ -687,6 +701,11 @@ public class FormGridComponent extends VerticalLayout {
 
 						newForm.setCaption(caption.getValue());
 					}
+					
+					if (!hint.getValue().isEmpty()) {
+
+						newForm.setHint(hint.getValue());
+					}										
 
 					if (important.getValue() != null) {
 						newForm.setImportant(important.getValue());
@@ -889,7 +908,7 @@ public class FormGridComponent extends VerticalLayout {
 		});
 
 		formLayout.add(formType, caption, formId, important, options, expression, dependingOn, dependingOnValues,
-				styles, constraints, min, max, defaultValues, errorMessage, comment, expressions);
+				styles, constraints, min, max, defaultValues, errorMessage, comment, expressions, hint);
 
 		formLayout.setColspan(formType, 2);
 		formLayout.setColspan(formId, 2);
@@ -906,6 +925,7 @@ public class FormGridComponent extends VerticalLayout {
 		formLayout.setColspan(defaultValues, 2);
 		formLayout.setColspan(errorMessage, 2);
 		formLayout.setColspan(comment, 2);
+		formLayout.setColspan(hint, 2);
 
 		return vrsub;
 	}
@@ -1042,6 +1062,7 @@ public class FormGridComponent extends VerticalLayout {
 //				.setResizable(true);
 		grid.addColumn(CampaignFormElement::getErrormessage).setHeader("Error Message").setSortable(true)
 				.setResizable(true);
+		grid.addColumn(CampaignFormElement::getHint).setHeader("Hint");
 //		grid.addColumn(CampaignFormElement::getComment).setHeader("Comment").setSortable(true)
 //		.setResizable(true);
 
@@ -1073,6 +1094,7 @@ public class FormGridComponent extends VerticalLayout {
 		errorMessage.setValue("");
 		comment.setValue("");
 		defaultValues.setValue("");
+		hint.setValue("");
 	}
 
 	public void valueChange() {
