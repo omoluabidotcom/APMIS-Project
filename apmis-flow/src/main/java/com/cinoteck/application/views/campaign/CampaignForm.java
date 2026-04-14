@@ -743,7 +743,9 @@ public class CampaignForm extends VerticalLayout {
 //			tab2.add(comp1);
 //			tab2Intra.add(compp2);
 //			tab2Post.add(comppp2);
-//			parentTab4.add(configureTreeGrid(false));
+			
+//			AssociateCampaign associateTab = new AssociateCampaign(formData); 
+//			parentTab4.add(associateTab);
 
 		} else {
 
@@ -768,7 +770,7 @@ public class CampaignForm extends VerticalLayout {
 
 		}
 
-		parentTab4.add(layoutAssocCamp);
+//		parentTab4.add(layoutAssocCamp);
 		tabsheetParent.add(I18nProperties.getCaption(Captions.associateCampaign), parentTab4);
 
 		VerticalLayout parentTab5 = new VerticalLayout();
@@ -790,7 +792,7 @@ public class CampaignForm extends VerticalLayout {
 		btnGeneratePopulationData.addClickListener(e -> {
 			if (campaignDto != null) {
 				Dialog genDialog = new Dialog();
-				genDialog.setHeaderTitle(I18nProperties.getCaption("Generate Population Data"));
+				genDialog.setHeaderTitle(I18nProperties.getCaption("Generate Population Data | " +  campaignDto.getName()));
 				genDialog.setWidth("40%");
 				
 				VerticalLayout dialogLayout = new VerticalLayout();

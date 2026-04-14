@@ -444,7 +444,7 @@ try {
 									}
 								}, 7000); // 7 seconds
 							}
-
+//							restartApp();
 //							clearDatabaseAndRestart();
 						} else {
 							// Sync failed

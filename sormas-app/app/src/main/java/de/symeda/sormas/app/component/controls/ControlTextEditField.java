@@ -218,7 +218,7 @@ public class ControlTextEditField extends ControlPropertyEditField<String> {
 
     @Override
     protected void setFieldValue(String value) {
-        System.out.println("SEtting fireld value i text edit field =============");
+        System.out.println("SEtting firel--d value i text edit field =============");
         input.setText(value);
     }
 

@@ -57,6 +57,7 @@ import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMetaRegion;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
+import de.symeda.sormas.app.backend.region.Community;
 import de.symeda.sormas.app.backend.region.District;
 import de.symeda.sormas.app.backend.region.DistrictDao;
 import de.symeda.sormas.app.backend.region.PopulationData;
@@ -222,7 +223,57 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
 
             System.out.println("after user role contains surv Officer --------------------"
                     + list);
-        } else {
+        } else if (ConfigProvider.getUser().getUserRoles().contains(UserRole.COMMUNITY_OFFICER)) {
+            // Get all districts the user has access to
+            List<Community> userClusters = new ArrayList<>();
+            User user = ConfigProvider.getUser();
+            List<Community> clustersItemList = DatabaseHelper.getCommunityDao()
+                    .getByDistrict(user.getDistrict());
+            List<String> clustersUuids = new ArrayList<>();
+
+            // Convert district items to District objects and collect UUIDs
+            clustersItemList.forEach(item -> {
+                if(item != null) {
+
+                    System.out.println("User role contains cluster flw  item--------------------"
+                            + item);
+
+
+                    System.out.println("User role contains cluster flw  item--------------------"
+                            + item.getName());
+                    List<Community> clusters = DatabaseHelper.getCommunityDao().getByClusterName(item.getName());
+
+                    System.out.println("User role contains cluster flw  clusters--------------------"
+                            + clusters);
+                    userClusters.addAll(clusters);
+
+                    clustersUuids.add(item.getUuid().toString());
+                }
+            });
+
+            System.out.println("User role contains cluster flw  clustersItemList--------------------"
+                    + clustersItemList);
+
+            System.out.println("User role contains cluster flw  userClusters--------------------"
+                    + userClusters);
+
+            System.out.println("User role contains cluster flw  clustersUuids--------------------"
+                    + clustersUuids);
+
+
+//
+//            userClusters.forEach(cluster -> {
+//                clustersUuids.add(cluster.getUuid());
+//            });
+            System.out.println("User role contains cluster flw  --------------------"
+                    + list);
+            // Option 1: Pass the list of UUIDs directly to a new DAO method
+            list = DatabaseHelper.getPopulationDataDao().getSelectedClustersByMultipleUuids(
+                    clustersUuids, criteria.getCampaign().getUuid());
+
+            System.out.println("after user role contains cluster flw  --------------------"
+                    + list);
+        }else {
 
             System.out.println(ConfigProvider.getUser().getDistrict().getUuid() + "User role is not  surv Officer --------------------" + criteria.getCampaign().getUuid());
 
@@ -230,8 +281,6 @@ public class CampaignFormDataListActivity extends PagedBaseListActivity<Campaign
             list = DatabaseHelper.getPopulationDataDao().getSelectedDistrictByUsersDistrict(
                     ConfigProvider.getUser().getDistrict().getUuid(), criteria.getCampaign().getUuid());
         }
-//        if(!ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
-//        List<District> disTrictuserDistricts = new ArrayList<District>();
 
         if (list.size() > 0) {
             final CampaignFormMetaDialog campaignFormMetaDialog = new CampaignFormMetaDialog(BaseActivity.getActiveActivity(), criteria.getCampaign());
@@ -311,21 +360,10 @@ showCustomDialog(
                     for (CampaignFormMeta campaignFormMeta : campaign.getCampaignFormMetas()) {
                         Date expiryDate = DatabaseHelper.getCampaignFormMetaWithExpDao().getCampaignFormExpiryDateByCampaignIdAndFormId(campaign.getUuid(), campaignFormMeta.getUuid());
                         LocalDate currentDate = LocalDate.now();
-
-
-
                         if (expiryDate != null) {
                             LocalDate expiryLocalDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-//
-//                            LocalDate phaseStartDate = DatabaseHelper.getCampaignFormMetaDao().getByReferenceDto() getCampaignFormMetaWithExpDao().getCampaignFormExpiryDateByCampaignIdAndFormId(campaign.getUuid(), campaignFormMeta.getUuid());
-//
-//
-//                            if (currentDate.isBefore()){
-//
-//                            }
                             if (currentDate.isBefore(expiryLocalDate) || expiryLocalDate.isEqual(currentDate)) {
                                 User user = ConfigProvider.getUser();
-
                                 List<CampaignFormMetaRegion> formsSelectedForCampaign = DatabaseHelper.getCampaignFormMetaRegionDao().getSelectedFormsByRegion(campaignFormMeta.getUuid(), user.getRegion().getArea().getUuid());
                                 if (formsSelectedForCampaign.size() > 0) {
                                     allUnexpiredFormsForCampaign.add(campaignFormMeta);
@@ -336,7 +374,6 @@ showCustomDialog(
                         }
                     }
                     Collections.sort(allUnexpiredFormsForCampaign, Comparator.comparing(CampaignFormMeta::getFormName));
-
                     forms = campaignFormMetasToItems(allUnexpiredFormsForCampaign);
 
                     System.out.println("--------cccccbb---------------" + forms);
@@ -356,7 +393,6 @@ showCustomDialog(
 
 
         filterBinding.applyFilters.setOnClickListener(e -> {
-
             showPreloader();
             pageMenu.hideAll();
             // System.out.println("-----------------------"+model.getCriteria().getCampaign().getUuid());
@@ -406,28 +442,17 @@ showCustomDialog(
         listOut.add(new Item<Integer>("", null));
         for (CampaignFormMeta campaignFormMeta : campaignFormMetas) {
             if (campaignFormMeta != null) {
-
                 listOut.add(new Item<>(campaignFormMeta.getFormName(), campaignFormMeta));
                 System.out.println("-----------ddd-----------" + listOut);
-
             }
         }
-//        listOut.stream().filter(ee -> ee.getValue() != null).sorted(Comparator.comparing(CampaignFormMetaReferenceDto::getCaption)).collect(Collectors.toList());
-//        listOut.sort(Comparator.comparing(Item::getKey));
-//        listOut.sort(Comparator.comparing(CampaignFormMetaReferenceDto::getCaption));
-// Sorting the list alphabetically based on the form names
         listOut.stream()
                 .filter(ee -> ee.getValue() != null)
                 .sorted(Comparator.comparing(item -> ((CampaignFormMeta) item.getValue()).getFormName()))
                 .collect(Collectors.toList());
-
-
         System.out.println("-----------ddd-----------" + listOut);
 
         return listOut;
-
-
-//        return listOut;
     }
 
     private void setSetSubHeadingTitleForCampaign(Campaign campaign) {
