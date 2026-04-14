@@ -67,9 +67,18 @@ public class PopulationDataResource  extends EntityDtoResource {
 			
 			List<String> retListx = new ArrayList<>();
 			System.out.println(retListx + "retListxretListxretListxretListxbefore------");
+			
+			if(rdtox != null) {
+				System.out.println(rdtox.getCaption() + "retListxretListxretListxretListxbefore------");
+				retListx.add(rdtox.getUuid());
+			}else {
+				
 
-			retListx.add(rdtox.getUuid());
-			System.out.println(retListx + "retListxretListxretListxretListxafter ------");
+				retListx.add(rdtox.getUuid());
+				System.out.println(retListx + "retListxretListxretListxretListxafter ------");
+			}
+			
+
 
 			return retListx;
 		
@@ -86,8 +95,11 @@ public class PopulationDataResource  extends EntityDtoResource {
 		final Set<DistrictReferenceDto> rdto = FacadeProvider.getUserFacade().getCurrentUser().getDistricts();
 		final DistrictReferenceDto rdtox = FacadeProvider.getUserFacade().getCurrentUser().getDistrict();
 
-		System.out.println(FacadeProvider.getUserFacade().getCurrentUser() + "Request Hits Form Meta With Expiry  population data by district  ==========================111111111"+ rdto.size());
+		System.out.println(FacadeProvider.getUserFacade().getCurrentUser() + "Request Hits Form Meta With Expiry  population data by district  ==========================111111111");
 		
+		
+		System.out.println(FacadeProvider.getUserFacade().getCurrentUser() + "Request Hits Form Meta With Expiry  population data by c  ==========================111111111");
+
 		List<String> resultx = new ArrayList<>();
 //		System.out.println("  ==========================111111111cccc"+ rdto.size());
 //		System.out.println("  ==========================111111111cccc"+ rdtox.getCaption());
@@ -107,16 +119,27 @@ public class PopulationDataResource  extends EntityDtoResource {
 		} else if(retListx != null && retListx.size() == 1) {
 			
 			Set<UserRole> roles = FacadeProvider.getUserFacade().getCurrentUser().getUserRoles();
+if(roles.contains(UserRole.COMMUNITY_OFFICER)) {
+	System.out.println("  ==========================111111111cccccommunity officer "+ rdto.size());
 
-			for(String districtUUid : retListx) {
-				resultx.add(districtUUid);
+	if(rdtox != null) {
+		resultx.add(rdtox.getUuid());
+	}
+	
+	System.out.println("  ==========================111111111cccccommunity resultx "+ resultx);
 
-			}
+}else if(roles.contains(UserRole.SURVEILLANCE_OFFICER)) {
+	for(String districtUUid : retListx) {
+		resultx.add(districtUUid);
+	}
+}
 
+System.out.println("  ==========================111111111cccccommunity resultx before "+ resultx);
 
-			List<PopulationDataDto> result = FacadeProvider.getPopulationDataFacade()
+	List<PopulationDataDto> result = FacadeProvider.getPopulationDataFacade()
 					.fetchPopulationDataSelectionByUserDistricts(resultx);
 
+	System.out.println("  ==========================111111111cccccommunity resultx result "+ result);
 
 			return result;
 			

@@ -89,6 +89,8 @@ public interface PopulationDataFacade {
 	
 	void deletePopulationDataByClusters(List<Long> populationDataList, String campaignUUID);
 	void deletePopulationDataByClusterAndAgeGroup(List<Long> populationDataList, String campaignUUID, String ageGroup);
+	void updateClusterSelectionByClusterIds(List<String> clusterUuids, String campaignUUID, boolean selected);
+
 
 
 	

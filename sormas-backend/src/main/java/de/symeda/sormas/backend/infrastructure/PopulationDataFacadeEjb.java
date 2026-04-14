@@ -1182,6 +1182,23 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 
 	}
 	
+	@Override
+	public void updateClusterSelectionByClusterIds(List<String> clusterUuids, String campaignUUID, boolean selected) {
+		for (String clusterUuid : clusterUuids) {
+			String executeQuery = "UPDATE populationdata p \n" 
+								+ "SET selected = " + selected + " \n"
+								+ "FROM community d, campaigns c \n"
+								+ "WHERE p.community_id = d.id \n" 
+								+ "AND p.campaign_id = c.id \n"
+								+ "AND d.uuid = '" + clusterUuid + "'"
+								+ " AND c.\"uuid\" = '" + campaignUUID + "';";
+
+			System.out.println(executeQuery + "========Debuggerr Update Selection ");
+			Query query = em.createNativeQuery(executeQuery);
+			query.executeUpdate();
+		}
+	}
+	
 	
 	@Override
 	public List<PopulationDataDto> fetchPopulationDataSelectionByUserDistricts(List<String> uuids) {
@@ -1191,13 +1208,13 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	    }
 
 	    // Base query using IN clause for multiple UUIDs
-	    String executeQuery = "SELECT DISTINCT ON (p.campaign_id) c.uuid as campaign_id, d.uuid as district_id, com.uuid AS cluster_id, p.selected, p.uuid , p.changedate " +
+	    String executeQuery = "SELECT DISTINCT ON (p.campaign_id, p.community_id) c.uuid as campaign_id, d.uuid as district_id, com.uuid AS cluster_id, p.selected, p.uuid , p.changedate " +
 	                          "FROM public.populationdata p " +
 	                          "JOIN public.district d ON p.district_id = d.id  " +
 	                          "LEFT JOIN public.community com ON p.community_id = com.id "+
 	                          "left join public.campaigns c ON p.campaign_id = c.id " +
 	                          "WHERE d.uuid IN :uuids AND p.selected = TRUE " +
-	                          "ORDER BY p.campaign_id, " +
+	                          "ORDER BY p.campaign_id, p.community_id," +
 	                          "CASE WHEN p.agegroup = '0_4' THEN 1 ELSE 2 END";
 
 	    // Create the query
@@ -1307,7 +1324,8 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 					"    population,\n" + 
 					"    campaign_id,\n" + 
 					"    districtstatus,\n" + 
-					"    modality\n" + 
+					"    modality,\n" + 
+					"    selected\n" + 
 					")\n" + 
 					"SELECT\n" + 
 					"    gen_random_uuid(),\n" + 
@@ -1320,7 +1338,8 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 					"    CASE WHEN ag.agegroup IN (:selectedGroups) THEN COALESCE(ag.population, 0) ELSE 0 END,\n" + 
 					"    c2.id,\n" + 
 					"    'Full Cluster',\n" + 
-					"    'H2H'\n" + 
+					"    'H2H',\n" + 
+					"     true \n" + 
 					"FROM community c\n" + 
 					"JOIN district d ON d.id = c.district_id\n" + 
 					"JOIN region r ON r.id = d.region_id\n" + 

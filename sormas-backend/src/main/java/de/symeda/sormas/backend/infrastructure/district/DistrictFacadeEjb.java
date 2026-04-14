@@ -626,7 +626,7 @@ public class DistrictFacadeEjb extends AbstractInfrastructureEjb<District, Distr
 		resultData.addAll(resultList.stream()
 				.map((result) -> new DistrictDto((String) result[0].toString(), ((BigInteger) result[1]).longValue(),
 						((BigInteger) result[2]).longValue(), ((BigInteger) result[3]).longValue(),
-						(String) result[4].toString(), (String) result[5].toString(), (String) result[6].toString(),
+						(String) result[4].toString(), (String) result[5].toString(), result[6] != null ? (Boolean) result[6] : false,
 						(String) result[7].toString(), result[8] != null ? (String) result[8].toString() : ""))
 //						,
 //						(String) result[9].toString() ))

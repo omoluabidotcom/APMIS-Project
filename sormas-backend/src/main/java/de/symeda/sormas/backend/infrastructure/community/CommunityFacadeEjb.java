@@ -1474,27 +1474,22 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 
 		@SuppressWarnings("unchecked")
 		List<Object[]> resultList = seriesDataQuery.getResultList();
-
-		// System.out.println("starting....");
-
+		
 		resultData.addAll(resultList.stream()
-				.map((result) -> new CommunityDto((String) result[0].toString(), 
+				.map((result) -> new CommunityDto(
+						(String) result[0].toString(), 
 						result[1] != null ? ((BigInteger) result[1]).longValue() : 886L,
 						result[2] != null ? ((BigInteger) result[2]).longValue() : 887L,
 						result[3] != null ? ((BigInteger) result[3]).longValue() : 888L,
 						result[4] != null ? ((BigInteger) result[4]).longValue() : 888L,
 						result[5] != null ? (String) result[5].toString() : "" , 
 						result[6] != null ? (String) result[6].toString() : "" ,
-
 						result[7] != null ? (String) result[7].toString() : "" ,
-						result[8] != null ? (String) result[8].toString() : "false" , 
+						result[8] != null ? (Boolean) result[8] : false, 
 						result[9] != null ? (String) result[9].toString() : "",
 						result[10] != null ? (String) result[10].toString() : "",	
-//						result[9] != null ? result[9].toString().equalsIgnoreCase("false") ? "Active" : "Archived" : "Archived",
 						result[11] != null ? (String) result[11].toString() : ""
 							))
-//						,
-//						(String) result[9].toString() ))
 				.collect(Collectors.toList()));
 		return resultData;
 	}

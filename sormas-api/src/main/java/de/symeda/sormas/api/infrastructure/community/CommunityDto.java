@@ -94,6 +94,8 @@ public class CommunityDto extends EntityDto {
 	private String clusterUuid;
 	
 	private boolean internationalborder;
+	
+	private boolean selectedForPopulationData;
 
 	
 	
@@ -260,6 +262,23 @@ public class CommunityDto extends EntityDto {
 		this.floating = floating; 
 
 	};
+	
+	public CommunityDto(String name, Long populationData, Long populationData5_10, Long populationData4_23M, Long clusterId,String regionUuid, String districtUuid, String clusterUuid,  boolean selectedForPopulationData, String districtModality, String districtStatus, String floating) {
+		this.name = name;
+		this.populationData = populationData;
+		this.populationData5_10 = populationData5_10;
+		this.populationData4_23M = populationData4_23M;
+		this.clusterId = clusterId;
+		this.regionUuid = regionUuid;
+		this.districtUuid = districtUuid;
+		this.clusterUuid = clusterUuid;
+		this.selectedForPopulationData = selectedForPopulationData;
+		this.districtModality = districtModality;
+		this.districtStatus = districtStatus;
+		this.floating = floating; 
+
+	};
+	
 	
 
 	public CommunityDto() {
@@ -451,6 +470,19 @@ public class CommunityDto extends EntityDto {
 		
 	public Long getPopulationData4_23M() {
 		return populationData4_23M;
+	}
+
+
+	
+
+	public boolean isSelectedForPopulationData() {
+		return selectedForPopulationData;
+	}
+
+
+	public void setSelectedForPopulationData(boolean selectedForPopulationData) {
+			setSelectedPopulationData(selectedForPopulationData+"");
+			this.selectedForPopulationData = selectedForPopulationData;
 	}
 
 

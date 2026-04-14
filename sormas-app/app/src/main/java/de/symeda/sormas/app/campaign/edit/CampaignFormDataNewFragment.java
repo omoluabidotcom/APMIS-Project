@@ -204,7 +204,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
         final List<CampaignFormTranslations> translationsOpt = record.getCampaignFormMeta().getCampaignFormTranslations();
 
         final Map<String, ControlPropertyField> fieldMap = new HashMap<>();
-        final Map<CampaignFormElement, ControlPropertyField> expressionMap = new HashMap<>();
+        final Map<CampaignFormElement, ControlPropertyField> expressionMap = new LinkedHashMap<>();
         int countr = 0;
 
         for (CampaignFormElement campaignFormElement : campaignFormMeta.getCampaignFormElements()) {
@@ -382,37 +382,9 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
 
                         if (type == CampaignFormElementType.DROPDOWN && "lotClusterNo" == campaignFormElement.getId()) {
                             System.out.println("++++++++_______________222__________lotClusterNo");
-//                            dynamicField.addValueChangedListener(field -> {
-//
-//                                baseEditActivity.setDataModified(true);
-//                                final Boolean isRangeandExpressionx = finalIsRangeandExpression;
-//                                Boolean okk = field.getFocusedChild() != null ? true : false;
-//                                final CampaignFormDataEntry campaignFormDataEntry = CampaignFormDataFragmentUtils.getOrCreateCampaignFormDataEntry(formValues, campaignFormElement);
-//                                campaignFormDataEntry.setValue(field.getValue());
-//                                if ((campaignFormElement.getExpression() == null && fieldMap.get(campaignFormElement.getId()) != null) || (okk && isRangeandExpressionx)) {
-//                                    for(CampaignFormDataEntry det : formValues){
-//                                        if(det.getValue() != null) {
-//                                            if (det.getValue().toString().isEmpty()) {
-//                                                det.setValue(null);
-//                                            }
-//                                        }
-//                                    }
-//                                    expressionMap.forEach((formElement, controlPropertyField) ->
-//                                            CampaignFormDataFragmentUtils.handleExpressionSec(expressionParser, formValues, CampaignFormElementType.fromString(formElement.getType()), controlPropertyField, formElement.getExpression(), ignoreDisable, field.getValue()));
-//                                } else if (field.isFocused()){
-//                                    System.out.println(">>>>>>>>>>>>>>>>>ONFOCUSSS>>>>>>>>>>>>>>>>>>>>" +fieldMap.get(campaignFormElement.getId()).getCaption());
-//
-//                                }
-//                                if(finalIsdependingOn && isRangeandExpressionx){
-//                                    field.setVisibility(View.GONE);
-//                                }
-//
-//                            });
+
                         } else {
-
-
                             dynamicField.addValueChangedListener(field -> {
-
                                 baseEditActivity.setDataModified(true);
                                 final Boolean isRangeandExpressionx = finalIsRangeandExpression;
                                 Boolean okk = field.getFocusedChild() != null ? true : false;
@@ -1552,6 +1524,7 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
                     }  else {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints,false, campaignFormElement.isImportant());
                     }
+
                     fieldMap.put(campaignFormElement.getId(), dynamicField);
                     dynamicField.setShowCaption(true);
                     dynamicLayout.addView(dynamicField, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));

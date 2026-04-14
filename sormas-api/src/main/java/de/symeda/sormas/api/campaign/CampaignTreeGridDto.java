@@ -35,12 +35,23 @@ public class CampaignTreeGridDto {
     private String floatStatus;
     private String ageGroup;
 
+    private Boolean selected;
+
     public CampaignTreeGridDto(String name, Long id, String parentUuid, String uuid, String levelAssessed) {
         this.name = name;
         this.id = id;
         this.parentUuid = parentUuid;
         this.uuid = uuid;
         this.levelAssessed = levelAssessed;
+    }
+    
+    public CampaignTreeGridDto(String name, Long id, String parentUuid, String uuid, String levelAssessed, boolean isSelected) {
+        this.name = name;
+        this.id = id;
+        this.parentUuid = parentUuid;
+        this.uuid = uuid;
+        this.levelAssessed = levelAssessed;
+        this.selected = isSelected;
     }
     
     public CampaignTreeGridDto(String name, Long id, String parentUuid, String uuid, String levelAssessed, String districtModality, String districtStatus) {
@@ -67,16 +78,21 @@ public class CampaignTreeGridDto {
 
     }
     
-//    public CampaignTreeGridDto(String name, Long id, String parentUuid, String uuid, String levelAssessed, String districtModality, String districtStatus) {
-//        this.name = name;
-//        this.id = id;
-//        this.parentUuid = parentUuid;
-//        this.uuid = uuid;
-//        this.levelAssessed = levelAssessed;
-//        this.districtModality = districtModality;
-//        this.districtStatus = districtStatus;
-//    }
+    public CampaignTreeGridDto(String name, Long id, String parentUuid, String uuid, String levelAssessed, boolean isSelected, String districtModality, String districtStatus, String floatStatus) {
+        this.name = name;
+        this.id = id;
+        this.parentUuid = parentUuid;
+        this.uuid = uuid;
+        this.levelAssessed = levelAssessed;
+        this.districtModality = districtModality;
+        this.selected = isSelected;
+        this.districtStatus = districtStatus;
+        this.floatStatus = floatStatus;
+
+    }
     
+    
+
     public CampaignTreeGridDto(String name, Long id, String parentUuid, String uuid) {
         this.name = name;
         this.id = id;
@@ -243,6 +259,15 @@ public class CampaignTreeGridDto {
 	public void setAgeGroup(String ageGroup) {
 		this.ageGroup = ageGroup;
 	}
+
+	public Boolean getSelected() {
+		return selected;
+	}
+
+	public void setSelected(Boolean selected) {
+		this.selected = selected;
+	}
+	
 	
 	
 	
