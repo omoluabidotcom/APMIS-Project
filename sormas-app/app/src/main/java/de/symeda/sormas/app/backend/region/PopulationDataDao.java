@@ -52,45 +52,90 @@ public List<PopulationData> getSelectedDistrictsByMultipleUuids(List<String> dis
         System.out.println("didtricy uuid is null from backend -------------");
         return new ArrayList<>();
     }
-
     List<PopulationData> result = new ArrayList<>();
-
     try {
         QueryBuilder<PopulationData, Long> queryBuilder = queryBuilder();
-
-        // Start WHERE clause
         Where<PopulationData, Long> where = queryBuilder.where();
-
-        // Add campaign filter
         where.eq("campaign_id", campaignUuid);
-
-        // Create IN clause for districts
         where.and();
         where.eq("selected", true);
 
-
-        // Handle the IN condition for multiple districts
         if (districtUuids.size() == 1) {
             where.and();
             where.eq("district_id", districtUuids.get(0));
         } else {
-
-
             System.out.println("District uuid size is greater than 0 -----------------");
             where.and();
             where.in("district_id", districtUuids);
         }
-
-        // Execute query
         result = queryBuilder.query();
-
     } catch (SQLException e) {
         e.printStackTrace();
     }
-
     return result;
 }
 
+    public List<PopulationData> getSelectedClustersByMultipleUuids(List<String> districtUuids, String campaignUuid) {
+        if (districtUuids == null || districtUuids.isEmpty()) {
+            System.out.println("didtricy uuid is null from backend -------------");
+            return new ArrayList<>();
+        }
+        List<PopulationData> result = new ArrayList<>();
+        try {
+            QueryBuilder<PopulationData, Long> queryBuilder = queryBuilder();
+            Where<PopulationData, Long> where = queryBuilder.where();
+            where.eq("campaign_id", campaignUuid);
+            where.and();
+            where.eq("selected", true);
+
+            if (districtUuids.size() == 1) {
+                where.and();
+                where.eq("cluster_id", districtUuids.get(0));
+            } else {
+                System.out.println("District uuid size is greater than 0 -----------------");
+                where.and();
+                where.in("cluster_id", districtUuids);
+            }
+            result = queryBuilder.query();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+//    public List<PopulationData> getSelectedClustersByMultipleUuidsx(List<String> clusterUuids, String campaignUuid) {
+//        if (clusterUuids == null || clusterUuids.isEmpty()) {
+//            return new ArrayList<>();
+//        }
+//        List<PopulationData> result = new ArrayList<>();
+//        try {
+//            QueryBuilder<PopulationData, Long> queryBuilder = queryBuilder();
+//            Where<PopulationData, Long> where = queryBuilder.where();
+//
+//            // Step 1: test campaign only
+//            where.eq("campaign_id", campaignUuid);
+//            result = queryBuilder.query();
+//            System.out.println("Results with campaign only: " + result.size());
+//
+//            // Step 2: test cluster only
+//            queryBuilder = queryBuilder();
+//            where = queryBuilder.where();
+//            where.in("cluster_id", clusterUuids);
+//            result = queryBuilder.query();
+//            System.out.println("Results with cluster only: " + result.size());
+//
+//            // Step 3: test selected only
+//            queryBuilder = queryBuilder();
+//            where = queryBuilder.where();
+//            where.eq("selected", true);
+//            result = queryBuilder.query();
+//            System.out.println("Results with selected only: " + result.size());
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return result;
+//    }
 
     public List<PopulationData> getSelectedDistrictByUsersDistrict(String districtUuid, String campaignUuid) {
         try {

@@ -43,6 +43,10 @@ public class CommunityDao extends AbstractInfrastructureAdoDao<Community> {
 		return queryActiveForEq(Community.DISTRICT + "_id", district, Community.CLUSTERNUMBER, true);
 	}
 
+	public List<Community> getByClusterName(String clusterName) {
+		return queryActiveForEq(Community.NAME , clusterName, Community.CLUSTERNUMBER, true);
+	}
+
 	@Override
 	public Community saveAndSnapshot(Community source) throws DaoException {
 		throw new UnsupportedOperationException();

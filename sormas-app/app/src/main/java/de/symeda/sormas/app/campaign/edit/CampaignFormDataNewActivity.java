@@ -116,9 +116,6 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
     protected BaseEditFragment buildEditFragment(PageMenuItem menuItem, CampaignFormData activityRootData) {
         activityRootData.setCampaign(campaign);
         activityRootData.setCampaignFormMeta(campaignFormMeta);
-
-
-
         BaseEditFragment campaignFormDataNewFragment = CampaignFormDataNewFragment.newInstance(activityRootData);
         campaignFormDataNewFragment.setLiveValidationDisabled(true);
         return campaignFormDataNewFragment;
@@ -140,23 +137,10 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
         if(!ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) { // District Officer
             criteria.setCommunity(campaignFormDataToSave.getCommunity());
-//            criteria.setCommunity(null);
         }
-
-
-//        campaignFormDataToSave.setRecordversion(1L);
         campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
 
-
-//        try {
-//            FragmentValidator.validate(getContext(), getActiveFragment().getContentBinding());
-//        } catch (ValidationException e) {
-//            NotificationHelper.showNotification(this, ERROR, e.getMessage());
-//            return;
-//        }
-
-        CampaignFormDataNewFragment fragment =
-                (CampaignFormDataNewFragment) getActiveFragment();
+        CampaignFormDataNewFragment fragment = (CampaignFormDataNewFragment) getActiveFragment();
 
         try {
             fragment.validateForSave(getContext());

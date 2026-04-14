@@ -501,12 +501,9 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
         addValueChangedListener(new ValueChangeListener() {
             @Override
             public void onChange(ControlPropertyField field) {
-                System.out.println(isLiveValidationDisabled() + " vaue changes isLiveValidationDisabled()----------");
+                System.out.println(isLiveValidationDisabled() + " vaue changes isLiveValidationDisabled()----------Range");
                 if (!isLiveValidationDisabled()) {
                     ((ControlTextEditFieldRange) field).setErrorIfEmptyRange();
-//                          ((ControlTextEditFieldRange) field)();
-
-
                 }
             }
         });
