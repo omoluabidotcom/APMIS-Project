@@ -17,9 +17,6 @@ package de.symeda.sormas.app.component.controls;
 
 import static de.symeda.sormas.app.core.notification.NotificationType.WARNING;
 
-import android.app.ActivityManager;
-import android.app.AlertDialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
@@ -36,16 +33,16 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.databinding.BindingAdapter;
 import androidx.databinding.InverseBindingAdapter;
 import androidx.databinding.InverseBindingListener;
 
-import org.springframework.core.env.SystemEnvironmentPropertySource;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import java.math.BigDecimal;
-
+import de.symeda.sormas.api.campaign.form.CampaignFormElement;
 import de.symeda.sormas.api.utils.FieldConstraints;
 import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
@@ -164,6 +161,8 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
                         }
                         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                         input.setOnClickListener(null);
+
+                        onValueChanged();
                     }
                 }
             }
@@ -277,7 +276,7 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        initInput(false, false, false, null, null, false, false);
+        initInput(false, false, false, null, null, false, false, null);
     }
 
 
@@ -316,7 +315,7 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
         return false;
     }
 
-    protected void initInput(boolean isIntegerFlag, boolean isRequired, boolean isRange, Integer minValue, Integer maxValue, Boolean isExpression, Boolean warnOnError) {
+    protected void initInput(boolean isIntegerFlag, boolean isRequired, boolean isRange, Integer minValue, Integer maxValue, Boolean isExpression, Boolean warnOnError, List<CampaignFormElement> campaignFormElements) {
 
         input = (EditText) this.findViewById(R.id.text_input);
         input.setTextAlignment(getTextAlignment());
@@ -514,7 +513,6 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
         setUpOnEditorActionListener();
         setUpOnFocusChangeListener();
         initializeOnClickListener();
-
 
     }
 

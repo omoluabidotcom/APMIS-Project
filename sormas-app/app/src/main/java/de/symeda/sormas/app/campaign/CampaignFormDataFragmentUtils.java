@@ -41,10 +41,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EmptyStackException;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
@@ -76,6 +80,10 @@ public class CampaignFormDataFragmentUtils {
     private static final DecimalFormat df = new DecimalFormat("0.00");
     private static boolean isExpressionEvaluationInProgress = false;
 
+    private static final Pattern ID_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9_]*");
+
+    private static final Set<String> KEYWORDS = Set.of("true", "false", "null", "AND", "OR", "NOT");
+
     private CampaignFormDataFragmentUtils() {
     }
 
@@ -93,6 +101,68 @@ public class CampaignFormDataFragmentUtils {
         }
     }
 
+    public static Set<String> getRangeMinMaxTriggerIds(List<CampaignFormElement> elements) {
+        Set<String> ids = new LinkedHashSet<>();
+        if (elements == null) return ids;
+
+        for (CampaignFormElement e : elements) {
+            if (e == null || !"range".equalsIgnoreCase(e.getType())) continue;
+            if (e.getExpression() != null && !e.getExpression().trim().isEmpty()) continue;
+
+            String[] constraints = e.getConstraints();
+            if (constraints == null) continue;
+
+            boolean hasMin = Arrays.stream(constraints)
+                    .filter(c -> c != null)
+                    .map(c -> c.trim().toLowerCase(Locale.ROOT))
+                    .anyMatch(c -> c.startsWith("min="));
+
+            boolean hasMax = Arrays.stream(constraints)
+                    .filter(c -> c != null)
+                    .map(c -> c.trim().toLowerCase(Locale.ROOT))
+                    .anyMatch(c -> c.startsWith("max="));
+
+            if (hasMin && hasMax) {
+                ids.add(e.getId());
+            }
+        }
+        return ids;
+    }
+
+    public static Set<String> extractIdsFromExpression(String expression) {
+        Set<String> ids = new LinkedHashSet<>();
+        if (expression == null || expression.trim().isEmpty()) return ids;
+
+        Matcher matcher = ID_PATTERN.matcher(expression);
+        while (matcher.find()) {
+            String token = matcher.group();
+            if (!KEYWORDS.contains(token)) {
+                ids.add(token);
+            }
+        }
+        return ids;
+    }
+
+    public static Set<String> getRangeExpressionEffectIds(
+            List<CampaignFormElement> elements,
+            Set<String> triggerIds) {
+        Set<String> effectIds = new LinkedHashSet<>();
+        if (elements == null || triggerIds == null || triggerIds.isEmpty()) return effectIds;
+
+        for (CampaignFormElement e : elements) {
+            if (e == null || !"range".equalsIgnoreCase(e.getType())) continue;
+            if (e.getExpression() == null || e.getExpression().trim().isEmpty()) continue;
+
+            Set<String> refs = extractIdsFromExpression(e.getExpression());
+            for (String ref : refs) {
+                if (triggerIds.contains(ref)) {
+                    effectIds.add(e.getId());
+                    break;
+                }
+            }
+        }
+        return effectIds;
+    }
 
     public static void handleExpressionSec(
             ExpressionParser expressionParser,
@@ -1149,7 +1219,8 @@ public class CampaignFormDataFragmentUtils {
             Boolean isIntegerField,
             Boolean isRequired,
             String errorMsg,
-            Boolean warnOnError) {
+            Boolean warnOnError,
+            List<CampaignFormElement> campaignFormElements) {
         return new ControlTextEditFieldRange(context) {
 
             @Override
@@ -1192,7 +1263,7 @@ public class CampaignFormDataFragmentUtils {
                 setLiveValidationDisabled(true);
 //                initInput(isIntegerField, isRequired, true, null, null, true, false);
 
-                initInput(true, isRequired, true, null, null, true, warnOnError);
+                initInput(true, isRequired, true, null, null, true, warnOnError, campaignFormElements);
                 displayHelpText();
             }
         };
@@ -1208,7 +1279,8 @@ public class CampaignFormDataFragmentUtils {
             Integer minVal,
             Integer maxVal,
             Boolean isExpression,
-            Boolean warnOnError) {
+            Boolean warnOnError,
+            List<CampaignFormElement> campaignFormElements) {
 
         System.out.println(context + " --------------------- running range stage 1 : " + isExpression);
         final boolean isExpressionx = isExpression;
@@ -1263,7 +1335,7 @@ public class CampaignFormDataFragmentUtils {
                 initLabelAndValidationListeners();
                 setLiveValidationDisabled(true);
 //                initInput(isIntegerField, isRequired, true, minVal, maxVal, isExpressionx, warnOnError);
-                initInput(true, isRequired, true, minVal, maxVal, isExpressionx, warnOnError);
+                initInput(true, isRequired, true, minVal, maxVal, isExpressionx, warnOnError, campaignFormElements);
                 displayHelpText();
             }
         };
