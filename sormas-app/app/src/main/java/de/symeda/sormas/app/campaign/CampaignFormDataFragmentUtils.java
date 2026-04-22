@@ -191,12 +191,42 @@ public class CampaignFormDataFragmentUtils {
                                     System.out.println(orginalValue + "from handlesec++++++++++++2222333++++++++++++++++ " + valudex);
                                     if (!(orginalValue.toString().isEmpty() && valudex != null)) {
                                         System.out.println("from handlesec++++++++++++333333333++++++++++++++++ " + valudex);
-                                        ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, expressionValue.toString().equals("0") ? "0" : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
+//                                        ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, expressionValue.toString().equals("0") ? "0" : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
+                                        // Guard: only update if value changed
+                                        ControlTextEditFieldRange rangeField = (ControlTextEditFieldRange) dynamicField;
+                                        String newValue = expressionValue.toString().equals("0")
+                                                ? "0"
+                                                : expressionValue.toString().endsWith(".0")
+                                                ? expressionValue.toString().replace(".0", "")
+                                                : expressionValue.toString();
+                                        String currentValue = rangeField.getValue();
+                                        if (currentValue == null) {
+                                            currentValue = "";
+                                        }
+                                        if (!currentValue.equals(newValue)) {
+                                            ControlTextEditFieldRange.setValue(rangeField, newValue);
+                                        }
                                     }
                                 }
                             } else {
+//                                if (valudex != null) {
+//                                    ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, expressionValue.toString().equals("0") ? "" : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
+//                                }
                                 if (valudex != null) {
-                                    ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, expressionValue.toString().equals("0") ? "" : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
+                                    // Guard: only update if value changed
+                                    ControlTextEditFieldRange rangeField = (ControlTextEditFieldRange) dynamicField;
+                                    String newValue = expressionValue.toString().equals("0")
+                                            ? ""
+                                            : expressionValue.toString().endsWith(".0")
+                                            ? expressionValue.toString().replace(".0", "")
+                                            : expressionValue.toString();
+                                    String currentValue = rangeField.getValue();
+                                    if (currentValue == null) {
+                                        currentValue = "";
+                                    }
+                                    if (!currentValue.equals(newValue)) {
+                                        ControlTextEditFieldRange.setValue(rangeField, newValue);
+                                    }
                                 }
                             }
                         } else if (type == CampaignFormElementType.DECIMAL && expressionValue != null) {
@@ -210,11 +240,23 @@ public class CampaignFormDataFragmentUtils {
                             ) {
 
                                 // Clear UI field
-                                if (dynamicField instanceof ControlTextEditFieldRange) {
-                                    ControlTextEditFieldRange.setValue(
-                                            (ControlTextEditFieldRange) dynamicField, ""
-                                    );
+//                                if (dynamicField instanceof ControlTextEditFieldRange) {
+//                                    ControlTextEditFieldRange.setValue(
+//                                            (ControlTextEditFieldRange) dynamicField, ""
+//                                    );
+//
+//                                }
 
+                                if (dynamicField instanceof ControlTextEditFieldRange) {
+                                    ControlTextEditFieldRange rangeField = (ControlTextEditFieldRange) dynamicField;
+                                    String currentValue = rangeField.getValue();
+                                    if (currentValue == null) {
+                                        currentValue = "";
+                                    }
+                                    // Only set if not already empty to avoid re-triggering listeners
+                                    if (!currentValue.isEmpty()) {
+                                        ControlTextEditFieldRange.setValue(rangeField, "");
+                                    }
                                 }
 
 

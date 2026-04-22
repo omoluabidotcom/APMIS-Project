@@ -208,15 +208,35 @@ public class ControlTextEditFieldRange extends ControlPropertyEditField<String> 
 
     @Override
     protected String getFieldValue() {
-        if (input.getText() == null) {
-            return null;
-        }
-        return input.getText().toString();
+//        if (input.getText() == null) {
+//            return null;
+//        }
+//        return input.getText().toString();
+        return input != null && input.getText() != null ? input.getText().toString() : null;
     }
+
+//    @Override
+//    protected void setFieldValue(String value) {
+//        input.setText(value);
+//    }
 
     @Override
     protected void setFieldValue(String value) {
-        input.setText(value);
+        String current = input.getText() != null ? input.getText().toString() : null;
+        String next = value == null ? "" : value;
+
+        // Avoid no-op writes that still trigger TextWatcher/binding cycles
+        if (current != null && current.equals(next)) {
+            return;
+        }
+
+        isInternalChange = true;
+        try {
+            input.setText(next);
+            input.setSelection(input.getText().length());
+        } finally {
+            isInternalChange = false;
+        }
     }
 
     @Override
