@@ -29,8 +29,10 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -649,5 +651,36 @@ public abstract class ControlPropertyField<T> extends LinearLayout {
 		if (!isEnabled) {
 			field.setValue(null);
 		}
+	}
+
+	protected String getHelpText() {
+	    return null;
+	}
+
+	protected void displayHelpText() {
+	    String helpText = getHelpText();
+	    if (helpText != null && !helpText.isEmpty()) {
+	        // Post the operation to the message queue to ensure the view is attached to parent
+	        this.post(new Runnable() {
+	            @Override
+	            public void run() {
+	                // Create TextView for helper text
+	                TextView helpTextView = new TextView(getContext());
+	                helpTextView.setText(helpText);
+	                helpTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+	                helpTextView.setTextColor(Color.parseColor("#757575"));
+	                helpTextView.setPadding(0, -10, 0, 15);
+	                // Add to parent layout after input
+	                ViewGroup parent = (ViewGroup) ControlPropertyField.this.getParent();
+	                if (parent != null) {
+	                    int index = parent.indexOfChild(ControlPropertyField.this);
+	                    parent.addView(helpTextView, index + 1);
+	                    System.out.println("ADDED HELPTEXTVIEW TO PARENT LAYOUT");
+	                } else {
+	                    System.out.println("Parent is null - view not attached yet");
+	                }
+	            }
+	        });
+	    }
 	}
 }

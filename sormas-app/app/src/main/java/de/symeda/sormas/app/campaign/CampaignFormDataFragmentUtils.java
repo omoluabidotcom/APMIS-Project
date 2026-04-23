@@ -41,10 +41,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EmptyStackException;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
@@ -76,6 +80,10 @@ public class CampaignFormDataFragmentUtils {
     private static final DecimalFormat df = new DecimalFormat("0.00");
     private static boolean isExpressionEvaluationInProgress = false;
 
+    private static final Pattern ID_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9_]*");
+
+    private static final Set<String> KEYWORDS = Set.of("true", "false", "null", "AND", "OR", "NOT");
+
     private CampaignFormDataFragmentUtils() {
     }
 
@@ -93,6 +101,68 @@ public class CampaignFormDataFragmentUtils {
         }
     }
 
+    public static Set<String> getRangeMinMaxTriggerIds(List<CampaignFormElement> elements) {
+        Set<String> ids = new LinkedHashSet<>();
+        if (elements == null) return ids;
+
+        for (CampaignFormElement e : elements) {
+            if (e == null || !"range".equalsIgnoreCase(e.getType())) continue;
+            if (e.getExpression() != null && !e.getExpression().trim().isEmpty()) continue;
+
+            String[] constraints = e.getConstraints();
+            if (constraints == null) continue;
+
+            boolean hasMin = Arrays.stream(constraints)
+                    .filter(c -> c != null)
+                    .map(c -> c.trim().toLowerCase(Locale.ROOT))
+                    .anyMatch(c -> c.startsWith("min="));
+
+            boolean hasMax = Arrays.stream(constraints)
+                    .filter(c -> c != null)
+                    .map(c -> c.trim().toLowerCase(Locale.ROOT))
+                    .anyMatch(c -> c.startsWith("max="));
+
+            if (hasMin && hasMax) {
+                ids.add(e.getId());
+            }
+        }
+        return ids;
+    }
+
+    public static Set<String> extractIdsFromExpression(String expression) {
+        Set<String> ids = new LinkedHashSet<>();
+        if (expression == null || expression.trim().isEmpty()) return ids;
+
+        Matcher matcher = ID_PATTERN.matcher(expression);
+        while (matcher.find()) {
+            String token = matcher.group();
+            if (!KEYWORDS.contains(token)) {
+                ids.add(token);
+            }
+        }
+        return ids;
+    }
+
+    public static Set<String> getRangeExpressionEffectIds(
+            List<CampaignFormElement> elements,
+            Set<String> triggerIds) {
+        Set<String> effectIds = new LinkedHashSet<>();
+        if (elements == null || triggerIds == null || triggerIds.isEmpty()) return effectIds;
+
+        for (CampaignFormElement e : elements) {
+            if (e == null || !"range".equalsIgnoreCase(e.getType())) continue;
+            if (e.getExpression() == null || e.getExpression().trim().isEmpty()) continue;
+
+            Set<String> refs = extractIdsFromExpression(e.getExpression());
+            for (String ref : refs) {
+                if (triggerIds.contains(ref)) {
+                    effectIds.add(e.getId());
+                    break;
+                }
+            }
+        }
+        return effectIds;
+    }
 
     public static void handleExpressionSec(
             ExpressionParser expressionParser,
@@ -121,12 +191,42 @@ public class CampaignFormDataFragmentUtils {
                                     System.out.println(orginalValue + "from handlesec++++++++++++2222333++++++++++++++++ " + valudex);
                                     if (!(orginalValue.toString().isEmpty() && valudex != null)) {
                                         System.out.println("from handlesec++++++++++++333333333++++++++++++++++ " + valudex);
-                                        ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, expressionValue.toString().equals("0") ? "0" : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
+//                                        ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, expressionValue.toString().equals("0") ? "0" : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
+                                        // Guard: only update if value changed
+                                        ControlTextEditFieldRange rangeField = (ControlTextEditFieldRange) dynamicField;
+                                        String newValue = expressionValue.toString().equals("0")
+                                                ? "0"
+                                                : expressionValue.toString().endsWith(".0")
+                                                ? expressionValue.toString().replace(".0", "")
+                                                : expressionValue.toString();
+                                        String currentValue = rangeField.getValue();
+                                        if (currentValue == null) {
+                                            currentValue = "";
+                                        }
+                                        if (!currentValue.equals(newValue)) {
+                                            ControlTextEditFieldRange.setValue(rangeField, newValue);
+                                        }
                                     }
                                 }
                             } else {
+//                                if (valudex != null) {
+//                                    ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, expressionValue.toString().equals("0") ? "" : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
+//                                }
                                 if (valudex != null) {
-                                    ControlTextEditFieldRange.setValue((ControlTextEditFieldRange) dynamicField, expressionValue.toString().equals("0") ? "" : expressionValue.toString().endsWith(".0") ? expressionValue.toString().replace(".0", "") : expressionValue.toString());
+                                    // Guard: only update if value changed
+                                    ControlTextEditFieldRange rangeField = (ControlTextEditFieldRange) dynamicField;
+                                    String newValue = expressionValue.toString().equals("0")
+                                            ? ""
+                                            : expressionValue.toString().endsWith(".0")
+                                            ? expressionValue.toString().replace(".0", "")
+                                            : expressionValue.toString();
+                                    String currentValue = rangeField.getValue();
+                                    if (currentValue == null) {
+                                        currentValue = "";
+                                    }
+                                    if (!currentValue.equals(newValue)) {
+                                        ControlTextEditFieldRange.setValue(rangeField, newValue);
+                                    }
                                 }
                             }
                         } else if (type == CampaignFormElementType.DECIMAL && expressionValue != null) {
@@ -140,11 +240,23 @@ public class CampaignFormDataFragmentUtils {
                             ) {
 
                                 // Clear UI field
-                                if (dynamicField instanceof ControlTextEditFieldRange) {
-                                    ControlTextEditFieldRange.setValue(
-                                            (ControlTextEditFieldRange) dynamicField, ""
-                                    );
+//                                if (dynamicField instanceof ControlTextEditFieldRange) {
+//                                    ControlTextEditFieldRange.setValue(
+//                                            (ControlTextEditFieldRange) dynamicField, ""
+//                                    );
+//
+//                                }
 
+                                if (dynamicField instanceof ControlTextEditFieldRange) {
+                                    ControlTextEditFieldRange rangeField = (ControlTextEditFieldRange) dynamicField;
+                                    String currentValue = rangeField.getValue();
+                                    if (currentValue == null) {
+                                        currentValue = "";
+                                    }
+                                    // Only set if not already empty to avoid re-triggering listeners
+                                    if (!currentValue.isEmpty()) {
+                                        ControlTextEditFieldRange.setValue(rangeField, "");
+                                    }
                                 }
 
 
@@ -708,10 +820,40 @@ public class CampaignFormDataFragmentUtils {
         }
     }
 
+    public static String getUserLanguageHint(Map<String, String> userHints, CampaignFormElement campaignFormElement) {
+        if (userHints != null && userHints.containsKey(campaignFormElement.getId())) {
+            return userHints.get(campaignFormElement.getId());
+        } else {
+            return campaignFormElement.getHint();
+        }
+    }
+
+    public static Map<String, String> getUserHints(CampaignFormMeta campaignFormMeta) {
+        Map<String, String> userHints = new HashMap<>();
+
+        List<CampaignFormTranslations> campaignFormTranslations = campaignFormMeta.getCampaignFormTranslations();
+
+        Locale locale = I18nProperties.getUserLanguage().getLocale();
+
+        if (campaignFormTranslations != null && locale != null) {
+            campaignFormTranslations.forEach(cft -> {
+                if (cft.getLanguageCode().equalsIgnoreCase(locale.toString())) {
+                    cft.getTranslations()
+                            .stream()
+                            .filter(translationElement -> translationElement != null)
+                            .forEach(translationElement -> userHints.put(translationElement.getElementId(), translationElement.getHint() != null ? translationElement.getHint() : ""));
+                }
+            });
+        }
+        return userHints;
+
+    }
+
     public static ControlTextEditField createControlTextEditField(
             CampaignFormElement campaignFormElement,
             Context context,
             Map<String, String> userTranslations,
+            Map<String, String> userHints,
             Boolean isIntegerField,
             Boolean isRequired) {
         return new ControlTextEditField(context) {
@@ -724,6 +866,11 @@ public class CampaignFormDataFragmentUtils {
             @Override
             protected String getPrefixCaption() {
                 return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getHelpText() {
+                return getUserLanguageHint(userHints, campaignFormElement);
             }
 
             @Override
@@ -758,6 +905,7 @@ public class CampaignFormDataFragmentUtils {
                 initLabelAndValidationListeners();
                 setLiveValidationDisabled(true);
                 initInput(isIntegerField, isRequired, false, null, null, false, false);
+                displayHelpText();
             }
         };
     }
@@ -807,6 +955,7 @@ public class CampaignFormDataFragmentUtils {
                 initLabelAndValidationListeners();
                 setLiveValidationDisabled(true);
                 initInput(isIntegerField, isRequired, false, null, null, false, false);
+                displayHelpText();
             }
         };
     }
@@ -816,6 +965,7 @@ public class CampaignFormDataFragmentUtils {
             CampaignFormElement campaignFormElement,
             Context context,
             Map<String, String> userTranslations,
+            Map<String, String> userHints,
             Boolean isIntegerField,
             Boolean isRequired) {
         return new ControlPhoneField(context) {
@@ -828,6 +978,11 @@ public class CampaignFormDataFragmentUtils {
             @Override
             protected String getPrefixCaption() {
                 return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getHelpText() {
+                return getUserLanguageHint(userHints, campaignFormElement);
             }
 
             @Override
@@ -862,6 +1017,7 @@ public class CampaignFormDataFragmentUtils {
                 initLabelAndValidationListeners();
                 setLiveValidationDisabled(true);
                 initInput(isIntegerField, isRequired, false, null, null, false, false);
+                displayHelpText();
             }
         };
     }
@@ -918,6 +1074,7 @@ public class CampaignFormDataFragmentUtils {
                 initLabelAndValidationListenersErrorMsg(errorMsg);
                 setLiveValidationDisabled(false);
                 initInput(isIntegerField, isRequired, false, null, null, false, false);
+                displayHelpText();
             }
         };
     }
@@ -972,7 +1129,7 @@ public class CampaignFormDataFragmentUtils {
                 initLabelAndValidationListenersErrorMsg(errorMsg);
                 setLiveValidationDisabled(true);
                 initInput(isIntegerField, isRequired, true, null, null, true, false);
-
+                displayHelpText();
             }
         };
     }
@@ -1026,7 +1183,7 @@ public class CampaignFormDataFragmentUtils {
 //                initLabelAndValidationListenersErrorMsg(errorMsg);
                 setLiveValidationDisabled(true);
                 initInput(isIntegerField, isRequired, true, null, null, true, false);
-
+                displayHelpText();
             }
         };
     }
@@ -1091,6 +1248,7 @@ public class CampaignFormDataFragmentUtils {
                 initLabelAndValidationListeners();
                 setLiveValidationDisabled(true);
                 initInput(isIntegerField, isRequired, true, minVal, maxVal, isExpressionx, warnOnError);
+                displayHelpText();
             }
         };
     }
@@ -1103,7 +1261,8 @@ public class CampaignFormDataFragmentUtils {
             Boolean isIntegerField,
             Boolean isRequired,
             String errorMsg,
-            Boolean warnOnError) {
+            Boolean warnOnError,
+            List<CampaignFormElement> campaignFormElements) {
         return new ControlTextEditFieldRange(context) {
 
             @Override
@@ -1146,9 +1305,8 @@ public class CampaignFormDataFragmentUtils {
                 setLiveValidationDisabled(true);
 //                initInput(isIntegerField, isRequired, true, null, null, true, false);
 
-                initInput(true, isRequired, true, null, null, true, warnOnError);
-
-
+                initInput(true, isRequired, true, null, null, true, warnOnError, campaignFormElements);
+                displayHelpText();
             }
         };
     }
@@ -1157,12 +1315,14 @@ public class CampaignFormDataFragmentUtils {
             CampaignFormElement campaignFormElement,
             Context context,
             Map<String, String> userTranslations,
+            Map<String, String> userHints,
             Boolean isIntegerField,
             Boolean isRequired,
             Integer minVal,
             Integer maxVal,
             Boolean isExpression,
-            Boolean warnOnError) {
+            Boolean warnOnError,
+            List<CampaignFormElement> campaignFormElements) {
 
         System.out.println(context + " --------------------- running range stage 1 : " + isExpression);
         final boolean isExpressionx = isExpression;
@@ -1177,6 +1337,11 @@ public class CampaignFormDataFragmentUtils {
             @Override
             protected String getPrefixCaption() {
                 return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getHelpText() {
+                return getUserLanguageHint(userHints, campaignFormElement);
             }
 
             @Override
@@ -1212,8 +1377,8 @@ public class CampaignFormDataFragmentUtils {
                 initLabelAndValidationListeners();
                 setLiveValidationDisabled(true);
 //                initInput(isIntegerField, isRequired, true, minVal, maxVal, isExpressionx, warnOnError);
-                initInput(true, isRequired, true, minVal, maxVal, isExpressionx, warnOnError);
-
+                initInput(true, isRequired, true, minVal, maxVal, isExpressionx, warnOnError, campaignFormElements);
+                displayHelpText();
             }
         };
     }
@@ -1223,6 +1388,7 @@ public class CampaignFormDataFragmentUtils {
             CampaignFormElement campaignFormElement,
             Context context,
             Map<String, String> userTranslations,
+            Map<String, String> userHints,
             Boolean isDecimalField,
             Boolean isRequired,
             Integer minVal,
@@ -1239,6 +1405,11 @@ public class CampaignFormDataFragmentUtils {
             @Override
             protected String getPrefixCaption() {
                 return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getHelpText() {
+                return getUserLanguageHint(userHints, campaignFormElement);
             }
 
             @Override
@@ -1275,6 +1446,7 @@ public class CampaignFormDataFragmentUtils {
                 setLiveValidationDisabled(true);
                 initInput(isDecimalField, isRequired, true, minVal, maxVal, isExpressionx, warnOnError);
 //                setVisibility(GONE);
+                displayHelpText();
             }
         };
     }
@@ -1328,6 +1500,7 @@ public class CampaignFormDataFragmentUtils {
                 initLabelAndValidationListenersErrorMsg(errorMsg);
                 setLiveValidationDisabled(true);
                 initInput(isDecimalField, isRequired, true, null, null, true, false);
+                displayHelpText();
             }
         };
     }
@@ -1338,6 +1511,7 @@ public class CampaignFormDataFragmentUtils {
             CampaignFormElement campaignFormElement,
             Context context,
             Map<String, String> userTranslations,
+            Map<String, String> userHints,
             Map<String, String> isIntegerField,
             boolean isRequired) {
         return new ControlSpinnerField(context) {
@@ -1350,6 +1524,11 @@ public class CampaignFormDataFragmentUtils {
             @Override
             protected String getPrefixCaption() {
                 return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getHelpText() {
+                return getUserLanguageHint(userHints, campaignFormElement);
             }
 
             @Override
@@ -1369,6 +1548,7 @@ public class CampaignFormDataFragmentUtils {
                 initLabelAndValidationListeners();
                 setLiveValidationDisabled(true);
                 initInput(isIntegerField, isRequired);
+                displayHelpText();
             }
         };
     }
@@ -1378,6 +1558,7 @@ public class CampaignFormDataFragmentUtils {
             CampaignFormElement campaignFormElement,
             Context context,
             Map<String, String> userTranslations,
+            Map<String, String> userHints,
 //            Map<String, String> isIntegerField) {
             Map<String, String> optionsList) {
 
@@ -1392,6 +1573,11 @@ public class CampaignFormDataFragmentUtils {
             @Override
             protected String getPrefixCaption() {
                 return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getHelpText() {
+                return getUserLanguageHint(userHints, campaignFormElement);
             }
 
             @Override
@@ -1412,8 +1598,7 @@ public class CampaignFormDataFragmentUtils {
                 setLiveValidationDisabled(true);
 //                initInput(isIntegerField);
                 initInput(optionsList);
-
-
+                displayHelpText();
             }
         };
     }
@@ -1423,6 +1608,7 @@ public class CampaignFormDataFragmentUtils {
             CampaignFormElement campaignFormElement,
             Context context,
             Map<String, String> userTranslations,
+            Map<String, String> userHints,
             Boolean isIntegerField,
             FragmentManager fm, boolean isRequired) {
         return new ControlDateField(context) {
@@ -1435,6 +1621,11 @@ public class CampaignFormDataFragmentUtils {
             @Override
             protected String getPrefixCaption() {
                 return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getHelpText() {
+                return getUserLanguageHint(userHints, campaignFormElement);
             }
 
             @Override
@@ -1456,6 +1647,7 @@ public class CampaignFormDataFragmentUtils {
                 setLiveValidationDisabled(true);
                 initializeDateField(fm);
                 initInput(true, isRequired);
+                displayHelpText();
             }
         };
     }
@@ -1528,6 +1720,7 @@ public class CampaignFormDataFragmentUtils {
                     System.out.println("DEBUG - Setting options with selected keys: " + finalSelectedKeys);
                     setOptionsAndValue(optionValues, finalSelectedKeys);
                 }
+                displayHelpText();
             }
         };
     }
@@ -1663,6 +1856,7 @@ public class CampaignFormDataFragmentUtils {
                     setRequired(true);
                     System.out.println("DEBUG createControlMultiSelectCheckBoxField - after setRequired, required field is: " + required);
                 }
+                displayHelpText();
             }
 
         };
@@ -1672,7 +1866,8 @@ public class CampaignFormDataFragmentUtils {
     public static ControlCheckBoxField createControlCheckBoxField(
             CampaignFormElement campaignFormElement,
             Context context,
-            Map<String, String> userTranslations) {
+            Map<String, String> userTranslations,
+            Map<String, String> userHints) {
         return new ControlCheckBoxField(context) {
 
             @Override
@@ -1683,6 +1878,11 @@ public class CampaignFormDataFragmentUtils {
             @Override
             protected String getPrefixCaption() {
                 return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getHelpText() {
+                return getUserLanguageHint(userHints, campaignFormElement);
             }
 
             @Override
@@ -1704,6 +1904,7 @@ public class CampaignFormDataFragmentUtils {
                 //required = true;
 
                 initInput();
+                displayHelpText();
             }
         };
     }
@@ -1712,8 +1913,10 @@ public class CampaignFormDataFragmentUtils {
     public static ControlSwitchField createControlYesNoUnknownField(
             CampaignFormElement campaignFormElement,
             Context context,
-            Map<String, String> userTranslations) {
+            Map<String, String> userTranslations,
+            Map<String, String> userHints) {
         return new ControlSwitchField(context) {
+
 
             @Override
             protected String getPrefixDescription() {
@@ -1723,6 +1926,11 @@ public class CampaignFormDataFragmentUtils {
             @Override
             protected String getPrefixCaption() {
                 return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getHelpText() {
+                return getUserLanguageHint(userHints, campaignFormElement);
             }
 
             @Override
@@ -1745,6 +1953,7 @@ public class CampaignFormDataFragmentUtils {
                 // initialize();
                 setLiveValidationDisabled(true);
                 initInputFirst();
+                displayHelpText();
             }
         };
     }
@@ -1785,6 +1994,7 @@ public class CampaignFormDataFragmentUtils {
                 super.inflateView(context, attrs, defStyle);
                 initLabel();
                 initTextView();
+                displayHelpText();
             }
         };
     }
@@ -1827,6 +2037,7 @@ public class CampaignFormDataFragmentUtils {
                 setLiveValidationDisabled(true);
                 initializeTimeField(fm);
                 initInput(false, isRequired, false, 0, 1000, false, false);
+                displayHelpText();
             }
         };
     }
