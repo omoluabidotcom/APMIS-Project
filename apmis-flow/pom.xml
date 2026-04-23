@@ -83,6 +83,12 @@
 				<scope>import</scope>
 				<version>${vaadin.version}</version>
 			</dependency>
+			
+			<dependency>
+            	<groupId>javax.security.enterprise</groupId>
+            	<artifactId>javax.security.enterprise-api</artifactId>
+            	<version>1.0</version>
+        	</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -370,8 +376,7 @@
 		<dependency>
     		<groupId>javax.security.enterprise</groupId>
     		<artifactId>javax.security.enterprise-api</artifactId>
-   			 <version>1.0-b11</version>
-    		<scope>compile</scope>
+    		<version>1.0</version>
 		</dependency>
  
 	</dependencies>

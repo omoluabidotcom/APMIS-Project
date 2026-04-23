@@ -59,7 +59,7 @@
 
                     <include
                         android:id="@+id/applicationTitleBar"
-                        layout="@layout/activity_root_title_bar_layout"
+                        layout="@layout/activity_root_title_bar_layout_campaign_new"
                         android:visibility="gone" />
 
                     <androidx.percentlayout.widget.PercentFrameLayout

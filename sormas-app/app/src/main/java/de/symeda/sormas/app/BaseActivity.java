@@ -71,6 +71,9 @@ import de.symeda.sormas.app.backend.config.ConfigProvider;
 import de.symeda.sormas.app.backend.device.info.DeviceInfo;
 import de.symeda.sormas.app.backend.synclog.SyncLogDao;
 import de.symeda.sormas.app.backend.user.User;
+import de.symeda.sormas.app.campaign.edit.CampaignFormDataEditActivity;
+import de.symeda.sormas.app.campaign.edit.CampaignFormDataNewActivity;
+import de.symeda.sormas.app.campaign.read.CampaignFormDataReadActivity;
 import de.symeda.sormas.app.component.Item;
 import de.symeda.sormas.app.component.controls.ControlPropertyField;
 import de.symeda.sormas.app.component.menu.PageMenuControl;
@@ -143,6 +146,9 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 
 	private static WeakReference<BaseActivity> activeActivity;
 
+	private TextView subHeadingListActivityTitle;
+
+
 	public static BaseActivity getActiveActivity() {
 		if (activeActivity != null) {
 			return activeActivity.get();
@@ -210,6 +216,16 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 		}
 
 		setTitle(getResources().getString(getActivityTitle()));
+
+		if (this.getContext() instanceof CampaignFormDataNewActivity
+				||  this.getContext() instanceof CampaignFormDataEditActivity
+				||  this.getContext() instanceof CampaignFormDataReadActivity) {
+			System.out.println("Current context is CampaignFormDataNewActivity-----");
+			subHeadingListActivityTitle = (TextView) findViewById(R.id.subHeadingActivityTitleC);
+
+		}else{
+
+		}
 
 		preSetupDrawer(savedInstanceState);
 		onCreateInner(savedInstanceState);
@@ -630,10 +646,6 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 				.collect(Collectors.joining(" "));
 	}
 
-
-
-
-
 	public List<PageMenuItem> getPageMenuData() {
 		return null;
 	}
@@ -912,10 +924,6 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 		dialog.show();
 	}
 
-
-
-
-
 	@Override
 	public View getRootView() {
 		return rootView;
@@ -1014,4 +1022,24 @@ public abstract class BaseActivity extends BaseLocalizedActivity implements Noti
 	protected void attachBaseContext(Context newBase) {
 		super.attachBaseContext(newBase);
 	}
+
+	public void setSubHeadingTitle(String title) {
+		String t = (title == null) ? "" : title;
+
+		if (subHeadingListActivityTitle != null)
+			subHeadingListActivityTitle.setText(t);
+	}
+
+	public void updateSubHeadingTitle() {
+		String subHeadingTitle = "";
+
+		if (((BaseEditActivity) this).getActiveFragment() != null) {
+			subHeadingTitle = (getActivePage() == null) ? ((BaseEditActivity) this).getActiveFragment().getSubHeadingTitle() : getActivePage().getTitle();
+		}
+
+		System.out.println(((BaseEditActivity) this).getActiveFragment().getSubHeadingTitle() + "------------Active Frqagement  with sub 4edit " + ((BaseEditActivity) this).getActiveFragment());
+
+		setSubHeadingTitle(subHeadingTitle);
+	}
+
 }

@@ -2593,6 +2593,14 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
         return view;
     }
 
+
+    @Override
+    protected String getSubHeadingTitle() {
+        if (record != null && record.getCampaign().getName() != null) {
+            return record.getCampaign().getName() + " | " + record.getCampaignFormMeta().getFormName();
+        }
+        return super.getSubHeadingTitle();
+    }
     private List<String> parseCheckboxValue(String value) {
         List<String> selectedKeys = new ArrayList<>();
 
@@ -2632,6 +2640,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
         dynamicField.setValue(formattedTazkira);
 
     }
+
+
 
 
     private void handleVillageCodeValueGeneration(String inputValue, ControlPropertyField dynamicField) {

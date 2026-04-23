@@ -21,6 +21,7 @@ package de.symeda.sormas.app.campaign.edit;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.widget.TextView;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -69,13 +70,17 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
 
     public static void startActivity(Context context, String rootUuid) {
         try {
+
             BaseActivity.startActivity(context, CampaignFormDataEditActivity.class, buildBundle(rootUuid));
+
         } catch(Exception e ){
             System.out.println("eDIT STARTACTIVITY Fragment Error Logged--------------------");
 
             ErrorReportingHelper.logAndStoreDeviceError( "Edit Form : " + e.getMessage(), e); // replaced sendCaughtException
         }
     }
+
+//
 
     @Override
     protected CampaignFormData queryRootEntity(String recordUuid) {
@@ -260,6 +265,20 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
             }
     }
 
+    // Inside CampaignFormDataEditActivity.java
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        CampaignFormData campaignFormData = getStoredRootEntity();
+        if (campaignFormData != null) {
+            campaign = DatabaseHelper.getCampaignDao().queryUuid(campaignFormData.getCampaign().getUuid());
+            campaignFormMeta = DatabaseHelper.getCampaignFormMetaDao().queryUuid(campaignFormData.getCampaignFormMeta().getUuid());
+            setSetSubHeadingTitleForCampaignAndFormName(campaign, campaignFormMeta);
+        }
+    }
+
+
     public String dateFormatterLongAndMobile(Object value) {
         if (value == null) return null;
 
@@ -339,4 +358,10 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
         }
         return output.toString();
     }
+
+
+    private void setSetSubHeadingTitleForCampaignAndFormName(Campaign campaign, CampaignFormMeta campaignFormMeta) {
+        setSubHeadingTitle(campaign != null ?  campaignFormMeta != null ? campaign.getName() + " | " + campaignFormMeta.getFormName() : "" :  "");
+    }
+
 }

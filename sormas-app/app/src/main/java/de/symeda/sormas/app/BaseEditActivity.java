@@ -30,6 +30,9 @@ import androidx.fragment.app.FragmentTransaction;
 import de.symeda.sormas.api.utils.DataHelper;
 import de.symeda.sormas.app.backend.common.AbstractDomainObject;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
+import de.symeda.sormas.app.campaign.edit.CampaignFormDataEditActivity;
+import de.symeda.sormas.app.campaign.edit.CampaignFormDataNewActivity;
+import de.symeda.sormas.app.campaign.read.CampaignFormDataReadActivity;
 import de.symeda.sormas.app.component.menu.PageMenuItem;
 import de.symeda.sormas.app.core.IUpdateSubHeadingTitle;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
@@ -88,7 +91,19 @@ public abstract class BaseEditActivity<ActivityRootEntity extends AbstractDomain
 	}
 
 	protected void onCreateInner(Bundle savedInstanceState) {
-		subHeadingListActivityTitle = (TextView) findViewById(R.id.subHeadingActivityTitle);
+		System.out.println("Creating ineeer rrrrr---------" +  this.getContext());
+		System.out.println("Creating ineeer rrrrr Active Fragment ---------" +  this.getActiveFragment());
+
+		if (this.getContext() instanceof CampaignFormDataNewActivity
+				||  this.getContext() instanceof CampaignFormDataEditActivity
+				||  this.getContext() instanceof CampaignFormDataReadActivity) {
+			System.out.println("Current context is CampaignFormDataNewActivity");
+			subHeadingListActivityTitle = (TextView) findViewById(R.id.subHeadingActivityTitleC);
+
+		}else{
+			subHeadingListActivityTitle = (TextView) findViewById(R.id.subHeadingActivityTitle);
+
+		}
 		notificationFrame = (LinearLayout) findViewById(R.id.notification_frame);
 
 		rootUuid = new Bundler(savedInstanceState).getRootUuid();
@@ -226,6 +241,8 @@ public abstract class BaseEditActivity<ActivityRootEntity extends AbstractDomain
 		if (getActiveFragment() != null) {
 			subHeadingTitle = (getActivePage() == null) ? getActiveFragment().getSubHeadingTitle() : getActivePage().getTitle();
 		}
+
+		System.out.println(getActiveFragment().getSubHeadingTitle() + "------------Active Frqagement " + getActiveFragment());
 
 		setSubHeadingTitle(subHeadingTitle);
 	}

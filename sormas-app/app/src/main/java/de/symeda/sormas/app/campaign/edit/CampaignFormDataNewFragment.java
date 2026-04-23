@@ -1786,6 +1786,13 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
         return view;
     }
 
+    @Override
+    protected String getSubHeadingTitle() {
+        if (record != null && record.getCampaign().getName() != null) {
+            return record.getCampaign().getName() + " | " + record.getCampaignFormMeta().getFormName();
+        }
+        return super.getSubHeadingTitle();
+    }
     private void handleETazkiraNoFormatting(String inputValue, ControlPropertyField dynamicField) {
         String value = inputValue;
 
