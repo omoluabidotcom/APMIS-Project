@@ -243,7 +243,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                 CampaignFormDataFragmentUtils.getRangeExpressionEffectIds(
                         campaignFormMeta.getCampaignFormElements(), rangeTriggerIds);
 
-        // Get all hint translations
+        // Get all hint translation
         Map<String, String> userHints =
                 CampaignFormDataFragmentUtils.getUserHints(campaignFormMeta);
         final List<CampaignFormDataEntry> formValues = record.getFormValues();

@@ -235,7 +235,6 @@ public class FormGridComponent extends VerticalLayout {
 		Icon saveIcon = new Icon(VaadinIcon.CHECK_CIRCLE_O);
 		saveIcon.getStyle().set("color", "green");
 		save.setIcon(saveIcon);
-//		Button save = new Button("Save", saveIcon);
 
 		formLayout.setVisible(false);
 		formLayout.setId("target-section");
@@ -1054,12 +1053,6 @@ public class FormGridComponent extends VerticalLayout {
 				.setResizable(true);
 		grid.addColumn(dependingOnValuesRenderer).setHeader("Depending On Value").setSortable(true).setResizable(true);
 		grid.addColumn(CampaignFormElement::isImportant).setHeader("Important").setSortable(true).setResizable(true);
-//		grid.addColumn(CampaignFormElement::isWarnonerror).setHeader("Warned Error").setSortable(true)
-//				.setResizable(true);
-//		grid.addColumn(CampaignFormElement::isIgnoredisable).setHeader("Ignoredisable").setSortable(true)
-//				.setResizable(true);
-//		grid.addColumn(CampaignFormElement::getDefaultvalue).setHeader("Default Value").setSortable(true)
-//				.setResizable(true);
 		grid.addColumn(CampaignFormElement::getErrormessage).setHeader("Error Message").setSortable(true)
 				.setResizable(true);
 		grid.addColumn(CampaignFormElement::getHint).setHeader("Hint");
