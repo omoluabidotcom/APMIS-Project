@@ -831,8 +831,8 @@ public class CampaignFormDataFragmentUtils {
     public static Map<String, String> getUserHints(CampaignFormMeta campaignFormMeta) {
         Map<String, String> userHints = new HashMap<>();
 
+        System.out.println("Getting User Hintssssssssssssssssssssssssssssssssss");
         List<CampaignFormTranslations> campaignFormTranslations = campaignFormMeta.getCampaignFormTranslations();
-
         Locale locale = I18nProperties.getUserLanguage().getLocale();
 
         if (campaignFormTranslations != null && locale != null) {

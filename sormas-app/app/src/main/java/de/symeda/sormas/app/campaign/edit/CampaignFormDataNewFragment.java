@@ -198,7 +198,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                 CampaignFormDataFragmentUtils.getRangeExpressionEffectIds(
                         campaignFormMeta.getCampaignFormElements(), rangeTriggerIds);
 
-        // Get all hint translations
+        // Get all hint translation
         Map<String, String> userHints =
                 CampaignFormDataFragmentUtils.getUserHints(campaignFormMeta);
         Date expiryDate = DatabaseHelper.getCampaignFormMetaWithExpDao().getCampaignFormExpiryDateByCampaignIdAndFormId(record.getCampaign().getUuid(), campaignFormMeta.getUuid());
