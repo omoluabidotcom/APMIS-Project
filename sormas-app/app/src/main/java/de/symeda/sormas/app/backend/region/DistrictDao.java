@@ -15,6 +15,8 @@
 
 package de.symeda.sormas.app.backend.region;
 
+import android.util.Log;
+
 import java.sql.SQLException;
 import java.util.List;
 
@@ -58,6 +60,22 @@ public class DistrictDao extends AbstractInfrastructureAdoDao<District> {
 //			return queryBuilder.query();
 //		} catch (SQLException e) {
 //			throw new RuntimeException("Error retrieving campaigns for district ID: " + districtId, e);
+//		}
+//	}
+
+//	public List<District> queryActiveForEqANdSelected(String fieldName, Region value, String orderBy, boolean ascending) {
+//		try {
+//			QueryBuilder builder = queryBuilder();
+//			Where where = builder.where();
+//			where.eq(District.REGION + "_id", value);
+//			where.and().eq(AbstractDomainObject.SNAPSHOT, false);
+//			where.and().eq(InfrastructureAdo.ARCHIVED, false).query();
+//			where.and().eq(District., false);
+//
+//			return builder.orderBy(District.NAME, ascending).query();
+//		} catch (SQLException | IllegalArgumentException e) {
+//			Log.e(getTableName(), "Could not perform queryForEq");
+//			throw new RuntimeException(e);
 //		}
 //	}
 

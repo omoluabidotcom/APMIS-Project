@@ -62,6 +62,10 @@ public class CampaignFormData extends PseudonymizableAdo {
 
     public static final String COMMUNITY = "community";
 
+    public static final String ISVERIFIED = "isverified";
+    public static final String ISPUBLISHED = "ispublished";
+
+
     @Column(name = "formValues")
     private String formValuesJson;
     private List<CampaignFormDataEntry> formValues;
@@ -110,6 +114,13 @@ public class CampaignFormData extends PseudonymizableAdo {
 
     @Column(name = "recordversion")
     private Long recordversion;
+
+    @Column(name = "isverified")
+    private Boolean isverified;
+
+    @Column(name = "ispublished")
+    private Boolean ispublished;
+
 
     /**
      * JsonRawValue annotation is used to handle this differently when merging data
@@ -263,6 +274,22 @@ public class CampaignFormData extends PseudonymizableAdo {
         this.recordversion = recordversion;
     }
 
+
+    public Boolean getIspublished() {
+        return ispublished;
+    }
+
+    public void setIspublished(Boolean ispublished) {
+        this.ispublished = ispublished;
+    }
+
+    public Boolean getIsverified() {
+        return isverified;
+    }
+
+    public void setIsverified(Boolean isverified) {
+        this.isverified = isverified;
+    }
 
     public void setFormCategory(String formCategory) {
         if (campaignFormMeta != null) {

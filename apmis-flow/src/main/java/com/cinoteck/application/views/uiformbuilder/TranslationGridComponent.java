@@ -45,6 +45,8 @@ public class TranslationGridComponent extends VerticalLayout {
 	ComboBox<String> languageCode = new ComboBox<String>("Tranlation Language Code");
 	ComboBox<String> elementId = new ComboBox<String>("Element Id");
 	TextField caption = new TextField("Caption");
+	TextField hintId = new TextField("Hint Id");
+	TextField hint = new TextField("Hint");
 
 	CampaignFormMetaDto campaignFormMetaDto;
 	CampaignFormTranslations campaignFormTranslations = new CampaignFormTranslations();
@@ -99,6 +101,8 @@ public class TranslationGridComponent extends VerticalLayout {
 
 		grid.addColumn(TranslationElement::getElementId).setHeader("Element Id").setSortable(true).setResizable(true);
 		grid.addColumn(TranslationElement::getCaption).setHeader("Caption").setSortable(true).setResizable(true);
+		grid.addColumn(TranslationElement::getHintId).setHeader("Hint Id").setSortable(true).setResizable(true);
+		grid.addColumn(TranslationElement::getHint).setHeader("Hint").setSortable(true).setResizable(true);
 
 		List<CampaignFormTranslations> existingFormTranslations = campaignFormMetaDto.getCampaignFormTranslations();
 		existingFormTranslations = existingFormTranslations == null ? new ArrayList<>() : existingFormTranslations;
@@ -240,6 +244,18 @@ public class TranslationGridComponent extends VerticalLayout {
 				if (translationBeenEdited.getCaption() != null) {
 					caption.setValue(translationBeenEdited.getCaption());
 				}
+				
+				if (translationBeenEdited.getHintId() != null) {
+					hintId.setValue(translationBeenEdited.getHintId());
+				} else {
+					hintId.setValue("");
+				}
+				
+				if (translationBeenEdited.getHint() != null) {
+					hint.setValue(translationBeenEdited.getHint());
+				} else {
+					hint.setValue("");
+				}
 				save.setText("Update");
 			}
 		});
@@ -286,6 +302,8 @@ public class TranslationGridComponent extends VerticalLayout {
 
 					elementId.setValue("");
 					caption.setValue("");
+					hintId.setValue("");
+					hint.setValue("");
 					newTranslation = new TranslationElement();
 
 					if (campaignFormMetaDto.getCampaignFormTranslations() == null) {
@@ -343,6 +361,8 @@ public class TranslationGridComponent extends VerticalLayout {
 
 					elementId.setValue("");
 					caption.setValue("");
+					hintId.setValue("");
+					hint.setValue("");
 
 					save.setText("Save");
 					grid.setItems(dataprovider);
@@ -434,6 +454,9 @@ public class TranslationGridComponent extends VerticalLayout {
 							TranslationElement newTranslations = new TranslationElement();
 							newTranslations.setElementId(elementId.getValue());
 							newTranslations.setCaption(caption.getValue());
+							newTranslations.setHintId(hintId.getValue());
+							newTranslations.setHint(hint.getValue());
+							
 //							int index = 0;
 
 							for (CampaignFormTranslations campaignFormTranslationslooper : getGridData()) {
@@ -485,6 +508,8 @@ public class TranslationGridComponent extends VerticalLayout {
 							if (!elementId.getValue().isEmpty() && !caption.getValue().isEmpty()) {
 								newElement.setElementId(elementId.getValue());
 								newElement.setCaption(caption.getValue());
+								newElement.setHintId(hint.getValue());
+								newElement.setHint(hint.getValue());
 							}
 
 							List<TranslationElement> using = new LinkedList<>();
@@ -527,9 +552,11 @@ public class TranslationGridComponent extends VerticalLayout {
 		mainLayout.add(languageCode);
 		mainLayout.setColspan(languageCode, 2);
 
-		formLayout.add(elementId, caption);
+		formLayout.add(elementId, caption, hintId, hint);
 		formLayout.setColspan(elementId, 2);
 		formLayout.setColspan(caption, 2);
+		formLayout.setColspan(hintId, 2);
+		formLayout.setColspan(hint, 2);
 
 		return vrsub;
 	}

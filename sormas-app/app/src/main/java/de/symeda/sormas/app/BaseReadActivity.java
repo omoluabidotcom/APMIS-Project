@@ -76,7 +76,7 @@ public abstract class BaseReadActivity<ActivityRootEntity extends AbstractDomain
 
 	protected void onCreateInner(Bundle savedInstanceState) {
 
-		subHeadingListActivityTitle = (TextView) findViewById(R.id.subHeadingActivityTitle);
+		subHeadingListActivityTitle = (TextView) findViewById(R.id.subHeadingActivityTitleC);
 
 		rootUuid = new Bundler(savedInstanceState).getRootUuid();
 	}

@@ -104,6 +104,9 @@ public abstract class BaseEditFragment<TBinding extends ViewDataBinding, TData, 
 
 		if (getActivity() instanceof IUpdateSubHeadingTitle) {
 			this.subHeadingHandler = (IUpdateSubHeadingTitle) this.getActivity();
+			System.out.println(subHeadingHandler +  " subHeadingHandlersubHeadingHandler------------------");
+			System.out.println(this.getActivity() +  " this.getActivity()subHeadingHandlersubHeadingHandler------------------");
+
 		} else {
 			throw new NotImplementedException("Activity for fragment does not support updateSubHeadingTitle; " + "implement IUpdateSubHeadingTitle");
 		}

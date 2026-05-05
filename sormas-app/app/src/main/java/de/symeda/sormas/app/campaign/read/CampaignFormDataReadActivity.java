@@ -82,4 +82,6 @@ public class CampaignFormDataReadActivity extends BaseReadActivity<CampaignFormD
     protected int getActivityTitle() {
         return R.string.heading_campaign_form_data_read;
     }
+
+
 }

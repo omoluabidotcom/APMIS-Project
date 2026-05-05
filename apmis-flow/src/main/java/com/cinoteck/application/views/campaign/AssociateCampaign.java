@@ -278,7 +278,7 @@ public class AssociateCampaign extends VerticalLayout {
         
         // Add columns
         treeGrid.addColumn(selectionCheckboxRenderer).setHeader("Select").setWidth("70px").setFlexGrow(0);
-        treeGrid.addHierarchyColumn(CampaignTreeGridDto::getName).setHeader(I18nProperties.getCaption(Captions.Location));
+        treeGrid.addHierarchyColumn(CampaignTreeGridDto::getName).setHeader(I18nProperties.getCaption(Captions.Location)).setAutoWidth(true);
         treeGrid.addColumn(populationGenerate).setHeader("Target (0-59M)");
         treeGrid.addColumn(populationGenerate5_10).setHeader("Target (60-120M)");
         treeGrid.addColumn(populationGenerate4_23M).setHeader("Target (4_23M)");

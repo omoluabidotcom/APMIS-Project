@@ -22,6 +22,10 @@ public class TranslationElement implements Serializable {
 	@Size(max = CHARACTER_LIMIT_DEFAULT, message = Validations.textTooLong)
 	private String caption;
 	private List<MapperUtil> options;
+	@Size(max = CHARACTER_LIMIT_DEFAULT, message = Validations.textTooLong)
+	private String hintId;
+	@Size(max = CHARACTER_LIMIT_DEFAULT, message = Validations.textTooLong)
+	private String hint;
 
 	public String getElementId() { //setOptionsListValues
 		return elementId;
@@ -46,6 +50,22 @@ public class TranslationElement implements Serializable {
 
 	public void setOptions(List<MapperUtil> options) {
 		this.options = options;
+	}	
+
+	public String getHintId() {
+		return hintId;
+	}
+
+	public void setHintId(String hintId) {
+		this.hintId = hintId;
+	}
+
+	public String getHint() {
+		return hint;
+	}
+
+	public void setHint(String hint) {
+		this.hint = hint;
 	}
 
 	/**
@@ -59,11 +79,12 @@ public class TranslationElement implements Serializable {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		TranslationElement that = (TranslationElement) o;
-		return Objects.equals(elementId, that.elementId) && Objects.equals(caption, that.caption) && Objects.equals(options, that.options);
+		return Objects.equals(elementId, that.elementId) && Objects.equals(caption, that.caption) && Objects.equals(options, that.options)
+				&& Objects.equals(hintId, that.hintId) && Objects.equals(hint, that.hint);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(elementId, caption, options);
+		return Objects.hash(elementId, caption, options, hintId, hint);
 	}
 }

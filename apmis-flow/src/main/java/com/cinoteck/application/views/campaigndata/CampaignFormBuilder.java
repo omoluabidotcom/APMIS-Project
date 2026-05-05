@@ -144,6 +144,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 	// private final FormLayout campaignFormLayout;
 	private final Locale userLocale;
 	private Map<String, String> userTranslations = new HashMap<String, String>();
+	private Map<String, String> userTranslationsHint = new HashMap<String, String>();
 	private Map<String, String> userOptTranslations = new HashMap<String, String>();
 	Map<String, Component> fields;
 
@@ -199,6 +200,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 	private int max = 0;
 	private String currentDay = "Day-1";
 	private boolean daywiseTracker = false;
+	private List<CampaignFormTranslations> translationsHint = new ArrayList<CampaignFormTranslations>();
 
 	private CampaignDto campaignDto;
 	CampaignFormMetaExpiryDto expiryDto;
@@ -212,6 +214,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		logger.debug("+++++++++++CampaignFormBuilder+++++: " + openData);
 
+		// ADD THIS after setting up userLocale:
+	    injectRTLHelperTextCSS();
+	    
 		this.openData = openData;
 		this.uuidForm = uuidForm;
 		this.formElements = formElements;
@@ -230,6 +235,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 		// this.campaignFormLayout = new FormLayout();
 		this.fields = new HashMap<>();
 		this.translationsOpt = translations;
+		this.translationsHint = translations;
 
 		UserProvider userProvider = new UserProvider();
 		I18nProperties.setUserLanguage(userProvider.getUser().getLanguage());
@@ -243,6 +249,21 @@ public class CampaignFormBuilder extends VerticalLayout {
 						.ifPresent(filteredTranslations -> userTranslations = filteredTranslations.getTranslations()
 								.stream().collect(Collectors.toMap(TranslationElement::getElementId,
 										TranslationElement::getCaption)));
+			}
+			
+			if (translationsHint != null) {
+			    translationsHint.stream()
+			        .filter(t -> t.getLanguageCode().equals(userLocale.toString()))
+			        .findFirst()
+			        .ifPresent(filteredTranslations -> {
+			            userTranslationsHint = filteredTranslations.getTranslations()
+			                .stream()
+			                .filter(te -> te.getElementId() != null && te.getHint() != null)
+			                .collect(Collectors.toMap(
+			                    TranslationElement::getElementId,
+			                    TranslationElement::getHint
+			                ));
+			        });
 			}
 		}
 
@@ -1187,7 +1208,13 @@ public class CampaignFormBuilder extends VerticalLayout {
 //					toggle.setItemLabelGenerator(item -> map.get(item));
 						toggle.getStyle().set("color", "Green");
 						toggle.getStyle().set("background", "white");
-
+//						toggle.setHelperText(formElement.getHint());
+						toggle.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));							
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	toggle.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(toggle);
+					    }					    
 						setFieldValue(toggle, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 
 						vertical.add(toggle);
@@ -1215,7 +1242,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 						textField.setPrefixComponent(VaadinIcon.PENCIL.create());
 						textField.setId(formElement.getId());
 						textField.setSizeFull();
-						//
+						textField.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	textField.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(textField);
+					    }
 						setFieldValue(textField, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(textField);
@@ -1300,7 +1332,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 						numberField.setMin(0);
 						numberField.setId(formElement.getId());
 						numberField.setSizeFull();
-
+						numberField.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	numberField.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(numberField);
+					    }
 						numberField.setAllowedCharPattern("[0-9.]*"); // allow digits and one decimal point
 
 //					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
@@ -1475,7 +1512,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 						numberField.setClassName("customTextWrap");
 						numberField.setId(formElement.getId());
 						numberField.setSizeFull();
-
+						numberField.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	numberField.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(numberField);
+					    }
 						setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(availableCountries, numberField);
@@ -1554,7 +1596,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 						integerField.setStepButtonsVisible(true);
 						integerField.setSizeFull();
 						integerField.setMin(0);
-
+						integerField.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	integerField.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(integerField);
+					    }
 						integerField.setAllowedCharPattern("[0-9.]*"); // allow digits and one decimal point
 
 						setFieldValue(integerField, type, value, optionsValues, formElement.getDefaultvalue(), false,
@@ -1628,7 +1675,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 						numberField.setSizeFull();
 						numberField.setReadOnly(false);
 						numberField.setMin(0);
-
+						numberField.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	numberField.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(numberField);
+					    }
 						setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(numberField);
@@ -1750,6 +1802,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 						textArea.setClassName("customTextWrap");
 						textArea.setId(formElement.getId());
 						textArea.setSizeFull();
+						textArea.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	textArea.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(textArea);
+					    }
 						setFieldValue(textArea, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 						vertical.add(textArea);
 						fields.put(formElement.getId(), textArea);
@@ -1774,6 +1832,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 						radioGroup.setItemLabelGenerator(itm -> data.get(itm.toString().trim()));
 						radioGroup.setId(formElement.getId());
 						radioGroup.setSizeFull();
+						radioGroup.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	radioGroup.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(radioGroup);
+					    }
 						setFieldValue(radioGroup, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(radioGroup);
@@ -1800,6 +1864,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 						radioGroupVert.setId(formElement.getId());
 						radioGroupVert.setSizeFull();
+						radioGroupVert.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	radioGroupVert.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(radioGroupVert);
+					    }
 						setFieldValue(radioGroupVert, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(radioGroupVert);
@@ -1875,7 +1945,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 						select.addValueChangeListener(ee -> {
 						});
-
+						select.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	select.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(select);
+					    }
 						setFieldValue(select, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 
 						vertical.add(select);
@@ -1909,6 +1984,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 						checkboxGroup.setId(formElement.getId());
 						checkboxGroup.setSizeFull();
+						checkboxGroup.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	checkboxGroup.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(checkboxGroup);
+					    }
 						setFieldValue(checkboxGroup, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(checkboxGroup);
@@ -1926,7 +2007,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 						CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>();
 						checkboxGroup.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
 						checkboxGroup.setClassName("customTextWrap");
-
+						checkboxGroup.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	checkboxGroup.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(checkboxGroup);
+					    }
 						boolean isNotSorted = false;
 						try {
 							if (formElement.getOptions().stream()
@@ -2018,7 +2104,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 								datePicker.setMax(formEndDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
 							}
 						}
-
+						datePicker.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	datePicker.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(datePicker);
+					    }
 						setFieldValue(datePicker, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(datePicker);
@@ -2038,7 +2129,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 						validEmailField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
 						validEmailField.setWidth("240px");
 						validEmailField.setId(formElement.getId());
-
+						validEmailField.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	validEmailField.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(validEmailField);
+					    }
 						setFieldValue(validEmailField, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(validEmailField);
@@ -2057,7 +2153,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 						timePicker.setLocale(Locale.forLanguageTag("fi"));
 //				timePickear.setValue(LocalTime.of(5, 30));
 						timePicker.setAutoOpen(true);
-
+						timePicker.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						// ADD RTL STYLING
+					    if (isRTLLanguage()) {
+					    	timePicker.getElement().setAttribute("dir", "rtl");
+					        applyRTLStylingToField(timePicker);
+					    }
 						timePicker.addValueChangeListener(e -> {
 							System.out.println("Value Changed-------" + e.getValue());
 
@@ -2994,6 +3095,14 @@ public class CampaignFormBuilder extends VerticalLayout {
 		}
 
 		return defaultCaption;
+	}
+	
+	public String get18nHint(String hintId, String defaultHint) {
+		if (userTranslationsHint != null && userTranslationsHint.containsKey(hintId)) {
+			return userTranslationsHint.get(hintId);
+		}
+
+		return defaultHint;
 	}
 
 	public List<CampaignFormDataEntry> getFormValues() {
@@ -3972,6 +4081,98 @@ public class CampaignFormBuilder extends VerticalLayout {
 						String.format("%s: %s", I18nProperties.getDescription(Descriptions.Campaign_calculatedBasedOn),
 								StringUtils.join(fieldNamesInExpression, ", ")))
 				.withPosition(Tooltip.TooltipPosition.TOP_START);
+	}
+		
+	private boolean isRTLLanguage() {
+	    try {
+	        String language = currentUser.getUser().getLanguage().toString();
+	        return language.equalsIgnoreCase("Pashto") || language.equalsIgnoreCase("Dari");
+	    } catch (Exception e) {
+	        return false;
+	    }
+	}
+
+	private void applyRTLStylingToField(Component component) {
+	    if (!isRTLLanguage()) {
+	        return;
+	    }
+	    
+	    if (component instanceof AbstractField) {
+	        AbstractField field = (AbstractField) component;
+	        
+	        // Set text direction on the field itself
+	        field.getElement().setAttribute("dir", "rtl");
+	        field.getElement().getStyle().set("direction", "rtl");
+	        field.getElement().getStyle().set("text-align", "right");
+	        
+	        // Apply styles to all input elements within
+	        field.getElement().executeJs(
+	            "const inputs = this.querySelectorAll('input, textarea, [role=combobox]'); " +
+	            "inputs.forEach(input => { " +
+	            "  input.style.direction = 'rtl'; " +
+	            "  input.style.textAlign = 'right'; " +
+	            "  input.style.unicodeBidi = 'plaintext'; " +
+	            "});"
+	        );
+	    }
+	}
+
+	private void injectRTLHelperTextCSS() {
+	    if (!isRTLLanguage()) {
+	        return;
+	    }
+	    
+	    // Inject RTL-specific CSS directly using executeJs
+	    UI.getCurrent().getPage().executeJs(
+	        "const style = document.createElement('style'); " +
+	        "style.textContent = `" +
+	        "  /* RTL Helper Text Styling for Pashto and Dari */ " +
+	        "  [dir='rtl'] vaadin-text-field::part(helper-text), " +
+	        "  [dir='rtl'] vaadin-number-field::part(helper-text), " +
+	        "  [dir='rtl'] vaadin-text-area::part(helper-text), " +
+	        "  [dir='rtl'] vaadin-date-picker::part(helper-text), " +
+	        "  [dir='rtl'] vaadin-email-field::part(helper-text), " +
+	        "  [dir='rtl'] vaadin-integer-field::part(helper-text), " +
+	        "  [dir='rtl'] vaadin-combo-box::part(helper-text), " +
+	        "  [dir='rtl'] vaadin-radio-group::part(helper-text), " +
+	        "  [dir='rtl'] vaadin-checkbox-group::part(helper-text), " +
+	        "  [dir='rtl'] vaadin-time-picker::part(helper-text) { " +
+	        "    direction: rtl !important; " +
+	        "    text-align: right !important; " +
+	        "    unicode-bidi: plaintext; " +
+	        "  } " +
+	        "  /* RTL Error Message Styling */ " +
+	        "  [dir='rtl'] vaadin-text-field::part(error-message), " +
+	        "  [dir='rtl'] vaadin-number-field::part(error-message), " +
+	        "  [dir='rtl'] vaadin-text-area::part(error-message), " +
+	        "  [dir='rtl'] vaadin-date-picker::part(error-message), " +
+	        "  [dir='rtl'] vaadin-email-field::part(error-message), " +
+	        "  [dir='rtl'] vaadin-integer-field::part(error-message), " +
+	        "  [dir='rtl'] vaadin-combo-box::part(error-message), " +
+	        "  [dir='rtl'] vaadin-radio-group::part(error-message), " +
+	        "  [dir='rtl'] vaadin-checkbox-group::part(error-message), " +
+	        "  [dir='rtl'] vaadin-time-picker::part(error-message) { " +
+	        "    direction: rtl !important; " +
+	        "    text-align: right !important; " +
+	        "    unicode-bidi: plaintext; " +
+	        "  } " +
+	        "  /* RTL Label Styling */ " +
+	        "  [dir='rtl'] vaadin-text-field::part(label), " +
+	        "  [dir='rtl'] vaadin-number-field::part(label), " +
+	        "  [dir='rtl'] vaadin-text-area::part(label), " +
+	        "  [dir='rtl'] vaadin-date-picker::part(label), " +
+	        "  [dir='rtl'] vaadin-email-field::part(label), " +
+	        "  [dir='rtl'] vaadin-integer-field::part(label), " +
+	        "  [dir='rtl'] vaadin-combo-box::part(label), " +
+	        "  [dir='rtl'] vaadin-radio-group::part(label), " +
+	        "  [dir='rtl'] vaadin-checkbox-group::part(label), " +
+	        "  [dir='rtl'] vaadin-time-picker::part(label) { " +
+	        "    direction: rtl !important; " +
+	        "    text-align: right !important; " +
+	        "  } " +
+	        "`; " +
+	        "document.head.appendChild(style);"
+	    );
 	}
 
 }
