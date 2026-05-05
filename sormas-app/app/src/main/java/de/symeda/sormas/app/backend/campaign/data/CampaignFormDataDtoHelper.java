@@ -74,6 +74,10 @@ public class CampaignFormDataDtoHelper extends AdoDtoHelper<CampaignFormData, Ca
 		target.setCreatingUser(DatabaseHelper.getUserDao().getByReferenceDto(source.getCreatingUser()));
 		target.setFormCategory(source.getCampaignFormMeta().getFormCategory() != null ? source.getCampaignFormMeta().getFormCategory().toString() : null);
 		target.setRecordversion(source.getRecordversion());
+		target.setIspublished(source.isIspublished());
+		target.setIsverified(source.isIsverified());
+
+
 	}
 
 	@Override
@@ -89,5 +93,7 @@ public class CampaignFormDataDtoHelper extends AdoDtoHelper<CampaignFormData, Ca
 		target.setCreatingUser(UserDtoHelper.toReferenceDto(source.getCreatingUser()));
 		target.setFormCategory(source.getCampaignFormMeta().getFormCategory() != null ? source.getCampaignFormMeta().getFormCategory().toString() : null);
 		target.setRecordversion(source.getRecordversion());
+		target.setIspublished(source.getIspublished());
+		target.setIsverified(source.getIsverified());
 	}
 }

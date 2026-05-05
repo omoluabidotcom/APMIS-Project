@@ -213,6 +213,17 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
         campaignFormDataToSave.setFormValues(filledFormValues);
         campaignFormDataToSave.setSoruce(PlatformEnum.MOBILE);
 
+        if(campaignFormDataToSave.getIsverified()){
+            campaignFormDataToSave.setIsverified(false);
+        }else{
+            campaignFormDataToSave.setIsverified(false);
+        }
+        if(campaignFormDataToSave.getIspublished()){
+            campaignFormDataToSave.setIspublished(false);
+        }else{
+            campaignFormDataToSave.setIspublished(false);
+        }
+
         if(campaignFormDataToSave.getFormDate() == null){
             saveChecker = false;
         }else{

@@ -208,6 +208,28 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 
 		return target;
 	}
+	
+	public CampaignFormData fromDtoMobile(@NotNull CampaignFormDataDto source, boolean checkChangeDate) {
+		CampaignFormData target = DtoHelper.fillOrBuildEntity(source,
+				campaignFormDataService.getByUuid(source.getUuid()), CampaignFormData::new, checkChangeDate);
+
+		target.setFormValues(source.getFormValues());
+		target.setCampaign(campaignService.getByReferenceDto(source.getCampaign()));
+		target.setCampaignFormMeta(campaignFormMetaService.getByReferenceDto(source.getCampaignFormMeta()));
+		target.setFormDate(source.getFormDate());
+		target.setArea(areaService.getByReferenceDto(source.getArea()));
+		target.setRegion(regionService.getByReferenceDto(source.getRegion()));
+		target.setDistrict(districtService.getByReferenceDto(source.getDistrict()));
+		target.setCommunity(communityService.getByReferenceDto(source.getCommunity()));
+		target.setCreatingUser(userService.getByReferenceDto(source.getCreatingUser()));
+		target.setSource(source.getSource());
+//		target.setRecordgroupuuid(source.getRecordgroupuuid());
+		target.setRecordversion(source.getRecordversion());
+		target.setIspublished(source.isIspublished());
+		target.setIsverified(source.isIsverified());
+
+		return target;
+	}
 
 	public CampaignFormDataDto toDto(CampaignFormData source) {
 		if (source == null) {
@@ -270,7 +292,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 		UserReferenceDto currtUsr = userServiceEBJ.getCurrentUserAsReference();
 		campaignFormDataDto.setSource("MOBILE");
 		campaignFormDataDto.setCreatingUser(currtUsr);
-		CampaignFormData campaignFormData = fromDto(campaignFormDataDto, true);
+		CampaignFormData campaignFormData = fromDtoMobile(campaignFormDataDto, true);
 		CampaignFormDataEntry.removeNullValueEntries(campaignFormData.getFormValues());
 
 		validate(campaignFormDataDto);

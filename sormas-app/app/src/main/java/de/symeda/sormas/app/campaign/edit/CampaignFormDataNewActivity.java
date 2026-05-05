@@ -289,7 +289,12 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
             }
             }
         }
- 
+
+
+        campaignFormDataToSave.setIsverified(false);
+
+        campaignFormDataToSave.setIspublished(false);
+
         campaignFormDataToSave.setFormValues(filledFormValues);
 
 
