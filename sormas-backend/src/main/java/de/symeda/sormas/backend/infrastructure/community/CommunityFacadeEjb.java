@@ -46,6 +46,7 @@ import de.symeda.sormas.api.campaign.CampaignPhase;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
 import de.symeda.sormas.api.common.Page;
+import de.symeda.sormas.api.document.DocumentRelatedEntityType;
 import de.symeda.sormas.api.feature.FeatureType;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Validations;
@@ -759,6 +760,11 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 				case Community.DISTRICT:
 				case CommunityDto.DISTRICT_EXTERNALID:
 					expression = district.get(District.NAME);
+				case CommunityDto.MODALITY:
+					expression = community.get(Community.MODALITY);
+					break;
+				case CommunityDto.STATUS:
+					expression = community.get(Community.STATUS);
 					break;
 				default:
 					throw new IllegalArgumentException(sortProperty.propertyName);
@@ -987,8 +993,8 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		dto.setPopulationData(entity.getPopulationdata_0_4());
 		dto.setPopulationData5_10(entity.getPopulationdata_5_10());		
 		dto.setPopulationData4_23M(entity.getPopulationdata_4_23M());
-
-		
+		dto.setModality(entity.getModality());
+		dto.setStatus(entity.getStatus());
 
 		return dto;
 	}
@@ -1153,7 +1159,8 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		target.setPopulationdata_0_4(source.getPopulationData());
 		target.setPopulationdata_5_10(source.getPopulationData5_10());
 		target.setPopulationdata_4_23M(source.getPopulationData4_23M());
-
+		target.setModality(source.getModality());
+		target.setStatus(source.getStatus());
 		
 
 		return target;
