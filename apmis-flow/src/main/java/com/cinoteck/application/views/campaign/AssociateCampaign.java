@@ -7,10 +7,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -61,6 +59,8 @@ import de.symeda.sormas.api.infrastructure.area.AreaDto;
 import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
+import de.symeda.sormas.api.infrastructure.community.Modality;
+import de.symeda.sormas.api.infrastructure.community.Status;
 import de.symeda.sormas.api.infrastructure.district.DistrictDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionDto;
@@ -260,7 +260,8 @@ public class AssociateCampaign extends VerticalLayout {
         treeGrid.setPageSize(50);
         
         // Disable default selection model - we'll use custom checkboxes only
-        treeGrid.setSelectionMode(SelectionMode.NONE);
+//        treeGrid.setSelectionMode(SelectionMode.NONE);
+//        treeGrid.asSingleSelect();
         
         treeGrid.setItems(generateTreeGridData(), item -> {
             if ("area".equals(item.getLevelAssessed())) {
@@ -1902,13 +1903,13 @@ public class AssociateCampaign extends VerticalLayout {
 		IntegerField popData4_23M = new IntegerField(
 				I18nProperties.getCaption(Captions.District_population) + " " + "4_23M");
 
+		ComboBox<Modality> districtModalityCombo = new ComboBox<>("Modality");
+		districtModalityCombo.setItems(Modality.values());
+		districtModalityCombo.setItemLabelGenerator(Modality::getDisplayName);
 
-		ComboBox<String> districtModalityCombo = new ComboBox<String>("Modality");
-		districtModalityCombo.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed");
-
-		ComboBox<String> districtStatusCombo = new ComboBox<String>("Campaign Status");
-		districtStatusCombo.setItems("Additional", "Additional & Cold", "Cold", "Full Cluster", "HRMP only", "Partial",
-				"Not Targted", "On Hold");
+		ComboBox<Status> districtStatusCombo = new ComboBox<>("Campaign Status");
+		districtStatusCombo.setItems(Status.values());
+		districtStatusCombo.setItemLabelGenerator(Status::getDisplayName);
 
 		districtModalityCombo.addValueChangeListener(e -> {
 			if (e.getValue() != null) {
@@ -1957,16 +1958,16 @@ public class AssociateCampaign extends VerticalLayout {
 			popData4_23M.setValue(null);
 		}
 
-		if (districtModalityByAgeGroup != null) {
-			districtModalityCombo.setValue(districtModalityByAgeGroup);
+		if (districtModalityByAgeGroup != null && !districtModalityByAgeGroup.trim().isEmpty()) {
+			districtModalityCombo.setValue(Modality.fromValue(districtModalityByAgeGroup));
 		} else {
-			districtModalityCombo.setValue("");
+			districtModalityCombo.clear();
 		}
 
-		if (districtStatusByAgeGroup != null) {
-			districtStatusCombo.setValue(districtStatusByAgeGroup);
+		if (districtStatusByAgeGroup != null && !districtStatusByAgeGroup.trim().isEmpty()) {
+			districtStatusCombo.setValue(Status.fromValue(districtStatusByAgeGroup));
 		} else {
-			districtStatusCombo.setValue("");
+			districtStatusCombo.clear();
 		}
 
 		saveButton.addClickListener(e -> {
@@ -2006,14 +2007,13 @@ public class AssociateCampaign extends VerticalLayout {
 //										: ageGroup.equals("AGE_5_10") ? AgeGroup.AGE_5_10 : AgeGroup.AGE_0_4);
 
 				if (popData.getValue() != null
-						&& (districtModalityCombo.getValue() != null || districtModalityCombo.getValue() != "")
-						&& (districtStatusCombo.getValue() != null || districtStatusCombo.getValue() != "")) {
+						&& (districtModalityCombo.getValue() != null || !districtModalityCombo.getValue().toString().isEmpty())
+						&& (districtStatusCombo.getValue() != null || !districtStatusCombo.getValue().toString().isEmpty())) {
 
 					popDataDto.get(0).setPopulation(popData.getValue());
 
-					popDataDto.get(0).setModality(districtModalityCombo.getValue().toString());
-
-					popDataDto.get(0).setDistrictStatus(districtStatusCombo.getValue().toString());
+					popDataDto.get(0).setModality(districtModalityCombo.getValue().getDisplayName());
+					popDataDto.get(0).setDistrictStatus(districtStatusCombo.getValue().getDisplayName());
 
 					popDataDtotoList.add(popDataDto.get(0));
 

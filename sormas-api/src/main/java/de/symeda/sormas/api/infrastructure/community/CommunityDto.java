@@ -57,7 +57,8 @@ public class CommunityDto extends EntityDto {
 	public static final String POPULATIONDATA_0_4 = "populationdata_0_4";
 	public static final String POPULATIONDATA_5_10 = "populationdata_5_10";
 	public static final String POPULATIONDATA_4_23M = "populationdata_4_23M";
-
+	public static final String MODALITY = "modality";
+	public static final String STATUS = "status";
 
 	
 
@@ -96,7 +97,8 @@ public class CommunityDto extends EntityDto {
 	private boolean internationalborder;
 	
 	private boolean selectedForPopulationData;
-
+	private Modality modality;
+	private Status status;
 	
 	
 	public CommunityDto(
@@ -586,8 +588,23 @@ public class CommunityDto extends EntityDto {
 			return "No";
 
 		}	
+	}		
+
+	public Modality getModality() {
+		return modality;
 	}
 
+	public void setModality(Modality modality) {
+		this.modality = modality;
+	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
 
 	@Override
 	public String toString() {

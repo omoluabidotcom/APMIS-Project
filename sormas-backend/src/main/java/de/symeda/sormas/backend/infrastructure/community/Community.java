@@ -22,9 +22,13 @@ import static de.symeda.sormas.api.utils.FieldConstraints.CHARACTER_LIMIT_DEFAUL
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import de.symeda.sormas.api.infrastructure.community.Modality;
+import de.symeda.sormas.api.infrastructure.community.Status;
 import de.symeda.sormas.backend.common.InfrastructureAdo;
 import de.symeda.sormas.backend.infrastructure.district.District;
 
@@ -47,6 +51,8 @@ public class Community extends InfrastructureAdo {
 	public static final String POPULATIONDATA_0_4 = "populationdata_0_4";
 	public static final String POPULATIONDATA_5_10 = "populationdata_5_10";
 	public static final String POPULATIONDATA_4_23M = "populationdata_4_23M";
+	public static final String MODALITY = "modality";
+	public static final String STATUS = "status";
 
 
 
@@ -58,6 +64,8 @@ public class Community extends InfrastructureAdo {
 	private Long externalId;
 	private Integer clusterNumber;
 	private String floating;
+	private Modality modality;
+	private Status status;
 	
 	private boolean internationalBorder;
 	
@@ -170,6 +178,24 @@ public class Community extends InfrastructureAdo {
 		this.populationdata_4_23M = populationdata_4_23M;
 	}
 
+	@Enumerated(EnumType.STRING)
+	public Modality getModality() {
+		return modality;
+	}
+	
+	public void setModality(Modality modality) {
+		this.modality = modality;
+	}
+	
+	@Enumerated(EnumType.STRING)
+	public Status getStatus() {
+		return status;
+	}
+	
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+	
 	@Override
 	public String toString() {
 		return getName();

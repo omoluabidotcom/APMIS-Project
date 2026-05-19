@@ -1028,7 +1028,7 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	public String getDistrictModalityByUuidAndCampaignAndAgeGroup(String districtUuid, String campaignUuid,
 			String ageGroup) {
 		// TODO Auto-generated method stub
-		final String joinBuilder = "select modality \n" + "from PopulationData population \n"
+		final String joinBuilder = "select population.modality \n" + "from PopulationData population \n"
 				+ "inner join campaigns campaign on population.campaign_id=campaign.id \n"
 				+ "inner join community district on population.community_id=district.id \n" + "where campaign.uuid= '"
 				+ campaignUuid + "' and district.uuid='" + districtUuid + "' and population.ageGroup='" + ageGroup
@@ -1383,8 +1383,8 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 					"    ag.agegroup,\n" + 
 					"    CASE WHEN ag.agegroup IN (:selectedGroups) THEN COALESCE(ag.population, 0) ELSE 0 END,\n" + 
 					"    c2.id,\n" + 
-					"    'Full Cluster',\n" + 
-					"    'H2H',\n" + 
+					"    c.status,\n" + 
+					"    c.modality,\n" + 
 					"     true \n" + 
 					"FROM community c\n" + 
 					"JOIN district d ON d.id = c.district_id\n" + 

@@ -44,6 +44,7 @@ import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Strings;
 import de.symeda.sormas.api.i18n.Validations;
+import de.symeda.sormas.api.importexport.ImportColumn;
 import de.symeda.sormas.api.importexport.ValueSeparator;
 import de.symeda.sormas.api.infrastructure.ConfigurationChangeLogDto;
 import de.symeda.sormas.api.infrastructure.area.AreaDto;
@@ -51,6 +52,8 @@ import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityFacade;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
+import de.symeda.sormas.api.infrastructure.community.Modality;
+import de.symeda.sormas.api.infrastructure.community.Status;
 import de.symeda.sormas.api.infrastructure.district.DistrictDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictFacade;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
@@ -77,9 +80,11 @@ public class ClusterDataImporter extends DataImporter {
 	private static final String D_CODE = "DCode";
 	private static final String C_CODE = "CCode";
 	private static final String INTERNATIONAL_BORDER = "International_Border";
-	public static final String POPULATIONDATA_0_4 = "Populationdata_0_4";
-	public static final String POPULATIONDATA_5_10 = "Populationdata_5_10";
+	public static final String POPULATIONDATA_0_4 = "PopulationData_0_59M";
+	public static final String POPULATIONDATA_5_10 = "PopulationData_60_120M";
 	public static final String POPULATIONDATA_4_23M = "Populationdata_4_23M";
+	public static final String MODALITY = "Modality";
+	public static final String STATUS = "Status";
 
 	private final CommunityFacade clusterFacade;
 
@@ -173,6 +178,9 @@ public class ClusterDataImporter extends DataImporter {
 		Long populationData_0_4 = null;
 		Long populationData_5_10 = null;
 		Long populationData_4_23M = null;
+		
+		String status = "";
+		String modality = "";
 
 
 
@@ -424,6 +432,59 @@ public class ClusterDataImporter extends DataImporter {
 				}
 			}
 			
+			if ("Status".equalsIgnoreCase(entityProperties[i])) {
+
+				if (DataHelper.isNullOrEmpty(values[i])) {
+
+					status = null;
+					writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
+							+ " | Status cannot be left empty");
+					return ImportLineResult.ERROR;
+
+				} else {
+					if (values[i].toString().equalsIgnoreCase("Additional")
+							|| values[i].toString().equalsIgnoreCase("Additional & Cold")
+							|| values[i].toString().equalsIgnoreCase("Cold")
+							|| values[i].toString().equalsIgnoreCase("Full Cluster")
+							|| values[i].toString().equalsIgnoreCase("HRMP Only")
+							|| values[i].toString().equalsIgnoreCase("Partial")
+							|| values[i].toString().equalsIgnoreCase("Not Targeted")
+							|| values[i].toString().equalsIgnoreCase("On Hold")) {
+						status = values[i];
+					} else {
+						writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
+								+ " | Status can only be one of the following Additional, Additional & Cold, Cold, Full Cluster, HRMP Only, Partial, Not Targeted, On Hold");
+						return ImportLineResult.ERROR;
+					}
+
+				}
+			}
+			
+			if ("Modality".equalsIgnoreCase(entityProperties[i])) {
+
+				if (DataHelper.isNullOrEmpty(values[i])) {
+
+					modality = null;
+					writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
+							+ " | Modality cannot be left empty");
+					return ImportLineResult.ERROR;
+
+				} else {
+					if (values[i].toString().equalsIgnoreCase("H2H")
+							|| values[i].toString().equalsIgnoreCase("M2M")
+							|| values[i].toString().equalsIgnoreCase("S2S")
+							|| values[i].toString().equalsIgnoreCase("HF2HF")
+							|| values[i].toString().equalsIgnoreCase("Mixed")) {
+						modality = values[i];
+					} else {
+						writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
+								+ " | Modality can only be one of the following H2H, M2M, S2S, HF2HF, Mixed");
+						return ImportLineResult.ERROR;
+					}
+
+				}
+			}
+			
 			if (INTERNATIONAL_BORDER.equalsIgnoreCase(entityProperties[i])) {
 
 				if (DataHelper.isNullOrEmpty(values[i])) {
@@ -539,6 +600,9 @@ public class ClusterDataImporter extends DataImporter {
 		final Long finalPopData_0_4 = populationData_0_4;
 		final Long finalPopData_5_10 = populationData_5_10;
 		final Long finalPopData_4_23M = populationData_4_23M;
+		
+		final String finalStatus = status;
+		final String finalModality = modality;
 
 
 
@@ -562,6 +626,8 @@ public class ClusterDataImporter extends DataImporter {
 				newUserLine_.setPopulationData5_10(finalPopData_5_10);// setFloating(finalFloatStatus);
 				newUserLine_.setPopulationData4_23M(finalPopData_4_23M);// setFloating(finalFloatStatus);
 
+				newUserLine_.setStatus(Status.fromValue(finalStatus));
+				newUserLine_.setModality(Modality.fromValue(finalModality));
 
 
 				boolean usersDataHasImportError = insertRowIntoData(values, entityClasses, entityPropertyPaths, false,
@@ -628,6 +694,20 @@ public class ClusterDataImporter extends DataImporter {
 										newUserLine_.setArchived(finalActiveStatus);
 
 //										newUserLine_.setName(cellData.getValue());
+									}
+									
+									if ("Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+										System.out.println(cellData.getValue()
+												+ "Statusssssssssssssssssss cellData.getValue()cellData.getValue()");
+
+										newUserLine_.setStatus(Status.fromValue(cellData.getValue()));
+									}
+									
+									if ("Modality".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+										System.out.println(cellData.getValue()
+												+ "Statusssssssssssssssssss cellData.getValue()cellData.getValue()");
+
+										newUserLine_.setModality(Modality.fromValue(cellData.getValue()));
 									}
 									
 									if (INTERNATIONAL_BORDER.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
@@ -707,6 +787,9 @@ public class ClusterDataImporter extends DataImporter {
 				newUserLine_.setPopulationData(finalPopData_0_4);// setFloating(finalFloatStatus);
 				newUserLine_.setPopulationData5_10(finalPopData_5_10);// setFloating(finalFloatStatus);
 				newUserLine_.setPopulationData4_23M(finalPopData_4_23M);
+				
+				newUserLine_.setStatus(Status.fromValue(finalStatus));
+				newUserLine_.setModality(Modality.fromValue(finalModality));
 
 				boolean usersDataHasImportError = insertRowIntoData(values, entityClasses, entityPropertyPaths, false,
 						new Function<ImportCellData, Exception>() {
@@ -762,6 +845,18 @@ public class ClusterDataImporter extends DataImporter {
 //										newUserLine_.setName(cellData.getValue());
 									}
 
+									if ("Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+										System.out.println(cellData.getValue()
+												+ "Statussssssssssssssss cellData.getValue()cellData.getValue()");
+										newUserLine_.setStatus(Status.fromValue(cellData.getValue()));
+									}
+									
+									if ("Modality".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+										System.out.println(cellData.getValue()
+												+ "Modalityyyyyyyyyyyyyyyyyyyyy cellData.getValue()cellData.getValue()");
+										newUserLine_.setModality(Modality.fromValue(cellData.getValue()));
+									}
+									
 									if ("Active_Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
 										System.out.println(cellData.getValue()
 												+ "tttttttttttfloating cellData.getValue()cellData.getValue()");
@@ -844,6 +939,9 @@ public class ClusterDataImporter extends DataImporter {
 			newUserLine.setPopulationData(finalPopData_0_4);// setFloating(finalFloatStatus);
 			newUserLine.setPopulationData5_10(finalPopData_5_10);// setFloating(finalFloatStatus);
 			newUserLine.setPopulationData4_23M(finalPopData_4_23M);
+			
+			newUserLine.setStatus(Status.fromValue(finalStatus));
+			newUserLine.setModality(Modality.fromValue(finalModality));
 
 			boolean usersDataHasImportError = insertRowIntoData(values, entityClasses, entityPropertyPaths, false,
 					new Function<ImportCellData, Exception>() {
@@ -905,6 +1003,18 @@ public class ClusterDataImporter extends DataImporter {
 									newUserLine.setArchived(finalActiveStatus);
 
 //									newUserLine_.setName(cellData.getValue());
+								}
+								
+								if ("Status".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+									System.out.println(cellData.getValue()
+											+ "Statussssssssssssssss cellData.getValue()cellData.getValue()");
+									newUserLine.setStatus(Status.fromValue(cellData.getValue()));
+								}
+								
+								if ("Modality".equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
+									System.out.println(cellData.getValue()
+											+ "Modalityyyyyyyyyyyyyyy cellData.getValue()cellData.getValue()");
+									newUserLine.setModality(Modality.fromValue(cellData.getValue()));
 								}
 								
 								if (INTERNATIONAL_BORDER.equalsIgnoreCase(cellData.getEntityPropertyPath()[0])) {
