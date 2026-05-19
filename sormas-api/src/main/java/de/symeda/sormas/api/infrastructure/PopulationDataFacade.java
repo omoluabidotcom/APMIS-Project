@@ -9,6 +9,8 @@ import javax.validation.Valid;
 import de.symeda.sormas.api.AgeGroup;
 import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignTreeGridDto;
+import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.statistics.StatisticsCaseCriteria;
 import de.symeda.sormas.api.utils.ValidationRuntimeException;
 
@@ -74,6 +76,8 @@ public interface PopulationDataFacade {
 
 	List<PopulationDataDto> getPopulationDataWithCriteria(String criteria);
 
+	List<PopulationDataDto> getPopulationDataWithCriteria(CampaignFormDataCriteria criteria);
+
 	void savePopulationDatax(@Valid List<PopulationDataDto> populationDataList,
 			@Valid List<PopulationDataFauxDto> fauxPopulationDataList, boolean isFauxData) throws ValidationRuntimeException;
 	
@@ -100,4 +104,6 @@ public interface PopulationDataFacade {
 	boolean generatePopulationDataForCamapign(String campaignUuid);
 
 	boolean generatePopulationDataForCamapign(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups);
+	
+	boolean generatePopulationDataForCamapignByRegionAndPopulationType(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups, List<AreaReferenceDto> selectedRegions);
 }

@@ -204,27 +204,16 @@ public final class InfrastructureDaoHelper {
 		if (regionItem != null && !initialRegions.contains(regionItem)) {
 			initialRegions.add(regionItem);
 		}
-//		if (districtItem != null && !initialDistricts.contains(districtItem)) {
-//			initialDistricts.add(districtItem);
-//		}
 
-		if (districtItem != null) {
-			boolean alreadyExists = initialDistricts.stream()
-					.anyMatch(item -> {
-						District d = (District) item.getValue();
-						return d.getUuid().equals(initialDistrict.getUuid());
-					});
-
-			if (!alreadyExists) {
-				initialDistricts.add(districtItem);
-			}
+		if (districtItem != null && !initialDistricts.contains(districtItem)) {
+			initialDistricts.add(districtItem);
 		}
-
-
 
 		if (communityItem != null && !initialCommunities.contains(communityItem)) {
 			initialCommunities.add(communityItem);
 		}
+
+		System.out.println("initialCommunitiesinitialCommunities inside --" + initialCommunities.size());
 
 		areaField.initializeSpinner(initialAreas, field -> {
 			Area selectedArea = (Area) field.getValue();
@@ -257,7 +246,9 @@ public final class InfrastructureDaoHelper {
 				}
 
 				districtField.setSpinnerData(newDistricts, districtField.getValue());
-
+				if (ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)){
+				districtField.setValue(null);
+				}
 				areaField.setValue(selectedRegion.getArea());
 			} else {
 				districtField.setSpinnerData(null);
@@ -270,30 +261,13 @@ public final class InfrastructureDaoHelper {
 				District selectedDistrict = (District) field.getValue();
 				if (selectedDistrict != null) {
 
-					List<Item> newCommunities = loadCommunities(selectedDistrict);
-					if (initialCommunity != null
-						&& selectedDistrict.equals(initialCommunity.getDistrict())
-						&& !newCommunities.contains(communityItem)) {
-
-						newCommunities.add(communityItem);
-					}
-					communityField.setSpinnerData(newCommunities, communityField.getValue());
-
-					if(ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)){ // District Officer
-						districtField.addValueChangedListener(e -> {
-						});
-						// Set the value of communityField before hiding it
-						if (districtField.getValue() != null){
-//							List<Item> newCommunities_ = loadCommunities((District) districtField.getValue());
-//							if (newCommunities_.get(0) != null){
-//								communityField.setValue(newCommunities_.get(0));
-//							}
-						}
-						// Hide the communityField
-						communityField.setVisibility(GONE);
-					}else{
+					communityField.setSpinnerData(initialCommunities, communityField.getValue());
+					if (!ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)){
+						communityField.setValue(null);
 						communityField.setVisibility(VISIBLE);
 
+					}else{
+						communityField.setVisibility(GONE);
 					}
 
 					if(isEdit){
@@ -310,13 +284,14 @@ public final class InfrastructureDaoHelper {
 			districtField.initializeSpinner(initialDistricts);
 		}
 
-		if (communityField != null) {
-			communityField.initializeSpinner(initialCommunities);
-
-			if(isEdit){
-				communityField.setEnabled(false);
-			}
-		}
+//		if (communityField != null) {
+//			System.out.println("initialCommunitiesinitialCommunities222222" + initialCommunities.size());
+//			communityField.initializeSpinner(initialCommunities);
+//
+//			if(isEdit){
+//				communityField.setEnabled(false);
+//			}
+//		}
 
 		//temp fix
 
@@ -325,12 +300,6 @@ public final class InfrastructureDaoHelper {
 		}else{
 			communityField.setVisibility(VISIBLE);
 		};
-
-
-
-
-
-		//communityField.setVisibility(GONE);
 	}
 
 	/**

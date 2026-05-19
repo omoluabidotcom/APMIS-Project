@@ -40,6 +40,7 @@ import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignLogDto;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
 import de.symeda.sormas.api.campaign.CampaignTreeGridDto;
+import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.api.campaign.diagram.CampaignDiagramCriteria;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaExpiryDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
@@ -51,6 +52,7 @@ import de.symeda.sormas.api.infrastructure.PopulationDataDto;
 import de.symeda.sormas.api.infrastructure.PopulationDataFacade;
 import de.symeda.sormas.api.infrastructure.PopulationDataFauxDto;
 import de.symeda.sormas.api.infrastructure.PopulationDataReferenceDto;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionFacade;
@@ -437,6 +439,50 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		return em.createQuery(cq).getResultStream().map(populationData -> toDto(populationData))
 				.collect(Collectors.toList());
 	}
+	
+	@Override
+	public List<PopulationDataDto> getPopulationDataWithCriteria(CampaignFormDataCriteria criteria) {
+		
+
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
+		Root<PopulationData> root = cq.from(PopulationData.class);
+		
+		Join<PopulationData, Campaign> campaignJoin = root.join(PopulationData.CAMPAIGN, JoinType.LEFT);
+		Join<PopulationData, Region> regionJoin = root.join(PopulationData.REGION, JoinType.LEFT);
+		Join<PopulationData, District> districtJoin = root.join(PopulationData.DISTRICT, JoinType.LEFT);
+		Join<PopulationData, Community> communityJoin = root.join(PopulationData.COMMUNITY, JoinType.LEFT);
+		
+	    List<Predicate> predicates = new ArrayList<>();
+
+	    if (criteria.getCampaign() != null) {
+	        predicates.add(cb.equal(campaignJoin.get(Campaign.UUID), criteria.getCampaign().getUuid()));
+	    }
+	    
+	    if (criteria.getRegion() != null) {
+	        predicates.add(cb.equal(regionJoin.get(Region.UUID), criteria.getRegion().getUuid()));
+	    }
+	    
+	    if (criteria.getDistrict() != null) {
+	        predicates.add(cb.equal(districtJoin.get(District.UUID), criteria.getDistrict().getUuid()));
+	    }
+	    
+	    if (criteria.getCommunity() != null) {
+	        predicates.add(cb.equal(communityJoin.get(Community.UUID), criteria.getCommunity().getUuid()));
+	    }
+
+	    predicates.add(cb.isTrue(root.get(PopulationData.SELECTED)));
+
+	    cq.where(cb.and(predicates.toArray(new Predicate[0])));
+		
+
+		System.out.println(criteria.getCampaign().getUuid() + "DEBUGGER 5678ijhyuio  getPopulationDataWithCriteria  "
+				+ SQLExtractor.from(em.createQuery(cq)));
+
+		return em.createQuery(cq).getResultStream().map(populationData -> toDto(populationData))
+				.collect(Collectors.toList());
+	}
+	
 
 	@Override
 	public List<PopulationDataDto> getPopulationDataWithCriteria(String campUuid) {
@@ -1356,6 +1402,80 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 			Query query = em.createNativeQuery(sql);
 			query.setParameter("campaignUuid", campaignDto.getUuid());
 			query.setParameter("selectedGroups", selectedGroupNames);
+			query.executeUpdate();
+			
+			
+	
+
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+
+	
+
+	@Override
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public boolean generatePopulationDataForCamapignByRegionAndPopulationType(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups, List<AreaReferenceDto> selectedRegions){
+		try {
+			// First, delete existing population data for this campaign to avoid duplicates
+			String deleteSql = "DELETE FROM public.populationdata WHERE campaign_id = (SELECT id FROM campaigns WHERE uuid = :campaignUuid)";
+			Query deleteQuery = em.createNativeQuery(deleteSql);
+			deleteQuery.setParameter("campaignUuid", campaignDto.getUuid());
+			deleteQuery.executeUpdate();
+
+		    List<String> selectedRegionUuids = selectedRegions.stream() .map(AreaReferenceDto::getUuid).collect(Collectors.toList());
+			List<String> selectedGroupNames = selectedAgeGroups.stream().map(AgeGroup::name).collect(Collectors.toList());
+
+			String sql = "INSERT INTO public.populationdata (\n" + 
+					"    uuid,\n" + 
+					"    changedate,\n" + 
+					"    creationdate,\n" + 
+					"    region_id,\n" + 
+					"    district_id,\n" + 
+					"    community_id,\n" + 
+					"    agegroup,\n" + 
+					"    population,\n" + 
+					"    campaign_id,\n" + 
+					"    districtstatus,\n" + 
+					"    modality,\n" + 
+					"    selected\n" + 
+					")\n" + 
+					"SELECT\n" + 
+					"    gen_random_uuid(),\n" + 
+					"    now(),\n" + 
+					"    now(),\n" + 
+					"    r.id,\n" + 
+					"    c.district_id,\n" + 
+					"    c.id,\n" + 
+					"    ag.agegroup,\n" + 
+					"    CASE WHEN ag.agegroup IN (:selectedGroups) THEN COALESCE(ag.population, 0) ELSE 0 END,\n" + 
+					"    c2.id,\n" + 
+					"    'Full Cluster',\n" + 
+					"    'H2H',\n" + 
+					"     true \n" + 
+					"FROM community c\n" + 
+					"JOIN district d ON d.id = c.district_id\n" + 
+					"JOIN region r ON r.id = d.region_id\n" + 
+					"JOIN areas a ON a.id = r.area_id\n" + 
+					"JOIN campaigns c2 \n" + 
+					"    ON c2.uuid = :campaignUuid\n" + 
+					"CROSS JOIN LATERAL (\n" + 
+					"    VALUES\n" + 
+					"        ('AGE_0_4',  c.populationdata_0_4),\n" + 
+					"        ('AGE_5_10', c.populationdata_5_10),\n" + 
+					"        ('AGE_4_23M', c.populationdata_4_23M)\n" + 
+					") AS ag(agegroup, population)\n" + 
+					"WHERE c.archived = false AND a.uuid IN (:selectedRegionUuids);";
+
+			Query query = em.createNativeQuery(sql);
+			query.setParameter("campaignUuid", campaignDto.getUuid());
+			query.setParameter("selectedGroups", selectedGroupNames);
+			query.setParameter("selectedRegionUuids", selectedRegionUuids);
+
 			query.executeUpdate();
 			
 			

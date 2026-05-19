@@ -103,6 +103,53 @@ public class AreaFacadeEjb extends AbstractInfrastructureEjb<Area, AreaService> 
 		// true).stream().map(AreaFacadeEjb::toReferenceDto).collect(Collectors.toList());
 	}
 	
+	@Override
+	public List<AreaReferenceDto> getAllSelectedAreasByFormUuidAndLocaleAndPopulation(
+	        String campaignFormUuid, String campaignUuid, String userLanguage) {
+
+	    String nameColumn;
+
+	    if ("Pashto".equalsIgnoreCase(userLanguage)) {
+	        nameColumn = "a.\"ps_af\"";
+	    } else if ("Dari".equalsIgnoreCase(userLanguage)) {
+	        nameColumn = "a.\"fa_af\"";
+	    } else {
+	        nameColumn = "a.\"name\"";
+	    }
+
+	    String sql =
+	            "SELECT DISTINCT a.uuid, " + nameColumn + ", a.externalid " +
+	            "FROM areas a " +
+	            "INNER JOIN campaignformmeta_areas ca ON a.id = ca.area_id " +
+	            "INNER JOIN campaignformmeta cfm ON ca.campaignformmeta_id = cfm.id " +
+
+	            "WHERE cfm.uuid = :campaignFormUuid " +
+	            "AND EXISTS ( " +
+	            "   SELECT 1 " +
+	            "   FROM region r " +
+	            "   INNER JOIN populationdata pd ON pd.region_id = r.id " +
+	            "   INNER JOIN campaigns c ON pd.campaign_id = c.id " +
+	            "   WHERE r.area_id = a.id " +
+	            "   AND pd.selected = true " +
+	            "   AND c.uuid = :campaignUuid " +
+	            ")";
+
+	    Query query = em.createNativeQuery(sql);
+	    query.setParameter("campaignFormUuid", campaignFormUuid);
+	    query.setParameter("campaignUuid", campaignUuid);
+
+	    @SuppressWarnings("unchecked")
+	    List<Object[]> resultList = query.getResultList();
+
+	    return resultList.stream()
+	            .map(result -> new AreaReferenceDto(
+	                    (String) result[0],
+	                    (String) result[1],
+	                    ((BigInteger) result[2]).longValue()
+	            ))
+	            .collect(Collectors.toList());
+	}
+	
 	
 	@Override
 	public List<AreaReferenceDto> getAllSelectedAreasByFormUuidAndLocale(String campaignFormUuid, String userLanguage) {
@@ -136,10 +183,7 @@ public class AreaFacadeEjb extends AbstractInfrastructureEjb<Area, AreaService> 
 		)).collect(Collectors.toList()));
 
 		return resultData;
-		//
 
-		// return service.getAllActive(Area.NAME,
-		// true).stream().map(AreaFacadeEjb::toReferenceDto).collect(Collectors.toList());
 	}
 
 	@Override

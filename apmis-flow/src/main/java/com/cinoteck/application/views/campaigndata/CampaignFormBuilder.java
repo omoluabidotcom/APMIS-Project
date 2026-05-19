@@ -98,6 +98,7 @@ import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.MapperUtil;
 import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
+import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
@@ -206,11 +207,13 @@ public class CampaignFormBuilder extends VerticalLayout {
 	CampaignFormMetaExpiryDto expiryDto;
 
 	DateTimeFormatter dateformatter = DateTimeFormatter.ofPattern("dd-MM-uuuu").withResolverStyle(ResolverStyle.STRICT);
+	
+	private CampaignFormDataCriteria criteria = new CampaignFormDataCriteria();
 
 	public CampaignFormBuilder(List<CampaignFormElement> formElements, List<CampaignFormDataEntry> formValues,
 			CampaignReferenceDto campaignReferenceDto, List<CampaignFormTranslations> translations, String formName,
 			CampaignFormMetaReferenceDto campaignFormMetaUUID, boolean openData, String uuidForm,
-			boolean isDistrictEntry, CampaignDto campaignDto, CampaignFormMetaExpiryDto expiryDto) {
+			boolean isDistrictEntry, CampaignDto campaignDto, CampaignFormMetaExpiryDto expiryDto, List<PopulationDataDto> popDtox) {
 
 		logger.debug("+++++++++++CampaignFormBuilder+++++: " + openData);
 
@@ -240,7 +243,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 		UserProvider userProvider = new UserProvider();
 		I18nProperties.setUserLanguage(userProvider.getUser().getLanguage());
 		this.userLocale = I18nProperties.getUserLanguage().getLocale();
-
+		
+		this.popDto = popDtox;
+criteria.setCampaign(campaignReferenceDto);
 //		logger.debug(userProvider.getUser().getLanguage() +" : I18nProperties.getUserLanguage().getLocale(): "+I18nProperties.getUserLanguage().getLocale());
 
 		if (userLocale != null) {
@@ -290,14 +295,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		formDate.setValue(formattedDate);
 		formDate.setRequired(true);
-//		formDate.setId("my-disabled-textfield");
 		formDate.getStyle().set("-webkit-text-fill-color", "green !important");
 
 		formDate.setErrorMessage(""); // Initialize error message
 		formDate.setInvalid(false);
 
 		formDate.addValueChangeListener(e -> {
-
 			System.out.println(validateTextInputFormDate(e.getValue())
 					+ "validateTextInputFormDate(e.getValue())validateTextInputFormDate(e.getValue())");
 			validateTextInputFormDate(e.getValue());
@@ -307,9 +310,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 		logger.debug("++++++++++++++++++++++++++++++++campaignReferenceDto.getUuid(" + campaignReferenceDto.getUuid());
 
 
-		popDto = FacadeProvider.getPopulationDataFacade().getPopulationDataWithCriteria(campaignReferenceDto.getUuid());
+//		popDto = FacadeProvider.getPopulationDataFacade().getPopulationDataWithCriteria(campaignReferenceDto.getUuid());
 
-		logger.debug("++++++++++++++++++++++++++++++++" + popDto.size());
+//		logger.debug("++++++++++++++++++++++++++++++++" + popDto.size());
 
 		cbArea = new ComboBox<>(I18nProperties.getCaption(Captions.area));
 		cbArea.setRequired(true);
@@ -330,14 +333,14 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 				if (lang.equals("Pashto")) {
 					cbArea.setItems(FacadeProvider.getAreaFacade()
-							.getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Pashto"));
+							.getAllSelectedAreasByFormUuidAndLocaleAndPopulation(campaignFormMetaUUID.getUuid(), criteria.getCampaign().getUuid(), "Pashto"));
 				} else if (lang.equals("Dari")) {
 					cbArea.setItems(FacadeProvider.getAreaFacade()
-							.getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "Dari"));
+							.getAllSelectedAreasByFormUuidAndLocaleAndPopulation(campaignFormMetaUUID.getUuid(),criteria.getCampaign().getUuid(), "Dari"));
 				} else {
 					// English or default
 					for (AreaReferenceDto dto : FacadeProvider.getAreaFacade()
-							.getAllSelectedAreasByFormUuidAndLocale(campaignFormMetaUUID.getUuid(), "English")) {
+							.getAllSelectedAreasByFormUuidAndLocaleAndPopulation(campaignFormMetaUUID.getUuid(),criteria.getCampaign().getUuid(), "English")) {
 						areaNamesExtract.add(dto.getCaption());
 					}
 
@@ -379,41 +382,22 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		// listeners logic
 		cbArea.addValueChangeListener(e -> {
+			System.out.println("Area Value changed ------------------------------");
 			if (e.getValue() != null) {
+				criteria.area(e.getValue());
 				List<RegionReferenceDto> regionsList = new ArrayList<>();
 				List<RegionReferenceDto> allRegionList = new ArrayList<>();
-
 				if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-					regionsList = FacadeProvider.getRegionFacade().getAllActiveByAreaPashto(e.getValue().getUuid());
-					popDto.forEach(popDtoc -> allRegionList.add(popDtoc.getRegion()));
-					List<RegionReferenceDto> filteredRegionListwithDup = regionsList.stream()
-							.filter(allRegionList::contains).collect(Collectors.toList());
-					// Remove duplicates using Set
-					Set<RegionReferenceDto> uniqueSet = new HashSet<>(filteredRegionListwithDup);
-					// Convert the set back to a list (if needed)
-					List<RegionReferenceDto> filteredRegionList = new ArrayList<>(uniqueSet);
-					provinces = filteredRegionList;
+					regionsList = FacadeProvider.getRegionFacade().getAllActiveByAreaAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "Pashto");
+
+					provinces = regionsList;// filteredRegionList;
 
 				} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-					regionsList = FacadeProvider.getRegionFacade().getAllActiveByAreaDari(e.getValue().getUuid());
-					popDto.forEach(popDtoc -> allRegionList.add(popDtoc.getRegion()));
-					List<RegionReferenceDto> filteredRegionListwithDup = regionsList.stream()
-							.filter(allRegionList::contains).collect(Collectors.toList());
-					// Remove duplicates using Set
-					Set<RegionReferenceDto> uniqueSet = new HashSet<>(filteredRegionListwithDup);
-					// Convert the set back to a list (if needed)
-					List<RegionReferenceDto> filteredRegionList = new ArrayList<>(uniqueSet);
-					provinces = filteredRegionList;
+					regionsList = FacadeProvider.getRegionFacade().getAllActiveByAreaAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "Dari");
+					provinces = regionsList; //filteredRegionList;
 				} else {
-					regionsList = FacadeProvider.getRegionFacade().getAllActiveByArea(e.getValue().getUuid());
-					popDto.forEach(popDtoc -> allRegionList.add(popDtoc.getRegion()));
-					List<RegionReferenceDto> filteredRegionListwithDup = regionsList.stream()
-							.filter(allRegionList::contains).collect(Collectors.toList());
-					// Remove duplicates using Set
-					Set<RegionReferenceDto> uniqueSet = new HashSet<>(filteredRegionListwithDup);
-					// Convert the set back to a list (if needed)
-					List<RegionReferenceDto> filteredRegionList = new ArrayList<>(uniqueSet);
-					provinces = filteredRegionList;
+					regionsList = FacadeProvider.getRegionFacade().getAllActiveByAreaAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
+					provinces = regionsList; // filteredRegionList;
 
 				}
 
@@ -425,6 +409,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 				cbCommunity.clear();
 				cbCommunity.setReadOnly(true);
 			} else {
+				criteria.area(null);
 				cbRegion.clear();
 				cbRegion.setReadOnly(true);
 				cbDistrict.clear();
@@ -437,19 +422,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		cbRegion.addValueChangeListener(e -> {
 			if (e.getValue() != null) {
+				criteria.region(e.getValue());
 				List<DistrictReferenceDto> districtsList = new ArrayList<>();
 				List<DistrictReferenceDto> allDistrictList = new ArrayList<>();
 
 				if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-					districtsList = FacadeProvider.getDistrictFacade()
-							.getAllActiveByRegionPashto(e.getValue().getUuid());
-					popDto.forEach(popDtoc -> allDistrictList.add(popDtoc.getDistrict()));
-					List<DistrictReferenceDto> filteredDistrictListwithDup = districtsList.stream()
-							.filter(allDistrictList::contains).collect(Collectors.toList());
-					// Remove duplicates using Set
-					Set<DistrictReferenceDto> uniqueSet = new HashSet<>(filteredDistrictListwithDup);
-					// Convert the set back to a list
-					List<DistrictReferenceDto> filteredDistrictList = new ArrayList<>(uniqueSet);
+					districtsList = FacadeProvider.getDistrictFacade().getAllActiveByRegionAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "Pashto");
 
 					List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
 					if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
@@ -457,7 +435,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 								&& !userProvider.getUser().getDistricts().isEmpty()) {
 							// if the user selected district is amonths the active distgricts add them
 							for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
-								if (filteredDistrictList.contains(userDistrict)) {
+								if (districtsList.contains(userDistrict)) {
 									filteredDistrictListByUserDistrict.add(userDistrict);
 								}
 							}
@@ -466,32 +444,25 @@ public class CampaignFormBuilder extends VerticalLayout {
 					} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
 							&& userProvider.getUser().getDistrict() != null) {
 						DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
-						if (filteredDistrictList.contains(userDistrict)) {
+						if (districtsList.contains(userDistrict)) {
 							filteredDistrictListByUserDistrict.add(userDistrict);
 						}
 						districts = filteredDistrictListByUserDistrict;
 					} else {
-						districts = filteredDistrictList;
+						districts = districtsList;
 
 					}
 
 				} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-					districtsList = FacadeProvider.getDistrictFacade().getAllActiveByRegionDari(e.getValue().getUuid());
-					popDto.forEach(popDtoc -> allDistrictList.add(popDtoc.getDistrict()));
-					List<DistrictReferenceDto> filteredDistrictListwithDup = districtsList.stream()
-							.filter(allDistrictList::contains).collect(Collectors.toList());
-					// Remove duplicates using Set
-					Set<DistrictReferenceDto> uniqueSet = new HashSet<>(filteredDistrictListwithDup);
-					// Convert the set back to a list
-					List<DistrictReferenceDto> filteredDistrictList = new ArrayList<>(uniqueSet);
-
+					districtsList = FacadeProvider.getDistrictFacade().getAllActiveByRegionAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "Dari");
+			
 					List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
 					if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
 						if (userProvider.getUser().getDistricts() != null
 								&& !userProvider.getUser().getDistricts().isEmpty()) {
 							// if the user selected district is amonths the active distgricts add them
 							for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
-								if (filteredDistrictList.contains(userDistrict)) {
+								if (districtsList.contains(userDistrict)) {
 									filteredDistrictListByUserDistrict.add(userDistrict);
 								}
 							}
@@ -500,31 +471,24 @@ public class CampaignFormBuilder extends VerticalLayout {
 					} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
 							&& userProvider.getUser().getDistrict() != null) {
 						DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
-						if (filteredDistrictList.contains(userDistrict)) {
+						if (districtsList.contains(userDistrict)) {
 							filteredDistrictListByUserDistrict.add(userDistrict);
 						}
 						districts = filteredDistrictListByUserDistrict;
 					} else {
-						districts = filteredDistrictList;
+						districts = districtsList;
 
 					}
 				} else {
-					districtsList = FacadeProvider.getDistrictFacade().getAllActiveByRegion(e.getValue().getUuid());
-					popDto.forEach(popDtoc -> allDistrictList.add(popDtoc.getDistrict()));
-					List<DistrictReferenceDto> filteredDistrictListwithDup = districtsList.stream()
-							.filter(allDistrictList::contains).collect(Collectors.toList());
-					// Remove duplicates using Set
-					Set<DistrictReferenceDto> uniqueSet = new HashSet<>(filteredDistrictListwithDup);
-					// Convert the set back to a list
-					List<DistrictReferenceDto> filteredDistrictList = new ArrayList<>(uniqueSet);
-
+					districtsList = FacadeProvider.getDistrictFacade().getAllActiveByRegionAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
+		
 					List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
 					if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
 						if (userProvider.getUser().getDistricts() != null
 								&& !userProvider.getUser().getDistricts().isEmpty()) {
 							// if the user selected district is amonths the active distgricts add them
 							for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
-								if (filteredDistrictList.contains(userDistrict)) {
+								if (districtsList.contains(userDistrict)) {
 									filteredDistrictListByUserDistrict.add(userDistrict);
 								}
 							}
@@ -533,12 +497,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 					} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
 							&& userProvider.getUser().getDistrict() != null) {
 						DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
-						if (filteredDistrictList.contains(userDistrict)) {
+						if (districtsList.contains(userDistrict)) {
 							filteredDistrictListByUserDistrict.add(userDistrict);
 						}
 						districts = filteredDistrictListByUserDistrict;
 					} else {
-						districts = filteredDistrictList;
+						districts = districtsList;
 
 					}
 				}
@@ -548,6 +512,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 				cbCommunity.clear();
 				cbCommunity.setReadOnly(true);
 			} else {
+				criteria.region(null);
 				cbDistrict.clear();
 				cbDistrict.setReadOnly(true);
 				cbCommunity.clear();
@@ -560,7 +525,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 		if (isDistrictEntry) {
 			cbDistrict.addValueChangeListener(e -> {
 				if (e.getValue() != null) {
-					communities = FacadeProvider.getCommunityFacade().getAllActiveByDistrict(e.getValue().getUuid());
+					communities = FacadeProvider.getCommunityFacade().getAllActiveClustersDistrictAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
 					cbCommunity.clear();
 					cbCommunity.setReadOnly(false);
 					;
@@ -597,7 +562,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 		} else {
 			cbDistrict.addValueChangeListener(e -> {
 				if (e.getValue() != null) {
-					communities = FacadeProvider.getCommunityFacade().getAllActiveByDistrict(e.getValue().getUuid());
+					criteria.district(e.getValue());
+
+					communities = FacadeProvider.getCommunityFacade().getAllActiveClustersDistrictAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
 					cbCommunity.clear();
 					cbCommunity.setReadOnly(false);
 					;
@@ -623,6 +590,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 					VaadinService.getCurrentRequest().getWrappedSession().setAttribute("populationdata", comdto);
 				} else {
+					criteria.district(null);
 					cbCommunity.clear();
 					cbCommunity.setReadOnly(true);
 				}

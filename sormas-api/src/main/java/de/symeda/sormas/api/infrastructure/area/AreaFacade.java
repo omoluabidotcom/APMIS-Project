@@ -16,6 +16,8 @@ public interface AreaFacade extends GeoLocationFacade<AreaDto, AreaDto, AreaRefe
 	
 	List<AreaReferenceDto> getAllSelectedAreasByFormUuidAndLocale(String campaignFormUuid, String userLanguage);
 	
+	List<AreaReferenceDto> getAllSelectedAreasByFormUuidAndLocaleAndPopulation(String campaignFormUuid, String campaignUuid, String userLanguage);
+	
 	List<AreaReferenceDto> getAllActiveAsReferencePashto();
 
 	List<AreaReferenceDto> getAllActiveAsReferenceDari();

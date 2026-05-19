@@ -562,29 +562,29 @@ public class AssociateCampaign extends VerticalLayout {
     private void commitPendingChangesAndRefresh() {
         try {
             // Commit selections
-            if (!pendingSelectedClusters.isEmpty()) {
-                FacadeProvider.getPopulationDataFacade()
-                    .updateClusterSelectionByClusterIds(
-                        new ArrayList<>(pendingSelectedClusters), 
-                        campaignDto.getUuid(), 
-                        true
-                    );
-            }
+//            if (!pendingSelectedClusters.isEmpty()) {
+//                FacadeProvider.getPopulationDataFacade()
+//                    .updateClusterSelectionByClusterIds(
+//                        new ArrayList<>(pendingSelectedClusters), 
+//                        campaignDto.getUuid(), 
+//                        true
+//                    );
+//            }
             
             // Commit deselections
-            if (!pendingDeselectedClusters.isEmpty()) {
-                FacadeProvider.getPopulationDataFacade()
-                    .updateClusterSelectionByClusterIds(
-                        new ArrayList<>(pendingDeselectedClusters), 
-                        campaignDto.getUuid(), 
-                        false
-                    );
-            }
+//            if (!pendingDeselectedClusters.isEmpty()) {
+//                FacadeProvider.getPopulationDataFacade()
+//                    .updateClusterSelectionByClusterIds(
+//                        new ArrayList<>(pendingDeselectedClusters), 
+//                        campaignDto.getUuid(), 
+//                        false
+//                    );
+//            }
             
             // Clear pending changes
-            pendingSelectedClusters.clear();
-            pendingDeselectedClusters.clear();
-            hasPendingChanges = false;
+//            pendingSelectedClusters.clear();
+//            pendingDeselectedClusters.clear();
+//            hasPendingChanges = false;
             
             Notification.show("Changes saved, refreshing data...", 2000, Notification.Position.MIDDLE)
                 .addThemeVariants(NotificationVariant.LUMO_SUCCESS);

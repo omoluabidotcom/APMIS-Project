@@ -1449,6 +1449,66 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 			return QueryHelper.getResultList(em, cq, null, null, this::toDtoList);//.stream().filter(e -> e.getMessage() != "Correctly assigned").collect(Collectors.toList());
 		}
 	
+@Override
+public List<CommunityReferenceDto> getAllActiveClustersDistrictAndSelectedInCampaign(
+        String districtUuid, String campaignUuid, String userLanguage) {
+
+    System.out.println("DEBUG START -> getAllActiveClustersDistrictAndSelectedInCampaign");
+    System.out.println("districtUuid: " + districtUuid);
+    System.out.println("campaignUuid: " + campaignUuid);
+    System.out.println("userLanguage: " + userLanguage);
+
+    String nameColumn;
+
+    if ("Pashto".equalsIgnoreCase(userLanguage)) {
+        nameColumn = "c.\"ps_af\"";
+    } else if ("Dari".equalsIgnoreCase(userLanguage)) {
+        nameColumn = "c.\"fa_af\"";
+    } else {
+        nameColumn = "c.\"name\"";
+    }
+
+    String sql =
+            "SELECT c.uuid, " + nameColumn + ", c.externalid , c.clusternumber " +
+            "FROM community c " +
+            "INNER JOIN district d ON d.id = c.district_id " +
+            "WHERE d.uuid = :districtUuid " +
+            "AND c.archived = false " +
+            "AND EXISTS ( " +
+            "   SELECT 1 " +
+            "   FROM populationdata p " +
+            "   INNER JOIN campaigns ca ON p.campaign_id = ca.id " +
+            "   WHERE p.community_id = c.id " +
+            "   AND p.selected = true " +
+            "   AND ca.uuid = :campaignUuid " +
+            ")";
+
+    System.out.println("Generated SQL: " + sql);
+
+    Query query = em.createNativeQuery(sql);
+    query.setParameter("districtUuid", districtUuid);
+    query.setParameter("campaignUuid", campaignUuid);
+
+    @SuppressWarnings("unchecked")
+    List<Object[]> resultList = query.getResultList();
+
+    System.out.println("Result size: " + resultList.size());
+
+    // (Optional) Log first few results for inspection
+
+    List<CommunityReferenceDto> resultData = resultList.stream()
+            .map(result -> new CommunityReferenceDto(
+                    (String) result[0],
+                    (String) result[1],
+                    ((BigInteger) result[2]).longValue(),
+                    ((Integer) result[3])
+            ))
+            .collect(Collectors.toList());
+
+    System.out.println("DEBUG END -> returning " + resultData.size() + " records");
+
+    return resultData;
+}
 	
 	@Override
 	public List<CommunityDto> getAllActiveClustersAsReferenceAndPopulation(Long regionId, String districtId, CampaignDto campaignDt) {

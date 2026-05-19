@@ -75,33 +75,63 @@ public List<PopulationData> getSelectedDistrictsByMultipleUuids(List<String> dis
     return result;
 }
 
-    public List<PopulationData> getSelectedClustersByMultipleUuids(List<String> districtUuids, String campaignUuid) {
-        if (districtUuids == null || districtUuids.isEmpty()) {
-            System.out.println("didtricy uuid is null from backend -------------");
+    public List<PopulationData> getSelectedClustersByMultipleUuids(List<String> clusterUuids, String campaignUuid) {
+
+        if (clusterUuids == null || clusterUuids.isEmpty()) {
+            System.out.println("clusterUuids is null or empty -------------");
             return new ArrayList<>();
         }
+
         List<PopulationData> result = new ArrayList<>();
+
         try {
             QueryBuilder<PopulationData, Long> queryBuilder = queryBuilder();
             Where<PopulationData, Long> where = queryBuilder.where();
-            where.eq("campaign_id", campaignUuid);
-            where.and();
-            where.eq("selected", true);
 
-            if (districtUuids.size() == 1) {
-                where.and();
-                where.eq("cluster_id", districtUuids.get(0));
-            } else {
-                System.out.println("District uuid size is greater than 0 -----------------");
-                where.and();
-                where.in("cluster_id", districtUuids);
-            }
+            where.eq("campaign_id", campaignUuid)
+                    .and()
+                    .in("cluster_id", clusterUuids)   // 👈 cluster filter first
+                    .and()
+                    .eq("selected", true);            // 👈 selected LAST
+
             result = queryBuilder.query();
+
+            System.out.println("Query result size: " + result.size());
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return result;
     }
+
+//    public List<PopulationData> getSelectedClustersByMultipleUuids(List<String> districtUuids, String campaignUuid) {
+//        if (districtUuids == null || districtUuids.isEmpty()) {
+//            System.out.println("didtricy uuid is null from backend -------------");
+//            return new ArrayList<>();
+//        }
+//        List<PopulationData> result = new ArrayList<>();
+//        try {
+//            QueryBuilder<PopulationData, Long> queryBuilder = queryBuilder();
+//            Where<PopulationData, Long> where = queryBuilder.where();
+//            where.eq("campaign_id", campaignUuid);
+//            where.and();
+//            where.eq("selected", true);
+//
+//            if (districtUuids.size() == 1) {
+//                where.and();
+//                where.eq("cluster_id", districtUuids.get(0));
+//            } else {
+//                System.out.println("District uuid size is greater than 0 -----------------");
+//                where.and();
+//                where.in("cluster_id", districtUuids);
+//            }
+//            result = queryBuilder.query();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return result;
+//    }
 
 //    public List<PopulationData> getSelectedClustersByMultipleUuidsx(List<String> clusterUuids, String campaignUuid) {
 //        if (clusterUuids == null || clusterUuids.isEmpty()) {
