@@ -155,5 +155,6 @@ public interface UserFacade {
 	
 	public boolean isTokenStillValid(String resetToken, LocalDateTime currentDateTime);
  
+	public List<UserDto> getMobileUsers();
 //	public Date getPreviousLoginDateByUsername(String username);
 }
