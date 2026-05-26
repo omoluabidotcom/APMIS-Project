@@ -228,14 +228,14 @@ public class CampaignFormDataEditForm extends AbstractEditForm<CampaignFormDataD
 		cbArea.addValueChangeListener(e -> {
 			AreaReferenceDto area = (AreaReferenceDto) e.getProperty().getValue();
 			FieldHelper.updateItems(cbRegion,
-					area != null ? FacadeProvider.getRegionFacade().getAllActiveByAreaAndSelectedInCampaign(area.getUuid(), campaingUUID) : null);
+					area != null ? FacadeProvider.getRegionFacade().getAllActiveByAreaAndSelectedInCampaign(area.getUuid(), campaingUUID, "English") : null);
 			cbCommunity.clear();
 		});
 
 		cbRegion.addValueChangeListener(e -> {
 			RegionReferenceDto region = (RegionReferenceDto) e.getProperty().getValue();
 			FieldHelper.updateItems(cbDistrict,
-					region != null ? FacadeProvider.getDistrictFacade().getAllActiveByRegionAndSelectedInCampaign(region.getUuid(), campaingUUID) : null);
+					region != null ? FacadeProvider.getDistrictFacade().getAllActiveByRegionAndSelectedInCampaign(region.getUuid(), campaingUUID, "English") : null);
 			cbCommunity.clear();
 		});
 
