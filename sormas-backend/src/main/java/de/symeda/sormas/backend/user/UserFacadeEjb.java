@@ -773,6 +773,34 @@ public class UserFacadeEjb implements UserFacade {
 		cq.select(cb.countDistinct(root));
  		return em.createQuery(cq).getSingleResult();
 	}
+	
+	@Override
+	public List<UserDto> getMobileUsers() {
+
+	    CriteriaBuilder cb = em.getCriteriaBuilder();
+	    CriteriaQuery<User> cq = cb.createQuery(User.class);
+	    Root<User> user = cq.from(User.class);
+
+	    user.fetch(User.AREA, JoinType.LEFT);
+	    user.fetch(User.REGION, JoinType.LEFT);
+	    user.fetch(User.DISTRICT, JoinType.LEFT);
+	    user.fetch(User.ADDRESS, JoinType.LEFT);
+
+	    Join<User, UserRole> userRoleJoin = user.join(User.USER_ROLES, JoinType.LEFT);
+
+	    Predicate mobileUserPredicate = userRoleJoin.in(UserRole.REST_USER, UserRole.COMMUNITY_OFFICER);
+
+	    cq.select(user)
+	        .distinct(true)
+	        .where(mobileUserPredicate)
+	        .orderBy(cb.desc(user.get(User.CHANGE_DATE)));
+
+	    return em.createQuery(cq)
+	        .getResultList()
+	        .stream()
+	        .map(UserFacadeEjb::toDto)
+	        .collect(Collectors.toList());
+	}
 
 	private User fromDto(UserDto source, boolean checkChangeDate) {
 
