@@ -1538,7 +1538,7 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 
 	    return clusters.stream()
 	    		.map(e -> e.getCaption())
-	    		 .collect(Collectors.joining(", ", "[", "]"));
+	    		 .collect(Collectors.joining(", ", "", ""));
 	}
 
 	private String joinForms(Set<FormAccess> forms) {
@@ -1548,7 +1548,7 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 
 	    return forms.stream()
 	        .map(Enum::name)
-	        .collect(Collectors.joining(", ", "[", "]"));
+	        .collect(Collectors.joining(", ", "", ""));
 	}
 	
 	private String joinRoles(Set<UserRole> userRoles) {
@@ -1557,8 +1557,8 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 	    }
 
 	    return userRoles.stream()
-	        .map(Enum::name)
-	        .collect(Collectors.joining(", ", "[", "]"));
+	        .map(Enum::toString)
+	        .collect(Collectors.joining(", ", "", ""));
 	}
 
 	private String csv(String value) {
