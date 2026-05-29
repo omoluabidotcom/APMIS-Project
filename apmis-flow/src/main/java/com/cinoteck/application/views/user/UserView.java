@@ -1521,7 +1521,7 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 	        sb.append(csv(user.getRegion() != null ? user.getRegion().getCaption() : "")).append(",");
 	        sb.append(csv(user.getArea() != null ? user.getArea().getCaption() : "")).append(",");
 	        sb.append(csv(user.getDistrict() != null ? user.getDistrict().getCaption() : "")).append(",");
-	        sb.append(csv(joinClusters(user.getCommunity()))).append(",");
+	        sb.append(csv(joinClusters(user.getCommunitynos()))).append(",");
 	        sb.append(csv(joinForms(user.getFormAccess()))).append(",");
 //	        sb.append(csv(joinRoles(getDisplayableRolesForFrontend(user.getUserRoles())))).append(",");
 	        sb.append(csv(joinRoles(user.getUserRoles()))).append(",");
@@ -1531,13 +1531,12 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 	    return sb.toString();
 	}
 
-	private String joinClusters(Set<CommunityReferenceDto> clusters) {
+	private String joinClusters(Set<String> clusters) {
 	    if (clusters == null || clusters.isEmpty()) {
 	        return "";
 	    }
 
 	    return clusters.stream()
-	    		.map(e -> e.getCaption())
 	    		 .collect(Collectors.joining(", ", "", ""));
 	}
 
