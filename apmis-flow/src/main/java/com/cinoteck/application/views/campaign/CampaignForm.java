@@ -731,9 +731,6 @@ public class CampaignForm extends VerticalLayout {
 		parentTab3.add(layoutPost);
 		tabsheetParent.add(I18nProperties.getCaption(Captions.postCampaignPhase), parentTab3);
 
-		VerticalLayout parentTab4 = new VerticalLayout();
-		final HorizontalLayout layoutAssocCamp = new HorizontalLayout();
-		layoutAssocCamp.setWidthFull();
 
 		if (campaignDto != null) {
 			tab1.add(preCampaignFormGridComponent);
@@ -766,12 +763,10 @@ public class CampaignForm extends VerticalLayout {
 			tab2Intra.add(savecampaignTextt);
 			tab1Post.add(savecampaignText11);
 			tab2Post.add(savecampaignText22);
-			parentTab4.add(savecampaignTextAssoccamp);
 
 		}
 
 //		parentTab4.add(layoutAssocCamp);
-		tabsheetParent.add(I18nProperties.getCaption(Captions.associateCampaign), parentTab4);
 
 		VerticalLayout parentTab5 = new VerticalLayout();
 		parentTab5.setId("parentTab5");
@@ -803,7 +798,16 @@ public class CampaignForm extends VerticalLayout {
 //				campaignName.setWidthFull();
 				
 				Paragraph note = new Paragraph("Please select the population target group to generate population targets for this campaign");
+				
+				List<AreaReferenceDto> regions;
+				regions = FacadeProvider.getAreaFacade().getAllActiveAsReference();
 
+				MultiSelectComboBox<AreaReferenceDto> regionSelection = new MultiSelectComboBox<>("Regions");
+				regionSelection.setItems(regions);
+				regionSelection.setWidthFull();
+				regionSelection.setClearButtonVisible(true);
+
+				
 				MultiSelectComboBox<AgeGroup> ageGroupsSelection = new MultiSelectComboBox<>("Poulation Target Categories");
 				ageGroupsSelection.setItems(AgeGroup.AGE_0_4, AgeGroup.AGE_5_10, AgeGroup.AGE_4_23M);
 				ageGroupsSelection.setItemLabelGenerator(item -> {
@@ -816,6 +820,7 @@ public class CampaignForm extends VerticalLayout {
 				ageGroupsSelection.setClearButtonVisible(true);
 
 				Button selectAllBtn = new Button("Select All", event -> {
+					regionSelection.setValue(regions);
 					ageGroupsSelection.setValue(Set.of(AgeGroup.AGE_0_4, AgeGroup.AGE_5_10, AgeGroup.AGE_4_23M));
 				});
 				selectAllBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
@@ -825,10 +830,15 @@ public class CampaignForm extends VerticalLayout {
 //				selectionHeader.setJustifyContentMode(JustifyContentMode.BETWEEN);
 //				selectionHeader.setAlignItems(Alignment.CENTER);
 
-				dialogLayout.add(note, ageGroupsSelection, selectAllBtn);
+				dialogLayout.add(note, regionSelection, ageGroupsSelection, selectAllBtn);
 				genDialog.add(dialogLayout);
 
 				Button confirmBtn = new Button(I18nProperties.getCaption("Generate Data"), event -> {
+					if (ageGroupsSelection.getValue().isEmpty()) {
+						Notification.show("Please, Select at least one Region");
+						return;
+					}
+					
 					if (ageGroupsSelection.getValue().isEmpty()) {
 						Notification.show(I18nProperties.getString(Strings.infoSelectAtLeastOneCategory));
 						return;
@@ -844,8 +854,9 @@ public class CampaignForm extends VerticalLayout {
 					confirmGeneration.addConfirmListener(confirmEvent -> {
 						genDialog.close();
 
+						List<AreaReferenceDto> selectedRegions = new ArrayList<>(regionSelection.getValue());
 						List<AgeGroup> selectedGroups = new ArrayList<>(ageGroupsSelection.getValue());
-						if (FacadeProvider.getPopulationDataFacade().generatePopulationDataForCamapign(campaignDto, selectedGroups)) {
+						if (FacadeProvider.getPopulationDataFacade().generatePopulationDataForCamapignByRegionAndPopulationType(campaignDto, selectedGroups, selectedRegions)) {
 							Notification.show("Population Data Generation Complete For Campaign");
 							
 							CampaignLogDto log = new CampaignLogDto();

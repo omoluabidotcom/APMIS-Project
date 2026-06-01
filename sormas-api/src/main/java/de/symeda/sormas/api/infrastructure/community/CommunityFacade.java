@@ -82,6 +82,8 @@ public interface CommunityFacade extends GeoLocationFacade<CommunityDto, Communi
 	List<CommunityHistoryExtractDto> getClusterDataChangeHistory(CommunityCriteriaNew criteria);
 	
 	List<CommunityDto> getAllActiveClustersAsReferenceAndPopulation(Long regionId, String districtUuid, CampaignDto campaignDt);
+	
+	List<CommunityReferenceDto> getAllActiveClustersDistrictAndSelectedInCampaign(String districtUuid, String campaignUuid, String userLanguage);
 
 
 }

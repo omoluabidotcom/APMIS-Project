@@ -174,7 +174,7 @@ public class CampaignFormDataImportDryRunner extends DataImporter {
 				logger.debug("there is rcode -------------------------------------------");
 
 				List<RegionReferenceDto> selectedAreaInCampaignxy = FacadeProvider.getRegionFacade()
-						.getAllActiveByAreaAndSelectedInCampaign(selectedAreaUUid, campaignDto.getUuid());
+						.getAllActiveByAreaAndSelectedInCampaign(selectedAreaUUid, campaignDto.getUuid(), "English");
 				region_xt_id = Long.parseLong(values[i]);
 				for (RegionReferenceDto regExId : selectedAreaInCampaignxy) {
 					RegionDto selectedRegionsFromDto = FacadeProvider.getRegionFacade().getByUuid(regExId.getUuid());
@@ -209,7 +209,7 @@ public class CampaignFormDataImportDryRunner extends DataImporter {
 				logger.debug("there is dcode -------------------------------------------" + regionExists);
 
 				List<DistrictReferenceDto> selectedDistrictInCampaignxy = FacadeProvider.getDistrictFacade()
-						.getAllActiveByRegionAndSelectedInCampaign(selectedRegionUUid, campaignDto.getUuid());
+						.getAllActiveByRegionAndSelectedInCampaign(selectedRegionUUid, campaignDto.getUuid(), "English");
 
 				logger.debug("selected district list  -------------------------------------------"
 						+ selectedDistrictInCampaignxy);

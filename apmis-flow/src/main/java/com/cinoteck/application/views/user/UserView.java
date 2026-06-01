@@ -1,20 +1,19 @@
 package com.cinoteck.application.views.user;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,33 +21,21 @@ import org.apache.commons.lang3.StringUtils;
 import com.cinoteck.application.UserProvider;
 import com.cinoteck.application.views.MainLayout;
 import com.cinoteck.application.views.about.AboutView;
-import com.cinoteck.application.views.campaign.CampaignForm;
-import com.cinoteck.application.views.campaigndata.ImportCampaignsFormDataDialog;
-import com.cinoteck.application.views.user.UserForm.SaveEvent;
-import com.cinoteck.application.views.user.UserForm.UserRoleCustomComparator;
 import com.cinoteck.application.views.utils.gridexporter.GridExporter;
-import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridMultiSelectionModel;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
@@ -58,7 +45,6 @@ import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
@@ -69,30 +55,27 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.server.Page;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
+import com.vaadin.flow.server.StreamResource;
 
 import de.symeda.sormas.api.AuthProvider;
 import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.Language;
-import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
 import de.symeda.sormas.api.caze.CaseDataDto;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Strings;
 import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
-import de.symeda.sormas.api.infrastructure.area.AreaType;
+import de.symeda.sormas.api.infrastructure.community.CommunityDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
@@ -102,8 +85,8 @@ import de.symeda.sormas.api.user.UserDto;
 import de.symeda.sormas.api.user.UserHelper;
 import de.symeda.sormas.api.user.UserRight;
 import de.symeda.sormas.api.user.UserRole;
+import de.symeda.sormas.api.user.UserRole.UserRoleValidationException;
 import de.symeda.sormas.api.user.UserType;
-//import de.symeda.sormas.ui.utils.DownloadUtil;
 
 @PageTitle("APMIS-User Management")
 @Route(value = "users", layout = MainLayout.class)
@@ -152,6 +135,7 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 
 	TextField searchField = new TextField();
 	Button exportUsers = new Button(I18nProperties.getCaption(Captions.export));
+	Button exportMobileUsers = new Button("Mobile Users Export");
 	Button importUsers = new Button(I18nProperties.getCaption(Captions.actionImport));
 
 	Button displayFilters;
@@ -220,9 +204,26 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 		exportUsers.setIcon(new Icon(VaadinIcon.UPLOAD));
 		exportUsers.addClickListener(e -> {
 			anchor.getElement().callJsFunction("click");
-
 		});
 
+		StreamResource resource = new StreamResource(
+			    "mobile-users.csv",
+			    () -> {
+			        System.out.println("Exporting mobile users to CSV...");
+			        List<UserDto> users = FacadeProvider.getUserFacade().getMobileUsers();
+			        String csv = buildUsersCsv(users);
+			        return new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8));
+			    }
+			);
+
+		Anchor exporMobiletUsers = new Anchor();
+		exporMobiletUsers.setHref(resource);
+		exporMobiletUsers.getElement().setAttribute("download", true);
+
+		Button exportMobileUsers = new Button("Mobile Users Export");
+		exportMobileUsers.setIcon(new Icon(VaadinIcon.UPLOAD));
+		exporMobiletUsers.add(exportMobileUsers);
+		
 		importUsers = new Button(I18nProperties.getCaption(Captions.actionImport));
 		importUsers.setIcon(new Icon(VaadinIcon.DOWNLOAD));
 		importUsers.addClickListener(e -> {
@@ -237,7 +238,7 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 
 		anchor.getStyle().set("display", "none");
 		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_EXPORT)) {
-			layout.add(exportUsers, anchor, importUsers);
+			layout.add(exportUsers, anchor, importUsers, exporMobiletUsers);
 		}
 
 		if (userProvider.hasUserRight(UserRight.INFRASTRUCTURE_EXPORT)
@@ -1106,6 +1107,7 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 //		exportRolesButton.setVisible(state);
 		bulkModeButton.setVisible(state);
 		exportUsers.setVisible(state);
+		exportMobileUsers.setVisible(state);
 		searchField.setVisible(state);
 		anchor.setVisible(state);
 		activeFilter.setVisible(state);
@@ -1504,6 +1506,84 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 			}
 			return customOrder.length; // Role not found, place it at the end
 		}
+	}
+	
+	private String buildUsersCsv(List<UserDto> users) {
+	    StringBuilder sb = new StringBuilder();
+
+	    sb.append('\uFEFF');
+	    sb.append("First Name,Last Name,Username,Region,Province,District,Clusters,Forms,User Roles,User status\n");
+
+	    for (UserDto user : users) {
+	        sb.append(csv(user.getFirstName())).append(",");
+	        sb.append(csv(user.getLastName())).append(",");
+	        sb.append(csv(user.getUserName())).append(",");
+	        sb.append(csv(user.getRegion() != null ? user.getRegion().getCaption() : "")).append(",");
+	        sb.append(csv(user.getArea() != null ? user.getArea().getCaption() : "")).append(",");
+	        sb.append(csv(user.getDistrict() != null ? user.getDistrict().getCaption() : "")).append(",");
+	        sb.append(csv(joinClusters(user.getCommunitynos()))).append(",");
+	        sb.append(csv(joinForms(user.getFormAccess()))).append(",");
+//	        sb.append(csv(joinRoles(getDisplayableRolesForFrontend(user.getUserRoles())))).append(",");
+	        sb.append(csv(joinRoles(user.getUserRoles()))).append(",");
+	        sb.append(csv(user.isActive() ? "Active" : "Inactive")).append("\n");
+	    }
+
+	    return sb.toString();
+	}
+
+	private String joinClusters(Set<String> clusters) {
+	    if (clusters == null || clusters.isEmpty()) {
+	        return "";
+	    }
+
+	    return clusters.stream()
+	    		 .collect(Collectors.joining(", ", "", ""));
+	}
+
+	private String joinForms(Set<FormAccess> forms) {
+	    if (forms == null || forms.isEmpty()) {
+	        return "";
+	    }
+
+	    return forms.stream()
+	        .map(Enum::name)
+	        .collect(Collectors.joining(", ", "", ""));
+	}
+	
+	private String joinRoles(Set<UserRole> userRoles) {
+	    if (userRoles == null || userRoles.isEmpty()) {
+	        return "";
+	    }
+
+	    return userRoles.stream()
+	        .map(Enum::toString)
+	        .collect(Collectors.joining(", ", "", ""));
+	}
+
+	private String csv(String value) {
+	    if (value == null) {
+	        value = "";
+	    }
+	    return "\"" + value.replace("\"", "\"\"") + "\"";
+	}
+	
+	public static Set<UserRole> getDisplayableRolesForFrontend(Collection<UserRole> currentUserRoles) {
+	    if (currentUserRoles.isEmpty()) {
+	        return Collections.unmodifiableSet(EnumSet.noneOf(UserRole.class));
+	    }
+
+	    try {
+	        UserRole.validate(currentUserRoles);
+	    } catch (UserRoleValidationException e) {
+	        throw new IllegalArgumentException(
+	            "Invalid role combination provided: " + e.getMessage(), e
+	        );
+	    }
+	
+	    Set<UserRole> assignable = UserRole.getAssignableRoles(currentUserRoles);
+	    assignable.removeAll(currentUserRoles);
+	    
+	    return Collections.unmodifiableSet(assignable);
 	}
 
 	@Override

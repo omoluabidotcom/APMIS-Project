@@ -627,10 +627,24 @@ public class RegionFacadeEjb extends AbstractInfrastructureEjb<Region, RegionSer
 	}
 
 	@Override
-	public List<RegionReferenceDto> getAllActiveByAreaAndSelectedInCampaign(String areaUuid, String campaignUuid) {
-		String selectBuilder = "select distinct r.uuid, r.\"name\", r.externalid\r\n" + "from region r\r\n"
-				+ "inner join areas a on a.id = r.area_id\r\n" + "inner join populationdata p on r.id = p.region_id\r\n"
-				+ "inner join campaigns c on p.campaign_id = c.id\r\n" + "where c.uuid = '" + campaignUuid
+	public List<RegionReferenceDto> getAllActiveByAreaAndSelectedInCampaign(String areaUuid, String campaignUuid, String userLocale) {
+		
+	    String nameColumn;
+
+	    if ("Pashto".equalsIgnoreCase(userLocale)) {
+	        nameColumn = "r.\"ps_af\"";
+	    } else if ("Dari".equalsIgnoreCase(userLocale)) {
+	        nameColumn = "r.\"fa_af\"";
+	    } else {
+	        nameColumn = "r.\"name\"";
+	    }
+	    
+		String selectBuilder = "select distinct r.uuid, " +  nameColumn + " , r.externalid " 
+				+ "from region r\r\n"
+				+ "inner join areas a on a.id = r.area_id\r\n" 
+				+ "inner join populationdata p on r.id = p.region_id\r\n"
+				+ "inner join campaigns c on p.campaign_id = c.id\r\n" 
+				+ "where c.uuid = '" + campaignUuid
 				+ "' and p.selected = true and r.archived = false and a.uuid = '" + areaUuid + "' ;";
 
 		Query seriesDataQuery = em.createNativeQuery(selectBuilder);

@@ -46,6 +46,7 @@ import de.symeda.sormas.api.campaign.CampaignPhase;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
 import de.symeda.sormas.api.common.Page;
+import de.symeda.sormas.api.document.DocumentRelatedEntityType;
 import de.symeda.sormas.api.feature.FeatureType;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Validations;
@@ -759,6 +760,11 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 				case Community.DISTRICT:
 				case CommunityDto.DISTRICT_EXTERNALID:
 					expression = district.get(District.NAME);
+				case CommunityDto.MODALITY:
+					expression = community.get(Community.MODALITY);
+					break;
+				case CommunityDto.STATUS:
+					expression = community.get(Community.STATUS);
 					break;
 				default:
 					throw new IllegalArgumentException(sortProperty.propertyName);
@@ -987,8 +993,8 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		dto.setPopulationData(entity.getPopulationdata_0_4());
 		dto.setPopulationData5_10(entity.getPopulationdata_5_10());		
 		dto.setPopulationData4_23M(entity.getPopulationdata_4_23M());
-
-		
+		dto.setModality(entity.getModality());
+		dto.setStatus(entity.getStatus());
 
 		return dto;
 	}
@@ -1153,7 +1159,8 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		target.setPopulationdata_0_4(source.getPopulationData());
 		target.setPopulationdata_5_10(source.getPopulationData5_10());
 		target.setPopulationdata_4_23M(source.getPopulationData4_23M());
-
+		target.setModality(source.getModality());
+		target.setStatus(source.getStatus());
 		
 
 		return target;
@@ -1449,6 +1456,66 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 			return QueryHelper.getResultList(em, cq, null, null, this::toDtoList);//.stream().filter(e -> e.getMessage() != "Correctly assigned").collect(Collectors.toList());
 		}
 	
+@Override
+public List<CommunityReferenceDto> getAllActiveClustersDistrictAndSelectedInCampaign(
+        String districtUuid, String campaignUuid, String userLanguage) {
+
+    System.out.println("DEBUG START -> getAllActiveClustersDistrictAndSelectedInCampaign");
+    System.out.println("districtUuid: " + districtUuid);
+    System.out.println("campaignUuid: " + campaignUuid);
+    System.out.println("userLanguage: " + userLanguage);
+
+    String nameColumn;
+
+    if ("Pashto".equalsIgnoreCase(userLanguage)) {
+        nameColumn = "c.\"ps_af\"";
+    } else if ("Dari".equalsIgnoreCase(userLanguage)) {
+        nameColumn = "c.\"fa_af\"";
+    } else {
+        nameColumn = "c.\"name\"";
+    }
+
+    String sql =
+            "SELECT c.uuid, " + nameColumn + ", c.externalid , c.clusternumber " +
+            "FROM community c " +
+            "INNER JOIN district d ON d.id = c.district_id " +
+            "WHERE d.uuid = :districtUuid " +
+            "AND c.archived = false " +
+            "AND EXISTS ( " +
+            "   SELECT 1 " +
+            "   FROM populationdata p " +
+            "   INNER JOIN campaigns ca ON p.campaign_id = ca.id " +
+            "   WHERE p.community_id = c.id " +
+            "   AND p.selected = true " +
+            "   AND ca.uuid = :campaignUuid " +
+            ")";
+
+    System.out.println("Generated SQL: " + sql);
+
+    Query query = em.createNativeQuery(sql);
+    query.setParameter("districtUuid", districtUuid);
+    query.setParameter("campaignUuid", campaignUuid);
+
+    @SuppressWarnings("unchecked")
+    List<Object[]> resultList = query.getResultList();
+
+    System.out.println("Result size: " + resultList.size());
+
+    // (Optional) Log first few results for inspection
+
+    List<CommunityReferenceDto> resultData = resultList.stream()
+            .map(result -> new CommunityReferenceDto(
+                    (String) result[0],
+                    (String) result[1],
+                    ((BigInteger) result[2]).longValue(),
+                    ((Integer) result[3])
+            ))
+            .collect(Collectors.toList());
+
+    System.out.println("DEBUG END -> returning " + resultData.size() + " records");
+
+    return resultData;
+}
 	
 	@Override
 	public List<CommunityDto> getAllActiveClustersAsReferenceAndPopulation(Long regionId, String districtId, CampaignDto campaignDt) {

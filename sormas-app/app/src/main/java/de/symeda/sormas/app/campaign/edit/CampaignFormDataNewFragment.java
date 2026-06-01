@@ -69,6 +69,7 @@ import de.symeda.sormas.app.backend.campaign.data.CampaignFormData;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
 import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
+import de.symeda.sormas.app.backend.region.Community;
 import de.symeda.sormas.app.backend.region.District;
 import de.symeda.sormas.app.backend.region.PopulationData;
 import de.symeda.sormas.app.backend.user.User;
@@ -2208,8 +2209,13 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
 
         initialAreas = InfrastructureDaoHelper.loadAreas();
         initialRegions = InfrastructureDaoHelper.loadRegionsByServerCountry();
+
         List<Item> districtItemList = InfrastructureDaoHelper.loadAllDistricts();
         districtItemList.removeIf(d -> d == null || d.getValue() == null || d.getValue().toString().trim().isEmpty());
+
+        List<Item> communityItemList = InfrastructureDaoHelper.loadAllCommunities();
+        communityItemList.removeIf(d -> d == null || d.getValue() == null || d.getValue().toString().trim().isEmpty());
+
 
         if (ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
             User user = ConfigProvider.getUser();
@@ -2238,12 +2244,12 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
             } else {
                 initialDistricts = new ArrayList<>();
             }
-for(Item item : initialDistricts){
-    System.out.println(((District) item.getValue()).getUuid() +  "UUIDS OF INITIAL DISTRICTS ---------------------------");
-}
 
+            if (initialDistricts.stream().noneMatch(item -> item.getValue() == null)) {
+                initialDistricts.add(0, new Item<>("", null));
+            }
 
-        }else {
+        } else {
 
             System.out.println(ConfigProvider.getUser().getDistrict().getUuid() + "User role is not  surv Officer --------------------" + record.getCampaign().getUuid());
 
@@ -2262,16 +2268,41 @@ for(Item item : initialDistricts){
 
             initialDistricts = initialDistrictsFound;
 
+            List<String> userClusterUuids = new ArrayList<>();
+
+            userClusterUuids = DatabaseHelper.getCommunityDao().getByDistrict(ConfigProvider.getUser().getDistrict()).stream()
+                    .map(Community::getUuid)
+                    .collect(Collectors.toList());
+
+            System.out.println( "userClusterUuids).getUuid()------" + userClusterUuids);
+
+            List<PopulationData> popDataSelectedClusters = DatabaseHelper.getPopulationDataDao()
+                    .getSelectedClustersByMultipleUuids(userClusterUuids, record.getCampaign().getUuid());
+
+            System.out.println( "popDataSelectedClusterssize------" + popDataSelectedClusters.size());
+
+            Set<String> selectedClustersUuids = popDataSelectedClusters.stream()
+                    .map(PopulationData::getCluster_id)
+                    .collect(Collectors.toSet());
+
+            System.out.println( "selectedClustersUuids)------" + selectedClustersUuids.size());
+
+            List<Item> initialClustersFound = communityItemList.stream()
+                    .filter(item -> selectedClustersUuids.contains(((Community) item.getValue()).getUuid()))
+                    .collect(Collectors.toList());
+
+            System.out.println( "initialClustersFound)------" + initialClustersFound.size());
+
+            initialCommunities = initialClustersFound;
+
+            if (initialCommunities.stream().noneMatch(item -> item.getValue() == null)) {
+                initialCommunities.add(0, new Item<>("", null));
+            }
         }
-
-//        initialDistricts = InfrastructureDaoHelper.loadAllDistricts();
-
-        initialCommunities = InfrastructureDaoHelper.loadAllCommunities();
 
         Calendar cal = Calendar.getInstance();
         Date date = cal.getTime();
-        System.out.println(date + "Issues generating/ Parsing Datvvve ------------------");
-        presentDate =  date;
+        presentDate = date;
     }
 
     @Override
@@ -2348,12 +2379,7 @@ for(Item item : initialDistricts){
         }
 
 
-        if(ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)){
 
-        }
-        for(Item item : initialDistricts){
-            System.out.println(((District) item.getValue()).getUuid() +  "22222UUIDS OF INITIAL DISTRICTS ---------------------------");
-        }
         InfrastructureDaoHelper.initializeRegionAreaFields(
                 contentBinding.campaignFormDataArea,
                 initialAreas,

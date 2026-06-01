@@ -11711,9 +11711,13 @@ DROP TABLE device_manager_district;
 INSERT INTO schema_version (version_number, comment)
 VALUES (493, 'Improving Population Data for Cluster Level target');
 
+ALTER TABLE public.community
+  ADD COLUMN modality VARCHAR(50) NOT NULL DEFAULT 'H2H',
+  ADD COLUMN status VARCHAR(50) NOT NULL DEFAULT 'FullCluster';
 
 
-
+INSERT INTO schema_version (version_number, comment)
+VALUES (494, 'Addition of Modality and Status column to Cluster #937');
 
 
 

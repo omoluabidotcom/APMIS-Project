@@ -105,6 +105,7 @@ import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.Descriptions;
 import de.symeda.sormas.api.i18n.I18nProperties;
+import de.symeda.sormas.api.infrastructure.PopulationDataDto;
 import de.symeda.sormas.api.infrastructure.area.AreaDto;
 import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
@@ -162,6 +163,8 @@ public class CampaignDataView extends VerticalLayout
 	Anchor anchor = new Anchor("", I18nProperties.getCaption(Captions.export));
 	Anchor transposdeDataAnchor = new Anchor("", "Export Transposed Data");
 	Anchor transposdeDataDictionaryAnchor = new Anchor("", "Export Transposed Data Guide");
+	
+	private List<PopulationDataDto> popDto =  new ArrayList<PopulationDataDto>();
 
 	CampaignFormDataCriteria transposedDataCriteriaListener = new CampaignFormDataCriteria();
 
@@ -245,6 +248,7 @@ public class CampaignDataView extends VerticalLayout
 	}
 
 	private void createCampaignDataFilter() {
+
 		setMargin(true);
 
 		newForm.setLabel(I18nProperties.getCaption(Captions.actionNewForm));
@@ -625,6 +629,12 @@ public class CampaignDataView extends VerticalLayout
 
 		final MenuItem publishDataBulkItem = subMenu.addItem(I18nProperties.getCaption(Captions.actionPublishData),
 				e -> handleDataPublishingAction());
+		
+		final MenuItem unVerifyDataBulkItem = subMenu.addItem(I18nProperties.getCaption("Unverify"),
+				e -> handleDataUnVerificationAction());
+
+		final MenuItem unPublishDataBulkItem = subMenu.addItem(I18nProperties.getCaption(Captions.actionUnpublish),
+				e -> handleDataUnPublishingAction());
 
 		if (userProvider.hasUserRight(UserRight.PERFORM_BULK_OPERATIONS)) {
 			enterBulkEdit = new Button(I18nProperties.getCaption(Captions.actionEnterBulkEditMode));
@@ -637,14 +647,21 @@ public class CampaignDataView extends VerticalLayout
 				if (campaignPhase.getValue().toString().equalsIgnoreCase("post-campaign")) {
 					verifyDataBulkItem.setVisible(true);
 					publishDataBulkItem.setVisible(true);
+					unVerifyDataBulkItem.setVisible(true);
+					unPublishDataBulkItem.setVisible(true);
 				} else {
 					verifyDataBulkItem.setVisible(false);
 					publishDataBulkItem.setVisible(false);
+					unVerifyDataBulkItem.setVisible(false);
+					unPublishDataBulkItem.setVisible(false);
 
 				}
 			} else {
 				verifyDataBulkItem.setVisible(false);
 				publishDataBulkItem.setVisible(false);
+				unVerifyDataBulkItem.setVisible(false);
+				unPublishDataBulkItem.setVisible(false);
+
 
 			}
 
@@ -713,6 +730,7 @@ public class CampaignDataView extends VerticalLayout
 		campaignz.setItems(allCampaigns);
 		campaignz.setValue(lastStarted);
 
+
 		campaignPhase.setItemLabelGenerator(this::getLabelForEnum);
 		if (userProvider.getUser().getUsertype() == UserType.EOC_USER) {
 			campaignPhase.setItems(CampaignPhase.values());
@@ -767,6 +785,7 @@ public class CampaignDataView extends VerticalLayout
 				configureColumnStyles(criteria);
 				reload();
 				updateRowCount();
+
 			}
 		});
 
@@ -788,16 +807,22 @@ public class CampaignDataView extends VerticalLayout
 							if (userProvider.getUser().getUserRoles().contains(UserRole.PUBLISH_USER)) {
 								verifyDataBulkItem.setVisible(true);
 								publishDataBulkItem.setVisible(true);
+								unVerifyDataBulkItem.setVisible(true);
+								unPublishDataBulkItem.setVisible(true);
 								System.out.println("user is a publish user ");
 							} else {
 								verifyDataBulkItem.setVisible(false);
 								publishDataBulkItem.setVisible(false);
+								unVerifyDataBulkItem.setVisible(false);
+								unPublishDataBulkItem.setVisible(false);
 								System.out.println("user is NOT a publish user ");
 							}
 //							System.out.println("user ca n do bulk peration an is who  2");
 						} else {
 							verifyDataBulkItem.setVisible(false);
 							publishDataBulkItem.setVisible(false);
+							unVerifyDataBulkItem.setVisible(false);
+							unPublishDataBulkItem.setVisible(false);
 //							System.out.println("can either not don bvulk and  is  who   ");
 						}
 
@@ -821,6 +846,8 @@ public class CampaignDataView extends VerticalLayout
 						}
 						verifyDataBulkItem.setVisible(false);
 						publishDataBulkItem.setVisible(false);
+						unVerifyDataBulkItem.setVisible(false);
+						unPublishDataBulkItem.setVisible(false);
 						leaveBulkEdit.setVisible(false);
 						bulkActionsItem.setVisible(false);
 						enterBulkEdit.setVisible(true);
@@ -838,6 +865,8 @@ public class CampaignDataView extends VerticalLayout
 //					publishedColumn.setVisible(false);
 					verifyDataBulkItem.setVisible(false);
 					publishDataBulkItem.setVisible(false);
+					unVerifyDataBulkItem.setVisible(false);
+					unPublishDataBulkItem.setVisible(false);
 					leaveBulkEdit.setVisible(false);
 					bulkActionsItem.setVisible(false);
 					enterBulkEdit.setVisible(true);
@@ -1136,7 +1165,7 @@ public class CampaignDataView extends VerticalLayout
 								boolean fff = formDatax.isDistrictentry();
 
 								CampaignFormDataEditForm cam = new CampaignFormDataEditForm(e.getValue(),
-										campaignz.getValue(), false, null, grid, fff, campaign, expiryDto);
+										campaignz.getValue(), false, null, grid, fff, campaign, expiryDto, null);
 								// add(cam);
 
 								newForm.setValue(null);
@@ -1152,7 +1181,6 @@ public class CampaignDataView extends VerticalLayout
 
 							Button closeButton = new Button(new Icon("lumo", "cross"));
 							closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-//					closeButton.setAriaLabel("Close");
 							closeButton.addClickListener(event -> {
 								notification.close();
 							});
@@ -1176,7 +1204,6 @@ public class CampaignDataView extends VerticalLayout
 
 					Button closeButton = new Button(new Icon("lumo", "cross"));
 					closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-//				closeButton.setAriaLabel("Close");
 					closeButton.addClickListener(event -> {
 						notification.close();
 					});
@@ -1377,6 +1404,8 @@ public class CampaignDataView extends VerticalLayout
 			reload();
 			updateRowCount();
 		});
+		
+		
 
 		enterBulkEdit.getStyle().set("margin-top", "5px");
 
@@ -1874,11 +1903,17 @@ public class CampaignDataView extends VerticalLayout
 		verifyAllSelectedItems(grid.getSelectedItems());
 
 	}
+	
+	private void handleDataUnVerificationAction() {
+		unVerifyAllSelectedItems(grid.getSelectedItems());
+	}
+	
+	private void handleDataUnPublishingAction() {
+		unPublishAllSelectedItems(grid.getSelectedItems());
+	}
 
 	private void handleDataPublishingAction() {
-
 		publishAllSelectedItems(grid.getSelectedItems());
-
 	}
 
 	public void deleteAllSelectedItems(Collection<CampaignFormDataIndexDto> selectedRows) {
@@ -1999,6 +2034,72 @@ public class CampaignDataView extends VerticalLayout
 		}
 	}
 
+	public void unPublishAllSelectedItems(Collection<CampaignFormDataIndexDto> selectedRows) {
+		confirmationDialog = new ConfirmDialog();
+		boolean isDataDirty = false;
+		for (CampaignFormDataIndexDto selectedItem : selectedRows) {
+
+			System.out.println(selectedRows.size() + "<<unpublish<Size of selected items " + selectedItem.isIsverified()
+					+ ">>>> Dirty data " + isDataDirty);
+
+			if (selectedItem.isIsverified() == false) {
+				isDataDirty = true;
+			}
+
+//			System.out.println(selectedRows.size() + "<<<2222222Size of selected items " + selectedItem.isIsverified()
+//					+ "2222222222>>>> Dirty data " + isDataDirty);
+
+		}
+		if (selectedRows.size() == 0 || isDataDirty) {
+			confirmationDialog.setCancelable(false);
+			confirmationDialog.setRejectable(false);
+			confirmationDialog.addCancelListener(e -> confirmationDialog.close());
+			confirmationDialog.setConfirmText(I18nProperties.getCaption(Captions.actionOkay));
+			if (selectedRows.size() == 0 && (isDataDirty || !isDataDirty)) {
+				confirmationDialog.setText("You have not selected any data to be unpublished.");
+
+			} else if (selectedRows.size() > 0 && isDataDirty) {
+				confirmationDialog.setText(
+						"You have selected 1 or more unverified records to publish. Please verify any records you wish to unpublish first.");
+
+			}
+			confirmationDialog.setHeader("Error Unpublishing Campaign Data");
+			confirmationDialog.open();
+
+		} else {
+			confirmationDialog.setCancelable(true);
+			confirmationDialog.setRejectable(true);
+			confirmationDialog.setRejectText(I18nProperties.getCaption(Captions.actionNo));
+			confirmationDialog.setConfirmText(I18nProperties.getCaption(Captions.actionYes));
+			confirmationDialog.addCancelListener(e -> confirmationDialog.close());
+			confirmationDialog.addRejectListener(e -> confirmationDialog.close());
+			confirmationDialog.open();
+			confirmationDialog.setHeader("Unpublish Campaign Data");
+//TODO: Language
+
+			confirmationDialog
+					.setText("Are you sure you want to Unpublish " + selectedRows.size() + " selected Campaign Data?");
+
+			confirmationDialog.addConfirmListener(e -> {
+				List<String> uuids = selectedRows.stream().map(CampaignFormDataIndexDto::getUuid)
+						.collect(Collectors.toList());
+
+				FacadeProvider.getCampaignFormDataFacade().publishCampaignData(uuids, true);
+				reload();
+				if (leaveBulkEdit.isVisible()) {
+					leaveBulkEdit.setVisible(false);
+					enterBulkEdit.setVisible(true);
+					grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+
+					dropdownBulkOperations.setVisible(false);
+					selectAllButtonpLACEHOLDER.setVisible(false);
+
+				}
+			});
+
+		}
+	}
+
 	public void verifyAllSelectedItems(Collection<CampaignFormDataIndexDto> selectedRows) {
 		confirmationDialog = new ConfirmDialog();
 
@@ -2051,6 +2152,59 @@ public class CampaignDataView extends VerticalLayout
 		}
 	}
 
+	public void unVerifyAllSelectedItems(Collection<CampaignFormDataIndexDto> selectedRows) {
+		confirmationDialog = new ConfirmDialog();
+
+		if (selectedRows.size() == 0) {
+			confirmationDialog.setCancelable(false);
+			confirmationDialog.setRejectable(false);
+			confirmationDialog.addCancelListener(e -> confirmationDialog.close());
+			confirmationDialog.setConfirmText(I18nProperties.getCaption(Captions.actionOkay));
+
+			confirmationDialog.setText("You have not selected any data to be unverified.");
+			confirmationDialog.setHeader("Error Unverifying Campaign Data");
+			confirmationDialog.open();
+
+		} else {
+			confirmationDialog.setCancelable(true);
+			confirmationDialog.setRejectable(true);
+			confirmationDialog.setRejectText(I18nProperties.getCaption(Captions.actionNo));
+			confirmationDialog.setConfirmText(I18nProperties.getCaption(Captions.actionYes));
+			confirmationDialog.addCancelListener(e -> confirmationDialog.close());
+			confirmationDialog.addRejectListener(e -> confirmationDialog.close());
+			confirmationDialog.open();
+			confirmationDialog.setHeader("Unverify Campaign Data");
+//TODO: Language
+
+			confirmationDialog
+					.setText("Are you sure you want to Unverify " + selectedRows.size() + " selected Campaign Data?");
+
+			confirmationDialog.addConfirmListener(e -> {
+				List<String> uuids = selectedRows.stream().map(CampaignFormDataIndexDto::getUuid)
+						.collect(Collectors.toList());
+
+				System.err.println(" unverification kicke from frontend");
+
+//			FacadeProvider.getCampaignFormDataFacade().verifyCampaignData(event.getCampaign().getUuid(), true);
+
+				FacadeProvider.getCampaignFormDataFacade().verifyCampaignData(uuids, true);
+//				 Notification.show("Camapaign Dayta Deleted ");
+				reload();
+				if (leaveBulkEdit.isVisible()) {
+					leaveBulkEdit.setVisible(false);
+					enterBulkEdit.setVisible(true);
+					grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+
+					dropdownBulkOperations.setVisible(false);
+					selectAllButtonpLACEHOLDER.setVisible(false);
+
+				}
+			});
+
+		}
+	}
+
+	
 	public void reload() {
 
 		criteria.campaign(campaignz.getValue());
@@ -2468,15 +2622,18 @@ public class CampaignDataView extends VerticalLayout
 
 							if (checkFormValidityByPhase(e.getValue().getFormType().toString().toLowerCase(), campaign,
 									expiryDto)) {
+
 								CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
 										.getCampaignFormDataByUuid(e.getValue().getUuid());
 
 								CampaignFormMetaDto formMeta = FacadeProvider.getCampaignFormMetaFacade()
 										.getCampaignFormMetaByUuid(campaignFormCombo.getValue().getUuid());
+								
+								
 
 								CampaignFormDataEditForm cam = new CampaignFormDataEditForm(
 										formData.getCampaignFormMeta(), campaignz.getValue(), true, formData.getUuid(),
-										grid, formMeta.isDistrictentry(), campaign, expiryDto);
+										grid, formMeta.isDistrictentry(), campaign, expiryDto, popDto);
 							}
 						} else {
 							Notification notification = new Notification();
@@ -2520,6 +2677,7 @@ public class CampaignDataView extends VerticalLayout
 
 					if (checkFormValidityByPhase(e.getValue().getFormType().toString().toLowerCase(), campaign,
 							expiryDto)) {
+				
 						CampaignFormDataDto formData = FacadeProvider.getCampaignFormDataFacade()
 								.getCampaignFormDataByUuid(e.getValue().getUuid());
 
@@ -2528,7 +2686,7 @@ public class CampaignDataView extends VerticalLayout
 
 						CampaignFormDataEditForm cam = new CampaignFormDataEditForm(formData.getCampaignFormMeta(),
 								campaignz.getValue(), true, formData.getUuid(), grid, formMeta.isDistrictentry(),
-								campaign, expiryDto);
+								campaign, expiryDto, popDto);
 
 					} else {
 						Notification notification = new Notification();

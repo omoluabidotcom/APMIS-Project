@@ -727,8 +727,20 @@ public class DistrictFacadeEjb extends AbstractInfrastructureEjb<District, Distr
 
 	@Override
 	public List<DistrictReferenceDto> getAllActiveByRegionAndSelectedInCampaign(String regionUuid,
-			String campaignUuid) {
-		String selectBuilder = "select distinct d.uuid, d.\"name\", d.externalid\r\n" + "from district d\r\n"
+			String campaignUuid, String userLanguage) {
+		
+	    String nameColumn;
+
+	    if ("Pashto".equalsIgnoreCase(userLanguage)) {
+	        nameColumn = "d.\"ps_af\"";
+	    } else if ("Dari".equalsIgnoreCase(userLanguage)) {
+	        nameColumn = "d.\"fa_af\"";
+	    } else {
+	        nameColumn = "d.\"name\"";
+	    }
+	    
+		String selectBuilder = "select distinct d.uuid, " + nameColumn + ", d.externalid " 
+		+ "from district d\r\n"
 				+ "inner join region r on r.id = d.region_id\r\n"
 				+ "inner join populationdata p on d.id = p.district_id\r\n"
 				+ "inner join campaigns c on p.campaign_id = c.id\r\n" + "where c.uuid = '" + campaignUuid
