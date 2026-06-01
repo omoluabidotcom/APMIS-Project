@@ -213,7 +213,7 @@ public final class InfrastructureDaoHelper {
 			initialCommunities.add(communityItem);
 		}
 
-		System.out.println("initialCommunitiesinitialCommunities inside --" + initialCommunities.size());
+//		System.out.println("initialCommunitiesinitialCommunities inside --" + initialCommunities.size());
 
 		areaField.initializeSpinner(initialAreas, field -> {
 			Area selectedArea = (Area) field.getValue();

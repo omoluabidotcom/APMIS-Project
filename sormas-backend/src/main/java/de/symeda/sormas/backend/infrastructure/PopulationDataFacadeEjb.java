@@ -1454,8 +1454,32 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 					"    ag.agegroup,\n" + 
 					"    CASE WHEN ag.agegroup IN (:selectedGroups) THEN COALESCE(ag.population, 0) ELSE 0 END,\n" + 
 					"    c2.id,\n" + 
-					"    'Full Cluster',\n" + 
-					"    'H2H',\n" + 
+					// Temporaryr fix : ensure clusters saves modality captions same for status 
+                "    CASE CAST(c.status AS TEXT)\n" +
+                "        WHEN 'Additional' THEN 'Additional'\n" +
+                "        WHEN 'AdditionalCold' THEN 'Additional & Cold'\n" +
+                "        WHEN 'Cold' THEN 'Cold'\n" +
+                "        WHEN 'FullCluster' THEN 'Full Cluster'\n" +
+                "        WHEN 'HRMPOnly' THEN 'HRMP Only'\n" +
+                "        WHEN 'Partial' THEN 'Partial'\n" +
+                "        WHEN 'NotTargeted' THEN 'Not Targeted'\n" +
+                "        WHEN 'OnHold' THEN 'On Hold'\n" +
+                "        ELSE CAST(c.status AS TEXT)\n" +
+                "    END,\n" +
+                
+                // MODALITY DISPLAY VALUE
+                "    CASE CAST(c.modality AS TEXT)\n" +
+                "        WHEN 'H2H' THEN 'H2H'\n" +
+                "        WHEN 'M2M' THEN 'M2M'\n" +
+                "        WHEN 'S2S' THEN 'S2S'\n" +
+                "        WHEN 'HF2HF' THEN 'HF2HF'\n" +
+                "        WHEN 'Mixed' THEN 'Mixed'\n" +
+                "        ELSE CAST(c.modality AS TEXT)\n" +
+                "    END,\n" +
+                
+                
+//					"    c.status,\n" + 
+//					"    c.modality,\n" + 
 					"     true \n" + 
 					"FROM community c\n" + 
 					"JOIN district d ON d.id = c.district_id\n" + 
