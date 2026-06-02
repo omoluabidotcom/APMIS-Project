@@ -272,11 +272,15 @@ public final class InfrastructureDaoHelper {
 
 					if(isEdit){
 						communityField.setEnabled(false);
+						communityField.initializeSpinner(initialCommunities);
+
 					}
 				} else {
 					communityField.setSpinnerData(null);
 					if(isEdit){
 						communityField.setEnabled(false);
+						communityField.initializeSpinner(initialCommunities);
+
 					}
 				}
 			});

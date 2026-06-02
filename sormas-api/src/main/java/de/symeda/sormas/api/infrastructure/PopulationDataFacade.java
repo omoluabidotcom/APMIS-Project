@@ -106,4 +106,6 @@ public interface PopulationDataFacade {
 	boolean generatePopulationDataForCamapign(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups);
 	
 	boolean generatePopulationDataForCamapignByRegionAndPopulationType(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups, List<AreaReferenceDto> selectedRegions);
+
+	boolean updatePopulationDataForCampaignByRegionAndPopulationType(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups, List<AreaReferenceDto> selectedRegions);
 }

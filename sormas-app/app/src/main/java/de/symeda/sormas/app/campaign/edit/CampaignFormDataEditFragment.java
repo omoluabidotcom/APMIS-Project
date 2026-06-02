@@ -3387,7 +3387,14 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
         }
 
-        initialCommunities = InfrastructureDaoHelper.loadCommunities(record.getDistrict());
+        if (ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
+
+        }else{
+            initialCommunities = InfrastructureDaoHelper.loadCommunities(record.getDistrict());
+
+            System.out.println("initialCommunities size " +  initialCommunities.size());
+
+        }
     }
 
     @Override
