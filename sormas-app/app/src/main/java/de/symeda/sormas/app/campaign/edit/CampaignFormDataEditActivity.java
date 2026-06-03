@@ -118,12 +118,18 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
 
         boolean saveChecker = true;
 
+        final CampaignFormData campaignFormDataToSave = getStoredRootEntity();
+
+        campaign = DatabaseHelper.getCampaignDao().queryUuid(campaignFormDataToSave.getCampaign().getUuid());
+        campaignFormMeta = DatabaseHelper.getCampaignFormMetaDao().queryUuid(campaignFormDataToSave.getCampaignFormMeta().getUuid());
+        campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
+
         final CampaignFormData campaignFormDataToSaveX = getStoredRootEntity();
 
 //        campaign = DatabaseHelper.getCampaignDao().queryUuid(campaignFormDataToSave.getCampaign().getUuid());
 //        campaignFormMeta = DatabaseHelper.getCampaignFormMetaDao().queryUuid(campaignFormDataToSave.getCampaignFormMeta().getUuid());
 
-        System.out.println(campaignFormDataToSaveX.getCampaignFormMeta().getFormCategory()+">>>>>edit>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>__");
+        System.out.println(campaignFormDataToSave.getCampaignFormMeta().getFormCategory()+">>>>>edit>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>__");
         //true is returned when the form is yet to be synchronized with the server, so we only increment teh record version when
         //this form has been subimmted and synchronized with server
         //in return none synced changes wouldn't increment record version
@@ -131,26 +137,15 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
 //            campaignFormDataToSave.setRecordversion(campaignFormDataToSave.getRecordversion() + 1L);
 //        }
 //        campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
-        campaignFormMetaX = DatabaseHelper.getCampaignFormMetaDao().queryUuid(campaignFormDataToSaveX.getCampaignFormMeta().getUuid());
+
+        CampaignFormDataFragmentUtils.recalculateAllExpressions(
+                expressionParser,
+                campaignFormDataToSave.getFormValues(),
+                campaignFormMeta.getCampaignFormElements(),
+                3
+        );
 
 
-        for (CampaignFormElement campaignFormElement : campaignFormMetaX.getCampaignFormElements()) {
-
-            if (campaignFormElement.getExpression() != null && !campaignFormElement.getExpression().trim().isEmpty()) {
-                CampaignFormDataFragmentUtils.handleExpressionSec(
-                        expressionParser, campaignFormDataToSaveX.getFormValues(), CampaignFormElementType.fromString(campaignFormElement.getType()),
-                        createControlPropertyFieldFromElement(campaignFormElement, getContext(), new HashMap<>(), new HashMap<>()),
-                        campaignFormElement.getExpression(),
-                        true,
-                        getFormValueById(campaignFormDataToSaveX.getFormValues(), campaignFormElement.getId()));
-            }
-        }
-
-        final CampaignFormData campaignFormDataToSave = getStoredRootEntity();
-
-        campaign = DatabaseHelper.getCampaignDao().queryUuid(campaignFormDataToSave.getCampaign().getUuid());
-        campaignFormMeta = DatabaseHelper.getCampaignFormMetaDao().queryUuid(campaignFormDataToSave.getCampaignFormMeta().getUuid());
-        campaignFormDataToSave.setFormCategory(campaignFormDataToSave.getCampaignFormMeta().getFormCategory());
 
 //        try {
 //            FragmentValidator.validate(getContext(), getActiveFragment().getContentBinding());

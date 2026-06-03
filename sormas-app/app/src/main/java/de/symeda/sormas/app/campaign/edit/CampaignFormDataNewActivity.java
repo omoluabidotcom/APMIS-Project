@@ -142,17 +142,7 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         }
 
         final CampaignFormData campaignFormDataToSaveX = getStoredRootEntity();
-        for (CampaignFormElement campaignFormElement : campaignFormMetaX.getCampaignFormElements()) {
 
-            if (campaignFormElement.getExpression() != null && !campaignFormElement.getExpression().trim().isEmpty()) {
-                CampaignFormDataFragmentUtils.handleExpressionSec(
-                        expressionParser, campaignFormDataToSaveX.getFormValues(), CampaignFormElementType.fromString(campaignFormElement.getType()),
-                        createControlPropertyFieldFromElement(campaignFormElement, getContext(), new HashMap<>(), new HashMap<>()),
-                        campaignFormElement.getExpression(),
-                        true,
-                        getFormValueById(campaignFormDataToSaveX.getFormValues(), campaignFormElement.getId()));
-            }
-        }
 
         final CampaignFormData campaignFormDataToSave = getStoredRootEntity();
         boolean saveChecker = true;
@@ -160,6 +150,13 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         criteria.setCampaignFormMeta(campaignFormMeta);
         criteria.setCommunity(null);
         List<CampaignFormData> lotchecker = DatabaseHelper.getCampaignFormDataDao().queryByCriteria(criteria, 0, 100);
+
+        CampaignFormDataFragmentUtils.recalculateAllExpressions(
+                expressionParser,
+                campaignFormDataToSave.getFormValues(),
+                campaignFormMeta.getCampaignFormElements(),
+                3
+        );
 
         if(!ConfigProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) { // District Officer
             criteria.setCommunity(campaignFormDataToSave.getCommunity());

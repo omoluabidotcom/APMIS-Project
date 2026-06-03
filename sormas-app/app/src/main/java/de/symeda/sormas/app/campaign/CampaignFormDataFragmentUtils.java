@@ -783,6 +783,117 @@ public class CampaignFormDataFragmentUtils {
         return false;
     }
 
+    public static void recalculateAllExpressions(
+            ExpressionParser expressionParser,
+            List<CampaignFormDataEntry> formValues,
+            List<CampaignFormElement> formElements,
+            int maxPasses) {
+
+        if (formElements == null || formElements.isEmpty()) {
+            return;
+        }
+
+        for (int pass = 0; pass < Math.max(1, maxPasses); pass++) {
+            boolean changed = false;
+
+            for (CampaignFormElement element : formElements) {
+                if (element == null || element.getExpression() == null || element.getExpression().trim().isEmpty()) {
+                    continue;
+                }
+
+                CampaignFormDataEntry beforeEntry = getOrCreateCampaignFormDataEntry(formValues, element);
+                Object before = beforeEntry.getValue();
+
+                applyExpressionToEntry(expressionParser, formValues, element);
+
+                Object after = beforeEntry.getValue();
+                if ((before == null && after != null) || (before != null && !before.equals(after))) {
+                    changed = true;
+                }
+            }
+
+            if (!changed) {
+                break;
+            }
+        }
+    }
+
+    public static void applyExpressionToEntry(
+            ExpressionParser expressionParser,
+            List<CampaignFormDataEntry> formValues,
+            CampaignFormElement formElement) {
+
+        if (formElement == null || formElement.getExpression() == null || formElement.getExpression().trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            Object expressionValue = getExpressionValue(expressionParser, formValues, formElement.getExpression());
+            CampaignFormElementType type = CampaignFormElementType.fromString(formElement.getType());
+            CampaignFormDataEntry entry = getOrCreateCampaignFormDataEntry(formValues, formElement);
+
+            if (expressionValue == null) {
+                entry.setValue(null);
+                return;
+            }
+
+            String raw = String.valueOf(expressionValue);
+            String normalized = raw;
+
+            switch (type) {
+                case NUMBER:
+                    try {
+                        double num = Double.parseDouble(raw);
+                        if (num == Math.floor(num)) {
+                            normalized = String.valueOf((int) num);
+                        } else {
+                            normalized = String.format(Locale.US, "%.2f", num);
+                        }
+                    } catch (NumberFormatException ignored) {
+                        normalized = raw;
+                    }
+                    break;
+
+                case DECIMAL:
+                    if (expressionValue instanceof Number) {
+                        double num = ((Number) expressionValue).doubleValue();
+                        if (num == Math.floor(num)) {
+                            normalized = String.valueOf((int) num);
+                        } else {
+                            normalized = String.format(Locale.US, "%.2f", num);
+                        }
+                    } else {
+                        normalized = raw;
+                    }
+                    break;
+
+                case RANGE:
+                    try {
+                        double num = Double.parseDouble(raw);
+                        if (num == Math.floor(num)) {
+                            normalized = String.valueOf((int) num);
+                        } else {
+                            normalized = String.format(Locale.US, "%.2f", num);
+                        }
+                    } catch (NumberFormatException ignored) {
+                        normalized = raw;
+                    }
+                    break;
+                case YES_NO:
+                    normalized = raw;
+                    break;
+                default:
+                    normalized = raw;
+                    break;
+            }
+
+            entry.setValue(normalized);
+
+        } catch (Exception e) {
+            Log.e("ExpressionApply", "Failed to apply expression for field " + formElement.getId(), e);
+        }
+    }
+
     public static CampaignFormDataEntry getOrCreateCampaignFormDataEntry(
             List<CampaignFormDataEntry> formValues,
             CampaignFormElement campaignFormElement) {
