@@ -37,8 +37,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
  import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
@@ -59,7 +61,9 @@ import de.symeda.sormas.app.backend.common.DatabaseHelper;
 import de.symeda.sormas.app.backend.config.ConfigProvider;
 import de.symeda.sormas.app.backend.region.Community;
 import de.symeda.sormas.app.backend.region.District;
+import de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils;
 import de.symeda.sormas.app.component.Item;
+import de.symeda.sormas.app.component.controls.ControlPropertyField;
 import de.symeda.sormas.app.component.menu.PageMenuItem;
 import de.symeda.sormas.app.component.validation.FragmentValidator;
 import de.symeda.sormas.app.core.async.AsyncTaskResult;
@@ -68,17 +72,25 @@ import de.symeda.sormas.app.core.async.TaskResultHolder;
 import de.symeda.sormas.app.core.notification.NotificationHelper;
 import de.symeda.sormas.app.util.Bundler;
 
+import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlTextEditField;
+import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlTextEditFieldDecimalExpression;
+import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlTextEditFieldRangeOnly;
 import static de.symeda.sormas.app.core.notification.NotificationType.ERROR;
 import static de.symeda.sormas.app.core.notification.NotificationType.WARNING;
 import static de.symeda.sormas.app.util.DataUtils.toItems;
+
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormData> {
 
     private AsyncTask saveTask;
     private Campaign campaign;
+    private CampaignFormMeta campaignFormMetaX;
     private CampaignFormMeta campaignFormMeta;
-
     private Locale currentLocale;
+
+    private final ExpressionParser expressionParser = new SpelExpressionParser();
 
     private CampaignFormDataCriteria criteria = new CampaignFormDataCriteria();
 
@@ -99,6 +111,7 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         super.onCreateInner(savedInstanceState);
         campaign = DatabaseHelper.getCampaignDao().queryUuid(new Bundler(savedInstanceState).getCampaignUuid());
         campaignFormMeta = DatabaseHelper.getCampaignFormMetaDao().queryUuid(new Bundler(savedInstanceState).getCampaignFormMetaUuid());
+        campaignFormMetaX = DatabaseHelper.getCampaignFormMetaDao().queryUuid(new Bundler(savedInstanceState).getCampaignFormMetaUuid());
     }
 
     @Override
@@ -126,6 +139,19 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         if (saveTask != null) {
             NotificationHelper.showNotification(this, WARNING, getString(R.string.message_already_saving));
             return; // don't save multiple times
+        }
+
+        final CampaignFormData campaignFormDataToSaveX = getStoredRootEntity();
+        for (CampaignFormElement campaignFormElement : campaignFormMetaX.getCampaignFormElements()) {
+
+            if (campaignFormElement.getExpression() != null && !campaignFormElement.getExpression().trim().isEmpty()) {
+                CampaignFormDataFragmentUtils.handleExpressionSec(
+                        expressionParser, campaignFormDataToSaveX.getFormValues(), CampaignFormElementType.fromString(campaignFormElement.getType()),
+                        createControlPropertyFieldFromElement(campaignFormElement, getContext(), new HashMap<>(), new HashMap<>()),
+                        campaignFormElement.getExpression(),
+                        true,
+                        getFormValueById(campaignFormDataToSaveX.getFormValues(), campaignFormElement.getId()));
+            }
         }
 
         final CampaignFormData campaignFormDataToSave = getStoredRootEntity();
@@ -466,6 +492,76 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         return output.toString();
     }
 
+    public static Object getFormValueById(List<CampaignFormDataEntry> formValues, String id) {
+        if (formValues == null || id == null || id.trim().isEmpty()) {
+            return null;
+        }
 
+        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        for (CampaignFormDataEntry entry : formValues) {
+            if (entry != null && entry.getId() != null && entry.getId().equalsIgnoreCase(id)) {
+                System.out.println("entry.getValue()entry.getValue()entry.getValue()entry.getValue() " + entry.getValue());
+                return entry.getValue();
+            }
+        }
+
+        return null;
+    }
+
+    private ControlPropertyField createControlPropertyFieldFromElement(
+            CampaignFormElement campaignFormElement,
+            Context context,
+            Map<String, String> userTranslations,
+            Map<String, String> userHints) {
+
+        if (campaignFormElement == null) {
+            return null;
+        }
+
+        CampaignFormElementType type = CampaignFormElementType.fromString(campaignFormElement.getType());
+
+        switch (type) {
+            case NUMBER:
+                return createControlTextEditField(
+                        campaignFormElement,
+                        context,
+                        userTranslations,
+                        userHints,
+                        false,
+                        campaignFormElement.isImportant());
+
+            case DECIMAL:
+                return createControlTextEditFieldDecimalExpression(
+                        campaignFormElement,
+                        context,
+                        userTranslations,
+                        true,
+                        campaignFormElement.isImportant(),
+                        campaignFormElement.getErrormessage());
+
+            case RANGE:
+                return createControlTextEditFieldRangeOnly(
+                        campaignFormElement,
+                        context,
+                        userTranslations,
+                        userHints,
+                        false,
+                        campaignFormElement.isImportant(),
+                        null,
+                        null,
+                        false,
+                        null,
+                        new ArrayList<>());
+
+            default:
+                return createControlTextEditField(
+                        campaignFormElement,
+                        context,
+                        userTranslations,
+                        userHints,
+                        true,
+                        campaignFormElement.isImportant());
+        }
+    }
 
 }
