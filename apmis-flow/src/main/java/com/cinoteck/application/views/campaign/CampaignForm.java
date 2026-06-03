@@ -784,6 +784,8 @@ public class CampaignForm extends VerticalLayout {
 		if (campaignDto != null) {
 		Button btnGeneratePopulationData = new Button(I18nProperties.getCaption("Generate Population Data | " +  campaignDto.getName()));// , e -> {
 
+		Button btnUpdatePopulationData = new Button(I18nProperties.getCaption("Update Population Data | " +  campaignDto.getName()));// , e -> {
+
 		btnGeneratePopulationData.addClickListener(e -> {
 			if (campaignDto != null) {
 				Dialog genDialog = new Dialog();
@@ -916,9 +918,140 @@ public class CampaignForm extends VerticalLayout {
 				notification.open();
 			}
 		});
+		
+		btnUpdatePopulationData.addClickListener(e -> {
+			if (campaignDto != null) {
+				Dialog genDialog = new Dialog();
+				genDialog.setHeaderTitle(I18nProperties.getCaption("Update Population Data | " +  campaignDto.getName()));
+				genDialog.setWidth("40%");
+				
+				VerticalLayout dialogLayout = new VerticalLayout();
+
+				Paragraph note = new Paragraph("Please select the population target group to update population targets for this campaign");
+				
+				List<AreaReferenceDto> regions;
+				regions = FacadeProvider.getAreaFacade().getAllActiveAsReference();
+
+				MultiSelectComboBox<AreaReferenceDto> regionSelection = new MultiSelectComboBox<>("Regions");
+				regionSelection.setItems(regions);
+				regionSelection.setWidthFull();
+				regionSelection.setClearButtonVisible(true);
+
+				
+				MultiSelectComboBox<AgeGroup> ageGroupsSelection = new MultiSelectComboBox<>("Poulation Target Categories");
+				ageGroupsSelection.setItems(AgeGroup.AGE_0_4, AgeGroup.AGE_5_10, AgeGroup.AGE_4_23M);
+				ageGroupsSelection.setItemLabelGenerator(item -> {
+					if (item == AgeGroup.AGE_0_4) return "Target 0-59M";
+					if (item == AgeGroup.AGE_5_10) return "Target 60-120M";
+					if (item == AgeGroup.AGE_4_23M) return "Target 4-23M";
+					return item.toString();
+				});
+				ageGroupsSelection.setWidthFull();
+				ageGroupsSelection.setClearButtonVisible(true);
+
+				Button selectAllBtn = new Button("Select All", event -> {
+					regionSelection.setValue(regions);
+					ageGroupsSelection.setValue(Set.of(AgeGroup.AGE_0_4, AgeGroup.AGE_5_10, AgeGroup.AGE_4_23M));
+				});
+				selectAllBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+
+//				HorizontalLayout selectionHeader = new HorizontalLayout(new Span(I18nProperties.getCaption("Population Categories")), selectAllBtn);
+//				selectionHeader.setWidthFull();
+//				selectionHeader.setJustifyContentMode(JustifyContentMode.BETWEEN);
+//				selectionHeader.setAlignItems(Alignment.CENTER);
+
+				dialogLayout.add(note, regionSelection, ageGroupsSelection, selectAllBtn);
+				genDialog.add(dialogLayout);
+
+				Button confirmBtn = new Button(I18nProperties.getCaption("Update Data"), event -> {
+					if (ageGroupsSelection.getValue().isEmpty()) {
+						Notification.show("Please, Select at least one Region");
+						return;
+					}
+					
+					if (ageGroupsSelection.getValue().isEmpty()) {
+						Notification.show(I18nProperties.getString(Strings.infoSelectAtLeastOneCategory));
+						return;
+					}
+
+					ConfirmDialog confirmGeneration = new ConfirmDialog();
+					confirmGeneration.setHeader(I18nProperties.getCaption("Confirm Population Data Update"));
+					Paragraph textNote = new Paragraph("Are you sure you want to update population data for the selected categories? This will overwrite existing data for this campaign.");
+					confirmGeneration.add(textNote);
+//					confirmGeneration.setText(I18nProperties.getString("Are you sure you want to generate population data for the selected categories? This will overwrite existing data for this campaign."));
+					confirmGeneration.setCancelable(true);
+					confirmGeneration.setConfirmText(I18nProperties.getCaption("Yes, Update Data"));
+					confirmGeneration.addConfirmListener(confirmEvent -> {
+						genDialog.close();
+
+						List<AreaReferenceDto> selectedRegions = new ArrayList<>(regionSelection.getValue());
+						List<AgeGroup> selectedGroups = new ArrayList<>(ageGroupsSelection.getValue());
+						if (FacadeProvider.getPopulationDataFacade().updatePopulationDataForCampaignByRegionAndPopulationType(campaignDto, selectedGroups, selectedRegions)) {
+							Notification.show("Population Data Update Complete For Campaign");
+							
+							CampaignLogDto log = new CampaignLogDto();
+
+							// logging audit
+							if (campaignDto.getUuid() != null) {
+								log.setCampaign(campaignDto);
+								String slectedString=""; 
+								for (Iterator iterator = selectedGroups.iterator(); iterator.hasNext();) {
+									AgeGroup ageGroup = (AgeGroup) iterator.next();
+									String ageGroupString = ageGroup+"";
+									
+									
+									System.out.println(ageGroupString + "ageGroupStringageGroupStringageGroupStringageGroupStringageGroupString");
+									if (ageGroupString.equalsIgnoreCase("0--4")) { 
+										ageGroupString = "Target 0-59M";
+									}else if (ageGroupString.equalsIgnoreCase("5--10")) {
+										ageGroupString = "Target 60-120M";
+									}else if (ageGroupString.equalsIgnoreCase("AGE_4_23M")) 
+										ageGroupString = "Target 4-23M";
+	
+									slectedString = slectedString + " " + ageGroupString  + " ";
+	
+								}
+								log.setAction("Update Population Targets Categories: " + slectedString);
+							}
+
+							FacadeProvider.getCampaignFacade().saveAuditLog(log);
+							
+						} else {
+							Notification.show("Population Data Update could not be Complete For Campaign");
+						}
+					});
+					confirmGeneration.open();
+				});
+				
+				Button cancelBtn = new Button(I18nProperties.getCaption(Captions.actionCancel), event -> genDialog.close());
+				genDialog.getFooter().add(cancelBtn, confirmBtn);
+				genDialog.open();
+			} else {
+				Notification notification = new Notification();
+				notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+
+				Div textx = new Div(new Text(I18nProperties.getString(Strings.infoSaveCampaignFirst)));
+
+				Button closeButton = new Button(new Icon("lumo", "cross"));
+				closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+				closeButton.getElement().setAttribute("aria-label", "Close");
+				closeButton.addClickListener(event -> {
+					notification.close();
+				});
+
+				HorizontalLayout layoutx = new HorizontalLayout(textx, closeButton);
+				layoutx.setAlignItems(Alignment.CENTER);
+				notification.setPosition(Notification.Position.MIDDLE);
+				notification.add(layoutx);
+				notification.open();
+			}
+		});
 
 		poplayout.add(btnGeneratePopulationData);
 		poplayout.setHorizontalComponentAlignment(Alignment.CENTER, btnGeneratePopulationData);
+		
+		poplayout.add(btnUpdatePopulationData);
+		poplayout.setHorizontalComponentAlignment(Alignment.CENTER, btnUpdatePopulationData);
 	}
 
 		Button btnImport = new Button(I18nProperties.getCaption(Captions.actionImport));// , e -> {

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -1286,10 +1287,7 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 
 	    return resultData;
 	}
-	
-//	public void generatePopulationDataForCamapign(String campaignUuid) {
-//		
-//	}
+
 
 	
 	@Override
@@ -1413,9 +1411,7 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 			return false;
 		}
 	}
-	
 
-	
 
 	@Override
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -1512,5 +1508,305 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		}
 	}
 	
+//	@Override
+//	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+//	public boolean updatePopulationDataForCampaignByRegionAndPopulationType(
+//	        CampaignDto campaignDto, 
+//	        List<AgeGroup> selectedAgeGroups, 
+//	        List<AreaReferenceDto> selectedRegions) {
+//
+//	    try {
+//	        List<String> selectedRegionUuids = selectedRegions.stream()
+//	                .map(AreaReferenceDto::getUuid)
+//	                .collect(Collectors.toList());
+//
+//	        List<String> selectedGroupNames = selectedAgeGroups.stream()
+//	                .map(AgeGroup::name)
+//	                .collect(Collectors.toList());
+//
+////	        String sql =
+////	            "WITH selected_data AS (  \n" + 
+////	            "    SELECT c.id AS community_id, r.id AS region_id, c.district_id, ag.agegroup, COALESCE(ag.population, 0) AS population, c2.id AS campaign_id \n" +
+////	            " FROM community c \n" +
+////	            "    JOIN district d ON d.id = c.district_id \n" +
+////	            "    JOIN region r ON r.id = d.region_id \n" +
+////	            "    JOIN areas a ON a.area_id = r.area_id \n" +
+////	            "    JOIN campaigns c2 ON c2.uuid = :campaignUuid \n" +
+////	            "    CROSS JOIN LATERAL ( 
+////	            "        VALUES 
+////	            "            ('AGE_0_4', c.populationdata_0_4),
+////	            "            ('AGE_5_10', c.populationdata_5_10),
+////	            "            ('AGE_4_23M', c.populationdata_4_23M)
+////	                ) AS ag(agegroup, population)
+////	                WHERE c.archived = false 
+////	                  AND a.uuid IN (:selectedRegionUuids)
+////	                  AND ag.agegroup IN (:selectedGroups)
+////	            )
+////	            INSERT INTO public.populationdata (
+////	                uuid, changedate, creationdate, region_id, district_id, 
+////	                community_id, agegroup, population, campaign_id, 
+////	                districtstatus, modality, selected
+////	            )
+////	            SELECT 
+////	                COALESCE(pd.uuid, gen_random_uuid()),
+////	                now(),
+////	                COALESCE(pd.creationdate, now()),
+////	                sd.region_id,
+////	                sd.district_id,
+////	                sd.community_id,
+////	                sd.agegroup,
+////	                sd.population,
+////	                sd.campaign_id,
+////	                CASE CAST(c.status AS TEXT)
+////	                    WHEN 'Additional' THEN 'Additional'
+////	                    WHEN 'AdditionalCold' THEN 'Additional & Cold'
+////	                    WHEN 'Cold' THEN 'Cold'
+////	                    WHEN 'FullCluster' THEN 'Full Cluster'
+////	                    WHEN 'HRMPOnly' THEN 'HRMP Only'
+////	                    WHEN 'Partial' THEN 'Partial'
+////	                    WHEN 'NotTargeted' THEN 'Not Targeted'
+////	                    WHEN 'OnHold' THEN 'On Hold'
+////	                    ELSE CAST(c.status AS TEXT)
+////	                END,
+////	                CASE CAST(c.modality AS TEXT)
+////	                    WHEN 'H2H' THEN 'H2H'
+////	                    WHEN 'M2M' THEN 'M2M'
+////	                    WHEN 'S2S' THEN 'S2S'
+////	                    WHEN 'HF2HF' THEN 'HF2HF'
+////	                    WHEN 'Mixed' THEN 'Mixed'
+////	                    ELSE CAST(c.modality AS TEXT)
+////	                END,
+////	                true
+////	            FROM selected_data sd
+////	            LEFT JOIN public.populationdata pd 
+////	                ON pd.campaign_id = sd.campaign_id 
+////	               AND pd.community_id = sd.community_id 
+////	               AND pd.agegroup = sd.agegroup
+////	            ON CONFLICT (campaign_id, community_id, agegroup) 
+////	            DO UPDATE SET
+////	                population = EXCLUDED.population,
+////	                selected = true,
+////	                changedate = now();
+////	           ;
+//	        
+//	        
+//	        String sql =
+//	        	    "WITH selected_data AS ( \n" +
+//	        	    "    SELECT \n" +
+//	        	    "        c.id AS community_id, \n" +
+//	        	    "        r.id AS region_id, \n" +
+//	        	    "        c.district_id, \n" +
+//	        	    "        ag.agegroup, \n" +
+//	        	    "        COALESCE(ag.population, 0) AS population, \n" +
+//	        	    "        c2.id AS campaign_id \n" +
+//	        	    "    FROM community c \n" +
+//	        	    "    JOIN district d ON d.id = c.district_id \n" +
+//	        	    "    JOIN region r ON r.id = d.region_id \n" +
+//	        	    "    JOIN areas a ON a.id = r.area_id \n" +
+//	        	    "    JOIN campaigns c2 ON c2.uuid = :campaignUuid \n" +
+//	        	    "    CROSS JOIN LATERAL ( \n" +
+//	        	    "        VALUES \n" +
+//	        	    "            ('AGE_0_4', c.populationdata_0_4), \n" +
+//	        	    "            ('AGE_5_10', c.populationdata_5_10), \n" +
+//	        	    "            ('AGE_4_23M', c.populationdata_4_23m) \n" +
+//	        	    "    ) AS ag(agegroup, population) \n" +
+//	        	    "    WHERE c.archived = false \n" +
+//	        	    "      AND a.uuid IN (:selectedRegionUuids) \n" +
+//	        	    "      AND ag.agegroup IN (:selectedGroups) \n" +
+//	        	    ") \n" +
+//	        	    "INSERT INTO public.populationdata ( \n" +
+//	        	    "    uuid, changedate, creationdate, region_id, district_id, \n" +
+//	        	    "    community_id, agegroup, population, campaign_id, \n" +
+//	        	    "    districtstatus, modality, selected \n" +
+//	        	    ") \n" +
+//	        	    "SELECT \n" +
+//	        	    "    COALESCE(pd.uuid, gen_random_uuid())::uuid, \n" +
+//	        	    "    now(), \n" +
+//	        	    "    COALESCE(pd.creationdate, now()), \n" +
+//	        	    "    sd.region_id, \n" +
+//	        	    "    sd.district_id, \n" +
+//	        	    "    sd.community_id, \n" +
+//	        	    "    sd.agegroup, \n" +
+//	        	    "    sd.population, \n" +
+//	        	    "    sd.campaign_id, \n" +
+//	        	    "    CASE CAST(c.status AS TEXT) \n" +
+//	        	    "        WHEN 'Additional' THEN 'Additional' \n" +
+//	        	    "        WHEN 'AdditionalCold' THEN 'Additional & Cold' \n" +
+//	        	    "        WHEN 'Cold' THEN 'Cold' \n" +
+//	        	    "        WHEN 'FullCluster' THEN 'Full Cluster' \n" +
+//	        	    "        WHEN 'HRMPOnly' THEN 'HRMP Only' \n" +
+//	        	    "        WHEN 'Partial' THEN 'Partial' \n" +
+//	        	    "        WHEN 'NotTargeted' THEN 'Not Targeted' \n" +
+//	        	    "        WHEN 'OnHold' THEN 'On Hold' \n" +
+//	        	    "        ELSE CAST(c.status AS TEXT) \n" +
+//	        	    "    END, \n" +
+//	        	    "    CASE CAST(c.modality AS TEXT) \n" +
+//	        	    "        WHEN 'H2H' THEN 'H2H' \n" +
+//	        	    "        WHEN 'M2M' THEN 'M2M' \n" +
+//	        	    "        WHEN 'S2S' THEN 'S2S' \n" +
+//	        	    "        WHEN 'HF2HF' THEN 'HF2HF' \n" +
+//	        	    "        WHEN 'Mixed' THEN 'Mixed' \n" +
+//	        	    "        ELSE CAST(c.modality AS TEXT) \n" +
+//	        	    "    END, \n" +
+//	        	    "    true \n" +
+//	        	    "FROM selected_data sd \n" +
+//	        	    "JOIN community c ON c.id = sd.community_id \n" +
+//	        	    "LEFT JOIN public.populationdata pd \n" +
+//	        	    "    ON pd.campaign_id = sd.campaign_id \n" +
+//	        	    "   AND pd.community_id = sd.community_id \n" +
+//	        	    "   AND pd.agegroup = sd.agegroup \n" +
+//	        	    "ON CONFLICT (campaign_id, community_id, agegroup) \n" +
+//	        	    "DO UPDATE SET \n" +
+//	        	    "    population = EXCLUDED.population, \n" +
+//	        	    "    districtstatus = EXCLUDED.districtstatus, \n" +
+//	        	    "    modality = EXCLUDED.modality, \n" +
+//	        	    "    selected = true, \n" +
+//	        	    "    changedate = now();";
+//
+//	        Query query = em.createNativeQuery(sql);
+//	        query.setParameter("campaignUuid", campaignDto.getUuid());
+//	        query.setParameter("selectedGroups", selectedGroupNames);
+//	        query.setParameter("selectedRegionUuids", selectedRegionUuids);
+//
+//	        query.executeUpdate();
+//
+//	        return true;
+//
+//	    } catch (Exception e) {
+//	        e.printStackTrace();
+//	        return false;
+//	    }
+//	}
+	
 
+	
+	@Override
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public boolean updatePopulationDataForCampaignByRegionAndPopulationType(
+	        CampaignDto campaignDto,
+	        List<AgeGroup> selectedAgeGroups,
+	        List<AreaReferenceDto> selectedRegions) {
+
+	    try {
+
+//	        List<String> regionUuids = selectedRegions.stream()
+//	                .map(AreaReferenceDto::getUuid)
+//	                .toList();
+	        
+	        List<String> regionUuids = selectedRegions.stream()
+	                .map(AreaReferenceDto::getUuid)
+	                .collect(Collectors.toList());
+
+	        List<String> ageGroups = selectedAgeGroups.stream()
+	                .map(Enum::name)
+	                .collect(Collectors.toList());
+
+	        String regionIn = IntStream.range(0, regionUuids.size())
+	                .mapToObj(i -> ":r" + i)
+	                .collect(Collectors.joining(", "));
+
+	        String groupIn = IntStream.range(0, ageGroups.size())
+	                .mapToObj(i -> ":g" + i)
+	                .collect(Collectors.joining(", "));
+
+	        String sql =
+	            "WITH selected_data AS ( " +
+	            "   SELECT " +
+	            "       c.id AS community_id, " +
+	            "       a.id AS area_id,  r.id AS region_id, " +
+	            "       c.district_id, " +
+	            "       ag.agegroup, " +
+	            "       COALESCE(ag.population, 0) AS population, " +
+	            "       camp.id AS campaign_id " +
+	            "   FROM community c " +
+	            "   JOIN district d ON d.id = c.district_id " +
+	            "   JOIN region r ON r.id = d.region_id " +
+	            "   JOIN areas a ON a.id = r.area_id " +
+	            "   JOIN campaigns camp ON camp.uuid = :campaignUuid" + 
+	            "   CROSS JOIN LATERAL ( " +
+	            "       VALUES " +
+	            "           ('AGE_0_4', c.populationdata_0_4), " +
+	            "           ('AGE_5_10', c.populationdata_5_10), " +
+	            "           ('AGE_4_23M', c.populationdata_4_23m) " +
+	            "   ) AS ag(agegroup, population) " +
+	            "   WHERE c.archived = false " +
+	            "     AND a.uuid IN (" + regionIn + ") " +
+	            "     AND ag.agegroup IN (" + groupIn + ") " +
+	            ") " +
+	            "INSERT INTO public.populationdata ( " +
+	            "   uuid, changedate, creationdate, region_id, district_id, community_id, " +
+	            "   agegroup, population, campaign_id, districtstatus, modality, selected " +
+	            ") " +
+	            "SELECT " +
+	            "   COALESCE(pd.uuid, CAST(gen_random_uuid() AS varchar)), " +
+	            "   NOW(), " +
+	            "   COALESCE(pd.creationdate, NOW()), " +
+	            "   sd.region_id, " +
+	            "   sd.district_id, " +
+	            "   sd.community_id, " +
+	            "   sd.agegroup, " +
+	            "   sd.population, " +
+	            "   sd.campaign_id, " +
+	            "   CASE " +
+	            "       WHEN c.status = 'Additional' THEN 'Additional' " +
+	            "       WHEN c.status = 'AdditionalCold' THEN 'Additional & Cold' " +
+	            "       WHEN c.status = 'Cold' THEN 'Cold' " +
+	            "       WHEN c.status = 'FullCluster' THEN 'Full Cluster' " +
+	            "       WHEN c.status = 'HRMPOnly' THEN 'HRMP Only' " +
+	            "       WHEN c.status = 'Partial' THEN 'Partial' " +
+	            "       WHEN c.status = 'NotTargeted' THEN 'Not Targeted' " +
+	            "       WHEN c.status = 'OnHold' THEN 'On Hold' " +
+	            "       ELSE COALESCE(CAST(c.status AS varchar), '') " +
+	            "   END AS districtstatus, " +
+	            "   CASE " +
+	            "       WHEN c.modality = 'H2H' THEN 'H2H' " +
+	            "       WHEN c.modality = 'M2M' THEN 'M2M' " +
+	            "       WHEN c.modality = 'S2S' THEN 'S2S' " +
+	            "       WHEN c.modality = 'HF2HF' THEN 'HF2HF' " +
+	            "       WHEN c.modality = 'Mixed' THEN 'Mixed' " +
+	            "       ELSE COALESCE(CAST(c.modality AS varchar), '') " +
+	            "   END AS modality, " +
+	            "   TRUE " +
+	            "FROM selected_data sd " +
+	            "JOIN community c ON c.id = sd.community_id " +
+	            "LEFT JOIN public.populationdata pd " +
+	            "   ON pd.campaign_id = sd.campaign_id " +
+	            "  AND pd.community_id = sd.community_id " +
+	            "  AND pd.agegroup = sd.agegroup " +
+	            "ON CONFLICT (community_id, agegroup, campaign_id) " +
+	            "DO UPDATE SET " +
+	            "   population = EXCLUDED.population, " +
+	            "   districtstatus = EXCLUDED.districtstatus, " +
+	            "   modality = EXCLUDED.modality, " +
+	            "   selected = TRUE, " +
+	            "   changedate = NOW();";
+	        
+	        
+	        System.out.println("===============QUERY" + sql );
+
+	        Query query = em.createNativeQuery(sql);
+
+	        query.setParameter("campaignUuid", campaignDto.getUuid());
+
+	        for (int i = 0; i < regionUuids.size(); i++) {
+	            query.setParameter("r" + i, regionUuids.get(i));
+	        }
+
+	        for (int i = 0; i < ageGroups.size(); i++) {
+	            query.setParameter("g" + i, ageGroups.get(i));
+	        }
+
+	        int rows = query.executeUpdate();
+
+	        System.out.println("Updated rows: " + rows);
+
+	        return true;
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+	}
+	
+	
 }
