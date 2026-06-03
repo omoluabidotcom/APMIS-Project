@@ -122,7 +122,7 @@ public class CampaignFormDataFragmentUtils {
                     .map(c -> c.trim().toLowerCase(Locale.ROOT))
                     .anyMatch(c -> c.startsWith("max="));
 
-            if (hasMin && hasMax) {
+            if (hasMin || hasMax) {
                 ids.add(e.getId());
             }
         }

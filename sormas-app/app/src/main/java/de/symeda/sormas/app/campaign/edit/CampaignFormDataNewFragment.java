@@ -412,7 +412,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                     boolean changedFieldIsRangeTrigger =
                                             campaignFormElement != null
                                                     && "range".equalsIgnoreCase(campaignFormElement.getType())
-                                                    && rangeTriggerIds.contains(campaignFormElement.getId());
+                                                    && rangeEffectIds.contains(campaignFormElement.getId());
 
                                     boolean userStillEditingThisField = field.hasFocus() || field.getFocusedChild() != null;
 
@@ -580,7 +580,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                 boolean changedFieldIsRangeTrigger =
                                         campaignFormElement != null
                                                 && "range".equalsIgnoreCase(campaignFormElement.getType())
-                                                && rangeTriggerIds.contains(campaignFormElement.getId());
+                                                && rangeEffectIds.contains(campaignFormElement.getId());
 
                                 boolean userStillEditingThisField = field.hasFocus() || field.getFocusedChild() != null;
 
@@ -746,7 +746,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                 boolean changedFieldIsRangeTrigger =
                                         campaignFormElement != null
                                                 && "range".equalsIgnoreCase(campaignFormElement.getType())
-                                                && rangeTriggerIds.contains(campaignFormElement.getId());
+                                                && rangeEffectIds.contains(campaignFormElement.getId());
 
                                 boolean userStillEditingThisField = field.hasFocus() || field.getFocusedChild() != null;
 
@@ -911,7 +911,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                 boolean changedFieldIsRangeTrigger =
                                         campaignFormElement != null
                                                 && "range".equalsIgnoreCase(campaignFormElement.getType())
-                                                && rangeTriggerIds.contains(campaignFormElement.getId());
+                                                && rangeEffectIds.contains(campaignFormElement.getId());
 
                                 boolean userStillEditingThisField = field.hasFocus() || field.getFocusedChild() != null;
 
@@ -1239,7 +1239,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                 boolean changedFieldIsRangeTrigger =
                                         campaignFormElement != null
                                                 && "range".equalsIgnoreCase(campaignFormElement.getType())
-                                                && rangeTriggerIds.contains(campaignFormElement.getId());
+                                                && rangeEffectIds.contains(campaignFormElement.getId());
 
                                 boolean userStillEditingThisField = field.hasFocus() || field.getFocusedChild() != null;
 
@@ -1403,7 +1403,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                 boolean changedFieldIsRangeTrigger =
                                         campaignFormElement != null
                                                 && "range".equalsIgnoreCase(campaignFormElement.getType())
-                                                && rangeTriggerIds.contains(campaignFormElement.getId());
+                                                && rangeEffectIds.contains(campaignFormElement.getId());
 
                                 boolean userStillEditingThisField = field.hasFocus() || field.getFocusedChild() != null;
 
@@ -1568,7 +1568,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                 boolean changedFieldIsRangeTrigger =
                                         campaignFormElement != null
                                                 && "range".equalsIgnoreCase(campaignFormElement.getType())
-                                                && rangeTriggerIds.contains(campaignFormElement.getId());
+                                                && rangeEffectIds.contains(campaignFormElement.getId());
 
                                 boolean userStillEditingThisField = field.hasFocus() || field.getFocusedChild() != null;
 
@@ -1846,7 +1846,7 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
                                 boolean changedFieldIsRangeTrigger =
                                         campaignFormElement != null
                                                 && "range".equalsIgnoreCase(campaignFormElement.getType())
-                                                && rangeTriggerIds.contains(campaignFormElement.getId());
+                                                && rangeEffectIds.contains(campaignFormElement.getId());
 
                                 boolean userStillEditingThisField = field.hasFocus() || field.getFocusedChild() != null;
 
@@ -1909,7 +1909,7 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
                                 boolean changedFieldIsRangeTrigger =
                                         campaignFormElement != null
                                                 && "range".equalsIgnoreCase(campaignFormElement.getType())
-                                                && rangeTriggerIds.contains(campaignFormElement.getId());
+                                                && rangeEffectIds.contains(campaignFormElement.getId());
 
                                 boolean userStillEditingThisField = field.hasFocus() || field.getFocusedChild() != null;
 
@@ -1917,6 +1917,7 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
                                 expressionMap.forEach((formElement, controlPropertyField) -> {
                                     if (formElement.getExpression() == null || formElement.getExpression().isEmpty()) return;
                                     boolean isRangeEffect = "range".equalsIgnoreCase(formElement.getType());
+                                    boolean isDeferredRangeEffect = isRangeEffect && rangeEffectIds.contains(formElement.getId());
 
                                     if (!isRangeEffect) {
                                         CampaignFormDataFragmentUtils.handleExpressionSec(
