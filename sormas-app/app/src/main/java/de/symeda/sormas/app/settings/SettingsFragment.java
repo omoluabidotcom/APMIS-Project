@@ -106,7 +106,7 @@ public class SettingsFragment extends BaseLandingFragment {
 		//	binding.apmisEngineVersion.setText("APMIS REST Engine Version: " + HoldVersions.getServerVersionFromURL());
 		}
 		binding.apmisReleaseDate.setText("Release Date: " + ConfigProvider.APPRELEASEDATE);
-		binding.sormasVersion.setText("APMIS Server Version: 4.1.0");// + InfoProvider.InfoProvider_apmis());//HoldVersions
+		binding.sormasVersion.setText("APMIS Server Version: 4.2.0");// + InfoProvider.InfoProvider_apmis());//HoldVersions
 		binding.sormasVersion.setOnClickListener(v -> {
 			versionClickedCount++;
 			if (isShowDevOptions()) {

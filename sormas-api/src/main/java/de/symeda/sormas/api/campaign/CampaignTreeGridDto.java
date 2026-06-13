@@ -36,7 +36,14 @@ public class CampaignTreeGridDto {
     private String ageGroup;
 
     private Boolean selected;
-
+    
+    
+    
+    private Long populationData;
+    private Long populationData5_10;
+    private Long populationData4_23M;
+    
+    
     public CampaignTreeGridDto(String name, Long id, String parentUuid, String uuid, String levelAssessed) {
         this.name = name;
         this.id = id;
@@ -145,23 +152,51 @@ public class CampaignTreeGridDto {
     	clusterData.add(clusterData_sub);
     }
 
-    public Long getPopulationData() {
-        return getRegionData().stream()
-                .map(region -> region.getPopulationData())
-                .reduce(0L, Long::sum);
-    }
     
-    public Long getPopulationData5_10() {
-        return getRegionData().stream()
-                .map(region -> region.getPopulationData5_10())
-                .reduce(0L, Long::sum);
-    }
     
-    public Long getPopulationData4_23M() {
-        return getRegionData().stream()
-                .map(region -> region.getPopulationData4_23M())
-                .reduce(0L, Long::sum);
-    }
+    
+    
+    public void setPopulationData(Long populationData) {
+		this.populationData = populationData;
+	}
+
+	public void setPopulationData5_10(Long populationData5_10) {
+		this.populationData5_10 = populationData5_10;
+	}
+
+	public void setPopulationData4_23M(Long populationData4_23M) {
+		this.populationData4_23M = populationData4_23M;
+	}
+
+//	public Long getPopulationData() {
+//        return getRegionData().stream()
+//                .map(region -> region.getPopulationData())
+//                .reduce(0L, Long::sum);
+//    }
+	
+	public Long getPopulationData() {
+	    return populationData;
+	}
+    
+//    public Long getPopulationData5_10() {
+//        return getRegionData().stream()
+//                .map(region -> region.getPopulationData5_10())
+//                .reduce(0L, Long::sum);
+//    }
+	
+	public Long getPopulationData5_10() {
+	    return populationData5_10;
+	}
+    
+//    public Long getPopulationData4_23M() {
+//        return getRegionData().stream()
+//                .map(region -> region.getPopulationData4_23M())
+//                .reduce(0L, Long::sum);
+//    }
+	
+	public Long getPopulationData4_23M() {
+	    return populationData4_23M;
+	}
     
     
     public Long getPopulationDataTotal() {

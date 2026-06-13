@@ -1255,11 +1255,82 @@ public class AssociateCampaign extends VerticalLayout {
                         }
                     }
                     
+                    long district0_59 = districtData.getClusterData()
+                    	    .stream()
+                    	    .mapToLong(c -> c.getPopulationData() == null ? 0 : c.getPopulationData())
+                    	    .sum();
+
+                    	long district60_120 = districtData.getClusterData()
+                    	    .stream()
+                    	    .mapToLong(c -> c.getPopulationData5_10() == null ? 0 : c.getPopulationData5_10())
+                    	    .sum();
+
+                    	long district4_23M = districtData.getClusterData()
+                    	    .stream()
+                    	    .mapToLong(c -> c.getPopulationData4_23M() == null ? 0 : c.getPopulationData4_23M())
+                    	    .sum();
+
+                    	districtData.setPopulationData(district0_59);
+                    	districtData.setPopulationData5_10(district60_120);
+                    	districtData.setPopulationData4_23M(district4_23M);
+                    	
+                    
                     regionData.addDistrictData(districtData);
                 }
                 
+                long region0_59 = regionData.getDistrictData()
+                	    .stream()
+                	    .mapToLong(d -> d.getPopulationData() == null ? 0 : d.getPopulationData())
+                	    .sum();
+
+                	long region60_120 = regionData.getDistrictData()
+                	    .stream()
+                	    .mapToLong(d -> d.getPopulationData5_10() == null ? 0 : d.getPopulationData5_10())
+                	    .sum();
+
+                	long region4_23M = regionData.getDistrictData()
+                	    .stream()
+                	    .mapToLong(d -> d.getPopulationData4_23M() == null ? 0 : d.getPopulationData4_23M())
+                	    .sum();
+
+                	regionData.setPopulationData(region0_59);
+                	regionData.setPopulationData5_10(region60_120);
+                	regionData.setPopulationData4_23M(region4_23M);
+                	
+                	System.out.println(
+                		    "REGION: " + regionData.getName()
+                		    + " | 0_59=" + region0_59
+                		);
+                
                 areaData.addRegionData(regionData);
             }
+            
+            long area0_59 = areaData.getRegionData()
+            	    .stream()
+            	    .mapToLong(r -> r.getPopulationData() == null ? 0 : r.getPopulationData())
+            	    .sum();
+
+            	long area60_120 = areaData.getRegionData()
+            	    .stream()
+            	    .mapToLong(r -> r.getPopulationData5_10() == null ? 0 : r.getPopulationData5_10())
+            	    .sum();
+
+            	long area4_23M = areaData.getRegionData()
+            	    .stream()
+            	    .mapToLong(r -> r.getPopulationData4_23M() == null ? 0 : r.getPopulationData4_23M())
+            	    .sum();
+
+            	areaData.setPopulationData(area0_59);
+            	areaData.setPopulationData5_10(area60_120);
+            	areaData.setPopulationData4_23M(area4_23M);
+            	
+            	System.out.println(
+            		    "AREA: " + areaData.getName()
+            		    + " | 0_59=" + area0_59
+            		    + " | 60_120=" + area60_120
+            		    + " | 4_23M=" + area4_23M
+            		);
+            	
             
             gridData.add(areaData);
         }
