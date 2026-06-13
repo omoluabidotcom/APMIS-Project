@@ -527,7 +527,7 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 				
 				+ PopulationData.AGE_GROUP + ", "
 				+ PopulationData.SEX + ", " 
-				+ PopulationData.MODALITY  + ", "
+				+ PopulationData.TABLE_NAME  + "." + PopulationData.MODALITY  + " AS modality, "   
 				+ PopulationData.DISTRICT_STATUS  + ", "
 				+ PopulationData.POPULATION 
 				+ " FROM " + PopulationData.TABLE_NAME
