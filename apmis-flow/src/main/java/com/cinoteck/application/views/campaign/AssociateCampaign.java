@@ -25,6 +25,8 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.grid.FooterRow;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.GridMultiSelectionModel;
 import com.vaadin.flow.component.grid.GridMultiSelectionModel.SelectAllCheckboxVisibility;
@@ -114,6 +116,8 @@ public class AssociateCampaign extends VerticalLayout {
     private Set<String> pendingSelectedClusters = new HashSet<>();
     private Set<String> pendingDeselectedClusters = new HashSet<>();
     boolean hasPendingChanges = false;
+    
+    private FooterRow footerRow;
 
     protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -133,6 +137,8 @@ public class AssociateCampaign extends VerticalLayout {
             add(savecampaignTextAssoccamp);
         }
     }
+    
+    
 
     public HorizontalLayout configureTreeGrid(boolean isDeletePopulationData, CampaignDto formData) {
         ComponentRenderer<Span, CampaignTreeGridDto> populationGenerate = new ComponentRenderer<>(input -> {
@@ -264,6 +270,7 @@ public class AssociateCampaign extends VerticalLayout {
                 return Collections.emptyList();
             }
         });
+        
 
         
         buildParentMap();
@@ -271,12 +278,61 @@ public class AssociateCampaign extends VerticalLayout {
         
         // Add columns
         treeGrid.addColumn(selectionCheckboxRenderer).setHeader("Select").setWidth("70px").setFlexGrow(0);
-        treeGrid.addHierarchyColumn(CampaignTreeGridDto::getName).setHeader(I18nProperties.getCaption(Captions.Location)).setAutoWidth(true);
-        treeGrid.addColumn(populationGenerate).setHeader("Target (0-59M)");
-        treeGrid.addColumn(populationGenerate5_10).setHeader("Target (60-120M)");
-        treeGrid.addColumn(populationGenerate4_23M).setHeader("Target (4_23M)");
-        treeGrid.addColumn(CampaignTreeGridDto::getDistrictModality).setHeader("Modality");
-        treeGrid.addColumn(CampaignTreeGridDto::getDistrictStatus).setHeader("Status");
+        treeGrid.addHierarchyColumn(CampaignTreeGridDto::getName).setHeader(I18nProperties.getCaption(Captions.Location)).setAutoWidth(true).setResizable(true).setTooltipGenerator(CampaignTreeGridDto::getName);
+//        treeGrid.addColumn(populationGenerate).setHeader("Target (0-59M)").setResizable(true).setTooltipGenerator(item->{"knknskf"});
+//        treeGrid.addColumn(populationGenerate5_10).setHeader("Target (60-120M)").setResizable(true);
+//        treeGrid.addColumn(populationGenerate4_23M).setHeader("Target (4_23M)").setResizable(true);
+        
+        treeGrid.addColumn(populationGenerate)
+        .setHeader("Target (0-59M)")
+        .setResizable(true)
+        .setTooltipGenerator(input -> {
+            NumberFormat arabicFormat = NumberFormat.getInstance();
+            if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
+                arabicFormat = NumberFormat.getInstance(new Locale("ps"));
+            } else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
+                arabicFormat = NumberFormat.getInstance(new Locale("fa"));
+            } else {
+                arabicFormat = NumberFormat.getInstance(new Locale("en"));
+            }
+            return arabicFormat.format(input.getPopulationData());
+        });
+
+    treeGrid.addColumn(populationGenerate5_10)
+        .setHeader("Target (60-120M)")
+        .setResizable(true)
+        .setTooltipGenerator(input -> {
+            NumberFormat arabicFormat = NumberFormat.getInstance();
+            if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
+                arabicFormat = NumberFormat.getInstance(new Locale("ps"));
+            } else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
+                arabicFormat = NumberFormat.getInstance(new Locale("fa"));
+            } else {
+                arabicFormat = NumberFormat.getInstance(new Locale("en"));
+            }
+            return arabicFormat.format(input.getPopulationData5_10());
+        });
+
+    treeGrid.addColumn(populationGenerate4_23M)
+        .setHeader("Target (4-23M)")
+        .setResizable(true)
+        .setTooltipGenerator(input -> {
+            Locale locale;
+            String lang = userProvider.getUser().getLanguage().toString();
+            if ("Pashto".equals(lang)) {
+                locale = new Locale("ps");
+            } else if ("Dari".equals(lang)) {
+                locale = new Locale("fa");
+            } else {
+                locale = Locale.ENGLISH;
+            }
+            NumberFormat format = NumberFormat.getInstance(locale);
+            Number population = input.getPopulationData4_23M();
+            return population != null ? format.format(population) : "0";
+        });
+    
+        treeGrid.addColumn(CampaignTreeGridDto::getDistrictModality).setHeader("Modality").setResizable(true).setTooltipGenerator(CampaignTreeGridDto::getDistrictModality);
+        treeGrid.addColumn(CampaignTreeGridDto::getDistrictStatus).setHeader("Status").setResizable(true).setTooltipGenerator(CampaignTreeGridDto::getDistrictStatus);
         
         // Add delete column
         ComponentRenderer<Component, CampaignTreeGridDto> deleteCheckboxRenderer = new ComponentRenderer<>(dto -> {
@@ -295,6 +351,8 @@ public class AssociateCampaign extends VerticalLayout {
             }
         });
         treeGrid.addColumn(deleteCheckboxRenderer).setHeader("Delete?").setWidth("70px").setFlexGrow(0);
+        
+        
 
         // Load selected UUIDs from campaign DTO
         selectedAreaUuids = campaignDto.getAreas().stream().map(AreaReferenceDto::getUuid).collect(Collectors.toSet());
@@ -321,6 +379,8 @@ public class AssociateCampaign extends VerticalLayout {
         applyRowStyling();
         
         treeGrid.getDataProvider().refreshAll();
+        updateFooterTotals();
+
 
         // Enhanced Refresh button with confirmation and pending changes commit
         Button refreshTreeGridBtn = new Button("Refresh Tree Grid", new Icon(VaadinIcon.REFRESH));
@@ -375,6 +435,53 @@ public class AssociateCampaign extends VerticalLayout {
             buildParentMapRecursive(area, null);
         }
     }
+    
+    
+    private void updateFooterTotals() {
+        if (footerRow == null) {
+            footerRow = treeGrid.appendFooterRow();
+            // Optional: style the footer row
+//            footerRow.getStyle().set("font-weight", "bold");
+//            footerRow.getStyle().set("background", "#f0f0f0");
+        }
+
+        List<CampaignTreeGridDto> roots = treeGrid.getTreeData().getRootItems();
+        long total0_59 = 0;
+        long total5_10 = 0;
+        long total4_23M = 0;
+
+        for (CampaignTreeGridDto root : roots) {
+            total0_59 += root.getPopulationData() != null ? root.getPopulationData() : 0L;
+            total5_10 += root.getPopulationData5_10() != null ? root.getPopulationData5_10() : 0L;
+            total4_23M += root.getPopulationData4_23M() != null ? root.getPopulationData4_23M() : 0L;
+        }
+
+        // Determine number format based on user language
+        NumberFormat format = NumberFormat.getInstance();
+        String lang = userProvider.getUser().getLanguage().toString();
+        if ("Pashto".equals(lang)) {
+            format = NumberFormat.getInstance(new Locale("ps"));
+        } else if ("Dari".equals(lang)) {
+            format = NumberFormat.getInstance(new Locale("fa"));
+        } else {
+            format = NumberFormat.getInstance(new Locale("en"));
+        }
+
+        // Get columns in order (they were added in the same order)
+        List<Grid.Column<CampaignTreeGridDto>> columns = treeGrid.getColumns();
+        if (columns.size() < 8) return; // safety check
+
+        // Column indices:
+        // 0 - selection checkbox, 1 - hierarchy name, 2 - target 0-59, 3 - target 60-120, 4 - target 4-23, 5 - modality, 6 - status, 7 - delete checkbox
+        footerRow.getCell(columns.get(1)).setText("National Total");
+        footerRow.getCell(columns.get(2)).setText(format.format(total0_59));
+        footerRow.getCell(columns.get(3)).setText(format.format(total5_10));
+        footerRow.getCell(columns.get(4)).setText(format.format(total4_23M));
+        footerRow.getCell(columns.get(5)).setText("");  // Modality – no total
+        footerRow.getCell(columns.get(6)).setText("");  // Status – no total
+        // Delete column (index 7) remains empty
+    }
+    
     
     /**
      * Show notification for pending changes
@@ -889,6 +996,7 @@ public class AssociateCampaign extends VerticalLayout {
                 else return Collections.emptyList();
             });
             
+            updateFooterTotals();
             updateAllParentSelections();
             applyRowStyling();
             
@@ -1863,6 +1971,7 @@ public class AssociateCampaign extends VerticalLayout {
 
 						confirmationDialog.close();
 
+						updateFooterTotals();
 						treeGrid.getDataProvider().refreshAll();// refreshItem(campaignTreeGridDto);
 																// add , true
 																// to
@@ -2102,6 +2211,7 @@ public class AssociateCampaign extends VerticalLayout {
 							confirmationDialog.close();
 							dialog.close();
 							treeGrid.getDataProvider().refreshAll();// refreshItem(campaignTreeGridDto);
+							
 							Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
 						}
 					});

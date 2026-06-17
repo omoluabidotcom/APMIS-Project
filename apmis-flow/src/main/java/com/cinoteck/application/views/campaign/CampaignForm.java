@@ -896,6 +896,8 @@ public class CampaignForm extends VerticalLayout {
 				});
 				
 				Button cancelBtn = new Button(I18nProperties.getCaption(Captions.actionCancel), event -> genDialog.close());
+				cancelBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
+//				cancelBtn.getStyle().set("color", "red");
 				genDialog.getFooter().add(cancelBtn, confirmBtn);
 				genDialog.open();
 			} else {
