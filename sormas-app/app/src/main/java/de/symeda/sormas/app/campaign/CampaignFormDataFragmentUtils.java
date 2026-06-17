@@ -1017,6 +1017,9 @@ public class CampaignFormDataFragmentUtils {
                 setLiveValidationDisabled(true);
                 initInput(isIntegerField, isRequired, false, null, null, false, false);
                 displayHelpText();
+                if (isRequired) {
+                    setRequired(true);
+                }
             }
         };
     }
@@ -1067,6 +1070,9 @@ public class CampaignFormDataFragmentUtils {
                 setLiveValidationDisabled(true);
                 initInput(isIntegerField, isRequired, false, null, null, false, false);
                 displayHelpText();
+                if (isRequired) {
+                    setRequired(true);
+                }
             }
         };
     }
@@ -1129,6 +1135,9 @@ public class CampaignFormDataFragmentUtils {
                 setLiveValidationDisabled(true);
                 initInput(isIntegerField, isRequired, false, null, null, false, false);
                 displayHelpText();
+                if (isRequired) {
+                    setRequired(true);
+                }
             }
         };
     }
@@ -1186,6 +1195,9 @@ public class CampaignFormDataFragmentUtils {
                 setLiveValidationDisabled(false);
                 initInput(isIntegerField, isRequired, false, null, null, false, false);
                 displayHelpText();
+                if (isRequired) {
+                    setRequired(true);
+                }
             }
         };
     }
@@ -1418,6 +1430,9 @@ public class CampaignFormDataFragmentUtils {
 
                 initInput(true, isRequired, true, null, null, true, warnOnError, campaignFormElements);
                 displayHelpText();
+                if (isRequired) {
+                    setRequired(true);
+                }
             }
         };
     }
@@ -1490,6 +1505,9 @@ public class CampaignFormDataFragmentUtils {
 //                initInput(isIntegerField, isRequired, true, minVal, maxVal, isExpressionx, warnOnError);
                 initInput(true, isRequired, true, minVal, maxVal, isExpressionx, warnOnError, campaignFormElements);
                 displayHelpText();
+                if (isRequired) {
+                    setRequired(true);
+                }
             }
         };
     }
@@ -1558,6 +1576,9 @@ public class CampaignFormDataFragmentUtils {
                 initInput(isDecimalField, isRequired, true, minVal, maxVal, isExpressionx, warnOnError);
 //                setVisibility(GONE);
                 displayHelpText();
+                if (isRequired) {
+                    setRequired(true);
+                }
             }
         };
     }
@@ -1612,6 +1633,9 @@ public class CampaignFormDataFragmentUtils {
                 setLiveValidationDisabled(true);
                 initInput(isDecimalField, isRequired, true, null, null, true, false);
                 displayHelpText();
+                if (isRequired) {
+                    setRequired(true);
+                }
             }
         };
     }
@@ -1660,6 +1684,9 @@ public class CampaignFormDataFragmentUtils {
                 setLiveValidationDisabled(true);
                 initInput(isIntegerField, isRequired);
                 displayHelpText();
+                if (isRequired) {
+                    setRequired(true);
+                }
             }
         };
     }
@@ -1708,6 +1735,7 @@ public class CampaignFormDataFragmentUtils {
                 initLabelAndValidationListeners();
                 setLiveValidationDisabled(true);
 //                initInput(isIntegerField);
+
                 initInput(optionsList);
                 displayHelpText();
             }
@@ -1759,6 +1787,9 @@ public class CampaignFormDataFragmentUtils {
                 initializeDateField(fm);
                 initInput(true, isRequired);
                 displayHelpText();
+                if (isRequired) {
+                    setRequired(true);
+                }
             }
         };
     }
@@ -2149,6 +2180,9 @@ public class CampaignFormDataFragmentUtils {
                 initializeTimeField(fm);
                 initInput(false, isRequired, false, 0, 1000, false, false);
                 displayHelpText();
+                if (isRequired) {
+                    setRequired(true);
+                }
             }
         };
     }
