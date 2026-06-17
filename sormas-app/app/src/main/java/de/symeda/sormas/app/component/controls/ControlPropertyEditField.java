@@ -98,8 +98,9 @@ public abstract class ControlPropertyEditField<T> extends ControlPropertyField<T
 			try {
 				hint = a.getString(R.styleable.ControlPropertyEditField_hint);
 				required = a.getBoolean(R.styleable.ControlPropertyEditField_required, false);
-				softRequired = a.getBoolean(R.styleable.ControlPropertyEditField_required, false);
+//				softRequired = a.getBoolean(R.styleable.ControlPropertyEditField_required, false);
 				//ControlPropertyEditField_softRequired, false);
+				softRequired = false;
 			} finally {
 				a.recycle();
 			}
