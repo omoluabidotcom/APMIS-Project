@@ -853,6 +853,8 @@ public class CampaignForm extends VerticalLayout {
 //					confirmGeneration.setText(I18nProperties.getString("Are you sure you want to generate population data for the selected categories? This will overwrite existing data for this campaign."));
 					confirmGeneration.setCancelable(true);
 					confirmGeneration.setConfirmText(I18nProperties.getCaption("Yes, Generate"));
+					confirmGeneration.setCancelText("No, Cancel");
+					confirmGeneration.setCancelButtonTheme(ButtonVariant.LUMO_ERROR.getVariantName());
 					confirmGeneration.addConfirmListener(confirmEvent -> {
 						genDialog.close();
 
@@ -892,11 +894,14 @@ public class CampaignForm extends VerticalLayout {
 							Notification.show("Population Data Generation could not be Complete For Campaign");
 						}
 					});
+					
+
 					confirmGeneration.open();
 				});
 				
 				Button cancelBtn = new Button(I18nProperties.getCaption(Captions.actionCancel), event -> genDialog.close());
-				cancelBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
+//				cancelBtn.setId("erroredButton");
+//				cancelBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
 //				cancelBtn.getStyle().set("color", "red");
 				genDialog.getFooter().add(cancelBtn, confirmBtn);
 				genDialog.open();
@@ -983,6 +988,9 @@ public class CampaignForm extends VerticalLayout {
 //					confirmGeneration.setText(I18nProperties.getString("Are you sure you want to generate population data for the selected categories? This will overwrite existing data for this campaign."));
 					confirmGeneration.setCancelable(true);
 					confirmGeneration.setConfirmText(I18nProperties.getCaption("Yes, Update Data"));
+					confirmGeneration.setCancelText("No, Cancel");
+					confirmGeneration.setCancelButtonTheme(ButtonVariant.LUMO_ERROR.getVariantName());
+					
 					confirmGeneration.addConfirmListener(confirmEvent -> {
 						genDialog.close();
 
