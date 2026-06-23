@@ -108,4 +108,6 @@ public interface PopulationDataFacade {
 	boolean generatePopulationDataForCamapignByRegionAndPopulationType(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups, List<AreaReferenceDto> selectedRegions);
 
 	boolean updatePopulationDataForCampaignByRegionAndPopulationType(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups, List<AreaReferenceDto> selectedRegions);
+
+	List<PopulationDataDto> getSelectedClustersByCampaign(String campaignuuid);
 }

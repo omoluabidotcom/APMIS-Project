@@ -1237,51 +1237,37 @@ public class CampaignForm extends VerticalLayout {
 
 		saveChanges.addClickListener(e -> {
 
-			areass.clear();
-			region.clear();
-			districts.clear();
-			community.clear();
-			popopulationDataDtoSet.clear();
 			
-			for (CampaignTreeGridDto item : treeGrid.getSelectionModel().getSelectedItems()) {
-
-			    String level = item.getLevelAssessed();
-
-			    if ("area".equals(level)) {
-			        areass.add(
-			            FacadeProvider.getAreaFacade().getAreaReferenceByUuid(item.getUuid())
-			        );
-			    } else if ("region".equals(level)) {
-			        region.add(
-			            FacadeProvider.getRegionFacade().getRegionReferenceByUuid(item.getUuid())
-			        );
-			    } else if ("district".equals(level)) {
-			        districts.add(
-			            FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(item.getUuid())
-			        );
-			    } else if ("cluster".equals(level)) {
-			        // 1) Add to community set
-			        CommunityReferenceDto clusterRef =
-			            FacadeProvider.getCommunityFacade().getCommunityReferenceByUuid(item.getUuid());
-			        community.add(clusterRef);
-
-			        // 2) Create PopulationData entry for this cluster + campaign
-			        PopulationDataDto popData = new PopulationDataDto();
-			        popData.setCampaign(
-			            FacadeProvider.getCampaignFacade().getReferenceByUuid(campaignDto.getUuid())
-			        );
-			        popData.setCommunity(clusterRef);
-
-			        popopulationDataDtoSet.add(popData);
-			    }
-			}
+			
+//			for (CampaignTreeGridDto item : treeGrid.getSelectionModel().getSelectedItems()) {
+//			    String level = item.getLevelAssessed();
+//			    if ("area".equals(level)) {
+//			        areass.add(FacadeProvider.getAreaFacade().getAreaReferenceByUuid(item.getUuid()));
+//			    } else if ("region".equals(level)) {
+//			        region.add(FacadeProvider.getRegionFacade().getRegionReferenceByUuid(item.getUuid()));
+//			    } else if ("district".equals(level)) {
+//			        districts.add(FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(item.getUuid()));
+//			    } else if ("cluster".equals(level)) {
+//			        // 1) Add to community set
+//			        CommunityReferenceDto clusterRef =
+//			            FacadeProvider.getCommunityFacade().getCommunityReferenceByUuid(item.getUuid());
+//			        community.add(clusterRef);
+//
+//			        // 2) Create PopulationData entry for this cluster + campaign
+//			        PopulationDataDto popData = new PopulationDataDto();
+//			        popData.setCampaign(FacadeProvider.getCampaignFacade().getReferenceByUuid(campaignDto.getUuid()));
+//			        popData.setCommunity(clusterRef);
+//
+//			        popopulationDataDtoSet.add(popData);
+//			    }
+//			}
 
 			if (campaignDto != null) {
-				campaignDto.setAreas((Set<AreaReferenceDto>) areass);
-				campaignDto.setRegion((Set<RegionReferenceDto>) region);
-				campaignDto.setDistricts((Set<DistrictReferenceDto>) districts);
-				campaignDto.setPopulationdata((Set<PopulationDataDto>) popopulationDataDtoSet);
-				campaignDto.setCommunity((Set<CommunityReferenceDto>) community);
+//				campaignDto.setAreas((Set<AreaReferenceDto>) areass);
+//				campaignDto.setRegion((Set<RegionReferenceDto>) region);
+//				campaignDto.setDistricts((Set<DistrictReferenceDto>) districts);
+//				campaignDto.setPopulationdata((Set<PopulationDataDto>) popopulationDataDtoSet);
+//				campaignDto.setCommunity((Set<CommunityReferenceDto>) community);
 
 				updateCampaignDatesFromForm();
 

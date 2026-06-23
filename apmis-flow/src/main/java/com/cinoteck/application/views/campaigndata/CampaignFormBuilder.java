@@ -809,30 +809,86 @@ criteria.setCampaign(campaignReferenceDto);
 			cbDistrict.setReadOnly(false);
 
 			List<DistrictReferenceDto> districtsList = FacadeProvider.getDistrictFacade()
-					.getAllActiveByRegion(userProvider.getUuid());
-			List<DistrictReferenceDto> allDistrictList = new ArrayList<>();
-			popDto.forEach(popDtoc -> allDistrictList.add(popDtoc.getDistrict()));
-			List<DistrictReferenceDto> filteredDistrictListwithDup = districtsList.stream()
-					.filter(allDistrictList::contains).collect(Collectors.toList());
-			// Remove duplicates using Set
-			Set<DistrictReferenceDto> uniqueSet = new HashSet<>(filteredDistrictListwithDup);
-			// Convert the set back to a list
-			List<DistrictReferenceDto> filteredDistrictList = new ArrayList<>(uniqueSet);
+					.getAllActiveByRegion(userProvider.getUser().getRegion().getUuid());
+		
+
+			System.out.println(districtsList + " districtsList districtsList -------");
+
+			Map<String, DistrictReferenceDto> uniqueMap = new LinkedHashMap<>();
+			for (PopulationDataDto popDtoc : popDto) {
+			    if (popDtoc == null || popDtoc.getDistrict_id() == null) {
+
+//					System.out.println(popDtoc);
+//
+//					System.out.println(popDtoc.getDistrict());
+//
+//					System.out.println(popDtoc.getDistrict_id());
+
+//					System.out.println("popDtoc == null || popDtoc.getDistrict() == null");
+
+			        continue;
+			    }
+			    DistrictReferenceDto district = FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(popDtoc.getDistrict_id());
+			    if (district.getUuid() == null) {
+//					System.out.println("district.getUuid() == null");
+
+			        continue;
+			    }
+			    // keeps FIRST occurrence only
+//				System.out.println( district.getUuid() + "district.getUuid(), district" +  district);
+
+			    uniqueMap.putIfAbsent(district.getUuid(), district);
+			}
+			
+//			System.out.println("uniqueMap SIZE = " + uniqueMap.size());
+
+
+			List<DistrictReferenceDto> allDistrictList = new ArrayList<>(uniqueMap.values());
+
+//			System.out.println("FINAL SIZE = " + allDistrictList.size());
+
+			
+//			System.out.println(popDto + " Population DTo -------");
+			
+			Set<String> populationDistrictUuids = allDistrictList.stream()
+			        .filter(Objects::nonNull)
+			        .map(DistrictReferenceDto::getUuid)
+			        .filter(Objects::nonNull)
+			        .collect(Collectors.toSet());
+			
+ 
+			List<DistrictReferenceDto> filteredDistrictList = districtsList.stream()
+				    .filter(Objects::nonNull)
+				    .filter(d -> d.getUuid() != null)
+				    .filter(d -> populationDistrictUuids.contains(d.getUuid()))
+				    .distinct()
+				    .collect(Collectors.toList());
+			
+ 
 
 			List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
 
 			if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
+				
+ 
 				if (userProvider.getUser().getDistricts() != null && !userProvider.getUser().getDistricts().isEmpty()) {
 					// if the user selected district is amonths the active distgricts add them
 					for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
+
+ 
+ 
 						if (filteredDistrictList.contains(userDistrict)) {
 							filteredDistrictListByUserDistrict.add(userDistrict);
 						}
+						
+						System.out.println(filteredDistrictListByUserDistrict + " filteredDistrictListByUserDistrictfilteredDistrictListByUserDistrict");
+
 					}
 					districts = filteredDistrictListByUserDistrict;
 				}
 			} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
 					&& userProvider.getUser().getDistrict() != null) {
+				
 				DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
 				if (filteredDistrictList.contains(userDistrict)) {
 					filteredDistrictListByUserDistrict.add(userDistrict);

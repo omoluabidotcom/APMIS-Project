@@ -27,6 +27,8 @@ public interface CampaignFacade { //CampaignFacadeEjb
 
 	CampaignDto saveCampaign(@Valid CampaignDto dto);
 
+	CampaignDto saveCampaignPopulationData(@Valid CampaignDto dto);
+
 	CampaignDto getByUuid(String uuid);
 
 	List<CampaignDashboardElement> getCampaignDashboardElements(String campaignUuid, String formType);

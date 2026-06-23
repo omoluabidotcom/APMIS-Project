@@ -9,6 +9,7 @@ import de.symeda.sormas.api.EntityDto;
 import de.symeda.sormas.api.ImportIgnore;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
 import de.symeda.sormas.api.person.Sex;
+import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
 import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
@@ -34,6 +35,7 @@ public class PopulationDataDto extends EntityDto {
 	public static final String DISTRICT_STATUS = "districtstatus";
 	public static final String CAMPAIGN_STATUS = "campaignstatus";
 
+	private AreaReferenceDto area;
 	private RegionReferenceDto region;
 	private DistrictReferenceDto district;
 	private CommunityReferenceDto community;
@@ -51,6 +53,7 @@ public class PopulationDataDto extends EntityDto {
 	private String campaign_id;
 	private String district_id;
 	private String cluster_id;
+	private String region_id;
 
 	public PopulationDataDto() {
 		// TODO Auto-generated constructor stub
@@ -73,7 +76,19 @@ public class PopulationDataDto extends EntityDto {
         this.selected = selected;
         
     }
+    
+    public PopulationDataDto(String campaign_id, String district_id, String cluster_id, Boolean selected, String region_id, String uuid, Date changeDate ) {
+        this.setUuid(uuid);
+        this.setChangeDate(changeDate);
+        this.campaign_id = campaign_id;
+        this.district_id = district_id;
+        this.cluster_id = cluster_id;
+        this.region_id = region_id;
+        this.selected = selected;
+        
+    }
 
+    
 
 	public static PopulationDataDto build(Date collectionDate) {
 
@@ -81,6 +96,15 @@ public class PopulationDataDto extends EntityDto {
 		dto.setUuid(DataHelper.createUuid());
 		dto.setCollectionDate(collectionDate);
 		return dto;
+	}
+
+	
+	public AreaReferenceDto getArea() {
+		return area;
+	}
+
+	public void setArea(AreaReferenceDto area) {
+		this.area = area;
 	}
 
 	public RegionReferenceDto getRegion() {
@@ -194,6 +218,14 @@ public class PopulationDataDto extends EntityDto {
 
 	public void setCluster_id(String cluster_id) {
 		this.cluster_id = cluster_id;
+	}
+	
+	public String getRegion_id() {
+		return region_id;
+	}
+
+	public void setRegion_id(String cluster_id) {
+		this.region_id = region_id;
 	}
 	
 

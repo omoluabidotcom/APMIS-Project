@@ -473,7 +473,7 @@ public class AssociateCampaign extends VerticalLayout {
 
         // Column indices:
         // 0 - selection checkbox, 1 - hierarchy name, 2 - target 0-59, 3 - target 60-120, 4 - target 4-23, 5 - modality, 6 - status, 7 - delete checkbox
-        footerRow.getCell(columns.get(1)).setText("National Total");
+        footerRow.getCell(columns.get(1)).setText("National Target Total");
         footerRow.getCell(columns.get(2)).setText(format.format(total0_59));
         footerRow.getCell(columns.get(3)).setText(format.format(total5_10));
         footerRow.getCell(columns.get(4)).setText(format.format(total4_23M));
@@ -587,7 +587,6 @@ public class AssociateCampaign extends VerticalLayout {
         
         confirmDialog.addConfirmListener(event -> {
             try {
-                // Commit selections
                 if (!pendingSelectedClusters.isEmpty()) {
                     FacadeProvider.getPopulationDataFacade()
                         .updateClusterSelectionByClusterIds(
@@ -597,7 +596,6 @@ public class AssociateCampaign extends VerticalLayout {
                         );
                 }
                 
-                // Commit deselections
                 if (!pendingDeselectedClusters.isEmpty()) {
                     FacadeProvider.getPopulationDataFacade()
                         .updateClusterSelectionByClusterIds(
@@ -606,36 +604,105 @@ public class AssociateCampaign extends VerticalLayout {
                             false
                         );
                 }
-                
-                // Refresh campaign DTO
+
                 campaignDto = FacadeProvider.getCampaignFacade().getByUuid(campaignDto.getUuid());
+                buildSelectedSetsFromCheckboxState();
                 
-                // Update selected UUID sets
+                campaignDto.setAreas(new HashSet<>(areass));
+                campaignDto.setRegion(new HashSet<>(region));
+                campaignDto.setDistricts(new HashSet<>(districts));
+                campaignDto.setCommunity(new HashSet<>(community));
+                
+                FacadeProvider.getCampaignFacade().saveCampaignPopulationData(campaignDto);
+
                 selectedClusterUuids = campaignDto.getCommunity().stream()
                     .map(CommunityReferenceDto::getUuid)
                     .collect(Collectors.toSet());
-                
-                Notification.show("Changes saved successfully! " + 
-                    (pendingSelectedClusters.size() + pendingDeselectedClusters.size()) + " updates applied")
-                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                
-                pendingSelectedClusters.clear();
-                pendingDeselectedClusters.clear();
-                hasPendingChanges = false;
-                // Optionally refresh the grid to show saved state
-//                refreshTreeGridSilently();
 
-                
-                treeGrid.getDataProvider().refreshAll();
-                updateAllParentSelections();
-                applyRowStyling();
-                
+                int totalChanged = pendingSelectedClusters.size() + pendingDeselectedClusters.size();
+                Notification.show("Changes saved successfully! " + totalChanged + " updates applied")
+                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
             } catch (Exception ex) {
                 logger.error("Error saving changes", ex);
                 Notification.show("Error saving changes: " + ex.getMessage())
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            } finally {
+                // ✅ Always clear pending state — whether save succeeded or failed
+                pendingSelectedClusters.clear();
+                pendingDeselectedClusters.clear();
+                hasPendingChanges = false;
+
+                treeGrid.getDataProvider().refreshAll();
+                updateAllParentSelections();
+                applyRowStyling();
             }
         });
+        
+//        confirmDialog.addConfirmListener(event -> {
+//            try {
+//                // Commit selections
+//                if (!pendingSelectedClusters.isEmpty()) {
+//                    FacadeProvider.getPopulationDataFacade()
+//                        .updateClusterSelectionByClusterIds(
+//                            new ArrayList<>(pendingSelectedClusters), 
+//                            campaignDto.getUuid(), 
+//                            true
+//                        );
+//                }
+//                
+//                // Commit deselections
+//                if (!pendingDeselectedClusters.isEmpty()) {
+//                    FacadeProvider.getPopulationDataFacade()
+//                        .updateClusterSelectionByClusterIds(
+//                            new ArrayList<>(pendingDeselectedClusters), 
+//                            campaignDto.getUuid(), 
+//                            false
+//                        );
+//                }
+//                
+//
+//                
+//                // Refresh campaign DTO
+//                campaignDto = FacadeProvider.getCampaignFacade().getByUuid(campaignDto.getUuid());
+//                
+//                buildSelectedSetsFromCheckboxState();
+//                
+//                campaignDto.setAreas(new HashSet<AreaReferenceDto>(areass));
+//                campaignDto.setRegion(new HashSet<RegionReferenceDto>(region));
+//                campaignDto.setDistricts(new HashSet<DistrictReferenceDto>(districts));
+//                campaignDto.setCommunity(new HashSet<CommunityReferenceDto>(community));
+//                
+//                FacadeProvider.getCampaignFacade().saveCampaignPopulationData(campaignDto);
+//
+//
+//                
+//                // Update selected UUID sets
+//                selectedClusterUuids = campaignDto.getCommunity().stream()
+//                    .map(CommunityReferenceDto::getUuid)
+//                    .collect(Collectors.toSet());
+//                
+//                Notification.show("Changes saved successfully! " + 
+//                    (pendingSelectedClusters.size() + pendingDeselectedClusters.size()) + " updates applied")
+//                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+//                
+//                pendingSelectedClusters.clear();
+//                pendingDeselectedClusters.clear();
+//                hasPendingChanges = false;
+//                // Optionally refresh the grid to show saved state
+////                refreshTreeGridSilently();
+//
+//                
+//                treeGrid.getDataProvider().refreshAll();
+//                updateAllParentSelections();
+//                applyRowStyling();
+//                
+//            } catch (Exception ex) {
+//                logger.error("Error saving changes", ex);
+//                Notification.show("Error saving changes: " + ex.getMessage())
+//                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+//            }
+//        });
         
         confirmDialog.open();
     }
@@ -820,21 +887,6 @@ public class AssociateCampaign extends VerticalLayout {
         }
     }
     
-    
-    /**
-     * Update parent checkboxes based on children selection state
-     */
-    private void updateParentCheckboxes(CampaignTreeGridDto item) {
-        // Find parent and update its checkbox
-        CampaignTreeGridDto parent = findParentItem(item);
-        if (parent != null) {
-            boolean hasSelectedChild = hasAnySelectedChild(parent);
-            updateCheckboxState(parent.getUuid(), hasSelectedChild);
-            // Recursively update higher level parents
-            updateParentCheckboxes(parent);
-        }
-    }
-
     /**
      * Find parent of an item in the tree
      */
@@ -848,20 +900,6 @@ public class AssociateCampaign extends VerticalLayout {
     	return parentMap.get(item.getUuid());
     }
     
-    /**
-     * Recursively search for parent
-     */
-    private CampaignTreeGridDto findParentRecursive(CampaignTreeGridDto current, CampaignTreeGridDto target) {
-        for (CampaignTreeGridDto child : getChildrenForSelection(current)) {
-            if (child.getUuid().equals(target.getUuid())) {
-                return current;
-            }
-            CampaignTreeGridDto found = findParentRecursive(child, target);
-            if (found != null) return found;
-        }
-        return null;
-    }
-
     /**
      * Collect all cluster UUIDs under an item
      */
@@ -929,38 +967,7 @@ public class AssociateCampaign extends VerticalLayout {
         }
     }
     
-//   	private void initializeSelectionsRecursive(CampaignTreeGridDto item) {
-//       if ("cluster".equals(item.getLevelAssessed())) {
-//           boolean isSelected = selectedClusterUuids.contains(item.getUuid());
-//           if (isSelected) {
-//               updateCheckboxState(item.getUuid(), true);
-//               item.setSavedData("true");
-//               item.setSelected(true);
-//           }
-//       } else {
-//           // For parent items, check if any child is selected
-//           boolean hasSelectedChild = false;
-//           for (CampaignTreeGridDto child : getChildrenForSelection(item)) {
-//               initializeSelectionsRecursive(child);
-//               if ("cluster".equals(child.getLevelAssessed())) {
-//                   if (selectedClusterUuids.contains(child.getUuid())) {
-//                       hasSelectedChild = true;
-//                   }
-//               } else {
-//                   // Check if this child (district/region) has any selected children
-//                   if (hasAnySelectedChild(child)) {
-//                       hasSelectedChild = true;
-//                   }
-//               }
-//           }
-//           
-//           // Update parent checkbox if it has selected children
-//           if (hasSelectedChild) {
-//               updateCheckboxState(item.getUuid(), true);
-//           }
-//       }
-//   }
-//   
+ 
    	private void refreshTreeGrid() {
         // Store expanded nodes
 //        Set<String> expandedUuids = new HashSet<>();
@@ -1010,123 +1017,6 @@ public class AssociateCampaign extends VerticalLayout {
         }
     }    
 
-   	private void restoreExpandedState(Set<String> expandedUuids, List<CampaignTreeGridDto> items) {
-        for (CampaignTreeGridDto item : items) {
-            if (expandedUuids.contains(item.getUuid())) {
-                treeGrid.expand(item);
-            }
-            restoreExpandedState(expandedUuids, getChildrenForSelection(item));
-        }
-    }
-   
-    private void collectClustersForItem(CampaignTreeGridDto item, Set<String> collectedClusters) {
-        switch (item.getLevelAssessed()) {
-            case "cluster":
-                if (item.getUuid() != null) {
-                    collectedClusters.add(item.getUuid());
-                }
-                break;
-            case "district":
-                List<CommunityReferenceDto> clusters = FacadeProvider.getCommunityFacade()
-                    .getAllActiveByDistrict(item.getUuid());
-                for (CommunityReferenceDto c : clusters) {
-                    collectedClusters.add(c.getUuid());
-                }
-                break;
-            case "region":
-                List<DistrictReferenceDto> districts = FacadeProvider.getDistrictFacade()
-                    .getAllActiveByRegion(item.getUuid());
-                for (DistrictReferenceDto d : districts) {
-                    List<CommunityReferenceDto> dClusters = FacadeProvider.getCommunityFacade()
-                        .getAllActiveByDistrict(d.getUuid());
-                    for (CommunityReferenceDto c : dClusters) {
-                        collectedClusters.add(c.getUuid());
-                    }
-                }
-                break;
-            case "area":
-                List<RegionReferenceDto> regions = FacadeProvider.getRegionFacade()
-                    .getAllActiveByArea(item.getUuid());
-                for (RegionReferenceDto r : regions) {
-                    List<DistrictReferenceDto> rDistricts = FacadeProvider.getDistrictFacade()
-                        .getAllActiveByRegion(r.getUuid());
-                    for (DistrictReferenceDto d : rDistricts) {
-                        List<CommunityReferenceDto> dClusters = FacadeProvider.getCommunityFacade()
-                            .getAllActiveByDistrict(d.getUuid());
-                        for (CommunityReferenceDto c : dClusters) {
-                            collectedClusters.add(c.getUuid());
-                        }
-                    }
-                }
-                break;
-        }
-    }
-
-    private void selectItemAndDescendantsWithClusters(CampaignTreeGridDto item, boolean select, List<String> collectedClusters) {
-        if (select) {
-            treeGrid.select(item);
-        } else {
-            treeGrid.deselect(item);
-        }
-        collectClusterUuidsFromDb(item, collectedClusters);
-        for (CampaignTreeGridDto child : getChildrenForSelection(item)) {
-            updateVisualSelectionOnly(child, select);
-        }
-    }
-
-    private void updateVisualSelectionOnly(CampaignTreeGridDto item, boolean select) {
-        if (select) {
-            treeGrid.select(item);
-        } else {
-            treeGrid.deselect(item);
-        }
-        for (CampaignTreeGridDto child : getChildrenForSelection(item)) {
-            updateVisualSelectionOnly(child, select);
-        }
-    }
-
-    private void collectClusterUuidsFromDb(CampaignTreeGridDto item, List<String> collectedClusters) {
-        switch (item.getLevelAssessed()) {
-            case "cluster":
-                if (item.getUuid() != null) {
-                    collectedClusters.add(item.getUuid());
-                }
-                break;
-            case "district":
-                List<CommunityReferenceDto> clusters = FacadeProvider.getCommunityFacade()
-                    .getAllActiveByDistrict(item.getUuid());
-                for (CommunityReferenceDto c : clusters) {
-                    collectedClusters.add(c.getUuid());
-                }
-                break;
-            case "region":
-                List<DistrictReferenceDto> districts = FacadeProvider.getDistrictFacade()
-                    .getAllActiveByRegion(item.getUuid());
-                for (DistrictReferenceDto d : districts) {
-                    List<CommunityReferenceDto> dClusters = FacadeProvider.getCommunityFacade()
-                        .getAllActiveByDistrict(d.getUuid());
-                    for (CommunityReferenceDto c : dClusters) {
-                        collectedClusters.add(c.getUuid());
-                    }
-                }
-                break;
-            case "area":
-                List<RegionReferenceDto> regions = FacadeProvider.getRegionFacade()
-                    .getAllActiveByArea(item.getUuid());
-                for (RegionReferenceDto r : regions) {
-                    List<DistrictReferenceDto> rDistricts = FacadeProvider.getDistrictFacade()
-                        .getAllActiveByRegion(r.getUuid());
-                    for (DistrictReferenceDto d : rDistricts) {
-                        List<CommunityReferenceDto> dClusters = FacadeProvider.getCommunityFacade()
-                            .getAllActiveByDistrict(d.getUuid());
-                        for (CommunityReferenceDto c : dClusters) {
-                            collectedClusters.add(c.getUuid());
-                        }
-                    }
-                }
-                break;
-        }
-    }
 
     private List<CampaignTreeGridDto> getChildrenForSelection(CampaignTreeGridDto item) {
         if ("area".equals(item.getLevelAssessed())) {
@@ -1453,7 +1343,7 @@ public class AssociateCampaign extends VerticalLayout {
 
 		Button plusButton = new Button(new Icon(VaadinIcon.PLUS));
 		plusButton.addThemeVariants(ButtonVariant.LUMO_ICON);
-		plusButton.setTooltipText(I18nProperties.getCaption(Captions.addNewForm));
+		plusButton.setTooltipText(I18nProperties.getCaption(Captions.addNewPopulationTarget));
 
 		Button deleteButton = new Button(new Icon(VaadinIcon.DEL_A));
 		deleteButton.addThemeVariants(ButtonVariant.LUMO_ICON);
@@ -2045,13 +1935,13 @@ public class AssociateCampaign extends VerticalLayout {
 		district.setValue(name_);
 		district.setReadOnly(true);
 
-		IntegerField popData = new IntegerField(I18nProperties.getCaption(Captions.District_population) + " " + "0_4");
+		IntegerField popData = new IntegerField(I18nProperties.getCaption(Captions.District_target) + " " + "0_59M");
 
 		IntegerField popData5_10 = new IntegerField(
-				I18nProperties.getCaption(Captions.District_population) + " " + "5_10");
+				I18nProperties.getCaption(Captions.District_target) + " " + "60_120M");
 		
 		IntegerField popData4_23M = new IntegerField(
-				I18nProperties.getCaption(Captions.District_population) + " " + "4_23M");
+				I18nProperties.getCaption(Captions.District_target) + " " + "4_23M");
 
 		ComboBox<Modality> districtModalityCombo = new ComboBox<>("Modality");
 		districtModalityCombo.setItems(Modality.values());
@@ -2280,46 +2170,6 @@ public class AssociateCampaign extends VerticalLayout {
         }
         return false;
     }
-//    private boolean hasAnySelectedChildCluster(CampaignTreeGridDto item) {
-//        List<CampaignTreeGridDto> children = getChildrenForSelection(item);
-//        if (children.isEmpty()) return false;
-//        
-//        for (CampaignTreeGridDto child : children) {
-//            if ("cluster".equals(child.getLevelAssessed())) {
-//                // Check if this cluster is in selectedClusterUuids or has pending selection
-//                if (selectedClusterUuids.contains(child.getUuid()) || pendingSelectedClusters.contains(child.getUuid())) {
-//                    return true;
-//                }
-//            } else {
-//                // Recursively check deeper levels
-//                if (hasAnySelectedChildCluster(child)) {
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-//    }
-
-    /**
-     * Update all parent checkboxes recursively based on children selection state
-     */
-    private void updateAllParentCheckboxes(CampaignTreeGridDto item) {
-        CampaignTreeGridDto parent = findParentItem(item);
-        if (parent != null) {
-            boolean hasSelectedChild = hasAnySelectedChildCluster(parent);
-            updateCheckboxState(parent.getUuid(), hasSelectedChild);
-            // Also update the parent's visual state
-            if (hasSelectedChild) {
-                parent.setSavedData("true");
-                parent.setSelected(true);
-            } else {
-                parent.setSavedData("false");
-                parent.setSelected(false);
-            }
-            // Recursively update higher level parents
-            updateAllParentCheckboxes(parent);
-        }
-    }
 
     /**
      * Update district and region selection states based on cluster selections
@@ -2358,7 +2208,6 @@ private void addRowStylingCSS() {
         "<style>" +
         "  .selected-cluster-row { background-color: #f08f3e80 !important; }" +
         "  .selected-cluster-row td { background-color: #f08f3e80 !important; color: white !important; }" +
-        "  .parent-with-selection-row { background-color: #f08f3e80 !important; opacity: 0.85; }" +
         "  .parent-with-selection-row td { background-color: #f08f3e80 !important; color: white !important; opacity: 0.85; }" +
         "  .selected-cluster-row .v-checkbox, .parent-with-selection-row .v-checkbox { --lumo-primary-color: white !important; }" +
         "</style>";
@@ -2385,34 +2234,6 @@ private void updateAllParentSelections() {
     treeGrid.getDataProvider().refreshAll();
 }
 
-/**
- * Recursively updates this item and ensures all its ancestors reflect correct state
- */
-//private void updateParentSelectionRecursive(CampaignTreeGridDto item) {
-//    if (item == null) return;
-//
-//    boolean shouldBeSelected;
-//
-//    if ("cluster".equals(item.getLevelAssessed())) {
-//        shouldBeSelected = selectedClusterUuids.contains(item.getUuid()) 
-//                        || pendingSelectedClusters.contains(item.getUuid())
-//                        || (item.getSelected() || "true".equalsIgnoreCase(item.getSavedData()));
-//    } else {
-//        // Parent = selected if ANY descendant cluster is selected
-//        shouldBeSelected = hasAnySelectedChildCluster(item);
-//    }
-//
-//    // Update checkbox + DTO state
-//    updateCheckboxState(item.getUuid(), shouldBeSelected);
-//    item.setSavedData(String.valueOf(shouldBeSelected));
-//    item.setSelected(shouldBeSelected);
-//
-//    // Propagate up
-//    CampaignTreeGridDto parent = findParentItem(item);
-//    if (parent != null) {
-//        updateParentSelectionRecursive(parent);
-//    }
-//}
 
 
 private void updateParentSelectionRecursive(CampaignTreeGridDto item) {
@@ -2466,4 +2287,135 @@ public void initSelectionsAfterRender() {
     }
 }
 
+
+public Set<String> getSelectedClusterUuids() {
+    Set<String> selectedClusters = new HashSet<>();
+
+    for (CampaignTreeGridDto root : treeGrid.getTreeData().getRootItems()) {
+        collectSelectedClusters(root, selectedClusters);
+    }
+
+    return selectedClusters;
+}
+
+private void collectSelectedClusters(
+        CampaignTreeGridDto item,
+        Set<String> selectedClusters) {
+
+    if ("cluster".equals(item.getLevelAssessed())) {
+
+        boolean selected =
+            "true".equalsIgnoreCase(item.getSavedData())
+            || item.getSelected();
+
+        if (selected) {
+            selectedClusters.add(item.getUuid());
+        }
+    }
+
+    for (CampaignTreeGridDto child : getChildrenForSelection(item)) {
+        collectSelectedClusters(child, selectedClusters);
+    }
+}
+
+
+
+
+private void buildSelectedSetsFromCheckboxState() {
+    areass.clear();
+    region.clear();
+    districts.clear();
+    community.clear();
+    popopulationDataDtoSet.clear();
+    
+    // Walk all tree items and check their current checkbox/DTO state
+    for (CampaignTreeGridDto root : treeGrid.getTreeData().getRootItems()) {
+        collectSelectedItemsRecursive(root);
+    }
+}
+
+private void collectSelectedItemsRecursive(CampaignTreeGridDto item) {
+    if (item == null) return;
+    
+//	for (CampaignTreeGridDto item : treeGrid.getSelectionModel().getSelectedItems()) {
+//    String level = item.getLevelAssessed();
+//    if ("area".equals(level)) {
+//        areass.add(FacadeProvider.getAreaFacade().getAreaReferenceByUuid(item.getUuid()));
+//    } else if ("region".equals(level)) {
+//        region.add(FacadeProvider.getRegionFacade().getRegionReferenceByUuid(item.getUuid()));
+//    } else if ("district".equals(level)) {
+//        districts.add(FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(item.getUuid()));
+//    } else if ("cluster".equals(level)) {
+//        // 1) Add to community set
+//        CommunityReferenceDto clusterRef =
+//            FacadeProvider.getCommunityFacade().getCommunityReferenceByUuid(item.getUuid());
+//        community.add(clusterRef);
+//
+//        // 2) Create PopulationData entry for this cluster + campaign
+//        PopulationDataDto popData = new PopulationDataDto();
+//        popData.setCampaign(FacadeProvider.getCampaignFacade().getReferenceByUuid(campaignDto.getUuid()));
+//        popData.setCommunity(clusterRef);
+//
+//        popopulationDataDtoSet.add(popData);
+//    }
+//}
+
+
+    String level = item.getLevelAssessed();
+    boolean isSelected = "true".equalsIgnoreCase(item.getSavedData()) 
+//                      || item.getSelected()
+                      || pendingSelectedClusters.contains(item.getUuid());
+    boolean isDeselected = pendingDeselectedClusters.contains(item.getUuid());
+
+    if (isSelected && !isDeselected) {
+        switch (level) {
+            case "area":
+                areass.add(FacadeProvider.getAreaFacade()
+                    .getAreaReferenceByUuid(item.getUuid()));
+                break;
+
+            case "region":
+                region.add(FacadeProvider.getRegionFacade()
+                    .getRegionReferenceByUuid(item.getUuid()));
+                break;
+
+            case "district":
+                districts.add(FacadeProvider.getDistrictFacade()
+                    .getDistrictReferenceByUuid(item.getUuid()));
+                break;
+
+            case "cluster":
+                CommunityReferenceDto clusterRef = FacadeProvider.getCommunityFacade()
+                    .getCommunityReferenceByUuid(item.getUuid());
+                community.add(clusterRef);
+
+                // Build PopulationData entry — region comes from parent chain
+                PopulationDataDto popData = new PopulationDataDto();
+                popData.setCampaign(FacadeProvider.getCampaignFacade()
+                    .getReferenceByUuid(campaignDto.getUuid()));
+                popData.setCommunity(clusterRef);
+
+                // Resolve region + district from parent map
+                CampaignTreeGridDto districtParent = parentMap.get(item.getUuid());
+                if (districtParent != null) {
+                    popData.setDistrict(FacadeProvider.getDistrictFacade()
+                        .getDistrictReferenceByUuid(districtParent.getUuid()));
+
+                    CampaignTreeGridDto regionParent = parentMap.get(districtParent.getUuid());
+                    if (regionParent != null) {
+                        popData.setRegion(FacadeProvider.getRegionFacade()
+                            .getRegionReferenceByUuid(regionParent.getUuid()));
+                    }
+                }
+
+                popopulationDataDtoSet.add(popData);
+                break;
+        }
+    }
+
+    // Always recurse into children
+    for (CampaignTreeGridDto child : getChildrenForSelection(item)) {
+        collectSelectedItemsRecursive(child);
+    }
+}
 }

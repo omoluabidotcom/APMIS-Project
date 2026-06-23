@@ -24,6 +24,7 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Fetch;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
@@ -67,6 +68,7 @@ import de.symeda.sormas.backend.campaign.CampaignService;
 import de.symeda.sormas.backend.common.AbstractDomainObject;
 import de.symeda.sormas.backend.common.CriteriaBuilderHelper;
 import de.symeda.sormas.backend.infrastructure.area.Area;
+import de.symeda.sormas.backend.infrastructure.area.AreaFacadeEjb;
 import de.symeda.sormas.backend.infrastructure.community.Community;
 import de.symeda.sormas.backend.infrastructure.community.CommunityFacadeEjb;
 import de.symeda.sormas.backend.infrastructure.community.CommunityService;
@@ -902,6 +904,13 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		PopulationDataDto target = new PopulationDataDto();
 		DtoHelper.fillDto(target, source);
 
+//		target.setArea(AreaFacadeEjb.toReferenceDto(source.getArea()));
+		
+		target.setRegion(RegionFacadeEjb.toReferenceDto(source.getRegion()));
+	  if (source.getRegion() != null && source.getRegion().getArea() != null) {
+			  target.setArea(AreaFacadeEjb.toReferenceDto(source.getRegion().getArea()));
+		    }
+		  
 		target.setDistrict(DistrictFacadeEjb.toReferenceDto(source.getDistrict()));
 		target.setCommunity(CommunityFacadeEjb.toReferenceDto(source.getCommunity()));
 		target.setCampaign(CampaignFacadeEjb.toReferenceDto(source.getCampaign()));
@@ -1640,4 +1649,146 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	}
 	
 	
+//	public List<PopulationDataDto> getSelectedClustersByCampaign(String campaignuuid){
+//		
+//		   if (campaignuuid == null || campaignuuid.isEmpty()) {
+//		        return Collections.emptyList();
+//		    }
+//		
+//	
+//		String query =
+//			    "select ca.uuid as campaign_id, di.uuid as district_id, " +
+//			    "co.uuid as cluster_id, p.selected, re.uuid as region_id, " +
+//			    "p.community_id, p.changedate " +
+//			    "from populationdata p " +
+//			    "left join campaigns ca on p.campaign_id = ca.id " +
+//			    "left join community co on co.id = p.community_id " +
+//			    "left join district di on p.district_id = di.id " +
+//			    "left join region re on p.region_id = re.id " +
+//			    "where ca.uuid = :campaignuuid and p.selected = true";
+//
+//			Query q = em.createNativeQuery(query);
+//			q.setParameter("campaignuuid", campaignuuid);
+//
+//	    // Create the query
+//	    Query getFormExpressionsQuery = em.createNativeQuery(query);
+//
+//	    // Fetch and map the results
+//	    @SuppressWarnings("unchecked")
+//		List<Object[]> list = q.getResultList();
+//	    List<PopulationDataDto> resultData = new ArrayList<>(list.size());
+//
+//	    for (Object[] result : list) {
+//	        resultData.add(new PopulationDataDto(
+//	            result[0] != null ? result[0].toString() : null,
+//	            result[1] != null ?  result[1].toString() : null,
+//	            result[2] != null ? result[2].toString() : null,
+//	            result[3] != null && (Boolean) result[3],
+//	            result[4] != null ? result[4].toString() : null,
+//	            result[5] != null ? result[5].toString() : null,
+//	            result[6] != null ? (Date) result[6] : null
+//	        ));
+//	    }
+//
+//	    return resultData;
+//		
+//	};
+	
+	
+//	@Override
+//	public List<PopulationDataDto> getSelectedClustersByCampaign(String campaignUuid) {
+//		// TODO Auto-generated method stub
+//		CriteriaBuilder cb = em.getCriteriaBuilder();
+//		CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
+//		Root<PopulationData> root = cq.from(PopulationData.class);
+//		
+//		
+//		root.fetch(PopulationData.CAMPAIGN, JoinType.INNER);
+//		root.fetch(PopulationData.COMMUNITY, JoinType.INNER);
+//		root.fetch(PopulationData.DISTRICT, JoinType.INNER);
+//		
+//		Fetch<PopulationData, Region> regionFetch = root.fetch(Region.AREA, JoinType.INNER);
+//		
+//		regionFetch.fetch(Region.AREA, JoinType.LEFT);
+//		
+//		Predicate campaignFilter = cb.equal(root.get(PopulationData.CAMPAIGN).get(Campaign.UUID), campaignUuid);
+//
+//		Predicate selectedFilter = cb.isTrue(root.get(PopulationData.SELECTED));
+//
+//		cq.where(campaignFilter, selectedFilter);
+//		
+////		Join<PopulationData, Campaign> campaignJoin = root.join(PopulationData.CAMPAIGN);
+////		Join<PopulationData, Community> communityJoin = root.join(PopulationData.COMMUNITY);
+////		Join<PopulationData, District> districtJoin = root.join(PopulationData.DISTRICT);
+////		Join<PopulationData, Region> regionJoin = root.join(PopulationData.REGION);
+////		Join<Region, Area> areaJoin = regionJoin.join(Region.AREA, JoinType.LEFT);
+//
+//
+////		Predicate campaignFilter = cb.and(cb.equal(campaignJoin.get(Campaign.UUID), campaignUuid));
+////		Predicate selectedFilter = cb.and(cb.equal(root.get(PopulationData.SELECTED), true));
+////
+////		cq.where(campaignFilter, selectedFilter);
+//
+////		 System.out.println(//"resultData - "+ resultData.toString());
+////		 "DUMBGFyyresultData - "+SQLExtractor.from(seriesDataQuery));
+//
+//		System.out.println("1111zzzzzzDEBUGGER 5678ijhyuioYYYYYY Population Data" + SQLExtractor.from(em.createQuery(cq)));
+//
+//		return em.createQuery(cq).getResultStream().map(populationData -> toDtoPopulationByDistrict(populationData))
+//				.collect(Collectors.toList());
+//	}
+//
+//	
+	
+//	@Override
+//	public List<PopulationDataDto> getSelectedClustersByCampaign(String campaignUuid) {
+//
+//	    CriteriaBuilder cb = em.getCriteriaBuilder();
+//	    CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
+//
+//	    Root<PopulationData> root = cq.from(PopulationData.class);
+//
+//	    root.fetch(PopulationData.CAMPAIGN, JoinType.INNER);
+//	    root.fetch(PopulationData.COMMUNITY, JoinType.INNER);
+//	    root.fetch(PopulationData.DISTRICT, JoinType.INNER);
+//
+//	    Fetch<PopulationData, Region> regionFetch = root.fetch(PopulationData.REGION, JoinType.INNER);
+//
+//	    regionFetch.fetch(Region.AREA, JoinType.LEFT);
+//
+//	    cq.where(
+//	        cb.equal(root.get(PopulationData.CAMPAIGN).get(Campaign.UUID), campaignUuid),
+//	        cb.isTrue(root.get(PopulationData.SELECTED))
+//	    );
+//
+//	    return em.createQuery(cq)
+//	            .getResultStream()
+//	            .map(populationData -> toDtoPopulationByDistrict(populationData))
+//	            .collect(Collectors.toList());
+//	}
+	
+	@Override
+	public List<PopulationDataDto> getSelectedClustersByCampaign(String campaignUuid) {
+	    CriteriaBuilder cb = em.getCriteriaBuilder();
+	    CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
+	    Root<PopulationData> root = cq.from(PopulationData.class);
+
+	    root.fetch(PopulationData.CAMPAIGN, JoinType.INNER);
+	    root.fetch(PopulationData.COMMUNITY, JoinType.INNER);
+	    root.fetch(PopulationData.DISTRICT, JoinType.INNER);
+
+	    // Fetch Region, then fetch Area through Region (not through root)
+	    Fetch<PopulationData, Region> regionFetch = root.fetch(PopulationData.REGION, JoinType.INNER);
+	    regionFetch.fetch(Region.AREA, JoinType.LEFT); // This is correct — Area is on Region
+
+	    cq.where(
+	        cb.equal(root.get(PopulationData.CAMPAIGN).get(Campaign.UUID), campaignUuid),
+	        cb.isTrue(root.get(PopulationData.SELECTED))
+	    );
+
+	    return em.createQuery(cq)
+	            .getResultStream()
+	            .map(populationData -> toDtoPopulationByDistrict(populationData))
+	            .collect(Collectors.toList());
+	}
 }

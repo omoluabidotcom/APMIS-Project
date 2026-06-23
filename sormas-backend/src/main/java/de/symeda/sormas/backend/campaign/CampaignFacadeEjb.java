@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -33,6 +35,7 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -84,6 +87,8 @@ import de.symeda.sormas.backend.infrastructure.region.RegionService;
 import de.symeda.sormas.backend.user.User;
 import de.symeda.sormas.backend.user.UserFacadeEjb;
 import de.symeda.sormas.backend.user.UserRoleConfigFacadeEjb.UserRoleConfigFacadeEjbLocal;
+import de.symeda.sormas.backend.user.event.UserCreateEvent;
+import de.symeda.sormas.backend.user.event.UserUpdateEvent;
 import de.symeda.sormas.backend.user.UserService;
 import de.symeda.sormas.backend.util.DtoHelper;
 import de.symeda.sormas.backend.util.ModelConstants;
@@ -121,6 +126,12 @@ public class CampaignFacadeEjb implements CampaignFacade {
 	private PopulationDataService popService;
 	@EJB
 	private UserFacadeEjb.UserFacadeEjbLocal userServiceEBJ;
+	
+//	@Inject
+//	private Event<CampaignCreateEvent> campaignCreateEvent;
+//	
+//	@Inject
+//	private Event<CampaignUpdateEvent> campaignUpdateEvent;
 
 	@Override
 	public List<CampaignIndexDto> getIndexList(CampaignCriteria campaignCriteria, Integer first, Integer max,
@@ -237,12 +248,35 @@ public class CampaignFacadeEjb implements CampaignFacade {
 	public CampaignDto saveCampaign(@Valid CampaignDto dto) {
 
 //System.out.println(dto + "from the campaign facade when its trying to save ");
-
+		Campaign oldUser = null;
+		if (dto.getCreationDate() != null) {
+			try {
+				oldUser = (Campaign) BeanUtils.cloneBean(campaignService.getByUuid(dto.getUuid()));
+				dto.setChangeDate(oldUser.getChangeDate());
+			} catch (Exception e) {
+				throw new IllegalArgumentException("Invalid bean access", e);
+			}
+		}
 		Campaign campaign = fromDto(dto, true);
 
 		campaignService.ensurePersisted(campaign);
 
 		saveCampaignFormExp(dto);
+
+		return toDto(campaign);
+	}
+	
+	@Override
+	@Transactional
+	public CampaignDto saveCampaignPopulationData(@Valid CampaignDto dto) {
+
+System.out.println(dto + "saveCampaignPopulationDatafrom the campaign facade when its trying to save ");
+
+		Campaign campaign = fromDtoToCampaignPopulation(dto, true);
+
+		campaignService.ensurePersisted(campaign);
+//
+//		saveCampaignFormExp(dto);
 
 		return toDto(campaign);
 	}
@@ -770,28 +804,27 @@ public class CampaignFacadeEjb implements CampaignFacade {
 		target.setCampaign(getByUuid(source.getCampaign().getUuid()));
 		return target;
 	}
-
-	public Campaign fromDto(@NotNull CampaignDto source, boolean checkChangeDate) {
+	public Campaign fromDtoToCampaignPopulation(@NotNull CampaignDto source, boolean checkChangeDate) {
 
 //		System.out.println(source + " source fromdtoooooooo");
-		validate(source);
+//		validate(source);
 
 		Campaign target = DtoHelper.fillOrBuildEntity(source, campaignService.getByUuid(source.getUuid()),
 				Campaign::new, checkChangeDate);
 
-		target.setCreatingUser(userService.getByReferenceDto(source.getCreatingUser()));
-		target.setDescription(source.getDescription());
-		target.setEndDate(source.getEndDate());
-		target.setName(source.getName());
-		target.setRound(source.getRound());
-		target.setCampaignYear(source.getCampaignYear());
-		target.setStartDate(source.getStartDate());
+//		target.setCreatingUser(userService.getByReferenceDto(source.getCreatingUser()));
+//		target.setDescription(source.getDescription());
+//		target.setEndDate(source.getEndDate());
+//		target.setName(source.getName());
+//		target.setRound(source.getRound());
+//		target.setCampaignYear(source.getCampaignYear());
+//		target.setStartDate(source.getStartDate());
+//
+//		target.setPreCampEndDate(source.getPreCampEndDate());
+//		target.setPreCampStartDate(source.getPreCampStartDate());
 
-		target.setPreCampEndDate(source.getPreCampEndDate());
-		target.setPreCampStartDate(source.getPreCampStartDate());
-
-		target.setPostCampEndDate(source.getPostCampEndDate());
-		target.setPostCampStartDate(source.getPostCampStartDate());
+//		target.setPostCampEndDate(source.getPostCampEndDate());
+//		target.setPostCampStartDate(source.getPostCampStartDate());
 
 		final Set<AreaReferenceDto> areas = source.getAreas();
 		if (!CollectionUtils.isEmpty(areas)) {
@@ -815,6 +848,63 @@ public class CampaignFacadeEjb implements CampaignFacade {
 			target.setCommunity(
 					community.stream().map(e -> communityService.getByUuid(e.getUuid())).collect(Collectors.toSet()));
 		}
+
+//		final Set<CampaignFormMetaReferenceDto> campaignFormMetas = source.getCampaignFormMetas(); // Campaign data
+//		if (!CollectionUtils.isEmpty(campaignFormMetas)) {
+//			target.setCampaignFormMetas(
+//					campaignFormMetas.stream().map(campaignFormMetaReferenceDto -> campaignFormMetaService
+//							.getByUuid(campaignFormMetaReferenceDto.getUuid())).collect(Collectors.toSet()));
+//		}
+//		target.setDashboardElements(source.getCampaignDashboardElements());// .stream().filter(e ->
+																			// e.getDiagramId().equals("")));
+		return target;
+
+	}
+
+	public Campaign fromDto(@NotNull CampaignDto source, boolean checkChangeDate) {
+
+//		System.out.println(source + " source fromdtoooooooo");
+		validate(source);
+
+		Campaign target = DtoHelper.fillOrBuildEntity(source, campaignService.getByUuid(source.getUuid()),
+				Campaign::new, checkChangeDate);
+
+		target.setCreatingUser(userService.getByReferenceDto(source.getCreatingUser()));
+		target.setDescription(source.getDescription());
+		target.setEndDate(source.getEndDate());
+		target.setName(source.getName());
+		target.setRound(source.getRound());
+		target.setCampaignYear(source.getCampaignYear());
+		target.setStartDate(source.getStartDate());
+
+		target.setPreCampEndDate(source.getPreCampEndDate());
+		target.setPreCampStartDate(source.getPreCampStartDate());
+
+		target.setPostCampEndDate(source.getPostCampEndDate());
+		target.setPostCampStartDate(source.getPostCampStartDate());
+
+//		final Set<AreaReferenceDto> areas = source.getAreas();
+//		if (!CollectionUtils.isEmpty(areas)) {
+//			target.setAreas(areas.stream().map(e -> areaService.getByUuid(e.getUuid())).collect(Collectors.toSet()));
+//		}
+//
+//		final Set<RegionReferenceDto> region = source.getRegion();
+//		if (!CollectionUtils.isEmpty(region)) {
+//			target.setRegion(
+//					region.stream().map(e -> regionService.getByUuid(e.getUuid())).collect(Collectors.toSet()));
+//		}
+//
+//		final Set<DistrictReferenceDto> district = source.getDistricts();
+//		if (!CollectionUtils.isEmpty(district)) {
+//			target.setDistricts(
+//					district.stream().map(e -> districtService.getByUuid(e.getUuid())).collect(Collectors.toSet()));
+//		}
+//
+//		final Set<CommunityReferenceDto> community = source.getCommunity();
+//		if (!CollectionUtils.isEmpty(community)) {
+//			target.setCommunity(
+//					community.stream().map(e -> communityService.getByUuid(e.getUuid())).collect(Collectors.toSet()));
+//		}
 
 		final Set<CampaignFormMetaReferenceDto> campaignFormMetas = source.getCampaignFormMetas(); // Campaign data
 		if (!CollectionUtils.isEmpty(campaignFormMetas)) {

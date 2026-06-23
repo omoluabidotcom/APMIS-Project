@@ -1163,9 +1163,23 @@ public class CampaignDataView extends VerticalLayout
 										.getCampaignFormMetaByUuid(e.getValue().getUuid());
 
 								boolean fff = formDatax.isDistrictentry();
+								
+								List districtuuids =  new ArrayList<>();
+								
+								if(userProvider.getUser().getDistrict() != null) {
+									districtuuids.add(userProvider.getUser().getDistrict().getUuid());
+									popDto = FacadeProvider.getPopulationDataFacade().fetchPopulationDataSelectionByUserDistricts(districtuuids);
+
+								}else if (userProvider.getUser().getDistricts().size() > 0 ){
+									for (DistrictReferenceDto districts : userProvider.getUser().getDistricts()) {
+										districtuuids.add(districts.getUuid());
+									}
+									popDto = FacadeProvider.getPopulationDataFacade().fetchPopulationDataSelectionByUserDistricts(districtuuids);
+
+								}
 
 								CampaignFormDataEditForm cam = new CampaignFormDataEditForm(e.getValue(),
-										campaignz.getValue(), false, null, grid, fff, campaign, expiryDto, null);
+										campaignz.getValue(), false, null, grid, fff, campaign, expiryDto, popDto);
 								// add(cam);
 
 								newForm.setValue(null);
