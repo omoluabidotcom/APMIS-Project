@@ -837,6 +837,19 @@ public class CampaignFormDataFragmentUtils {
                 return;
             }
 
+            if (type == CampaignFormElementType.RANGE || type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.DECIMAL) {
+                if (expressionValue instanceof Boolean) {
+                    Boolean b = (Boolean) expressionValue;
+                    if (!b) {
+                        entry.setValue(null);
+                        return;
+                    } else {
+                        entry.setValue(null);
+                        return;
+                    }
+                }
+            }
+
             String raw = String.valueOf(expressionValue);
             String normalized = raw;
 
