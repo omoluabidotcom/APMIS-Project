@@ -1297,6 +1297,47 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	    return resultData;
 	}
 
+	
+	@Override
+	public List<PopulationDataDto> fetchPopulationDataSelectionByCampaign(String uuid) {
+	    // Validate input
+	    if (uuid == null || uuid.isEmpty()) {
+	        return Collections.emptyList();
+	    }
+
+	    // Base query using IN clause for multiple UUIDs
+	    String executeQuery = "SELECT DISTINCT ON (p.campaign_id, p.community_id) c.uuid as campaign_id, d.uuid as district_id, com.uuid AS cluster_id, p.selected, p.uuid , p.changedate " +
+	                          "FROM public.populationdata p " +
+	                          "JOIN public.district d ON p.district_id = d.id  " +
+	                          "LEFT JOIN public.community com ON p.community_id = com.id "+
+	                          "left join public.campaigns c ON p.campaign_id = c.id " +
+	                          "WHERE c.uuid = :uuid AND p.selected = TRUE " +
+	                          "ORDER BY p.campaign_id, p.community_id," +
+	                          "CASE WHEN p.agegroup = '0_4' THEN 1 ELSE 2 END";
+
+	    // Create the query
+	    Query getFormExpressionsQuery = em.createNativeQuery(executeQuery);
+	    getFormExpressionsQuery.setParameter("uuid", uuid);
+
+	    // Fetch and map the results
+	    @SuppressWarnings("unchecked")
+		List<PopulationDataDto> resultData = new ArrayList<>();
+
+	    List<Object[]> resultList = getFormExpressionsQuery.getResultList();
+	    
+		resultData.addAll(resultList.stream()
+				.map((result) -> new PopulationDataDto(
+						result[0] != null ? (String) result[0].toString() : "",
+						result[1] != null ? (String) result[1].toString() : "",
+						result[2] != null ? (String) result[2].toString() : "",
+						result[3] != null ? (boolean) result[3].toString().equalsIgnoreCase("true") ? true : false : false, 
+						result[4] != null ? (String) result[4].toString() : "",
+						result[5] != null ? (Date) result[5] : new Date()
+								)).collect(Collectors.toList()));
+		
+
+	    return resultData;
+	}
 
 	
 	@Override
@@ -1346,6 +1387,9 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		Query query = em.createNativeQuery(sql);
 		query.setParameter("campaignUuid", campaignUuid);
 		query.executeUpdate();
+		
+        refreshCampaignGeography(campaignUuid);
+
 		
 		return true;
 	    }catch(Exception e) {
@@ -1411,7 +1455,7 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 			query.setParameter("selectedGroups", selectedGroupNames);
 			query.executeUpdate();
 			
-			
+	        refreshCampaignGeography(campaignDto.getUuid());
 	
 
 			return true;
@@ -1507,8 +1551,7 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 
 			query.executeUpdate();
 			
-			
-	
+	        refreshCampaignGeography(campaignDto.getUuid());
 
 			return true;
 		} catch (Exception e) {
@@ -1639,6 +1682,8 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	        int rows = query.executeUpdate();
 
 	        System.out.println("Updated rows: " + rows);
+	        
+	        refreshCampaignGeography(campaignDto.getUuid());
 
 	        return true;
 
@@ -1790,5 +1835,71 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	            .getResultStream()
 	            .map(populationData -> toDtoPopulationByDistrict(populationData))
 	            .collect(Collectors.toList());
+	}
+	
+	
+	private void refreshCampaignGeography(String campaignUuid) {
+
+	    Long campaignId = ((Number) em.createNativeQuery(
+	        "SELECT id FROM campaigns WHERE uuid = :uuid")
+	        .setParameter("uuid", campaignUuid)
+	        .getSingleResult()).longValue();
+
+	    em.createNativeQuery(
+	        "DELETE FROM campaign_area WHERE campaign_id = :campaignId")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "DELETE FROM campaign_region WHERE campaign_id = :campaignId")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "DELETE FROM campaign_district WHERE campaign_id = :campaignId")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "DELETE FROM campaign_community WHERE campaign_id = :campaignId")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "INSERT INTO campaign_community (campaign_id, community_id) " +
+	        "SELECT DISTINCT campaign_id, community_id " +
+	        "FROM populationdata " +
+	        "WHERE campaign_id = :campaignId " +
+	        "AND community_id IS NOT NULL")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "INSERT INTO campaign_district (campaign_id, district_id) " +
+	        "SELECT DISTINCT campaign_id, district_id " +
+	        "FROM populationdata " +
+	        "WHERE campaign_id = :campaignId " +
+	        "AND district_id IS NOT NULL")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "INSERT INTO campaign_region (campaign_id, region_id) " +
+	        "SELECT DISTINCT campaign_id, region_id " +
+	        "FROM populationdata " +
+	        "WHERE campaign_id = :campaignId " +
+	        "AND region_id IS NOT NULL")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "INSERT INTO campaign_area (campaign_id, area_id) " +
+	        "SELECT DISTINCT pd.campaign_id, r.area_id " +
+	        "FROM populationdata pd " +
+	        "JOIN region r ON r.id = pd.region_id " +
+	        "WHERE pd.campaign_id = :campaignId " +
+	        "AND r.area_id IS NOT NULL")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
 	}
 }

@@ -422,24 +422,35 @@ public class CampaignDataView extends VerticalLayout
 
 				// If user has multiple districts
 				if (userProvider.getUser().getDistricts() != null && !userProvider.getUser().getDistricts().isEmpty()) {
+					
+					System.out.println(userProvider.getUser().getDistricts() +  "districts11114444488888888888888888888888888888888userDistrict" );
+
 
 					userDistricts = userProvider.getUser().getDistricts().stream().filter(districts::contains)
 							.collect(Collectors.toList());
+					
+					districtCombo.setItems(userDistricts);
+
 				}
 				// If user has single district
 				else if (userProvider.getUser().getDistrict() != null) {
 
 					DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
 
+
 					if (districts.contains(userDistrict)) {
 						userDistricts.add(userDistrict);
 					}
+				districtCombo.setItems(userDistricts);
+
+				}
+				// If user does not have district
+
+				else {
+					districtCombo.setItems(districts);
+
 				}
 
-				districtCombo.setItems(userDistricts);
-				System.out.println("4444488888888888888888888888888888888");
-
-//				districtCombo.setItems(districts);
 				districtCombo.setEnabled(true);
 
 			} else if (userProvider.getUser().getRegion() != null
@@ -519,6 +530,9 @@ public class CampaignDataView extends VerticalLayout
 
 						userDistricts = userProvider.getUser().getDistricts().stream().filter(districts::contains)
 								.collect(Collectors.toList());
+						
+						districtCombo.setItems(userDistricts);
+
 					}
 					// If user has single district
 					else if (userProvider.getUser().getDistrict() != null) {
@@ -528,9 +542,15 @@ public class CampaignDataView extends VerticalLayout
 						if (districts.contains(userDistrict)) {
 							userDistricts.add(userDistrict);
 						}
+						
+						districtCombo.setItems(districts);
+
+					}
+					else {
+						districtCombo.setItems(userDistricts);
+
 					}
 
-					districtCombo.setItems(userDistricts);
 
 					System.out.println("666688888888888888888888888888888888");
 
@@ -584,6 +604,9 @@ public class CampaignDataView extends VerticalLayout
 
 						userDistricts = userProvider.getUser().getDistricts().stream().filter(districts::contains)
 								.collect(Collectors.toList());
+						
+						districtCombo.setItems(userDistricts);
+
 					}
 					// If user has single district
 					else if (userProvider.getUser().getDistrict() != null) {
@@ -593,9 +616,20 @@ public class CampaignDataView extends VerticalLayout
 						if (districts.contains(userDistrict)) {
 							userDistricts.add(userDistrict);
 						}
+						
+						districtCombo.setItems(userDistricts);
+
 					}
 
-					districtCombo.setItems(userDistricts);
+					// If user does not have district
+
+					else {
+						districtCombo.setItems(districts);
+
+					}
+					
+
+//					districtCombo.setItems(userDistricts);
 //					districtCombo.setItems(districts);
 					districtCombo.setEnabled(true);
 
@@ -1176,6 +1210,8 @@ public class CampaignDataView extends VerticalLayout
 									}
 									popDto = FacadeProvider.getPopulationDataFacade().fetchPopulationDataSelectionByUserDistricts(districtuuids);
 
+								}else {
+									popDto = FacadeProvider.getPopulationDataFacade().fetchPopulationDataSelectionByCampaign(campaignz.getValue().getUuid());
 								}
 
 								CampaignFormDataEditForm cam = new CampaignFormDataEditForm(e.getValue(),
@@ -1769,25 +1805,10 @@ public class CampaignDataView extends VerticalLayout
 
 			filterdList.sort(Comparator.comparing(CampaignFormMetaReferenceDto::getCaption));
 
-//			campaignForms = FacadeProvider.getCampaignFormMetaFacade()
-//					.getAllCampaignFormMetasAsReferencesByRoundUserLanguageCampaignandForm(
-//							campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid(),
-//							userProvider.getUser().getFormAccess(), "Dari");
-//			campaignForms.sort(Comparator.comparing(CampaignFormMetaReferenceDto::getCaption));
-
 			newForm.setItems(filterdList);
 			importFormData.setItems(filterdList);
 			campaignFormCombo.setItems(filterdList);
-//			campaignForms.sort(Comparator.comparing(CampaignFormMetaReferenceDto::getCaption));
-//			newForm.setItems(campaignForms);
-////			campaignForms = FacadeProvider.getCampaignFormMetaFacade()
-////					.getAllCampaignFormMetasAsReferencesByRoundUserLanguageCampaignandForm(
-////							campaignPhase.getValue().toString().toLowerCase(), campaignz.getValue().getUuid(),
-////							userProvider.getUser().getFormAccess(), "Dari");
-////			campaignForms.sort(Comparator.comparing(CampaignFormMetaReferenceDto::getCaption));
-////			newForm.setItems(campaignForms);
-//			importFormData.setItems(campaignForms);
-//			campaignFormCombo.setItems(campaignForms);
+
 			break;
 
 		default:

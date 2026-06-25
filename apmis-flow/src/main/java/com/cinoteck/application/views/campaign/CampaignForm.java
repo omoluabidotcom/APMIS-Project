@@ -890,6 +890,8 @@ public class CampaignForm extends VerticalLayout {
 
 							FacadeProvider.getCampaignFacade().saveAuditLog(log);
 							
+
+							
 						} else {
 							Notification.show("Population Data Generation could not be Complete For Campaign");
 						}

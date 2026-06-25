@@ -101,6 +101,8 @@ public interface PopulationDataFacade {
 
 	List<PopulationDataDto> fetchPopulationDataSelectionByUserDistricts(List<String> uuids);
 	
+	List<PopulationDataDto> fetchPopulationDataSelectionByCampaign(String clusterUuid);
+	
 	boolean generatePopulationDataForCamapign(String campaignUuid);
 
 	boolean generatePopulationDataForCamapign(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups);

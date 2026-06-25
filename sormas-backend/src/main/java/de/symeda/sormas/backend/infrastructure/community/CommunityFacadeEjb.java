@@ -44,6 +44,7 @@ import de.symeda.sormas.api.ReferenceDto;
 import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignPhase;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
+import de.symeda.sormas.api.campaign.CampaignTreeFlatDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
 import de.symeda.sormas.api.common.Page;
 import de.symeda.sormas.api.document.DocumentRelatedEntityType;
@@ -1561,6 +1562,146 @@ public List<CommunityReferenceDto> getAllActiveClustersDistrictAndSelectedInCamp
 		return resultData;
 	}
 	
+	@Override
+	public List<CampaignTreeFlatDto> getAllTreeDataForCampaign(String campaignUuid) {
+
+	    String sql =
+	        "SELECT " +
+	        "    a.name AS areaname, " +
+	        "    a.uuid AS areauuid, " +
+	        "    a.id AS areaid, " +
+	        "    a.externalid AS areaexternalid, " +
+
+	        "    r.name AS regionname, " +
+	        "    r.uuid AS regionuuid, " +
+	        "    r.id AS regionid, " +
+
+	        "    d.name AS districtname, " +
+	        "    d.uuid AS districtuuid, " +
+	        "    d.id AS districtid, " +
+
+	        "    BOOL_OR(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "                 THEN p.selected ELSE false END) AS districtselected, " +
+
+	        "    MAX(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "             THEN p.modality END) AS districtmodality, " +
+
+	        "    MAX(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "             THEN p.districtstatus END) AS districtstatus, " +
+
+	        "    c.name AS clustername, " +
+	        "    c.uuid AS clusteruuid, " +
+	        "    c.id AS clusterid, " +
+	        "    c.floating AS clusterfloating, " +
+
+	        "    BOOL_OR(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "                 THEN p.selected ELSE false END) AS clusterselected, " +
+
+	        "    MAX(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "             THEN p.modality END) AS clustermodality, " +
+
+	        "    MAX(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "             THEN p.districtstatus END) AS clusterstatus, " +
+
+	        "    SUM(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "             THEN p.population ELSE 0 END) AS population_age_0_4, " +
+
+	        "    SUM(CASE WHEN p.agegroup = 'AGE_5_10' " +
+	        "             THEN p.population ELSE 0 END) AS population_age_5_10, " +
+
+	        "    SUM(CASE WHEN p.agegroup = 'AGE_4_23M' " +
+	        "             THEN p.population ELSE 0 END) AS population_age_4_23m " +
+
+	        "FROM community c " +
+	        "INNER JOIN district d ON d.id = c.district_id " +
+	        "INNER JOIN region r ON r.id = d.region_id " +
+	        "INNER JOIN areas a ON a.id = r.area_id " +
+
+	        "LEFT JOIN populationdata p " +
+	        "       ON p.community_id = c.id " +
+	        "      AND p.campaign_id = ( " +
+	        "            SELECT id " +
+	        "            FROM campaigns " +
+	        "            WHERE uuid = :campaignUuid " +
+	        "      ) " +
+	        "      AND p.agegroup IN ('AGE_0_4', 'AGE_5_10', 'AGE_4_23M') " +
+
+	        "WHERE c.archived = false " +
+	        "  AND d.archived = false " +
+	        "  AND r.archived = false " +
+	        "  AND a.archived = false " +
+
+	        "GROUP BY " +
+	        "    a.name, a.uuid, a.id, a.externalid, " +
+	        "    r.name, r.uuid, r.id, " +
+	        "    d.name, d.uuid, d.id, " +
+	        "    c.name, c.uuid, c.id, c.floating " +
+
+	        "ORDER BY " +
+	        "    a.name, " +
+	        "    r.name, " +
+	        "    d.name, " +
+	        "    c.name";
+
+	    Query q = em.createNativeQuery(sql);
+	    q.setParameter("campaignUuid", campaignUuid);
+
+	    @SuppressWarnings("unchecked")
+	    List<Object[]> rows = q.getResultList();
+
+	    return rows.stream()
+	            .map(CampaignTreeFlatDto::new)
+	            .collect(Collectors.toList());
+	}
+	
+	
+//	@Override
+//	public List<CampaignTreeFlatDto> getAllTreeDataForCampaign(String campaignUuid) {
+//	    String sql =
+//	        "SELECT " +
+//	        "  a.name as areaname, a.uuid as areauuid, a.id as areaid, a.externalid, " +
+//	        "  r.name as regionname, r.uuid as regionuuid, r.id  as regionid, " +
+//	        "  d.name as districtname, d.uuid as districtuuid, d.id  as districtid, " +
+//	        "  BOOL_OR(CASE WHEN p.agegroup = 'AGE_0_4' THEN p.selected ELSE false END), " +
+//
+////	        "  MAX(CASE WHEN p.agegroup = 'AGE_0_4' THEN p.selected END), " +
+//	        "  MAX(CASE WHEN p.agegroup = 'AGE_0_4' THEN p.modality END), " +
+//	        "  MAX(CASE WHEN p.agegroup = 'AGE_0_4' THEN p.districtstatus END), " +
+//	        "  c.name, c.uuid, c.id, c.floating, " +
+//	        "  BOOL_OR(CASE WHEN p.agegroup = 'AGE_0_4' THEN p.selected ELSE false END), " +
+////	        "  MAX(CASE WHEN p.agegroup = 'AGE_0_4' THEN p.selected END), " +
+//
+//	        "  MAX(CASE WHEN p.agegroup = 'AGE_0_4' THEN p.modality END), " +
+//	        "  MAX(CASE WHEN p.agegroup = 'AGE_0_4' THEN p.districtstatus END), " +
+//	        "  SUM(CASE WHEN p.agegroup = 'AGE_0_4'   THEN p.population ELSE 0 END), " +
+//	        "  SUM(CASE WHEN p.agegroup = 'AGE_5_10'  THEN p.population ELSE 0 END), " +
+//	        "  SUM(CASE WHEN p.agegroup = 'AGE_4_23M' THEN p.population ELSE 0 END) " +
+//	        "FROM community c " +
+//	        "INNER JOIN district d ON d.id = c.district_id " +
+//	        "INNER JOIN region   r ON r.id = d.region_id " +
+//	        "INNER JOIN areas    a ON a.id = r.area_id " +
+//	        "LEFT JOIN populationdata p " +
+//	        "       ON p.community_id = c.id " +
+//	        "      AND p.campaign_id = (SELECT id FROM campaigns WHERE uuid = :campaignUuid) " +
+//	        "      AND p.agegroup IN ('AGE_0_4', 'AGE_5_10', 'AGE_4_23M') " +
+//	        "WHERE c.archived = false AND d.archived = false " +
+//	        "  AND r.archived = false AND a.archived = false " +
+//	        "GROUP BY a.name, a.uuid, a.id, a.externalid, " +
+//	        "         r.name, r.uuid, r.id, " +
+//	        "         d.name, d.uuid, d.id, " +
+//	        "         c.name, c.uuid, c.id, c.floating " +
+//	        "ORDER BY a.name, r.name, d.name, c.name";
+//
+//	    Query q = em.createNativeQuery(sql);
+//	    q.setParameter("campaignUuid", campaignUuid);
+//
+//	    @SuppressWarnings("unchecked")
+//	    List<Object[]> rows = q.getResultList();
+//
+//	    return rows.stream()
+//	               .map(CampaignTreeFlatDto::new)
+//	               .collect(Collectors.toList());
+//	}
 
 	
 
