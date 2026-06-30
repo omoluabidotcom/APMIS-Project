@@ -508,7 +508,7 @@ public class TranslationGridComponent extends VerticalLayout {
 							if (!elementId.getValue().isEmpty() && !caption.getValue().isEmpty()) {
 								newElement.setElementId(elementId.getValue());
 								newElement.setCaption(caption.getValue());
-								newElement.setHintId(hint.getValue());
+								newElement.setHintId(hintId.getValue());
 								newElement.setHint(hint.getValue());
 							}
 
