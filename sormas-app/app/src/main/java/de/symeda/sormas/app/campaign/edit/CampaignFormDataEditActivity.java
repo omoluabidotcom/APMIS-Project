@@ -77,6 +77,11 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
     private CampaignFormMeta campaignFormMetaX;
     private CampaignFormDataCriteria criteria = new CampaignFormDataCriteria();
     private final ExpressionParser expressionParser = new SpelExpressionParser();
+
+    List<String> preCampaignsCategories = List.of("FLW", "MODALITY_PRE", "TRAINING");
+    List<String> intraCampaignsCategories = List.of("ICM", "ADMIN", "EAG-ICM", "EAG-ADMIN");
+    List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION");
+
     private Locale currentLocale;
 
     public static void startActivity(Context context, String rootUuid) {
@@ -239,16 +244,20 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
         campaignFormDataToSave.setFormValues(filledFormValues);
         campaignFormDataToSave.setSoruce(PlatformEnum.MOBILE);
 
-        if(campaignFormDataToSave.getIsverified()){
-            campaignFormDataToSave.setIsverified(false);
-        }else{
-            campaignFormDataToSave.setIsverified(false);
+
+        if (preCampaignsCategories.contains(campaignFormDataToSave.getCampaignFormMeta().getFormCategory()) ||
+                intraCampaignsCategories.contains(campaignFormDataToSave.getCampaignFormMeta().getFormCategory())) {
+            campaignFormDataToSave.setIsverified(true);
+            campaignFormDataToSave.setIspublished(true);
+        } else if (postCampaignsCategories.contains(campaignFormDataToSave.getCampaignFormMeta().getFormCategory())) {
+            if(campaignFormDataToSave.getIsverified()) {
+                campaignFormDataToSave.setIsverified(false);
+            }
+            if(campaignFormDataToSave.getIspublished()) {
+                campaignFormDataToSave.setIspublished(false);
+            }
         }
-        if(campaignFormDataToSave.getIspublished()){
-            campaignFormDataToSave.setIspublished(false);
-        }else{
-            campaignFormDataToSave.setIspublished(false);
-        }
+
 
         if(campaignFormDataToSave.getFormDate() == null){
             saveChecker = false;

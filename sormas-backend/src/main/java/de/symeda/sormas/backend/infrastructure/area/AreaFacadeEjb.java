@@ -640,4 +640,10 @@ public class AreaFacadeEjb extends AbstractInfrastructureEjb<Area, AreaService> 
 		return resultData;
 		
 	}
+
+	@Override
+	public AreaReferenceDto getAreaReferenceByRegionUuid(String regionUuid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

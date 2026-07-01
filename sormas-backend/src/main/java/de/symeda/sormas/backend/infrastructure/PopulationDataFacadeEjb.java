@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javax.annotation.security.PermitAll;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
@@ -24,6 +25,7 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Fetch;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
@@ -40,6 +42,7 @@ import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignLogDto;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
+import de.symeda.sormas.api.campaign.CampaignTreeFlatDto;
 import de.symeda.sormas.api.campaign.CampaignTreeGridDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.api.campaign.diagram.CampaignDiagramCriteria;
@@ -67,6 +70,7 @@ import de.symeda.sormas.backend.campaign.CampaignService;
 import de.symeda.sormas.backend.common.AbstractDomainObject;
 import de.symeda.sormas.backend.common.CriteriaBuilderHelper;
 import de.symeda.sormas.backend.infrastructure.area.Area;
+import de.symeda.sormas.backend.infrastructure.area.AreaFacadeEjb;
 import de.symeda.sormas.backend.infrastructure.community.Community;
 import de.symeda.sormas.backend.infrastructure.community.CommunityFacadeEjb;
 import de.symeda.sormas.backend.infrastructure.community.CommunityService;
@@ -902,6 +906,13 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		PopulationDataDto target = new PopulationDataDto();
 		DtoHelper.fillDto(target, source);
 
+//		target.setArea(AreaFacadeEjb.toReferenceDto(source.getArea()));
+		
+		target.setRegion(RegionFacadeEjb.toReferenceDto(source.getRegion()));
+	  if (source.getRegion() != null && source.getRegion().getArea() != null) {
+			  target.setArea(AreaFacadeEjb.toReferenceDto(source.getRegion().getArea()));
+		    }
+		  
 		target.setDistrict(DistrictFacadeEjb.toReferenceDto(source.getDistrict()));
 		target.setCommunity(CommunityFacadeEjb.toReferenceDto(source.getCommunity()));
 		target.setCampaign(CampaignFacadeEjb.toReferenceDto(source.getCampaign()));
@@ -1288,6 +1299,47 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	    return resultData;
 	}
 
+	
+	@Override
+	public List<PopulationDataDto> fetchPopulationDataSelectionByCampaign(String uuid) {
+	    // Validate input
+	    if (uuid == null || uuid.isEmpty()) {
+	        return Collections.emptyList();
+	    }
+
+	    // Base query using IN clause for multiple UUIDs
+	    String executeQuery = "SELECT DISTINCT ON (p.campaign_id, p.community_id) c.uuid as campaign_id, d.uuid as district_id, com.uuid AS cluster_id, p.selected, p.uuid , p.changedate " +
+	                          "FROM public.populationdata p " +
+	                          "JOIN public.district d ON p.district_id = d.id  " +
+	                          "LEFT JOIN public.community com ON p.community_id = com.id "+
+	                          "left join public.campaigns c ON p.campaign_id = c.id " +
+	                          "WHERE c.uuid = :uuid AND p.selected = TRUE " +
+	                          "ORDER BY p.campaign_id, p.community_id," +
+	                          "CASE WHEN p.agegroup = '0_4' THEN 1 ELSE 2 END";
+
+	    // Create the query
+	    Query getFormExpressionsQuery = em.createNativeQuery(executeQuery);
+	    getFormExpressionsQuery.setParameter("uuid", uuid);
+
+	    // Fetch and map the results
+	    @SuppressWarnings("unchecked")
+		List<PopulationDataDto> resultData = new ArrayList<>();
+
+	    List<Object[]> resultList = getFormExpressionsQuery.getResultList();
+	    
+		resultData.addAll(resultList.stream()
+				.map((result) -> new PopulationDataDto(
+						result[0] != null ? (String) result[0].toString() : "",
+						result[1] != null ? (String) result[1].toString() : "",
+						result[2] != null ? (String) result[2].toString() : "",
+						result[3] != null ? (boolean) result[3].toString().equalsIgnoreCase("true") ? true : false : false, 
+						result[4] != null ? (String) result[4].toString() : "",
+						result[5] != null ? (Date) result[5] : new Date()
+								)).collect(Collectors.toList()));
+		
+
+	    return resultData;
+	}
 
 	
 	@Override
@@ -1337,6 +1389,9 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		Query query = em.createNativeQuery(sql);
 		query.setParameter("campaignUuid", campaignUuid);
 		query.executeUpdate();
+		
+        refreshCampaignGeography(campaignUuid);
+
 		
 		return true;
 	    }catch(Exception e) {
@@ -1402,7 +1457,7 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 			query.setParameter("selectedGroups", selectedGroupNames);
 			query.executeUpdate();
 			
-			
+	        refreshCampaignGeography(campaignDto.getUuid());
 	
 
 			return true;
@@ -1498,8 +1553,7 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 
 			query.executeUpdate();
 			
-			
-	
+	        refreshCampaignGeography(campaignDto.getUuid());
 
 			return true;
 		} catch (Exception e) {
@@ -1630,6 +1684,8 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	        int rows = query.executeUpdate();
 
 	        System.out.println("Updated rows: " + rows);
+	        
+	        refreshCampaignGeography(campaignDto.getUuid());
 
 	        return true;
 
@@ -1639,5 +1695,324 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	    }
 	}
 	
+	
+//	public List<PopulationDataDto> getSelectedClustersByCampaign(String campaignuuid){
+//		
+//		   if (campaignuuid == null || campaignuuid.isEmpty()) {
+//		        return Collections.emptyList();
+//		    }
+//		
+//	
+//		String query =
+//			    "select ca.uuid as campaign_id, di.uuid as district_id, " +
+//			    "co.uuid as cluster_id, p.selected, re.uuid as region_id, " +
+//			    "p.community_id, p.changedate " +
+//			    "from populationdata p " +
+//			    "left join campaigns ca on p.campaign_id = ca.id " +
+//			    "left join community co on co.id = p.community_id " +
+//			    "left join district di on p.district_id = di.id " +
+//			    "left join region re on p.region_id = re.id " +
+//			    "where ca.uuid = :campaignuuid and p.selected = true";
+//
+//			Query q = em.createNativeQuery(query);
+//			q.setParameter("campaignuuid", campaignuuid);
+//
+//	    // Create the query
+//	    Query getFormExpressionsQuery = em.createNativeQuery(query);
+//
+//	    // Fetch and map the results
+//	    @SuppressWarnings("unchecked")
+//		List<Object[]> list = q.getResultList();
+//	    List<PopulationDataDto> resultData = new ArrayList<>(list.size());
+//
+//	    for (Object[] result : list) {
+//	        resultData.add(new PopulationDataDto(
+//	            result[0] != null ? result[0].toString() : null,
+//	            result[1] != null ?  result[1].toString() : null,
+//	            result[2] != null ? result[2].toString() : null,
+//	            result[3] != null && (Boolean) result[3],
+//	            result[4] != null ? result[4].toString() : null,
+//	            result[5] != null ? result[5].toString() : null,
+//	            result[6] != null ? (Date) result[6] : null
+//	        ));
+//	    }
+//
+//	    return resultData;
+//		
+//	};
+	
+	
+//	@Override
+//	public List<PopulationDataDto> getSelectedClustersByCampaign(String campaignUuid) {
+//		// TODO Auto-generated method stub
+//		CriteriaBuilder cb = em.getCriteriaBuilder();
+//		CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
+//		Root<PopulationData> root = cq.from(PopulationData.class);
+//		
+//		
+//		root.fetch(PopulationData.CAMPAIGN, JoinType.INNER);
+//		root.fetch(PopulationData.COMMUNITY, JoinType.INNER);
+//		root.fetch(PopulationData.DISTRICT, JoinType.INNER);
+//		
+//		Fetch<PopulationData, Region> regionFetch = root.fetch(Region.AREA, JoinType.INNER);
+//		
+//		regionFetch.fetch(Region.AREA, JoinType.LEFT);
+//		
+//		Predicate campaignFilter = cb.equal(root.get(PopulationData.CAMPAIGN).get(Campaign.UUID), campaignUuid);
+//
+//		Predicate selectedFilter = cb.isTrue(root.get(PopulationData.SELECTED));
+//
+//		cq.where(campaignFilter, selectedFilter);
+//		
+////		Join<PopulationData, Campaign> campaignJoin = root.join(PopulationData.CAMPAIGN);
+////		Join<PopulationData, Community> communityJoin = root.join(PopulationData.COMMUNITY);
+////		Join<PopulationData, District> districtJoin = root.join(PopulationData.DISTRICT);
+////		Join<PopulationData, Region> regionJoin = root.join(PopulationData.REGION);
+////		Join<Region, Area> areaJoin = regionJoin.join(Region.AREA, JoinType.LEFT);
+//
+//
+////		Predicate campaignFilter = cb.and(cb.equal(campaignJoin.get(Campaign.UUID), campaignUuid));
+////		Predicate selectedFilter = cb.and(cb.equal(root.get(PopulationData.SELECTED), true));
+////
+////		cq.where(campaignFilter, selectedFilter);
+//
+////		 System.out.println(//"resultData - "+ resultData.toString());
+////		 "DUMBGFyyresultData - "+SQLExtractor.from(seriesDataQuery));
+//
+//		System.out.println("1111zzzzzzDEBUGGER 5678ijhyuioYYYYYY Population Data" + SQLExtractor.from(em.createQuery(cq)));
+//
+//		return em.createQuery(cq).getResultStream().map(populationData -> toDtoPopulationByDistrict(populationData))
+//				.collect(Collectors.toList());
+//	}
+//
+//	
+	
+//	@Override
+//	public List<PopulationDataDto> getSelectedClustersByCampaign(String campaignUuid) {
+//
+//	    CriteriaBuilder cb = em.getCriteriaBuilder();
+//	    CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
+//
+//	    Root<PopulationData> root = cq.from(PopulationData.class);
+//
+//	    root.fetch(PopulationData.CAMPAIGN, JoinType.INNER);
+//	    root.fetch(PopulationData.COMMUNITY, JoinType.INNER);
+//	    root.fetch(PopulationData.DISTRICT, JoinType.INNER);
+//
+//	    Fetch<PopulationData, Region> regionFetch = root.fetch(PopulationData.REGION, JoinType.INNER);
+//
+//	    regionFetch.fetch(Region.AREA, JoinType.LEFT);
+//
+//	    cq.where(
+//	        cb.equal(root.get(PopulationData.CAMPAIGN).get(Campaign.UUID), campaignUuid),
+//	        cb.isTrue(root.get(PopulationData.SELECTED))
+//	    );
+//
+//	    return em.createQuery(cq)
+//	            .getResultStream()
+//	            .map(populationData -> toDtoPopulationByDistrict(populationData))
+//	            .collect(Collectors.toList());
+//	}
+	
+	@Override
+	public List<PopulationDataDto> getSelectedClustersByCampaign(String campaignUuid) {
+	    CriteriaBuilder cb = em.getCriteriaBuilder();
+	    CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
+	    Root<PopulationData> root = cq.from(PopulationData.class);
+
+	    root.fetch(PopulationData.CAMPAIGN, JoinType.INNER);
+	    root.fetch(PopulationData.COMMUNITY, JoinType.INNER);
+	    root.fetch(PopulationData.DISTRICT, JoinType.INNER);
+
+	    // Fetch Region, then fetch Area through Region (not through root)
+	    Fetch<PopulationData, Region> regionFetch = root.fetch(PopulationData.REGION, JoinType.INNER);
+	    regionFetch.fetch(Region.AREA, JoinType.LEFT); // This is correct — Area is on Region
+
+	    cq.where(
+	        cb.equal(root.get(PopulationData.CAMPAIGN).get(Campaign.UUID), campaignUuid),
+	        cb.isTrue(root.get(PopulationData.SELECTED))
+	    );
+
+	    return em.createQuery(cq)
+	            .getResultStream()
+	            .map(populationData -> toDtoPopulationByDistrict(populationData))
+	            .collect(Collectors.toList());
+	}
+	
+	
+	private void refreshCampaignGeography(String campaignUuid) {
+
+	    Long campaignId = ((Number) em.createNativeQuery(
+	        "SELECT id FROM campaigns WHERE uuid = :uuid")
+	        .setParameter("uuid", campaignUuid)
+	        .getSingleResult()).longValue();
+
+	    em.createNativeQuery(
+	        "DELETE FROM campaign_area WHERE campaign_id = :campaignId")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "DELETE FROM campaign_region WHERE campaign_id = :campaignId")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "DELETE FROM campaign_district WHERE campaign_id = :campaignId")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "DELETE FROM campaign_community WHERE campaign_id = :campaignId")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "INSERT INTO campaign_community (campaign_id, community_id) " +
+	        "SELECT DISTINCT campaign_id, community_id " +
+	        "FROM populationdata " +
+	        "WHERE campaign_id = :campaignId " +
+	        "AND community_id IS NOT NULL")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "INSERT INTO campaign_district (campaign_id, district_id) " +
+	        "SELECT DISTINCT campaign_id, district_id " +
+	        "FROM populationdata " +
+	        "WHERE campaign_id = :campaignId " +
+	        "AND district_id IS NOT NULL")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "INSERT INTO campaign_region (campaign_id, region_id) " +
+	        "SELECT DISTINCT campaign_id, region_id " +
+	        "FROM populationdata " +
+	        "WHERE campaign_id = :campaignId " +
+	        "AND region_id IS NOT NULL")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+
+	    em.createNativeQuery(
+	        "INSERT INTO campaign_area (campaign_id, area_id) " +
+	        "SELECT DISTINCT pd.campaign_id, r.area_id " +
+	        "FROM populationdata pd " +
+	        "JOIN region r ON r.id = pd.region_id " +
+	        "WHERE pd.campaign_id = :campaignId " +
+	        "AND r.area_id IS NOT NULL")
+	        .setParameter("campaignId", campaignId)
+	        .executeUpdate();
+	}
+	
+	
+	@PermitAll
+	@Override
+	public List<CampaignTreeFlatDto> getAllTreeDataForCampaign(String campaignUuid) {
+
+	    String sql =
+	        "SELECT " +
+	        "    a.name AS areaname, " +
+	        "    a.uuid AS areauuid, " +
+	        "    a.id AS areaid, " +
+	        "    a.externalid AS areaexternalid, " +
+
+	        "    r.name AS regionname, " +
+	        "    r.uuid AS regionuuid, " +
+	        "    r.id AS regionid, " +
+
+	        "    d.name AS districtname, " +
+	        "    d.uuid AS districtuuid, " +
+	        "    d.id AS districtid, " +
+
+	        "    BOOL_OR(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "                 THEN p.selected ELSE false END) AS districtselected, " +
+
+	        "    MAX(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "             THEN p.modality END) AS districtmodality, " +
+
+	        "    MAX(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "             THEN p.districtstatus END) AS districtstatus, " +
+
+	        "    c.name AS clustername, " +
+	        "    c.uuid AS clusteruuid, " +
+	        "    c.id AS clusterid, " +
+	        "    c.floating AS clusterfloating, " +
+
+	        "    BOOL_OR(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "                 THEN p.selected ELSE false END) AS clusterselected, " +
+
+	        "    CASE "
+	        + "    WHEN c.modality = 'H2H' THEN 'H2H' "
+	        + "    WHEN c.modality = 'M2M' THEN 'M2M' "
+	        + "    WHEN c.modality = 'S2S' THEN 'S2S' "
+	        + "    WHEN c.modality = 'HF2HF' THEN 'HF2HF' "
+	        + "    WHEN c.modality = 'Mixed' THEN 'Mixed' "
+	        + "    ELSE COALESCE(CAST(c.modality AS varchar), 'H2H') "
+	        + "END AS clustermodality, " +
+	        
+	        "CASE "
+	        + "    WHEN c.status = 'Additional' THEN 'Additional' "
+	        + "    WHEN c.status = 'AdditionalCold' THEN 'Additional & Cold' "
+	        + "    WHEN c.status = 'Cold' THEN 'Cold' "
+	        + "    WHEN c.status = 'FullCluster' THEN 'Full Cluster' "
+	        + "    WHEN c.status = 'HRMPOnly' THEN 'HRMP Only' "
+	        + "    WHEN c.status = 'Partial' THEN 'Partial' "
+	        + "    WHEN c.status = 'NotTargeted' THEN 'Not Targeted' "
+	        + "    WHEN c.status = 'OnHold' THEN 'On Hold' "
+	        + "    ELSE COALESCE(CAST(c.status AS varchar), 'Full Cluster') "
+	        + "END AS clusterstatus, " + 
+	        
+
+	        "    SUM(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "             THEN p.population ELSE 0 END) AS population_age_0_4, " +
+
+	        "    SUM(CASE WHEN p.agegroup = 'AGE_5_10' " +
+	        "             THEN p.population ELSE 0 END) AS population_age_5_10, " +
+
+	        "    SUM(CASE WHEN p.agegroup = 'AGE_4_23M' " +
+	        "             THEN p.population ELSE 0 END) AS population_age_4_23m " +
+
+	        "FROM populationdata p " +
+	        "INNER JOIN district d ON d.id = p.district_id " +
+	        "INNER JOIN region r ON r.id = d.region_id " +
+	        "INNER JOIN areas a ON a.id = r.area_id " +
+
+	        "LEFT JOIN community c " +
+	        "       ON c.id = p.community_id " +
+	        "      AND p.campaign_id = ( " +
+	        "            SELECT id " +
+	        "            FROM campaigns " +
+	        "            WHERE uuid = :campaignUuid " +
+	        "      ) " +
+	        "      AND p.agegroup IN ('AGE_0_4', 'AGE_5_10', 'AGE_4_23M') " +
+
+	        "WHERE c.archived = false " +
+	        "  AND d.archived = false " +
+	        "  AND r.archived = false " +
+	        "  AND a.archived = false " +
+
+	        "GROUP BY " +
+	        "    a.name, a.uuid, a.id, a.externalid, " +
+	        "    r.name, r.uuid, r.id, " +
+	        "    d.name, d.uuid, d.id, " +
+	        "    c.name, c.uuid, c.id, c.floating " +
+
+	        "ORDER BY " +
+	        "    a.name, " +
+	        "    r.name, " +
+	        "    d.name, " +
+	        "    c.name";
+
+	    Query q = em.createNativeQuery(sql);
+	    q.setParameter("campaignUuid", campaignUuid);
+
+	    @SuppressWarnings("unchecked")
+	    List<Object[]> rows = q.getResultList();
+
+	    return rows.stream()
+	            .map(CampaignTreeFlatDto::new)
+	            .collect(Collectors.toList());
+	}
 	
 }
