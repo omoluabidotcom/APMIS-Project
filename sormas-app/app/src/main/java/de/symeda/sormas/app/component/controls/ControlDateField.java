@@ -364,7 +364,7 @@ public class ControlDateField extends ControlPropertyEditField<Date> {
 
 		CharSequence valx = input.getText();
 		if(valx == null && required){
-			setSoftRequired(true);
+			setSoftRequired(false);
 			input.setError("!");
 			return;
 		}

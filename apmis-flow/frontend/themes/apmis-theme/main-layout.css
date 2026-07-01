@@ -809,3 +809,8 @@ vaadin-text-area#userRolesTextFieldID .vaadin-text-area-container vaadin-input-c
 #assocCampaignTabsheet vaadin-tabs {
 	background : #434343;
 }
+
+
+#erroredButton {
+	background : red !important;
+}	

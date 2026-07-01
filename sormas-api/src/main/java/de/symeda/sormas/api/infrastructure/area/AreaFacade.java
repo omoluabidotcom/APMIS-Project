@@ -43,5 +43,7 @@ public interface AreaFacade extends GeoLocationFacade<AreaDto, AreaDto, AreaRefe
 	ConfigurationChangeLogDto saveAreaChangeLog(ConfigurationChangeLogDto configurationChangeLogDto);
 	
 	List<AreaHistoryExtractDto> getAreasHistory(String uuid);
+	
+	AreaReferenceDto getAreaReferenceByRegionUuid(String regionUuid);
 
 }

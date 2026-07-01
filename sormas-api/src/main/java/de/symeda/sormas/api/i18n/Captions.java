@@ -45,6 +45,7 @@ public interface Captions {
 	String importCampaignFormData = "importCampaignFormData";
 	String campaignStatus = "campaignStatus";
 	String addNewForm = "addNewForm";
+	String addNewPopulationTarget = "addNewPopulationTarget";
 	String campaignBasics = "campaignBasics";
 	String uuid = "uuid";
 	String preCampaignDashboard = "preCampaignDashboard";
@@ -1089,6 +1090,7 @@ public interface Captions {
 	String District_growthRate = "District.growthRate";
 	String District_population = "District.population";
 	String districtActiveDistricts = "districtActiveDistricts";
+	String District_target = "District.target";
 	String districtAllDistricts = "districtAllDistricts";
 	String districtArchivedDistricts = "districtArchivedDistricts";
 	String districtName = "districtName";

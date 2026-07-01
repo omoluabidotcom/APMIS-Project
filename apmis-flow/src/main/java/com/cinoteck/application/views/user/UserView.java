@@ -220,8 +220,8 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 		exporMobiletUsers.setHref(resource);
 		exporMobiletUsers.getElement().setAttribute("download", true);
 
-		Button exportMobileUsers = new Button("Mobile Users Export");
 		exportMobileUsers.setIcon(new Icon(VaadinIcon.UPLOAD));
+		exporMobiletUsers.add(exportMobileUsers);
 		exporMobiletUsers.add(exportMobileUsers);
 		
 		importUsers = new Button(I18nProperties.getCaption(Captions.actionImport));

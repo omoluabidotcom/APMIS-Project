@@ -314,9 +314,16 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
         }
 
 
-        campaignFormDataToSave.setIsverified(false);
+        if (preCampaignsCategories.contains(campaignFormDataToSave.getCampaignFormMeta().getFormCategory()) ||
+                intraCampaignsCategories.contains(campaignFormDataToSave.getCampaignFormMeta().getFormCategory())) {
+            campaignFormDataToSave.setIsverified(true);
+            campaignFormDataToSave.setIspublished(true);
+        } else if (postCampaignsCategories.contains(campaignFormDataToSave.getCampaignFormMeta().getFormCategory())) {
+            campaignFormDataToSave.setIsverified(false);
+            campaignFormDataToSave.setIspublished(false);
+        }
 
-        campaignFormDataToSave.setIspublished(false);
+
 
         campaignFormDataToSave.setFormValues(filledFormValues);
 

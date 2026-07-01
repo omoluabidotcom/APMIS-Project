@@ -13,6 +13,7 @@ import de.symeda.sormas.api.AgeGroup;
 import de.symeda.sormas.api.person.Sex;
 import de.symeda.sormas.backend.campaign.Campaign;
 import de.symeda.sormas.backend.common.AbstractDomainObject;
+import de.symeda.sormas.backend.infrastructure.area.Area;
 import de.symeda.sormas.backend.infrastructure.community.Community;
 import de.symeda.sormas.backend.infrastructure.district.District;
 import de.symeda.sormas.backend.infrastructure.region.Region;
@@ -38,6 +39,7 @@ public class PopulationData extends AbstractDomainObject {
 
 
 
+	private Area area;
 	private Region region;
 	private District district;
 	private Community community;
@@ -50,6 +52,15 @@ public class PopulationData extends AbstractDomainObject {
 	private String modality;
 	private String districtStatus;
 
+	
+//	@ManyToOne(cascade = {})
+//	public Area getArea() {
+//		return area;
+//	}
+//
+//	public void setArea(Area area) {
+//		this.area = area;
+//	}
 
 	@ManyToOne(cascade = {})
 	public Region getRegion() {

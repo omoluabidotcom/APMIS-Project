@@ -27,6 +27,7 @@ import javax.ejb.Remote;
 
 import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignPhase;
+import de.symeda.sormas.api.campaign.CampaignTreeFlatDto;
 import de.symeda.sormas.api.common.Page;
 import de.symeda.sormas.api.infrastructure.GeoLocationFacade;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto;
@@ -84,6 +85,8 @@ public interface CommunityFacade extends GeoLocationFacade<CommunityDto, Communi
 	List<CommunityDto> getAllActiveClustersAsReferenceAndPopulation(Long regionId, String districtUuid, CampaignDto campaignDt);
 	
 	List<CommunityReferenceDto> getAllActiveClustersDistrictAndSelectedInCampaign(String districtUuid, String campaignUuid, String userLanguage);
+
+//	List<CampaignTreeFlatDto> getAllTreeDataForCampaign(String campaignUuid);
 
 
 }

@@ -318,6 +318,11 @@ public class CampaignFormDataService extends AdoServiceWithUserFilter<CampaignFo
 				if (district != null) {
 					filter = CriteriaBuilderHelper.or(cb, filter,
 							cb.equal(campaignPath.get(CampaignFormData.DISTRICT).get(District.ID), district.getId()));
+				}else if(currentUser.getDistricts().size() > 0) {
+					for (District districts : currentUser.getDistricts()) {
+						filter = CriteriaBuilderHelper.or(cb, filter,
+						cb.equal(campaignPath.get(CampaignFormData.DISTRICT).get(District.ID), districts.getId()));
+					}
 				}
 				break;
 			case COMMUNITY:
