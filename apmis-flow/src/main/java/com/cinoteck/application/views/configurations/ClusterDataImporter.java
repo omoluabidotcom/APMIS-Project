@@ -474,11 +474,12 @@ public class ClusterDataImporter extends DataImporter {
 							|| values[i].toString().equalsIgnoreCase("M2M")
 							|| values[i].toString().equalsIgnoreCase("S2S")
 							|| values[i].toString().equalsIgnoreCase("HF2HF")
-							|| values[i].toString().equalsIgnoreCase("Mixed")) {
+							|| values[i].toString().equalsIgnoreCase("Mixed")
+							|| values[i].toString().equalsIgnoreCase("M2MS2S")) {
 						modality = values[i];
 					} else {
 						writeImportError(values, new ImportErrorException(values[i], entityProperties[i]).getMessage()
-								+ " | Modality can only be one of the following H2H, M2M, S2S, HF2HF, Mixed");
+								+ " | Modality can only be one of the following H2H, M2M, S2S, HF2HF, Mixed, M2MS2S");
 						return ImportLineResult.ERROR;
 					}
 
