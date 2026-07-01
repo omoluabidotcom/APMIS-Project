@@ -6,9 +6,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -46,11 +49,13 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.ui.themes.ValoTheme;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.shared.Tooltip;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 
 import de.symeda.sormas.api.AgeGroup;
 import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.campaign.CampaignDto;
+import de.symeda.sormas.api.campaign.CampaignTreeFlatDto;
 import de.symeda.sormas.api.campaign.CampaignTreeGridDto;
 import de.symeda.sormas.api.campaign.CampaignTreeGridDtoImpl;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
@@ -93,6 +98,7 @@ public class AssociateCampaign extends VerticalLayout {
 	private boolean isInitializing = false;
 	FormLayout formx;
 	TextField creatingUuid = new TextField(I18nProperties.getCaption(Captions.uuid));
+	private final Map<String, Checkbox> deleteCheckboxMap = new HashMap<>();
 
 	private java.util.Map<String, Checkbox> checkboxMap = new java.util.HashMap<>();
 
@@ -134,7 +140,179 @@ public class AssociateCampaign extends VerticalLayout {
 			add(savecampaignTextAssoccamp);
 		}
 	}
+	
+	/**
+	 * Initialize deletelist from existing population data
+	 * This ensures that when the grid loads, the delete checkboxes reflect
+	 * any existing population data that could be deleted
+	 */
+	private void initializeDeleteList() {
+	    deletelist.clear();
+	    
+	    if (treeGrid == null || treeGrid.getTreeData() == null) {
+	        return;
+	    }
+	    
+	    List<CampaignTreeGridDto> roots = treeGrid.getTreeData().getRootItems();
+	    if (roots == null || roots.isEmpty()) {
+	        return;
+	    }
+	    
+	    // Walk through all nodes to find clusters
+	    for (CampaignTreeGridDto area : roots) {
+	        for (CampaignTreeGridDto region : area.getRegionData()) {
+	            for (CampaignTreeGridDto district : region.getDistrictData()) {
+	                List<CampaignTreeGridDto> clusters = district.getClusterData();
+	                if (clusters != null && !clusters.isEmpty()) {
+	                    for (CampaignTreeGridDto cluster : clusters) {
+	                        // Check if this cluster has population data
+	                        boolean hasPopulationData = cluster.getPopulationData() != null && 
+	                            cluster.getPopulationData() > 0;
+	                        boolean hasPopulationData5_10 = cluster.getPopulationData5_10() != null && 
+	                            cluster.getPopulationData5_10() > 0;
+	                        boolean hasPopulationData4_23M = cluster.getPopulationData4_23M() != null && 
+	                            cluster.getPopulationData4_23M() > 0;
+	                        
+	                        // Add to deletelist if it has data
+	                        if (hasPopulationData || hasPopulationData5_10 || hasPopulationData4_23M) {
+	                            deletelist.add(cluster);
+	                        }
+	                    }
+	                }
+	            }
+	        }
+	    }
+	    
+	    System.out.println("Initialized deletelist with " + deletelist.size() + " clusters with population data");
+	}
+	
+	
+/**
+ * Updates the district-level delete checkbox state based on its child clusters
+ * This ensures the district checkbox reflects the state of ALL children
+ */
+private void updateDistrictDeleteCheckboxState(CampaignTreeGridDto cluster) {
+    if (cluster == null) return;
+    
+    // Find the parent district using a more robust method
+    CampaignTreeGridDto district = findParentDistrictRobust(cluster);
+    if (district == null) {
+        System.out.println("Could not find parent district for cluster: " + cluster.getName());
+        return;
+    }
+    
+    List<CampaignTreeGridDto> childClusters = district.getClusterData();
+    if (childClusters == null || childClusters.isEmpty()) {
+        return;
+    }
+    
+    // Check if ALL child clusters are selected for deletion
+    boolean allSelected = childClusters.stream()
+        .allMatch(c -> deletelist.contains(c));
+    
+    // Check if ANY child cluster is selected
+    boolean anySelected = childClusters.stream()
+        .anyMatch(c -> deletelist.contains(c));
+    
+    // Update district checkbox
+    Checkbox districtCheckbox = deleteCheckboxMap.get(district.getUuid());
+    if (districtCheckbox != null) {
+        // Set to "all selected" if all are selected, otherwise "indeterminate" if some are selected
+        // Vaadin Checkbox doesn't support indeterminate directly, so we'll use boolean
+        if (allSelected) {
+            districtCheckbox.setValue(true);
+        } else if (anySelected) {
+            // Keep current value, but we could add a visual indicator
+            // For now, keep it as is or set to false to show partial selection
+            districtCheckbox.setValue(false);
+        } else {
+            districtCheckbox.setValue(false);
+        }
+    }
+}
 
+/**
+ * Robust method to find the parent district of a cluster
+ * Uses multiple approaches to ensure parent is found
+ */
+private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster) {
+    if (cluster == null) return null;
+    
+    // Method 1: Use parentMap if available
+    CampaignTreeGridDto parent = parentMap.get(cluster.getUuid());
+    if (parent != null && "district".equals(parent.getLevelAssessed())) {
+        return parent;
+    }
+    
+    // Method 2: Search through the tree data
+    if (treeGrid == null || treeGrid.getTreeData() == null) {
+        return null;
+    }
+    
+    List<CampaignTreeGridDto> roots = treeGrid.getTreeData().getRootItems();
+    if (roots == null || roots.isEmpty()) {
+        return null;
+    }
+    
+    for (CampaignTreeGridDto area : roots) {
+        for (CampaignTreeGridDto region : area.getRegionData()) {
+            for (CampaignTreeGridDto district : region.getDistrictData()) {
+                List<CampaignTreeGridDto> childClusters = district.getClusterData();
+                if (childClusters != null && childClusters.contains(cluster)) {
+                    return district;
+                }
+            }
+        }
+    }
+    
+    // Method 3: Check by UUID pattern (cluster UUID contains district info)
+    // This is a fallback - might need to be customized based on your UUID structure
+    for (CampaignTreeGridDto area : roots) {
+        for (CampaignTreeGridDto region : area.getRegionData()) {
+            for (CampaignTreeGridDto district : region.getDistrictData()) {
+                List<CampaignTreeGridDto> childClusters = district.getClusterData();
+                if (childClusters != null) {
+                    for (CampaignTreeGridDto child : childClusters) {
+                        if (child.getUuid().equals(cluster.getUuid())) {
+                            return district;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    System.out.println("DEBUG: Could not find parent district for cluster: " + cluster.getName() + " (UUID: " + cluster.getUuid() + ")");
+    return null;
+}
+	/**
+	 * Finds the parent district of a cluster
+	 */
+	private CampaignTreeGridDto findParentDistrict(CampaignTreeGridDto cluster) {
+	    if (cluster == null) return null;
+	    
+	    // Search through all areas, regions, and districts
+	    for (CampaignTreeGridDto area : treeGrid.getTreeData().getRootItems()) {
+	        for (CampaignTreeGridDto region : area.getRegionData()) {
+	            for (CampaignTreeGridDto district : region.getDistrictData()) {
+	                if (district.getClusterData().contains(cluster)) {
+	                    return district;
+	                }
+	            }
+	        }
+	    }
+	    return null;
+	}
+
+	
+	private Component createHeaderWithTooltip(String label, String tooltipText) {
+	    Span span = new Span(label);
+	    Tooltip tooltip = Tooltip.forComponent(span);
+	    tooltip.setText(tooltipText);
+	    tooltip.setPosition(Tooltip.TooltipPosition.TOP);
+	    return span;
+	}
+	
 	public HorizontalLayout configureTreeGrid(boolean isDeletePopulationData, CampaignDto formData) {
 		ComponentRenderer<Span, CampaignTreeGridDto> populationGenerate = new ComponentRenderer<>(input -> {
 			NumberFormat arabicFormat = NumberFormat.getInstance();
@@ -277,21 +455,24 @@ public class AssociateCampaign extends VerticalLayout {
 			}
 		});
 
+//		initializeDeleteList();
+		deletelist.clear();
+		updateAllDeleteCheckboxStates();
 		recomputeAllTotals();
 
 		buildParentMap();
 		treeGrid.setWidthFull();
 
 		// Add columns
-		treeGrid.addColumn(selectionCheckboxRenderer).setHeader("Select").setWidth("70px").setFlexGrow(0);
+		treeGrid.addColumn(selectionCheckboxRenderer).setHeader(createHeaderWithTooltip("Select", "Select")).setWidth("70px").setFlexGrow(0);
 		treeGrid.addHierarchyColumn(CampaignTreeGridDto::getName)
-				.setHeader(I18nProperties.getCaption(Captions.Location)).setAutoWidth(true).setResizable(true)
+				.setHeader(createHeaderWithTooltip(I18nProperties.getCaption(Captions.Location), I18nProperties.getCaption(Captions.Location))).setAutoWidth(true).setResizable(true)
 				.setTooltipGenerator(CampaignTreeGridDto::getName);
 //        treeGrid.addColumn(populationGenerate).setHeader("Target (0-59M)").setResizable(true).setTooltipGenerator(item->{"knknskf"});
 //        treeGrid.addColumn(populationGenerate5_10).setHeader("Target (60-120M)").setResizable(true);
 //        treeGrid.addColumn(populationGenerate4_23M).setHeader("Target (4_23M)").setResizable(true);
 
-		treeGrid.addColumn(populationGenerate).setHeader("Target (0-59M)").setResizable(true)
+		treeGrid.addColumn(populationGenerate).setHeader(createHeaderWithTooltip("Target (0-59M)", "Target (0-59M)")).setResizable(true)
 				.setTooltipGenerator(input -> {
 					NumberFormat arabicFormat = NumberFormat.getInstance();
 					if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
@@ -304,7 +485,7 @@ public class AssociateCampaign extends VerticalLayout {
 					return arabicFormat.format(input.getPopulationData());
 				});
 
-		treeGrid.addColumn(populationGenerate5_10).setHeader("Target (60-120M)").setResizable(true)
+		treeGrid.addColumn(populationGenerate5_10).setHeader(createHeaderWithTooltip("Target (60-120M)", "Target (60-120M)")).setResizable(true)
 				.setTooltipGenerator(input -> {
 					NumberFormat arabicFormat = NumberFormat.getInstance();
 					if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
@@ -317,7 +498,7 @@ public class AssociateCampaign extends VerticalLayout {
 					return arabicFormat.format(input.getPopulationData5_10());
 				});
 
-		treeGrid.addColumn(populationGenerate4_23M).setHeader("Target (4-23M)").setResizable(true)
+		treeGrid.addColumn(populationGenerate4_23M).setHeader(createHeaderWithTooltip("Target (4-23M)", "Target (4-23M)")).setResizable(true)
 				.setTooltipGenerator(input -> {
 					Locale locale;
 					String lang = userProvider.getUser().getLanguage().toString();
@@ -333,28 +514,137 @@ public class AssociateCampaign extends VerticalLayout {
 					return population != null ? format.format(population) : "0";
 				});
 
-		treeGrid.addColumn(CampaignTreeGridDto::getDistrictModality).setHeader("Modality").setResizable(true)
+		treeGrid.addColumn(CampaignTreeGridDto::getDistrictModality).setHeader(createHeaderWithTooltip("Modality", "Modality")).setResizable(true)
 				.setTooltipGenerator(CampaignTreeGridDto::getDistrictModality);
-		treeGrid.addColumn(CampaignTreeGridDto::getDistrictStatus).setHeader("Status").setResizable(true)
+		treeGrid.addColumn(CampaignTreeGridDto::getDistrictStatus).setHeader(createHeaderWithTooltip("Status", "Status")).setResizable(true)
 				.setTooltipGenerator(CampaignTreeGridDto::getDistrictStatus);
 
 		// Add delete column
+//		ComponentRenderer<Component, CampaignTreeGridDto> deleteCheckboxRenderer = new ComponentRenderer<>(dto -> {
+//			if (dto.getLevelAssessed().equals("cluster")) {
+//				Checkbox deleteCheckbox = new Checkbox();
+//				deleteCheckbox.addValueChangeListener(event -> {
+//					if (event.getValue()) {
+//						deletelist.add(dto);
+//					} else {
+//						deletelist.remove(dto);
+//					}
+//				});
+//				return deleteCheckbox;
+//			} else {
+//
+//				return new Span();
+//			}
+//		});
+		
+		// Add delete column with district-level selection
+		// Add delete column with district-level selection
 		ComponentRenderer<Component, CampaignTreeGridDto> deleteCheckboxRenderer = new ComponentRenderer<>(dto -> {
-			if (dto.getLevelAssessed().equals("cluster")) {
-				Checkbox deleteCheckbox = new Checkbox();
-				deleteCheckbox.addValueChangeListener(event -> {
-					if (event.getValue()) {
-						deletelist.add(dto);
-					} else {
-						deletelist.remove(dto);
-					}
-				});
-				return deleteCheckbox;
-			} else {
-				return new Span();
-			}
+		    Checkbox deleteCheckbox = new Checkbox();
+		    deleteCheckbox.setId("delete_chk_" + dto.getUuid());
+		    
+		    // Store checkbox reference for programmatic updates
+		    deleteCheckboxMap.put(dto.getUuid(), deleteCheckbox);
+		    
+		    // Determine if this item should show a delete checkbox
+		    boolean isCluster = "cluster".equals(dto.getLevelAssessed());
+		    boolean isDistrict = "district".equals(dto.getLevelAssessed());
+		    
+		    if (isCluster || isDistrict) {
+		        
+		        // Initialize checkbox state
+		        if (isDistrict) {
+		            // For districts: check if ALL child clusters are in deletelist
+		            // (This gives a cleaner "select all" visual state)
+		            List<CampaignTreeGridDto> childClusters = dto.getClusterData();
+		            boolean allSelected = !childClusters.isEmpty() && 
+		                childClusters.stream().allMatch(cluster -> deletelist.contains(cluster));
+		            deleteCheckbox.setValue(allSelected);
+		        } else {
+		            // For clusters: check if in deletelist
+		            deleteCheckbox.setValue(deletelist.contains(dto));
+//		        	deleteCheckbox.setValue(false);
+		        }
+		        
+		        deleteCheckbox.addValueChangeListener(event -> {
+		        	
+		        	if (isInitializing) {
+		        	    return;
+		        	}
+		            boolean isSelected = event.getValue();
+		            
+		            
+		            
+		            // Prevent event loops
+//		            deleteCheckbox.setValue(isSelected);
+		            
+		            if (isDistrict) {
+		                // District selected - select/deselect ALL child clusters
+		                List<CampaignTreeGridDto> childClusters = dto.getClusterData();
+		                
+		                
+		                if (isSelected) {
+		                    deletelist.addAll(childClusters);
+		                } else {
+		                    deletelist.removeAll(childClusters);
+		                }
+		                
+//		                if (isSelected) {
+//		                    // Add all child clusters to deletelist
+//		                    for (CampaignTreeGridDto cluster : childClusters) {
+//		                        if (!deletelist.contains(cluster)) {
+//		                            deletelist.add(cluster);
+//		                            // Update child checkbox UI
+//		                            Checkbox childCheckbox = deleteCheckboxMap.get(cluster.getUuid());
+//		                            if (childCheckbox != null) {
+////		                                childCheckbox.setValue(true);
+//		                            }
+//		                        }
+//		                    }
+//		                } else {
+//		                    // Remove all child clusters from deletelist
+//		                    for (CampaignTreeGridDto cluster : childClusters) {
+//		                        deletelist.remove(cluster);
+//		                        // Update child checkbox UI
+//		                        Checkbox childCheckbox = deleteCheckboxMap.get(cluster.getUuid());
+//		                        if (childCheckbox != null) {
+////		                            childCheckbox.setValue(false);
+//		                        }
+//		                    }
+//		                }
+		            } else {
+		                // Cluster-level selection
+		                if (isSelected) {
+		                    if (!deletelist.contains(dto)) {
+		                        deletelist.add(dto);
+		                    }
+		                } else {
+		                    deletelist.remove(dto);
+		                }
+		                
+		                // Update parent district checkbox
+		                updateDistrictDeleteCheckboxState(dto);
+		            }
+		            
+		            // Log for debugging
+		            System.out.println("Deletelist size: " + deletelist.size());
+		            System.out.println("Selected clusters: " + deletelist.stream()
+		                .map(CampaignTreeGridDto::getName)
+		                .collect(Collectors.joining(", ")));
+		            
+		            // Refresh grid to show updated states
+		            treeGrid.getDataProvider().refreshAll();
+		        });
+		        
+		        return deleteCheckbox;
+		    } else {
+		        // Areas and Regions: return empty span (no delete checkbox)
+		        return new Span();
+		    }
 		});
-		treeGrid.addColumn(deleteCheckboxRenderer).setHeader("Delete?").setWidth("70px").setFlexGrow(0);
+		
+		
+		treeGrid.addColumn(deleteCheckboxRenderer).setHeader(createHeaderWithTooltip("Delete?", "Delete?")).setWidth("70px").setFlexGrow(0);
 
 		// Load selected UUIDs from campaign DTO
 		selectedAreaUuids = campaignDto.getAreas().stream().map(AreaReferenceDto::getUuid).collect(Collectors.toSet());
@@ -430,140 +720,415 @@ public class AssociateCampaign extends VerticalLayout {
 		assocCampaignLayout.setFlexGrow(4, gridWithButtonLayout);
 		return assocCampaignLayout;
 	}
+	
+	/**
+	 * Update all delete checkbox states to match the current deletelist
+	 */
+	private void updateAllDeleteCheckboxStates() {
+	    if (treeGrid == null || treeGrid.getTreeData() == null) {
+	        return;
+	    }
+	    
+	    List<CampaignTreeGridDto> roots = treeGrid.getTreeData().getRootItems();
+	    if (roots == null) {
+	        return;
+	    }
+	    
+	    for (CampaignTreeGridDto area : roots) {
+	        for (CampaignTreeGridDto region : area.getRegionData()) {
+	            for (CampaignTreeGridDto district : region.getDistrictData()) {
+	                // Update district checkbox
+	                List<CampaignTreeGridDto> childClusters = district.getClusterData();
+	                if (childClusters != null && !childClusters.isEmpty()) {
+	                    boolean allSelected = childClusters.stream()
+	                        .allMatch(c -> deletelist.contains(c));
+	                    
+	                    Checkbox districtCheckbox = deleteCheckboxMap.get(district.getUuid());
+	                    if (districtCheckbox != null) {
+	                        districtCheckbox.setValue(allSelected);
+	                    }
+	                    
+	                    // Update individual cluster checkboxes
+	                    for (CampaignTreeGridDto cluster : childClusters) {
+	                        Checkbox clusterCheckbox = deleteCheckboxMap.get(cluster.getUuid());
+	                        if (clusterCheckbox != null) {
+	                            clusterCheckbox.setValue(deletelist.contains(cluster));
+	                        }
+	                    }
+	                }
+	            }
+	        }
+	    }
+	}
 
 	
 	// FIXED: Optimized generateTreeGridData with selection state from DB
+	
 	private List<CampaignTreeGridDto> generateTreeGridData() {
-		List<CampaignTreeGridDto> gridData = new ArrayList<>();
 
-		// Cache selected clusters from DB for O(1) lookups
-		Set<String> selectedClusterUuids = campaignDto.getCommunity().stream().map(CommunityReferenceDto::getUuid)
-				.collect(Collectors.toSet());
+	    List<CampaignTreeGridDto> gridData = new ArrayList<>();
 
-		List<AreaDto> areas = FacadeProvider.getAreaFacade().getAllActiveAsReferenceAndPopulation(campaignDto);
+	    List<CampaignTreeFlatDto> flatRows =
+	            FacadeProvider.getPopulationDataFacade()
+	                    .getAllTreeDataForCampaign(campaignDto.getUuid());
 
-		for (AreaDto area_ : areas) {
-			CampaignTreeGridDto areaData = new CampaignTreeGridDto(area_.getName(), area_.getAreaid(), "Area",
-					area_.getUuid_(), "area");
+	    Map<String, CampaignTreeGridDto> areaMap = new LinkedHashMap<>();
+	    Map<String, CampaignTreeGridDto> regionMap = new LinkedHashMap<>();
+	    Map<String, CampaignTreeGridDto> districtMap = new LinkedHashMap<>();
 
-			List<RegionDto> regions_ = FacadeProvider.getRegionFacade()
-					.getAllActiveAsReferenceAndPopulation(area_.getAreaid(), campaignDto.getUuid());
+	    // Stores district selection from DB
+	    // Used only when a district has no cluster records
+	    Map<String, Boolean> districtSelectionMap = new HashMap<>();
 
-			for (RegionDto regions_x : regions_) {
-				CampaignTreeGridDto regionData = new CampaignTreeGridDto(regions_x.getName(), regions_x.getRegionId(),
-						regions_x.getAreaUuid_(), regions_x.getUuid_(), "region");
+	    for (CampaignTreeFlatDto row : flatRows) {
 
-				List<DistrictDto> district_ = FacadeProvider.getDistrictFacade()
-						.getAllActiveAsReferenceAndPopulation(regions_x.getRegionId(), campaignDto);
+	        // =====================================================
+	        // AREA
+	        // =====================================================
+	        CampaignTreeGridDto area =
+	                areaMap.computeIfAbsent(row.areaUuid, k -> {
 
-				for (DistrictDto district_x : district_) {
-					CampaignTreeGridDto districtData = new CampaignTreeGridDto(district_x.getName(),
-							district_x.getRegionId(), district_x.getRegionUuid_(), district_x.getUuid_(), "district",
-							district_x.isSelectedForPopulationData());
+	                    CampaignTreeGridDto dto =
+	                            new CampaignTreeGridDto(
+	                                    row.areaName,
+	                                    row.areaId,
+	                                    "Area",
+	                                    row.areaUuid,
+	                                    "area");
 
-					List<CommunityDto> clusters_ = FacadeProvider.getCommunityFacade()
-							.getAllActiveClustersAsReferenceAndPopulation(regions_x.getRegionId(),
-									district_x.getUuid_(), campaignDto);
-					try {
+	                    gridData.add(dto);
 
-					} finally {
+	                    return dto;
+	                });
 
-					}
-					if (clusters_.size() > 0) {
-						for (CommunityDto clusterdto : clusters_) {
-							if (clusterdto.getName() != null) {
-								Long totalPopulation = (clusterdto.getPopulationData() != null
-										? clusterdto.getPopulationData()
-										: 0L)
-										+ (clusterdto.getPopulationData5_10() != null
-												? clusterdto.getPopulationData5_10()
-												: 0L);
+	        // =====================================================
+	        // REGION
+	        // =====================================================
+	        CampaignTreeGridDto region =
+	                regionMap.computeIfAbsent(row.regionUuid, k -> {
 
-								// CRITICAL: Set the selected flag from DB
-								boolean isSelected = selectedClusterUuids.contains(clusterdto.getClusterUuid());
+	                    CampaignTreeGridDto dto =
+	                            new CampaignTreeGridDto(
+	                                    row.regionName,
+	                                    row.regionId,
+	                                    row.areaUuid,
+	                                    row.regionUuid,
+	                                    "region");
 
-								CampaignTreeGridDto clusterData = new CampaignTreeGridDtoImpl(clusterdto.getName(),
-										clusterdto.getPopulationData(), clusterdto.getPopulationData5_10(),
-										clusterdto.getPopulationData4_23M(), clusterdto.getClusterId(),
-										clusterdto.getDistrictUuid(), clusterdto.getClusterUuid(), "cluster",
-										clusterdto.isSelectedForPopulationData(), // Set selected flag from DB
-										clusterdto.getDistrictModality(), clusterdto.getDistrictStatus(),
-										clusterdto.provideFloatStatus(), totalPopulation);
+	                    area.addRegionData(dto);
 
-								districtData.addClusterData(clusterData);
-							}
-						}
-					} else {
-						if (district_x.getPopulationData() != null) {
-							districtData = new CampaignTreeGridDtoImpl(district_x.getName(),
-									district_x.getPopulationData(), district_x.getPopulationData5_10(),
-//                                0L,
-//                                0L,
-									district_x.getRegionId(), district_x.getRegionUuid_(), district_x.getUuid_(),
-									"district", district_x.getSelectedPopulationData(),
-									district_x.getDistrictModality(), district_x.getDistrictStatus(),
-									((district_x.getPopulationData() != null ? district_x.getPopulationData() : 0L)
-											+ (district_x.getPopulationData5_10() != null
-													? district_x.getPopulationData5_10()
-													: 0L)));
-						}
-					}
+	                    return dto;
+	                });
 
-					long district0_59 = districtData.getClusterData().stream()
-							.mapToLong(c -> c.getPopulationData() == null ? 0 : c.getPopulationData()).sum();
+	        // =====================================================
+	        // DISTRICT
+	        // =====================================================
+	        districtSelectionMap.putIfAbsent(
+	                row.districtUuid,
+	                Boolean.TRUE.equals(row.districtSelected));
 
-					long district60_120 = districtData.getClusterData().stream()
-							.mapToLong(c -> c.getPopulationData5_10() == null ? 0 : c.getPopulationData5_10()).sum();
+	        CampaignTreeGridDto district =
+	                districtMap.computeIfAbsent(row.districtUuid, k -> {
 
-					long district4_23M = districtData.getClusterData().stream()
-							.mapToLong(c -> c.getPopulationData4_23M() == null ? 0 : c.getPopulationData4_23M()).sum();
+	                    CampaignTreeGridDto dto =
+	                            new CampaignTreeGridDto(
+	                                    row.districtName,
+	                                    row.regionId,
+	                                    row.regionUuid,
+	                                    row.districtUuid,
+	                                    "district",
+	                                    false); // resolved later
 
-					districtData.setPopulationData(district0_59);
-					districtData.setPopulationData5_10(district60_120);
-					districtData.setPopulationData4_23M(district4_23M);
+	                    region.addDistrictData(dto);
 
-					regionData.addDistrictData(districtData);
-				}
+	                    return dto;
+	                });
 
-				long region0_59 = regionData.getDistrictData().stream()
-						.mapToLong(d -> d.getPopulationData() == null ? 0 : d.getPopulationData()).sum();
+	        // =====================================================
+	        // CLUSTER
+	        // =====================================================
+	        if (row.clusterUuid != null && !row.clusterUuid.trim().isEmpty()) {
 
-				long region60_120 = regionData.getDistrictData().stream()
-						.mapToLong(d -> d.getPopulationData5_10() == null ? 0 : d.getPopulationData5_10()).sum();
+	            Long pop0_4 = row.pop0_4 == null ? 0L : row.pop0_4;
+	            Long pop5_10 = row.pop5_10 == null ? 0L : row.pop5_10;
+	            Long pop4_23m = row.pop4_23m == null ? 0L : row.pop4_23m;
 
-				long region4_23M = regionData.getDistrictData().stream()
-						.mapToLong(d -> d.getPopulationData4_23M() == null ? 0 : d.getPopulationData4_23M()).sum();
+	            Long totalPopulation =
+	                    pop0_4
+	                            + pop5_10
+	                            + pop4_23m;
 
-				regionData.setPopulationData(region0_59);
-				regionData.setPopulationData5_10(region60_120);
-				regionData.setPopulationData4_23M(region4_23M);
+	            CampaignTreeGridDto cluster =
+	                    new CampaignTreeGridDtoImpl(
+	                            row.clusterName,
+	                            pop0_4,
+	                            pop5_10,
+	                            pop4_23m,
+	                            row.clusterId,
+	                            row.districtUuid,
+	                            row.clusterUuid,
+	                            "cluster",
+	                            Boolean.TRUE.equals(row.clusterSelected),
+	                            row.clusterModality,
+	                            row.clusterStatus,
+	                            row.clusterFloating,
+	                            totalPopulation);
 
-				System.out.println("REGION: " + regionData.getName() + " | 0_59=" + region0_59);
+	            district.addClusterData(cluster);
+	        }
+	    }
 
-				areaData.addRegionData(regionData);
-			}
+	    // =========================================================
+	    // CALCULATE DISTRICT TOTALS + DISTRICT SELECTION
+	    // =========================================================
+	    for (CampaignTreeGridDto area : gridData) {
 
-			long area0_59 = areaData.getRegionData().stream()
-					.mapToLong(r -> r.getPopulationData() == null ? 0 : r.getPopulationData()).sum();
+	        for (CampaignTreeGridDto region : area.getRegionData()) {
 
-			long area60_120 = areaData.getRegionData().stream()
-					.mapToLong(r -> r.getPopulationData5_10() == null ? 0 : r.getPopulationData5_10()).sum();
+	            for (CampaignTreeGridDto district : region.getDistrictData()) {
 
-			long area4_23M = areaData.getRegionData().stream()
-					.mapToLong(r -> r.getPopulationData4_23M() == null ? 0 : r.getPopulationData4_23M()).sum();
+	                boolean hasClusters =
+	                        district.getClusterData() != null
+	                                && !district.getClusterData().isEmpty();
 
-			areaData.setPopulationData(area0_59);
-			areaData.setPopulationData5_10(area60_120);
-			areaData.setPopulationData4_23M(area4_23M);
+	                if (hasClusters) {
 
-			System.out.println("AREA: " + areaData.getName() + " | 0_59=" + area0_59 + " | 60_120=" + area60_120
-					+ " | 4_23M=" + area4_23M);
+	                    long district0_4 =
+	                            district.getClusterData().stream()
+	                                    .mapToLong(c -> c.getPopulationData() == null ? 0L : c.getPopulationData())
+	                                    .sum();
 
-			gridData.add(areaData);
-		}
+	                    long district5_10 =
+	                            district.getClusterData().stream()
+	                                    .mapToLong(c -> c.getPopulationData5_10() == null ? 0L : c.getPopulationData5_10())
+	                                    .sum();
 
-		return gridData;
+	                    long district4_23m =
+	                            district.getClusterData().stream()
+	                                    .mapToLong(c -> c.getPopulationData4_23M() == null ? 0L : c.getPopulationData4_23M())
+	                                    .sum();
+
+	                    district.setPopulationData(district0_4);
+	                    district.setPopulationData5_10(district5_10);
+	                    district.setPopulationData4_23M(district4_23m);
+
+	                    // District selected if any cluster selected
+	                    boolean districtSelected =
+	                            district.getClusterData().stream()
+	                                    .anyMatch(CampaignTreeGridDto::getSelected);
+
+	                    district.setSelected(districtSelected);
+
+	                } else {
+
+	                    // No clusters -> use district DB selection
+	                    district.setSelected(districtSelectionMap.getOrDefault(district.getUuid(),false));
+	                }
+	            }
+
+	            // =====================================================
+	            // REGION TOTALS
+	            // =====================================================
+	            long region0_4 =
+	                    region.getDistrictData().stream()
+	                            .mapToLong(d -> d.getPopulationData() == null ? 0L : d.getPopulationData())
+	                            .sum();
+
+	            long region5_10 =
+	                    region.getDistrictData().stream()
+	                            .mapToLong(d -> d.getPopulationData5_10() == null ? 0L : d.getPopulationData5_10())
+	                            .sum();
+
+	            long region4_23m =
+	                    region.getDistrictData().stream()
+	                            .mapToLong(d -> d.getPopulationData4_23M() == null ? 0L : d.getPopulationData4_23M())
+	                            .sum();
+
+	            region.setPopulationData(region0_4);
+	            region.setPopulationData5_10(region5_10);
+	            region.setPopulationData4_23M(region4_23m);
+
+	            // Region selected if any district selected
+	            boolean regionSelected =
+	                    region.getDistrictData().stream().anyMatch(CampaignTreeGridDto::getSelected);
+
+	            region.setSelected(regionSelected);
+	        }
+
+	        // =====================================================
+	        // AREA TOTALS
+	        // =====================================================
+	        long area0_4 =
+	                area.getRegionData().stream()
+	                        .mapToLong(r -> r.getPopulationData() == null ? 0L : r.getPopulationData())
+	                        .sum();
+
+	        long area5_10 =
+	                area.getRegionData().stream()
+	                        .mapToLong(r -> r.getPopulationData5_10() == null ? 0L : r.getPopulationData5_10())
+	                        .sum();
+
+	        long area4_23m =
+	                area.getRegionData().stream()
+	                        .mapToLong(r -> r.getPopulationData4_23M() == null ? 0L : r.getPopulationData4_23M())
+	                        .sum();
+
+	        area.setPopulationData(area0_4);
+	        area.setPopulationData5_10(area5_10);
+	        area.setPopulationData4_23M(area4_23m);
+
+	        // Area selected if any region selected
+	        boolean areaSelected =
+	                area.getRegionData().stream()
+	                        .anyMatch(CampaignTreeGridDto::getSelected);
+
+	        area.setSelected(areaSelected);
+	    }
+
+	    return gridData;
 	}
+	
+	
+//	private List<CampaignTreeGridDto> generateTreeGridData() {
+//		List<CampaignTreeGridDto> gridData = new ArrayList<>();
+//
+//		// Cache selected clusters from DB for O(1) lookups
+//		Set<String> selectedClusterUuids = campaignDto.getCommunity().stream().map(CommunityReferenceDto::getUuid)
+//				.collect(Collectors.toSet());
+//		
+//	    List<CampaignTreeFlatDto> flatRows =
+//		        FacadeProvider.getCommunityFacade()
+//		                      .getAllTreeDataForCampaign(campaignDto.getUuid());
+//	    
+//	    // Build hierarchy in memory using LinkedHashMap to preserve order
+//	    Map<String, CampaignTreeGridDto> areaMap   = new LinkedHashMap<>();
+//	    Map<String, CampaignTreeGridDto> regionMap  = new LinkedHashMap<>();
+//	    Map<String, CampaignTreeGridDto> districtMap = new LinkedHashMap<>();
+//	    
+//	    for(CampaignTreeFlatDto flatDataRow  : flatRows) {
+//	    	
+//	    }
+//
+//		List<AreaDto> areas = FacadeProvider.getAreaFacade().getAllActiveAsReferenceAndPopulation(campaignDto);
+//
+//		for (AreaDto area_ : areas) {
+//			CampaignTreeGridDto areaData = new CampaignTreeGridDto(area_.getName(), area_.getAreaid(), "Area",
+//					area_.getUuid_(), "area");
+//
+//			List<RegionDto> regions_ = FacadeProvider.getRegionFacade()
+//					.getAllActiveAsReferenceAndPopulation(area_.getAreaid(), campaignDto.getUuid());
+//
+//			for (RegionDto regions_x : regions_) {
+//				CampaignTreeGridDto regionData = new CampaignTreeGridDto(regions_x.getName(), regions_x.getRegionId(),
+//						regions_x.getAreaUuid_(), regions_x.getUuid_(), "region");
+//
+//				List<DistrictDto> district_ = FacadeProvider.getDistrictFacade()
+//						.getAllActiveAsReferenceAndPopulation(regions_x.getRegionId(), campaignDto);
+//
+//				for (DistrictDto district_x : district_) {
+//					CampaignTreeGridDto districtData = new CampaignTreeGridDto(district_x.getName(),
+//							district_x.getRegionId(), district_x.getRegionUuid_(), district_x.getUuid_(), "district",
+//							district_x.isSelectedForPopulationData());
+//
+//					List<CommunityDto> clusters_ = FacadeProvider.getCommunityFacade()
+//							.getAllActiveClustersAsReferenceAndPopulation(regions_x.getRegionId(),
+//									district_x.getUuid_(), campaignDto);
+//				
+//					if (clusters_.size() > 0) {
+//						for (CommunityDto clusterdto : clusters_) {
+//							if (clusterdto.getName() != null) {
+//								Long totalPopulation = (clusterdto.getPopulationData() != null
+//										? clusterdto.getPopulationData()
+//										: 0L)
+//										+ (clusterdto.getPopulationData5_10() != null
+//												? clusterdto.getPopulationData5_10()
+//												: 0L);
+//
+//								// CRITICAL: Set the selected flag from DB
+//								boolean isSelected = selectedClusterUuids.contains(clusterdto.getClusterUuid());
+//
+//								CampaignTreeGridDto clusterData = new CampaignTreeGridDtoImpl(clusterdto.getName(),
+//										clusterdto.getPopulationData(), clusterdto.getPopulationData5_10(),
+//										clusterdto.getPopulationData4_23M(), clusterdto.getClusterId(),
+//										clusterdto.getDistrictUuid(), clusterdto.getClusterUuid(), "cluster",
+//										clusterdto.isSelectedForPopulationData(), // Set selected flag from DB
+//										clusterdto.getDistrictModality(), clusterdto.getDistrictStatus(),
+//										clusterdto.provideFloatStatus(), totalPopulation);
+//
+//								districtData.addClusterData(clusterData);
+//							}
+//						}
+//					} else {
+//						if (district_x.getPopulationData() != null) {
+//							districtData = new CampaignTreeGridDtoImpl(district_x.getName(),
+//									district_x.getPopulationData(), district_x.getPopulationData5_10(),
+////                                0L,
+////                                0L,
+//									district_x.getRegionId(), district_x.getRegionUuid_(), district_x.getUuid_(),
+//									"district", district_x.getSelectedPopulationData(),
+//									district_x.getDistrictModality(), district_x.getDistrictStatus(),
+//									((district_x.getPopulationData() != null ? district_x.getPopulationData() : 0L)
+//											+ (district_x.getPopulationData5_10() != null
+//													? district_x.getPopulationData5_10()
+//													: 0L)));
+//						}
+//					}
+//
+//					long district0_59 = districtData.getClusterData().stream()
+//							.mapToLong(c -> c.getPopulationData() == null ? 0 : c.getPopulationData()).sum();
+//
+//					long district60_120 = districtData.getClusterData().stream()
+//							.mapToLong(c -> c.getPopulationData5_10() == null ? 0 : c.getPopulationData5_10()).sum();
+//
+//					long district4_23M = districtData.getClusterData().stream()
+//							.mapToLong(c -> c.getPopulationData4_23M() == null ? 0 : c.getPopulationData4_23M()).sum();
+//
+//					districtData.setPopulationData(district0_59);
+//					districtData.setPopulationData5_10(district60_120);
+//					districtData.setPopulationData4_23M(district4_23M);
+//
+//					regionData.addDistrictData(districtData);
+//				}
+//
+//				long region0_59 = regionData.getDistrictData().stream()
+//						.mapToLong(d -> d.getPopulationData() == null ? 0 : d.getPopulationData()).sum();
+//
+//				long region60_120 = regionData.getDistrictData().stream()
+//						.mapToLong(d -> d.getPopulationData5_10() == null ? 0 : d.getPopulationData5_10()).sum();
+//
+//				long region4_23M = regionData.getDistrictData().stream()
+//						.mapToLong(d -> d.getPopulationData4_23M() == null ? 0 : d.getPopulationData4_23M()).sum();
+//
+//				regionData.setPopulationData(region0_59);
+//				regionData.setPopulationData5_10(region60_120);
+//				regionData.setPopulationData4_23M(region4_23M);
+//
+//				System.out.println("REGION: " + regionData.getName() + " | 0_59=" + region0_59);
+//
+//				areaData.addRegionData(regionData);
+//			}
+//
+//			long area0_59 = areaData.getRegionData().stream()
+//					.mapToLong(r -> r.getPopulationData() == null ? 0 : r.getPopulationData()).sum();
+//
+//			long area60_120 = areaData.getRegionData().stream()
+//					.mapToLong(r -> r.getPopulationData5_10() == null ? 0 : r.getPopulationData5_10()).sum();
+//
+//			long area4_23M = areaData.getRegionData().stream()
+//					.mapToLong(r -> r.getPopulationData4_23M() == null ? 0 : r.getPopulationData4_23M()).sum();
+//
+//			areaData.setPopulationData(area0_59);
+//			areaData.setPopulationData5_10(area60_120);
+//			areaData.setPopulationData4_23M(area4_23M);
+//
+//			System.out.println("AREA: " + areaData.getName() + " | 0_59=" + area0_59 + " | 60_120=" + area60_120
+//					+ " | 4_23M=" + area4_23M);
+//
+//			gridData.add(areaData);
+//		}
+//
+//		return gridData;
+//	}
 
 	private void buildParentMap() {
 		parentMap.clear();
@@ -1139,6 +1704,10 @@ public class AssociateCampaign extends VerticalLayout {
 					return Collections.emptyList();
 			});
 
+			
+//			initializeDeleteList();
+			deletelist.clear();
+			updateAllDeleteCheckboxStates();
 			recomputeAllTotals();
 			updateAllParentSelections();
 
@@ -1267,6 +1836,26 @@ public class AssociateCampaign extends VerticalLayout {
 		return content;
 	}
 
+	
+	/**
+	 * Clears all delete selections and resets checkbox states
+	 */
+	private void clearDeleteSelection() {
+	    // Clear the list
+	    deletelist.clear();
+	    
+	    // Reset all delete checkboxes
+	    for (Map.Entry<String, Checkbox> entry : deleteCheckboxMap.entrySet()) {
+	        Checkbox cb = entry.getValue();
+	        if (cb != null) {
+	            cb.setValue(false);
+	        }
+	    }
+	    
+	    // Refresh the grid
+	    treeGrid.getDataProvider().refreshAll();
+	}
+	
 	private VerticalLayout populationEditorForm(CampaignDto campaignDto_) {
 		VerticalLayout vert = new VerticalLayout();
 
@@ -1321,7 +1910,7 @@ public class AssociateCampaign extends VerticalLayout {
 
 		popDataAge5_10 = new IntegerField("Target 60-120M");
 //				I18nProperties.getCaption(Captions.District_population) + " Age 5_10");
-		popDataAge4_23M = new IntegerField("Target 4_23M");
+		popDataAge4_23M = new IntegerField("Target 4-23M");
 		popDataAge4_23M.setMin(0);
 		popData0_4.setMin(0);
 		popDataAge5_10.setMin(0);
@@ -1517,66 +2106,127 @@ public class AssociateCampaign extends VerticalLayout {
 			buttonAfterLay.setVisible(true);
 			saveButton.setText(I18nProperties.getCaption(Captions.actionAdd));
 		});
-
+		
 		deleteButton.addClickListener(delete -> {
-			if (!deletelist.isEmpty()) {
+		    if (!deletelist.isEmpty()) {
+		        // Get distinct clusters (deletelist should only contain clusters)
+		        long distinctCount = deletelist.stream()
+		            .map(CampaignTreeGridDto::getId)
+		            .distinct()
+		            .count();
+		        
+		        ConfirmDialog confirmationDialog = new ConfirmDialog();
+		        confirmationDialog.setHeader("Delete Population Data");
+		        confirmationDialog.setText("Are you sure you want to delete the population data for " + 
+		            distinctCount + " selected clusters?");
+		        confirmationDialog.setCancelable(true);
+		        confirmationDialog.setRejectable(false);
+		        confirmationDialog.setConfirmText("Delete");
+		        confirmationDialog.setCancelText("Cancel");
+		        confirmationDialog.setCancelButtonTheme("error");
 
-				// Open a confirmation dialog to confirm deletion
-				ConfirmDialog confirmationDialog = new ConfirmDialog();
-				confirmationDialog.setHeader("Delete Population Data");
-				long distinctCount = deletelist.stream().map(CampaignTreeGridDto::getId) // Extract the ID or
-																							// any unique
-																							// property
-						.distinct() // Eliminate duplicates
-						.count(); // Count distinct elements
-				confirmationDialog.setText("Are you sure you want to delete the population data for " + distinctCount
-						+ " selected districts?");
-				confirmationDialog.setCancelable(true);
-				confirmationDialog.setRejectable(false);
-				confirmationDialog.setConfirmText("Delete");
-				confirmationDialog.setCancelText("Cancel");
-				confirmationDialog.setCancelButtonTheme("error");
+		        confirmationDialog.addCancelListener(e -> {
+		            treeGrid.getDataProvider().refreshAll();
+		            clearDeleteSelection();
+		            confirmationDialog.close();
+		        });
 
-				confirmationDialog.addCancelListener(e -> {
-					treeGrid.getDataProvider().refreshAll();
-					deletelist.clear();
-					confirmationDialog.close();
+		        confirmationDialog.addConfirmListener(event -> {
+		            try {
+		                List<Long> clusterIDs = new ArrayList<>();
+		                for (CampaignTreeGridDto treeData : deletelist) {
+		                    // Only delete clusters
+		                    if ("cluster".equals(treeData.getLevelAssessed())) {
+		                        clusterIDs.add(treeData.getId());
+		                    }
+		                }
 
-				});
+		                if (!clusterIDs.isEmpty()) {
+		                    FacadeProvider.getPopulationDataFacade().deletePopulationDataByClusters(
+		                        clusterIDs, 
+		                        campaignDto != null ? campaignDto.getUuid() : ""
+		                    );
+		                    
+		                    Notification.show("Population data deleted successfully. Please re-open the Campaign Basics form to receive updated Population Data Table.",
+		                        5000, Notification.Position.MIDDLE);
+		                } else {
+		                    Notification.show("No valid clusters selected for deletion.", 3000, Notification.Position.MIDDLE);
+		                }
+		            } catch (Exception e) {
+		                Notification.show("Error deleting population data: " + e.getMessage(), 10000,
+		                    Notification.Position.MIDDLE);
+		            } finally {
+		                clearDeleteSelection();
+		                treeGrid.getDataProvider().refreshAll();
+		                confirmationDialog.close();
+		            }
+		        });
 
-				confirmationDialog.addConfirmListener(event -> {
-					try {
-						List<Long> clusterIDs = new ArrayList<>();
-						for (CampaignTreeGridDto treeData : deletelist) {
-							clusterIDs.add(treeData.getId());
-
-						}
-
-						FacadeProvider.getPopulationDataFacade().deletePopulationDataByClusters(clusterIDs,
-								campaignDto_ != null ? campaignDto_.getUuid() : "");
-
-					} catch (Exception e) {
-						Notification.show("Error deleting population data: " + e.getMessage(), 10000,
-								Notification.Position.MIDDLE);
-					} finally {
-						Notification.show(
-								"Population data deleted successfully. Please re-open the Campaign Basics form to recieve updated Population Data Table.",
-								5000, Notification.Position.MIDDLE);
-//								Notification.show("Population data deleted successfully.");
-						treeGrid.getDataProvider().refreshAll();
-						deletelist.clear();
-						confirmationDialog.close();
-//								ageGroupSelectionDialog.close();
-					}
-				});
-
-				confirmationDialog.open();
-
-			} else {
-				// Handle the case when no selection is made (optional)
-				Notification.show("Please select an age group before confirming.", 3000, Notification.Position.MIDDLE);
-			}
+		        confirmationDialog.open();
+		    } else {
+		        Notification.show("Please select at least one item on the District or Cluster Level to delete.", 3000, Notification.Position.MIDDLE);
+		    }
 		});
+
+//		deleteButton.addClickListener(delete -> {
+//			if (!deletelist.isEmpty()) {
+//
+//				// Open a confirmation dialog to confirm deletion
+//				ConfirmDialog confirmationDialog = new ConfirmDialog();
+//				confirmationDialog.setHeader("Delete Population Data");
+//				long distinctCount = deletelist.stream().map(CampaignTreeGridDto::getId) // Extract the ID or
+//																							// any unique
+//																							// property
+//						.distinct() // Eliminate duplicates
+//						.count(); // Count distinct elements
+//				confirmationDialog.setText("Are you sure you want to delete the population data for " + distinctCount
+//						+ " selected districts?");
+//				confirmationDialog.setCancelable(true);
+//				confirmationDialog.setRejectable(false);
+//				confirmationDialog.setConfirmText("Delete");
+//				confirmationDialog.setCancelText("Cancel");
+//				confirmationDialog.setCancelButtonTheme("error");
+//
+//				confirmationDialog.addCancelListener(e -> {
+//					treeGrid.getDataProvider().refreshAll();
+//					deletelist.clear();
+//					confirmationDialog.close();
+//
+//				});
+//
+//				confirmationDialog.addConfirmListener(event -> {
+//					try {
+//						List<Long> clusterIDs = new ArrayList<>();
+//						for (CampaignTreeGridDto treeData : deletelist) {
+//							clusterIDs.add(treeData.getId());
+//
+//						}
+//
+//						FacadeProvider.getPopulationDataFacade().deletePopulationDataByClusters(clusterIDs,
+//								campaignDto_ != null ? campaignDto_.getUuid() : "");
+//
+//					} catch (Exception e) {
+//						Notification.show("Error deleting population data: " + e.getMessage(), 10000,
+//								Notification.Position.MIDDLE);
+//					} finally {
+//						Notification.show(
+//								"Population data deleted successfully. Please re-open the Campaign Basics form to recieve updated Population Data Table.",
+//								5000, Notification.Position.MIDDLE);
+////								Notification.show("Population data deleted successfully.");
+//						treeGrid.getDataProvider().refreshAll();
+//						deletelist.clear();
+//						confirmationDialog.close();
+////								ageGroupSelectionDialog.close();
+//					}
+//				});
+//
+//				confirmationDialog.open();
+//
+//			} else {
+//				// Handle the case when no selection is made (optional)
+//				Notification.show("Please select an age group before confirming.", 3000, Notification.Position.MIDDLE);
+//			}
+//		});
 
 		vert.add(buttonLay, formx, buttonAfterLay);
 
@@ -1863,13 +2513,13 @@ public class AssociateCampaign extends VerticalLayout {
 		district.setValue(name_);
 		district.setReadOnly(true);
 
-		IntegerField popData = new IntegerField(I18nProperties.getCaption(Captions.District_target) + " " + "0_59M");
+		IntegerField popData = new IntegerField(I18nProperties.getCaption(Captions.District_target) + " " + "0-59M");
 
 		IntegerField popData5_10 = new IntegerField(
-				I18nProperties.getCaption(Captions.District_target) + " " + "60_120M");
+				I18nProperties.getCaption(Captions.District_target) + " " + "60-120M");
 
 		IntegerField popData4_23M = new IntegerField(
-				I18nProperties.getCaption(Captions.District_target) + " " + "4_23M");
+				I18nProperties.getCaption(Captions.District_target) + " " + "4-23M");
 
 		ComboBox<Modality> districtModalityCombo = new ComboBox<>("Modality");
 		districtModalityCombo.setItems(Modality.values());

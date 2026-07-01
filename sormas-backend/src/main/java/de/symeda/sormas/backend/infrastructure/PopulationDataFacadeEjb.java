@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javax.annotation.security.PermitAll;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
@@ -41,6 +42,7 @@ import de.symeda.sormas.api.FacadeProvider;
 import de.symeda.sormas.api.campaign.CampaignDto;
 import de.symeda.sormas.api.campaign.CampaignLogDto;
 import de.symeda.sormas.api.campaign.CampaignReferenceDto;
+import de.symeda.sormas.api.campaign.CampaignTreeFlatDto;
 import de.symeda.sormas.api.campaign.CampaignTreeGridDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.api.campaign.diagram.CampaignDiagramCriteria;
@@ -1902,4 +1904,115 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	        .setParameter("campaignId", campaignId)
 	        .executeUpdate();
 	}
+	
+	
+	@PermitAll
+	@Override
+	public List<CampaignTreeFlatDto> getAllTreeDataForCampaign(String campaignUuid) {
+
+	    String sql =
+	        "SELECT " +
+	        "    a.name AS areaname, " +
+	        "    a.uuid AS areauuid, " +
+	        "    a.id AS areaid, " +
+	        "    a.externalid AS areaexternalid, " +
+
+	        "    r.name AS regionname, " +
+	        "    r.uuid AS regionuuid, " +
+	        "    r.id AS regionid, " +
+
+	        "    d.name AS districtname, " +
+	        "    d.uuid AS districtuuid, " +
+	        "    d.id AS districtid, " +
+
+	        "    BOOL_OR(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "                 THEN p.selected ELSE false END) AS districtselected, " +
+
+	        "    MAX(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "             THEN p.modality END) AS districtmodality, " +
+
+	        "    MAX(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "             THEN p.districtstatus END) AS districtstatus, " +
+
+	        "    c.name AS clustername, " +
+	        "    c.uuid AS clusteruuid, " +
+	        "    c.id AS clusterid, " +
+	        "    c.floating AS clusterfloating, " +
+
+	        "    BOOL_OR(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "                 THEN p.selected ELSE false END) AS clusterselected, " +
+
+	        "    CASE "
+	        + "    WHEN c.modality = 'H2H' THEN 'H2H' "
+	        + "    WHEN c.modality = 'M2M' THEN 'M2M' "
+	        + "    WHEN c.modality = 'S2S' THEN 'S2S' "
+	        + "    WHEN c.modality = 'HF2HF' THEN 'HF2HF' "
+	        + "    WHEN c.modality = 'Mixed' THEN 'Mixed' "
+	        + "    ELSE COALESCE(CAST(c.modality AS varchar), 'H2H') "
+	        + "END AS clustermodality, " +
+	        
+	        "CASE "
+	        + "    WHEN c.status = 'Additional' THEN 'Additional' "
+	        + "    WHEN c.status = 'AdditionalCold' THEN 'Additional & Cold' "
+	        + "    WHEN c.status = 'Cold' THEN 'Cold' "
+	        + "    WHEN c.status = 'FullCluster' THEN 'Full Cluster' "
+	        + "    WHEN c.status = 'HRMPOnly' THEN 'HRMP Only' "
+	        + "    WHEN c.status = 'Partial' THEN 'Partial' "
+	        + "    WHEN c.status = 'NotTargeted' THEN 'Not Targeted' "
+	        + "    WHEN c.status = 'OnHold' THEN 'On Hold' "
+	        + "    ELSE COALESCE(CAST(c.status AS varchar), 'Full Cluster') "
+	        + "END AS clusterstatus, " + 
+	        
+
+	        "    SUM(CASE WHEN p.agegroup = 'AGE_0_4' " +
+	        "             THEN p.population ELSE 0 END) AS population_age_0_4, " +
+
+	        "    SUM(CASE WHEN p.agegroup = 'AGE_5_10' " +
+	        "             THEN p.population ELSE 0 END) AS population_age_5_10, " +
+
+	        "    SUM(CASE WHEN p.agegroup = 'AGE_4_23M' " +
+	        "             THEN p.population ELSE 0 END) AS population_age_4_23m " +
+
+	        "FROM populationdata p " +
+	        "INNER JOIN district d ON d.id = p.district_id " +
+	        "INNER JOIN region r ON r.id = d.region_id " +
+	        "INNER JOIN areas a ON a.id = r.area_id " +
+
+	        "LEFT JOIN community c " +
+	        "       ON c.id = p.community_id " +
+	        "      AND p.campaign_id = ( " +
+	        "            SELECT id " +
+	        "            FROM campaigns " +
+	        "            WHERE uuid = :campaignUuid " +
+	        "      ) " +
+	        "      AND p.agegroup IN ('AGE_0_4', 'AGE_5_10', 'AGE_4_23M') " +
+
+	        "WHERE c.archived = false " +
+	        "  AND d.archived = false " +
+	        "  AND r.archived = false " +
+	        "  AND a.archived = false " +
+
+	        "GROUP BY " +
+	        "    a.name, a.uuid, a.id, a.externalid, " +
+	        "    r.name, r.uuid, r.id, " +
+	        "    d.name, d.uuid, d.id, " +
+	        "    c.name, c.uuid, c.id, c.floating " +
+
+	        "ORDER BY " +
+	        "    a.name, " +
+	        "    r.name, " +
+	        "    d.name, " +
+	        "    c.name";
+
+	    Query q = em.createNativeQuery(sql);
+	    q.setParameter("campaignUuid", campaignUuid);
+
+	    @SuppressWarnings("unchecked")
+	    List<Object[]> rows = q.getResultList();
+
+	    return rows.stream()
+	            .map(CampaignTreeFlatDto::new)
+	            .collect(Collectors.toList());
+	}
+	
 }

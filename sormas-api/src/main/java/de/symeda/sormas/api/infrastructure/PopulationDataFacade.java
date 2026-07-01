@@ -8,6 +8,7 @@ import javax.validation.Valid;
 
 import de.symeda.sormas.api.AgeGroup;
 import de.symeda.sormas.api.campaign.CampaignDto;
+import de.symeda.sormas.api.campaign.CampaignTreeFlatDto;
 import de.symeda.sormas.api.campaign.CampaignTreeGridDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
@@ -112,4 +113,6 @@ public interface PopulationDataFacade {
 	boolean updatePopulationDataForCampaignByRegionAndPopulationType(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups, List<AreaReferenceDto> selectedRegions);
 
 	List<PopulationDataDto> getSelectedClustersByCampaign(String campaignuuid);
+
+	List<CampaignTreeFlatDto> getAllTreeDataForCampaign(String campaignUuid);
 }
