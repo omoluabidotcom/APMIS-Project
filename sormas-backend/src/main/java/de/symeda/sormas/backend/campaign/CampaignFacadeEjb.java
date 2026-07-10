@@ -882,6 +882,8 @@ System.out.println(dto + "saveCampaignPopulationDatafrom the campaign facade whe
 
 		target.setPostCampEndDate(source.getPostCampEndDate());
 		target.setPostCampStartDate(source.getPostCampStartDate());
+		target.setVaccineType(source.getVaccineType());
+
 
 //		final Set<AreaReferenceDto> areas = source.getAreas();
 //		if (!CollectionUtils.isEmpty(areas)) {
@@ -939,6 +941,8 @@ System.out.println(dto + "saveCampaignPopulationDatafrom the campaign facade whe
 
 		target.setPostCampEndDate(source.getPostCampEndDate());
 		target.setPostCampStartDate(source.getPostCampStartDate());
+		target.setVaccineType(source.getVaccineType());
+
 
 		final Set<AreaReferenceDto> areas = source.getAreas();
 		if (!CollectionUtils.isEmpty(areas)) {
@@ -1176,6 +1180,8 @@ System.out.println(dto + "saveCampaignPopulationDatafrom the campaign facade whe
 
 		target.setPostCampEndDate(source.getPostCampEndDate());
 		target.setPostCampStartDate(source.getPostCampStartDate());
+		target.setVaccineType(source.getVaccineType());
+
 
 		return target;
 	}
@@ -1215,6 +1221,7 @@ System.out.println(dto + "saveCampaignPopulationDatafrom the campaign facade whe
 
 		target.setPostCampEndDate(source.getPostCampEndDate());
 		target.setPostCampStartDate(source.getPostCampStartDate());
+		target.setVaccineType(source.getVaccineType());
 
 		return target;
 	}

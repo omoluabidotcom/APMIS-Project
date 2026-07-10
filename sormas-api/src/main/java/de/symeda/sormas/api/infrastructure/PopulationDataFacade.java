@@ -115,4 +115,6 @@ public interface PopulationDataFacade {
 	List<PopulationDataDto> getSelectedClustersByCampaign(String campaignuuid);
 
 	List<CampaignTreeFlatDto> getAllTreeDataForCampaign(String campaignUuid);
+
+	List<PopulationDataDto> getPopulationDataByClusterandCampaign(String campaignUuid, String communityUuid);
 }
