@@ -1,6 +1,9 @@
 package com.cinoteck.application.views.deviceinformation;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -12,6 +15,7 @@ import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.MultiSortPriority;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
@@ -59,6 +63,8 @@ public class DeviceInformationView extends VerticalLayout {
 	private MultiSelectComboBox<AreaReferenceDto> areaFilter = new MultiSelectComboBox<AreaReferenceDto>();
 	private MultiSelectComboBox<RegionReferenceDto> regionFilter = new MultiSelectComboBox<RegionReferenceDto>();
 	private MultiSelectComboBox<DistrictReferenceDto> districtFilter = new MultiSelectComboBox<DistrictReferenceDto>();
+	private DatePicker startDateFilter = new DatePicker("Start Date");
+	private DatePicker endDateFilter = new DatePicker("End Date");
 	
 	private List<AreaReferenceDto> regions = FacadeProvider.getAreaFacade().getAllActiveAsReference();
 	private List<RegionReferenceDto> provinces = FacadeProvider.getRegionFacade().getAllActiveAsReference();
@@ -308,8 +314,24 @@ public class DeviceInformationView extends VerticalLayout {
 
 			updateRowCount();
 		});
+		
+		startDateFilter.setWidth("160px");
+		startDateFilter.setClearButtonVisible(true);
 
-		layout.add(searchField, areaFilter, regionFilter, districtFilter);
+		endDateFilter.setWidth("160px");
+		endDateFilter.setClearButtonVisible(true);
+
+		startDateFilter.addValueChangeListener(e -> {
+		    reload();
+		    updateRowCount();
+		});
+
+		endDateFilter.addValueChangeListener(e -> {
+		    reload();
+		    updateRowCount();
+		});
+
+		layout.add(searchField, areaFilter, regionFilter, districtFilter, startDateFilter, endDateFilter);
 //		layout.add(geographyUnitTypeFilter);
 
 		layout.add(resetFilters);
@@ -439,6 +461,25 @@ public class DeviceInformationView extends VerticalLayout {
 	    criteria.region(regionFilter.getValue());
 	    criteria.district(districtFilter.getValue());
 	    	 
+	    LocalDate start = startDateFilter.getValue();
+	    LocalDate end = endDateFilter.getValue();
+
+	    Timestamp startTs = null;
+	    Timestamp endTs = null;
+
+	    if (start != null) {
+	        startTs = Timestamp.valueOf(start.atStartOfDay()); // inclusive start
+	    }
+
+	    if (end != null) {
+	        // inclusive end-of-day: 23:59:59.999999999
+	        LocalDateTime endOfDay = end.atTime(23, 59, 59, 999_999_999);
+	        endTs = Timestamp.valueOf(endOfDay);
+	    }
+	 
+	    criteria.setChangeDateFrom(startTs);
+	    criteria.setChangeDateTo(endTs);
+	    
 	    List<DeviceManagerDto> newData = fetchDevicesInfoData();
 	    grid.setItems(newData);
 	    dataView = grid.getListDataView();
