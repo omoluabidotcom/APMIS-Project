@@ -146,8 +146,6 @@ public class CampaignForm extends VerticalLayout {
 	TextField campaignName = new TextField(I18nProperties.getCaption(Captions.Campaign_name));
 	ComboBox round = new ComboBox<>(I18nProperties.getCaption(Captions.round));
 
-	ComboBox vaccineType = new ComboBox<>(I18nProperties.getCaption("Vaccine Type"));
-
 	DatePicker preCampaignstartDate = new DatePicker("Pre-Campaign Start date");
 	DatePicker preCampaignendDate = new DatePicker("Pre-Campaign End Date");
 	DatePicker startDate = new DatePicker(I18nProperties.getCaption(Captions.Campaign_startDate));
@@ -463,24 +461,12 @@ public class CampaignForm extends VerticalLayout {
 		creatingUser.setWidthFull();
 		creatingUuid.setWidthFull();
 		campaaignYear.setWidthFull();
-		
-		campaignName.setWidthFull();
-		round.setWidthFull();
-		vaccineType.setWidthFull();
 
 		HorizontalLayout hort = new HorizontalLayout();
 		hort.add(creatingUuid, creatingUser, campaaignYear);
 		hort.setJustifyContentMode(JustifyContentMode.BETWEEN);
-		
-
 
 		round.setItems("NID", "SNID", "CRC", "SIA", "Mopping-Up", "Training");
-		
-		vaccineType.setItems("bOPV", "mOPV ","nOPV","fIPV + bOPV", "IPV + bOPV");
-		
-		HorizontalLayout hort2 = new HorizontalLayout();
-		hort2.add(campaignName, round, vaccineType);
-		hort2.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
 		if (creatingUuid.getValue() == "") {
 
@@ -499,8 +485,10 @@ public class CampaignForm extends VerticalLayout {
 				.bind(CampaignDto.NAME);
 		binderx.forField(round).asRequired(I18nProperties.getString(Strings.campaignRoundrequired))
 				.bind(CampaignDto.ROUND);
-		binderx.forField(vaccineType).asRequired(I18nProperties.getString("Vaccine Type"))
-		.bind(CampaignDto.VACCINETYPE);
+//		if(binderx.getBean().getRound()!= null && binderx.getBean().getRound() ==  "Case Respond" ) {
+//			round.setValue("CRC");	
+		System.out.println(round.getValue() + "ROUND VALUE BAWSED OFF BINDER ");
+//		}
 
 		binderx.forField(preCampaignstartDate).withConverter(new LocalDateToDateConverter())
 				.bind(CampaignDto::getPreCampStartDate, CampaignDto::setPreCampStartDate);
@@ -1221,16 +1209,19 @@ public class CampaignForm extends VerticalLayout {
 
 		openCloseCampaign.addClickListener(e -> {
 			openCloseCampaign();
+
 		});
 
 		if (isOpenClose) {
 			archiveDearchive.addClickListener(e -> {
 				archive();
+
 			});
 		} else {
 			archiveDearchive.addClickListener(e -> {
 				Notification.show("Please close present campaign before attemping to Archive")
 						.addThemeVariants(NotificationVariant.LUMO_ERROR);
+
 			});
 		}
 
@@ -1247,11 +1238,46 @@ public class CampaignForm extends VerticalLayout {
 		saveChanges.setText(I18nProperties.getCaption(Captions.actionSave));
 
 		saveChanges.addClickListener(e -> {
+
+			
+			
+//			for (CampaignTreeGridDto item : treeGrid.getSelectionModel().getSelectedItems()) {
+//			    String level = item.getLevelAssessed();
+//			    if ("area".equals(level)) {
+//			        areass.add(FacadeProvider.getAreaFacade().getAreaReferenceByUuid(item.getUuid()));
+//			    } else if ("region".equals(level)) {
+//			        region.add(FacadeProvider.getRegionFacade().getRegionReferenceByUuid(item.getUuid()));
+//			    } else if ("district".equals(level)) {
+//			        districts.add(FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(item.getUuid()));
+//			    } else if ("cluster".equals(level)) {
+//			        // 1) Add to community set
+//			        CommunityReferenceDto clusterRef =
+//			            FacadeProvider.getCommunityFacade().getCommunityReferenceByUuid(item.getUuid());
+//			        community.add(clusterRef);
+//
+//			        // 2) Create PopulationData entry for this cluster + campaign
+//			        PopulationDataDto popData = new PopulationDataDto();
+//			        popData.setCampaign(FacadeProvider.getCampaignFacade().getReferenceByUuid(campaignDto.getUuid()));
+//			        popData.setCommunity(clusterRef);
+//
+//			        popopulationDataDtoSet.add(popData);
+//			    }
+//			}
+
 			if (campaignDto != null) {
+//				campaignDto.setAreas((Set<AreaReferenceDto>) areass);
+//				campaignDto.setRegion((Set<RegionReferenceDto>) region);
+//				campaignDto.setDistricts((Set<DistrictReferenceDto>) districts);
+//				campaignDto.setPopulationdata((Set<PopulationDataDto>) popopulationDataDtoSet);
+//				campaignDto.setCommunity((Set<CommunityReferenceDto>) community);
+
 				updateCampaignDatesFromForm();
+
 				// Recalculate expiry for all phases
 				recalculateExpiryForAllPhases();
+
 			}
+
 			validateAndSave(editMode);
 		});
 
@@ -1279,20 +1305,14 @@ public class CampaignForm extends VerticalLayout {
 
 		FormLayout formL = new FormLayout();
 		HorizontalLayout header = new HorizontalLayout();
-		HorizontalLayout headerLevel2 = new HorizontalLayout();
-
 		header.add(creatingUser, creatingUuid, campaaignYear);
-		headerLevel2.add(campaignName, round, vaccineType);
 
-
-		formL.add(header, headerLevel2, preCampaignstartDate, preCampaignendDate, startDate, endDate,
+		formL.add(header, campaignName, round, preCampaignstartDate, preCampaignendDate, startDate, endDate,
 				postCampaignstartDate, postCampaignendDate, description);
 
 		formL.setColspan(header, 2);
-		formL.setColspan(headerLevel2, 2);
 		formL.setColspan(description, 2);
 		formL.setColspan(hort, 2);
-		formL.setColspan(hort2, 2);
 		formL.setColspan(leftFloat, 1);
 		formL.setColspan(rightFloat, 1);
 //		formL.setColspan(actionButtonsLayout, 2);
@@ -2920,7 +2940,6 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 			formDatac.setPostCampEndDate(postCampaignendxDatex);
 			formDatac.setDescription(description.getValue());
 			formDatac.setCampaignStatus(formDatac.campaignStatus = "Closed");
-			formDatac.setVaccineType(vaccineType.getValue().toString());
 
 			List<CampaignDashboardElement> superList = new ArrayList<>();
 

@@ -86,7 +86,6 @@ public interface CommunityFacade extends GeoLocationFacade<CommunityDto, Communi
 	
 	List<CommunityReferenceDto> getAllActiveClustersDistrictAndSelectedInCampaign(String districtUuid, String campaignUuid, String userLanguage);
 
-//	List<CampaignTreeFlatDto> getAllTreeDataForCampaign(String campaignUuid);
-
+	List<CampaignTreeFlatDto> getAllTreeDataForCampaign(String campaignUuid);
 
 }
