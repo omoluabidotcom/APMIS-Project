@@ -31,12 +31,6 @@
         </dependency>
         <dependency>
             <groupId>de.symeda.sormas</groupId>
-            <artifactId>sormas-ui</artifactId>
-            <version>${project.version}</version>
-            <type>war</type>
-        </dependency>
-        <dependency>
-            <groupId>de.symeda.sormas</groupId>
             <artifactId>sormas-rest</artifactId>
             <version>${project.version}</version>
             <type>war</type>
@@ -197,14 +191,6 @@
                             <type>war</type>
                             <properties>
                                 <context>/sormas-rest</context>
-                            </properties>
-                        </deployable>
-                        <deployable>
-                            <groupId>de.symeda.sormas</groupId>
-                            <artifactId>sormas-ui</artifactId>
-                            <type>war</type>
-                            <properties>
-                                <context>/sormas-ui</context>
                             </properties>
                         </deployable>
                     </deployables>
