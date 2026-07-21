@@ -148,8 +148,8 @@ public class CampaignForm extends VerticalLayout {
 
 	DatePicker preCampaignstartDate = new DatePicker("Pre-Campaign Start date");
 	DatePicker preCampaignendDate = new DatePicker("Pre-Campaign End Date");
-	DatePicker startDate = new DatePicker(I18nProperties.getCaption(Captions.Campaign_startDate));
-	DatePicker endDate = new DatePicker(I18nProperties.getCaption(Captions.Campaign_endDate));
+	DatePicker startDate = new DatePicker("Intra-Campaign Start date");
+	DatePicker endDate = new DatePicker("Intra-Campaign End date");
 	DatePicker postCampaignstartDate = new DatePicker("Post-Campaign Start date");
 	DatePicker postCampaignendDate = new DatePicker("Post-Campaign End date");
 
