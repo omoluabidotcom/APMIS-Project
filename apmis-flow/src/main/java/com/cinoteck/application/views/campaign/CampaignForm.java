@@ -146,12 +146,12 @@ public class CampaignForm extends VerticalLayout {
 	TextField campaignName = new TextField(I18nProperties.getCaption(Captions.Campaign_name));
 	ComboBox round = new ComboBox<>(I18nProperties.getCaption(Captions.round));
 
-	DatePicker preCampaignstartDate = new DatePicker("Pre-Campaign Start date");
-	DatePicker preCampaignendDate = new DatePicker("Pre-Campaign End Date");
-	DatePicker startDate = new DatePicker("Intra-Campaign Start date");
-	DatePicker endDate = new DatePicker("Intra-Campaign End date");
-	DatePicker postCampaignstartDate = new DatePicker("Post-Campaign Start date");
-	DatePicker postCampaignendDate = new DatePicker("Post-Campaign End date");
+	DatePicker preCampaignstartDate = new DatePicker(I18nProperties.getCaption(Captions.PreCampaignStartdate));
+	DatePicker preCampaignendDate = new DatePicker(I18nProperties.getCaption(Captions.PreCampaignEnddate));
+	DatePicker startDate = new DatePicker(I18nProperties.getCaption(Captions.IntraCampaignStartdate));
+	DatePicker endDate = new DatePicker(I18nProperties.getCaption(Captions.IntraCampaignEnddate));
+	DatePicker postCampaignstartDate = new DatePicker(I18nProperties.getCaption(Captions.PostCampaignStartdate));
+	DatePicker postCampaignendDate = new DatePicker(I18nProperties.getCaption(Captions.PostCampaignEnddate));
 
 	TextField creatingUser = new TextField(I18nProperties.getCaption(Captions.Campaign_creatingUser));
 	TextField creatingUuid = new TextField(I18nProperties.getCaption(Captions.uuid));
@@ -466,7 +466,7 @@ public class CampaignForm extends VerticalLayout {
 		hort.add(creatingUuid, creatingUser, campaaignYear);
 		hort.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-		round.setItems("NID", "SNID", "CRC", "SIA", "Mopping-Up", "Training");
+		round.setItems("NID", "SNID", "CRC", "SIA", "Mopping-Up", "Training", "IPV");
 
 		if (creatingUuid.getValue() == "") {
 
