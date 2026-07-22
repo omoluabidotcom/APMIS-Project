@@ -2015,4 +2015,26 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	            .collect(Collectors.toList());
 	}
 	
+	
+	@Override
+	public List<PopulationDataDto> getPopulationDataByClusterandCampaign(String campaignUuid, String communityUuid) {
+	    CriteriaBuilder cb = em.getCriteriaBuilder();
+	    CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
+	    Root<PopulationData> root = cq.from(PopulationData.class);
+
+	    root.fetch(PopulationData.CAMPAIGN, JoinType.INNER);
+	    root.fetch(PopulationData.COMMUNITY, JoinType.INNER);
+
+	    cq.where(
+	        cb.equal(root.get(PopulationData.CAMPAIGN).get(Campaign.UUID), campaignUuid),
+	        cb.equal(root.get(PopulationData.COMMUNITY).get(Community.UUID), communityUuid)
+
+	    );
+
+	    return em.createQuery(cq)
+	            .getResultStream()
+	            .map(populationData -> toDtoPopulationByDistrict(populationData))
+	            .collect(Collectors.toList());
+	}
+	
 }

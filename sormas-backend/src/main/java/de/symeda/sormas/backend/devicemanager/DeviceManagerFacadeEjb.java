@@ -276,6 +276,14 @@ public class DeviceManagerFacadeEjb implements DeviceManagerFacade {
 	            predicates.add(
 		                root.get("district").get("uuid").in(districtUuids));       
 	        }
+	        
+	        if (criteria.getChangeDateFrom() != null) {
+	            predicates.add(cb.greaterThanOrEqualTo(root.get(DeviceManager.CHANGE_DATE), criteria.getChangeDateFrom()));
+	        }
+	        
+	        if (criteria.getChangeDateTo() != null) {
+	            predicates.add(cb.lessThanOrEqualTo(root.get(DeviceManager.CHANGE_DATE), criteria.getChangeDateTo()));
+	        }
 	    }
 
 	    if (!predicates.isEmpty()) {
