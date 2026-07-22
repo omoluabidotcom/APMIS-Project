@@ -782,14 +782,16 @@ public class CampaignForm extends VerticalLayout {
 		poplayout.setHorizontalComponentAlignment(Alignment.CENTER, lblIntroduction);// .setHorizontalComponentAlignment(lblIntroduction,
 		
 		if (campaignDto != null) {
-		Button btnGeneratePopulationData = new Button(I18nProperties.getCaption("Generate Population Data | " +  campaignDto.getName()));// , e -> {
+		Button btnGeneratePopulationData = new Button(I18nProperties.getCaption("Generate and Override Population Data | " +  campaignDto.getName()));// , e -> {
+		btnGeneratePopulationData.setTooltipText("Clicking this button, Generates and Overrides Target Population for this Campaign");
 
-		Button btnUpdatePopulationData = new Button(I18nProperties.getCaption("Update Population Data | " +  campaignDto.getName()));// , e -> {
+		Button btnUpdatePopulationData = new Button(I18nProperties.getCaption("Merge  Population Data | " +  campaignDto.getName()));// , e -> {
+		btnUpdatePopulationData.setTooltipText("Clicking this button, Updates and Merge Target Population for this Campaign");
 
 		btnGeneratePopulationData.addClickListener(e -> {
 			if (campaignDto != null) {
 				Dialog genDialog = new Dialog();
-				genDialog.setHeaderTitle(I18nProperties.getCaption("Generate Population Data | " +  campaignDto.getName()));
+				genDialog.setHeaderTitle(I18nProperties.getCaption("Generate and Override Population Data | " +  campaignDto.getName()));
 				genDialog.setWidth("40%");
 				
 				VerticalLayout dialogLayout = new VerticalLayout();
@@ -799,7 +801,7 @@ public class CampaignForm extends VerticalLayout {
 //				campaignName.setReadOnly(true);
 //				campaignName.setWidthFull();
 				
-				Paragraph note = new Paragraph("Please select the population target group to generate population targets for this campaign");
+				Paragraph note = new Paragraph("Please select the population target group to generate and override population targets for this campaign");
 				
 				List<AreaReferenceDto> regions;
 				regions = FacadeProvider.getAreaFacade().getAllActiveAsReference();
@@ -835,7 +837,7 @@ public class CampaignForm extends VerticalLayout {
 				dialogLayout.add(note, regionSelection, ageGroupsSelection, selectAllBtn);
 				genDialog.add(dialogLayout);
 
-				Button confirmBtn = new Button(I18nProperties.getCaption("Generate Data"), event -> {
+				Button confirmBtn = new Button(I18nProperties.getCaption("Generate & Override Data"), event -> {
 					if (ageGroupsSelection.getValue().isEmpty()) {
 						Notification.show("Please, Select at least one Region");
 						return;
@@ -848,11 +850,11 @@ public class CampaignForm extends VerticalLayout {
 
 					ConfirmDialog confirmGeneration = new ConfirmDialog();
 					confirmGeneration.setHeader(I18nProperties.getCaption("Confirm Generation"));
-					Paragraph textNote = new Paragraph("Are you sure you want to generate population data for the selected categories? This will overwrite existing data for this campaign.");
+					Paragraph textNote = new Paragraph("Are you sure you want to generate and override population data for the selected categories? This will overwrite existing data for this campaign.");
 					confirmGeneration.add(textNote);
 //					confirmGeneration.setText(I18nProperties.getString("Are you sure you want to generate population data for the selected categories? This will overwrite existing data for this campaign."));
 					confirmGeneration.setCancelable(true);
-					confirmGeneration.setConfirmText(I18nProperties.getCaption("Yes, Generate"));
+					confirmGeneration.setConfirmText(I18nProperties.getCaption("Yes, Generate & Override"));
 					confirmGeneration.setCancelText("No, Cancel");
 					confirmGeneration.setCancelButtonTheme(ButtonVariant.LUMO_ERROR.getVariantName());
 					confirmGeneration.addConfirmListener(confirmEvent -> {
@@ -861,7 +863,7 @@ public class CampaignForm extends VerticalLayout {
 						List<AreaReferenceDto> selectedRegions = new ArrayList<>(regionSelection.getValue());
 						List<AgeGroup> selectedGroups = new ArrayList<>(ageGroupsSelection.getValue());
 						if (FacadeProvider.getPopulationDataFacade().generatePopulationDataForCamapignByRegionAndPopulationType(campaignDto, selectedGroups, selectedRegions)) {
-							Notification.show("Population Data Generation Complete For Campaign");
+							Notification.show("Population Data Generation & Override Complete For Campaign");
 							
 							CampaignLogDto log = new CampaignLogDto();
 
@@ -893,7 +895,7 @@ public class CampaignForm extends VerticalLayout {
 
 							
 						} else {
-							Notification.show("Population Data Generation could not be Complete For Campaign");
+							Notification.show("Population Data Generation & Override could not be Complete For Campaign");
 						}
 					});
 					
@@ -931,12 +933,12 @@ public class CampaignForm extends VerticalLayout {
 		btnUpdatePopulationData.addClickListener(e -> {
 			if (campaignDto != null) {
 				Dialog genDialog = new Dialog();
-				genDialog.setHeaderTitle(I18nProperties.getCaption("Update Population Data | " +  campaignDto.getName()));
+				genDialog.setHeaderTitle(I18nProperties.getCaption("Merge Population Data | " +  campaignDto.getName()));
 				genDialog.setWidth("40%");
 				
 				VerticalLayout dialogLayout = new VerticalLayout();
 
-				Paragraph note = new Paragraph("Please select the population target group to update population targets for this campaign");
+				Paragraph note = new Paragraph("Please select the population target group to merge population targets for this campaign");
 				
 				List<AreaReferenceDto> regions;
 				regions = FacadeProvider.getAreaFacade().getAllActiveAsReference();
