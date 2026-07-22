@@ -80,11 +80,11 @@ public class ClusterDataImporter extends DataImporter {
 	private static final String D_CODE = "DCode";
 	private static final String C_CODE = "CCode";
 	private static final String INTERNATIONAL_BORDER = "International_Border";
-	public static final String POPULATIONDATA_0_4 = "PopulationData_0_59M";
-	public static final String POPULATIONDATA_5_10 = "PopulationData_60_120M";
-	public static final String POPULATIONDATA_4_23M = "Populationdata_4_23M";
-	public static final String MODALITY = "Modality";
-	public static final String STATUS = "Status";
+	private static final String POPULATIONDATA_0_4 = "PopulationData_0_59M";
+	private static final String POPULATIONDATA_5_10 = "PopulationData_60_120M";
+	private static final String POPULATIONDATA_4_23M = "Populationdata_4_23M";
+	private static final String MODALITY = "Modality";
+	private static final String STATUS = "Status";
 
 	private final CommunityFacade clusterFacade;
 

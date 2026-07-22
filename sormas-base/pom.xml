@@ -1255,9 +1255,7 @@
 			<activation>
 				<activeByDefault>false</activeByDefault>
 			</activation>
-			<modules>
-				<module>../sormas-keycloak-service-provider</module>
-			</modules>
+
 		</profile>
 
 		<profile>
@@ -1346,7 +1344,6 @@
 		<module>../sormas-ear</module>
 		<module>../sormas-rest</module>
 		<module>./dependencies/serverlibs.pom</module>
-		<module>../sormas-cargoserver</module>
 		<module>../apmis-flow</module>
 	</modules>
 </project>

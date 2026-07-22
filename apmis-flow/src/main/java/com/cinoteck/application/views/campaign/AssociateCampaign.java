@@ -122,6 +122,8 @@ public class AssociateCampaign extends VerticalLayout {
 	private Set<String> pendingSelectedClusters = new HashSet<>();
 	private Set<String> pendingDeselectedClusters = new HashSet<>();
 	boolean hasPendingChanges = false;
+	private final Span selectedClusterCountLabel = new Span("Selected clusters: 0");
+
 
 	private FooterRow footerRow;
 
@@ -700,8 +702,17 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 
 			showPendingChangesDialog();
 		});
+		
+		
+		selectedClusterCountLabel.getStyle().set("font-weight", "600");
+		selectedClusterCountLabel.getStyle().set("margin-left", "8px");
+		selectedClusterCountLabel.getStyle().set("align-self", "center");
 
-		HorizontalLayout buttonBar = new HorizontalLayout(refreshTreeGridBtn, saveChangesBtn, showPendingBtn);
+		HorizontalLayout buttonBar =
+		    new HorizontalLayout(refreshTreeGridBtn, saveChangesBtn, showPendingBtn, selectedClusterCountLabel);
+
+
+//		HorizontalLayout buttonBar = new HorizontalLayout(refreshTreeGridBtn, saveChangesBtn, showPendingBtn);
 		buttonBar.setSpacing(true);
 		buttonBar.setJustifyContentMode(JustifyContentMode.END);
 
@@ -718,6 +729,9 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 
 		assocCampaignLayout.add(gridWithButtonLayout, popEditForm);
 		assocCampaignLayout.setFlexGrow(4, gridWithButtonLayout);
+		
+		refreshSelectedClusterCountLabel(); 
+		
 		return assocCampaignLayout;
 	}
 	
@@ -1198,6 +1212,7 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 		}
 		treeGrid.getDataProvider().refreshAll();
 		updateFooterTotals(); // footer now uses updated root totals
+		refreshSelectedClusterCountLabel();
 	}
 
 	private void updateFooterTotals() {
@@ -1390,6 +1405,9 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 				treeGrid.getDataProvider().refreshAll();
 				updateAllParentSelections();
 			}
+			
+			refreshSelectedClusterCountLabel();
+
 		});
 
 //        confirmDialog.addConfirmListener(event -> {
@@ -1529,6 +1547,9 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 		} finally {
 			isInitializing = false;
 		}
+		
+		refreshSelectedClusterCountLabel();
+
 	}
 
 	/**
@@ -1627,7 +1648,7 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 		}
 		updateAllParentSelections(); // Ensure full propagation after init
 		recomputeAllTotals();
-		;
+		refreshSelectedClusterCountLabel();
 	}
 
 	private void initializeSelectionsRecursive(CampaignTreeGridDto item) {
@@ -1720,6 +1741,9 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 		} finally {
 			isInitializing = false;
 		}
+		
+		refreshSelectedClusterCountLabel();
+
 	}
 
 	private List<CampaignTreeGridDto> getChildrenForSelection(CampaignTreeGridDto item) {
@@ -1924,7 +1948,7 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 		popDataAge5_10.setErrorMessage("Negative Values not Allowed");
 
 		districtModality = new ComboBox<String>("Modality");
-		districtModality.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed");
+		districtModality.setItems("H2H", "M2M", "S2S", "M2MS2S", "HF2HF", "Mixed");
 
 		districtStatus = new ComboBox<String>("Status");
 		districtStatus.setItems("Additional", "Additional & Cold", "Cold", "Full Cluster", "HRMP only", "Partial",
@@ -2922,4 +2946,36 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 			collectSelectedItemsRecursive(child);
 		}
 	}
+	
+	private int getEffectiveSelectedClusterCount() {
+	    if (treeGrid == null || treeGrid.getTreeData() == null) {
+	        return 0;
+	    }
+
+	    Set<String> selected = new HashSet<>();
+	    for (CampaignTreeGridDto root : treeGrid.getTreeData().getRootItems()) {
+	        collectSelectedClustersFromNode(root, selected);
+	    }
+	    return selected.size();
+	}
+
+	private void collectSelectedClustersFromNode(CampaignTreeGridDto node, Set<String> selected) {
+	    if (node == null) return;
+
+	    if ("cluster".equals(node.getLevelAssessed())) {
+	        if ((node.getSelected() || "true".equalsIgnoreCase(node.getSavedData())) && node.getUuid() != null) {
+	            selected.add(node.getUuid());
+	        }
+	        return;
+	    }
+
+	    for (CampaignTreeGridDto child : getChildrenForSelection(node)) {
+	        collectSelectedClustersFromNode(child, selected);
+	    }
+	}
+
+	private void refreshSelectedClusterCountLabel() {
+	    selectedClusterCountLabel.setText("Selected clusters: " + getEffectiveSelectedClusterCount());
+	}
+
 }

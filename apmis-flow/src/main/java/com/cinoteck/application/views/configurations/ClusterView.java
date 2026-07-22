@@ -297,17 +297,17 @@ public class ClusterView extends VerticalLayout {
 				.setResizable(true).setSortable(true).setAutoWidth(true)
 				.setTooltipGenerator(e -> I18nProperties.getCaption(Captions.relevanceStatus));
 
-		grid.addColumn(CommunityDto::getPopulationData).setHeader(I18nProperties.getCaption("Target 0-59M"))
+		grid.addColumn(CommunityDto::getPopulationData).setHeader(I18nProperties.getCaption("Population 0-59M"))
 				.setResizable(true).setSortable(true).setAutoWidth(true)
-				.setTooltipGenerator(e -> I18nProperties.getCaption("Target 0-59M"));
+				.setTooltipGenerator(e -> I18nProperties.getCaption("Population 0-59M"));
 
-		grid.addColumn(CommunityDto::getPopulationData5_10).setHeader(I18nProperties.getCaption("Target 60-120M"))
+		grid.addColumn(CommunityDto::getPopulationData5_10).setHeader(I18nProperties.getCaption("Population 60-120M"))
 				.setResizable(true).setSortable(true).setAutoWidth(true)
-				.setTooltipGenerator(e -> I18nProperties.getCaption("Target 60-120M"));
+				.setTooltipGenerator(e -> I18nProperties.getCaption("Population 60-120M"));
 
-		grid.addColumn(CommunityDto::getPopulationData4_23M).setHeader(I18nProperties.getCaption("Target 4-23M"))
+		grid.addColumn(CommunityDto::getPopulationData4_23M).setHeader(I18nProperties.getCaption("Population 4-23M"))
 				.setResizable(true).setSortable(true).setAutoWidth(true)
-				.setTooltipGenerator(e -> I18nProperties.getCaption("Target 4-23M"));
+				.setTooltipGenerator(e -> I18nProperties.getCaption("Population 4-23M"));
 
 		grid.addColumn(CommunityDto::getModality).setHeader("Modality").setSortable(true).setResizable(true)
 				.setTooltipGenerator(e -> "Modality");
@@ -914,15 +914,15 @@ public class ClusterView extends VerticalLayout {
 		ComboBox<String> floatStatus = new ComboBox<>(I18nProperties.getCaption(Captions.floatStatus));
 		ComboBox<String> intlBorderStatus = new ComboBox<>(I18nProperties.getCaption("International Border"));
 
-		IntegerField populationData0_4 = new IntegerField(I18nProperties.getCaption("Target 0-59M"));
+		IntegerField populationData0_4 = new IntegerField(I18nProperties.getCaption("Population 0-59M"));
 		populationData0_4.setMin(0);
 		populationData0_4.setErrorMessage("Negative values are not allowed");
 
-		IntegerField populationData5_10 = new IntegerField(I18nProperties.getCaption("Target 60-120M"));
+		IntegerField populationData5_10 = new IntegerField(I18nProperties.getCaption("Population 60-120M"));
 		populationData5_10.setMin(0);
 		populationData5_10.setErrorMessage("Negative values are not allowed");
 
-		IntegerField populationData4_23M = new IntegerField(I18nProperties.getCaption("Target 4-23M"));
+		IntegerField populationData4_23M = new IntegerField(I18nProperties.getCaption("Population 4-23M"));
 		populationData4_23M.setMin(0);
 		populationData4_23M.setErrorMessage("Negative values are not allowed");
 
