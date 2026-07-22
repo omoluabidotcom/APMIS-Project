@@ -16,18 +16,12 @@
 package de.symeda.sormas.api.devicemanager;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.sql.Timestamp;
 import java.util.Set;
 
-import de.symeda.sormas.api.campaign.CampaignReferenceDto;
-import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.infrastructure.area.AreaReferenceDto;
-import de.symeda.sormas.api.infrastructure.community.CommunityReferenceDto;
 import de.symeda.sormas.api.infrastructure.district.DistrictReferenceDto; 
 import de.symeda.sormas.api.infrastructure.region.RegionReferenceDto;
-import de.symeda.sormas.api.user.UserCriteria;
-import de.symeda.sormas.api.user.UserRole;
-import de.symeda.sormas.api.user.UserType;
 import de.symeda.sormas.api.utils.criteria.BaseCriteria;
 
 public class DeviceMangerCriteria extends BaseCriteria implements Serializable {
@@ -39,6 +33,8 @@ public class DeviceMangerCriteria extends BaseCriteria implements Serializable {
 	private Set<AreaReferenceDto> area;
 	private Set<RegionReferenceDto> region;
 	private Set<DistrictReferenceDto> district;	
+	private Timestamp changeDateFrom;
+	private Timestamp changeDateTo;
     
 	public DeviceMangerCriteria region(Set<RegionReferenceDto> region) {
 		this.region = region;
@@ -66,5 +62,23 @@ public class DeviceMangerCriteria extends BaseCriteria implements Serializable {
 
 	public Set<DistrictReferenceDto> getDistrict() {
 		return district;
+	}
+
+	public Timestamp getChangeDateFrom() {
+		return changeDateFrom;
+	}
+
+	public void setChangeDateFrom(Timestamp changeDateFrom) {
+		this.changeDateFrom = changeDateFrom;
+	}
+
+	public Timestamp getChangeDateTo() {
+		return changeDateTo;
+	}
+
+	public void setChangeDateTo(Timestamp changeDateTo) {
+		this.changeDateTo = changeDateTo;
 	}	
+	
+	
 }

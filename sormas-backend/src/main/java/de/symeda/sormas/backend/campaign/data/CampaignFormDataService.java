@@ -117,9 +117,10 @@ public class CampaignFormDataService extends AdoServiceWithUserFilter<CampaignFo
 							cb.isTrue(root.get(CampaignFormData.ISPUBLISHED)));
 				} else {
 					filter = CriteriaBuilderHelper.and(cb, filter,
-							cb.equal(campaignJoin.get(Campaign.UUID), criteria.getCampaign().getUuid()),
+							cb.equal(campaignJoin.get(Campaign.UUID), criteria.getCampaign().getUuid())
 
-							cb.isTrue(root.get(CampaignFormData.ISVERIFIED)));
+//							cb.isTrue(root.get(CampaignFormData.ISVERIFIED))
+							);
 				}
 
 			} else {
@@ -145,8 +146,9 @@ public class CampaignFormDataService extends AdoServiceWithUserFilter<CampaignFo
 						cb.and(cb.equal(campaignFormJoin.get(CampaignFormMeta.FORM_TYPE),
 								criteria.getFormType().toLowerCase())),
 						cb.equal(campaignJoin.get(Campaign.UUID), criteria.getCampaign().getUuid()),
-						cb.isFalse(campaignJoin.get(Campaign.ARCHIVED)),
-						cb.isTrue(root.get(CampaignFormData.ISVERIFIED)));
+						cb.isFalse(campaignJoin.get(Campaign.ARCHIVED))
+//						,cb.isTrue(root.get(CampaignFormData.ISVERIFIED))
+						);
 				}
 
 			} else {
@@ -175,8 +177,9 @@ public class CampaignFormDataService extends AdoServiceWithUserFilter<CampaignFo
 				filter = CriteriaBuilderHelper.and(cb, filter,
 						cb.and(cb.equal(campaignFormJoin.get(CampaignFormMeta.FORM_TYPE),
 								criteria.getFormType().toLowerCase()), cb.isFalse(campaignJoin.get(Campaign.ARCHIVED)),
-								cb.isFalse(campaignJoin.get(Campaign.DELETED))),
-						cb.isTrue(root.get(CampaignFormData.ISVERIFIED)));
+								cb.isFalse(campaignJoin.get(Campaign.DELETED)))
+//						,cb.isTrue(root.get(CampaignFormData.ISVERIFIED))
+						);
 				}
 
 			} else {
@@ -200,10 +203,10 @@ public class CampaignFormDataService extends AdoServiceWithUserFilter<CampaignFo
 //				}else {
 				filter = CriteriaBuilderHelper.and(cb, filter,
 						cb.or(cb.equal(campaignJoin.get(Campaign.ARCHIVED), false),
-								cb.isNull(campaignJoin.get(Campaign.ARCHIVED))),
-						cb.isTrue(root.get(CampaignFormData.ISVERIFIED)))
-
-				;
+								cb.isNull(campaignJoin.get(Campaign.ARCHIVED)))
+//						,cb.isTrue(root.get(CampaignFormData.ISVERIFIED))
+						);
+				
 				}
 
 			} else {

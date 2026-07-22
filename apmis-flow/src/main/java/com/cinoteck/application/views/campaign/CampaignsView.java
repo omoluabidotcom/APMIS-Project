@@ -256,17 +256,6 @@ public class CampaignsView extends VerticalLayout {
 		dataView = grid.setItems(dataProvider);
 	}
 
-	private Component createStatusComponent(CampaignDto item) {
-
-		CampaignIndexDto indexDto = indexDataProvider.getItems().stream()
-				.filter(index -> index.getCampaignStatus().equals(item.getCampaignStatus())).findFirst().orElse(null);
-
-		String statusText = indexDto != null ? indexDto.getCampaignStatus() : "";
-		Label statusLabel = new Label(statusText);
-
-		return statusLabel;
-	}
-
 	private void createFilterBar() {
 		HorizontalLayout filterToggleLayout = new HorizontalLayout();
 		filterToggleLayout.setAlignItems(Alignment.END);

@@ -103,7 +103,10 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
         final View view = super.onCreateView(inflater, container, savedInstanceState);
 
 
-
+// TODO :
+        //This line causes a fatal app crash when listed form entry of a closed campaign is
+        //opened , add a check to review the status of the campaign first and if it is closed
+        //return a dialog notification to user informing them the campaign is closed for data entry
         final CampaignFormMeta campaignFormMeta = DatabaseHelper.getCampaignFormMetaDao().queryForId(record.getCampaignFormMeta().getId());
         final List<CampaignFormDataEntry> formValues = record.getFormValues();
 

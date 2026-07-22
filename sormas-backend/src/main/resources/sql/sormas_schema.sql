@@ -11720,6 +11720,13 @@ INSERT INTO schema_version (version_number, comment)
 VALUES (494, 'Addition of Modality and Status column to Cluster #937');
 
 
+ALTER TABLE public.campaigns ADD COLUMN vaccineType VARCHAR(50) NULL DEFAULT '';
+
+INSERT INTO schema_version (version_number, comment) VALUES (495, 'Addition of vaccine type column to Campaign');
+
+
+
+
 
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***
 
