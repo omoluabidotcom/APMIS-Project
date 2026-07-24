@@ -1881,7 +1881,7 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 		popDataAge5_10.setErrorMessage("Negative Values not Allowed");
 
 		ComboBox<String> districtModality = new ComboBox<String>("Modality");
-		districtModality.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed");
+		districtModality.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed", "M2M S2S");
 
 		ComboBox<String> districtStatus = new ComboBox<String>("Status");
 		districtStatus.setItems("Additional", "Additional & Cold", "Cold", "Full Cluster", "HRMP only", "Partial",
@@ -2349,7 +2349,7 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 
 
 		ComboBox<String> districtModalityCombo = new ComboBox<String>("Modality");
-		districtModalityCombo.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed");
+		districtModalityCombo.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed", "M2M S2S");
 
 		ComboBox<String> districtStatusCombo = new ComboBox<String>("Campaign Status");
 		districtStatusCombo.setItems("Additional", "Additional & Cold", "Cold", "Full Cluster", "HRMP only", "Partial",

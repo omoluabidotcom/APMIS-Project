@@ -1924,7 +1924,7 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 		popDataAge5_10.setErrorMessage("Negative Values not Allowed");
 
 		districtModality = new ComboBox<String>("Modality");
-		districtModality.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed", "M2MS2S");
+		districtModality.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed", "M2M S2S");
 
 		districtStatus = new ComboBox<String>("Status");
 		districtStatus.setItems("Additional", "Additional & Cold", "Cold", "Full Cluster", "HRMP only", "Partial",
