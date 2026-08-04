@@ -37,7 +37,8 @@ public enum FormAccess {
     EAG_LQAS("EAG-LQAS"),
     MODALITY_PRE("MODALITY_PRE"),
     MODALITY_POST("MODALITY_POST"),
-	VALIDATION("VALIDATION");
+	VALIDATION("VALIDATION"),
+	MICROPLANNING("Microplanning");
 
     private String displayName;
 

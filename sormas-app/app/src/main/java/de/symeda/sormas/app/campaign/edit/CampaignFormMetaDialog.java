@@ -95,7 +95,7 @@ public class CampaignFormMetaDialog extends FormDialog {
         // and code wont break in production because of it
         List<String> preCampaignsCategories = List.of("FLW", "MODALITY_PRE", "TRAINING");
         List<String> intraCampaignsCategories = List.of("ICM", "ADMIN", "EAG-ICM", "EAG-ADMIN");
-        List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION");
+        List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION" , "MICROPLANNING");
 
         for (CampaignFormMeta campaignFormMeta : allFormsForCampaign) {
             LocalDate currentDate = LocalDate.now();

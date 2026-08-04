@@ -646,6 +646,7 @@ public class UserForm extends FormLayout {
 		formAccessesList.add(FormAccess.EAG_LQAS);
 		formAccessesList.add(FormAccess.MODALITY_POST);
 		formAccessesList.add(FormAccess.VALIDATION);
+		formAccessesList.add(FormAccess.MICROPLANNING);
 		formAccess.setItems(formAccessesList);
 		// preCampformAccess.setItems(preCampformAccessesList);
 		// intraCampformAccess.setItems(intraCampformAccessesList);
