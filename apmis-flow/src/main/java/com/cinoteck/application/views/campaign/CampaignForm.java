@@ -148,12 +148,12 @@ public class CampaignForm extends VerticalLayout {
 
 	ComboBox vaccineType = new ComboBox<>(I18nProperties.getCaption("Vaccine Type"));
 
-	DatePicker preCampaignstartDate = new DatePicker("Pre-Campaign Start date");
-	DatePicker preCampaignendDate = new DatePicker("Pre-Campaign End Date");
-	DatePicker startDate = new DatePicker(I18nProperties.getCaption("Intra-Campaign " + Captions.Campaign_startDate));
-	DatePicker endDate = new DatePicker(I18nProperties.getCaption("Intra-Campaign " +Captions.Campaign_endDate));
-	DatePicker postCampaignstartDate = new DatePicker("Post-Campaign Start date");
-	DatePicker postCampaignendDate = new DatePicker("Post-Campaign End date");
+	DatePicker preCampaignstartDate = new DatePicker(I18nProperties.getCaption(Captions.PreCampaignStartdate));
+	DatePicker preCampaignendDate = new DatePicker(I18nProperties.getCaption(Captions.PreCampaignEnddate));
+	DatePicker startDate = new DatePicker(I18nProperties.getCaption(Captions.IntraCampaignStartdate));
+	DatePicker endDate = new DatePicker(I18nProperties.getCaption(Captions.IntraCampaignEnddate));
+	DatePicker postCampaignstartDate = new DatePicker(I18nProperties.getCaption(Captions.PostCampaignStartdate));
+	DatePicker postCampaignendDate = new DatePicker(I18nProperties.getCaption(Captions.PostCampaignEnddate));
 
 	TextField creatingUser = new TextField(I18nProperties.getCaption(Captions.Campaign_creatingUser));
 	TextField creatingUuid = new TextField(I18nProperties.getCaption(Captions.uuid));
@@ -474,7 +474,7 @@ public class CampaignForm extends VerticalLayout {
 		
 
 
-		round.setItems("NID", "SNID", "CRC", "SIA", "Mopping-Up", "Training");
+		round.setItems("NID", "SNID", "CRC", "SIA", "Mopping-Up", "Training", "IPV");
 		
 		vaccineType.setItems("bOPV", "mOPV ","nOPV","fIPV + bOPV", "IPV + bOPV");
 		
@@ -1863,7 +1863,7 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 		popDataAge5_10.setErrorMessage("Negative Values not Allowed");
 
 		ComboBox<String> districtModality = new ComboBox<String>("Modality");
-		districtModality.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed");
+		districtModality.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed", "M2M S2S");
 
 		ComboBox<String> districtStatus = new ComboBox<String>("Status");
 		districtStatus.setItems("Additional", "Additional & Cold", "Cold", "Full Cluster", "HRMP only", "Partial",
@@ -2331,7 +2331,7 @@ System.out.println(ee.getItem().getName() + "nameeeee");
 
 
 		ComboBox<String> districtModalityCombo = new ComboBox<String>("Modality");
-		districtModalityCombo.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed");
+		districtModalityCombo.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed", "M2M S2S");
 
 		ComboBox<String> districtStatusCombo = new ComboBox<String>("Campaign Status");
 		districtStatusCombo.setItems("Additional", "Additional & Cold", "Cold", "Full Cluster", "HRMP only", "Partial",

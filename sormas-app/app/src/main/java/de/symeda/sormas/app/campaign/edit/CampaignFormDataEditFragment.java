@@ -168,7 +168,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
     private ControlTextEditFieldRange errorSetterGlobal;
     List<String> preCampaignsCategories = List.of("FLW", "MODALITY_PRE", "TRAINING", "MONITORING");
     List<String> intraCampaignsCategories = List.of("ICM", "ADMIN", "EAG-ICM", "EAG-ADMIN");
-    List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION");
+    List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION", "MICROPLANNING");
     private TabHost mTabHost;
     private boolean daywise = false;
     public void addMapValue() {

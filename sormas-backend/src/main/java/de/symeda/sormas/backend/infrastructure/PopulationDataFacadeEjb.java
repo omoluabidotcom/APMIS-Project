@@ -1400,6 +1400,7 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
                 "        WHEN 'S2S' THEN 'S2S'\n" +
                 "        WHEN 'HF2HF' THEN 'HF2HF'\n" +
                 "        WHEN 'Mixed' THEN 'Mixed'\n" +
+                "        WHEN 'Mixed' THEN 'M2M S2S'\n" +
                 "        ELSE CAST(c.modality AS TEXT)\n" +
                 "    END,\n" +
                 

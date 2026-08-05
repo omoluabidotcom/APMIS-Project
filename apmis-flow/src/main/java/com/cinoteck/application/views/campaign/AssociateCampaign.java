@@ -1720,7 +1720,8 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 
 
 		districtModality = new ComboBox<String>("Modality");
-		districtModality.setItems("H2H", "M2M", "S2S", "M2MS2S", "HF2HF", "Mixed");
+
+		districtModality.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed", "M2M S2S");
 
 		districtStatus = new ComboBox<String>("Status");
 		districtStatus.setPlaceholder(I18nProperties.getCaption(Captions.selectStatus));
