@@ -122,7 +122,7 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
     private int max = 9;
     private String country = "Afghanistan";
     private final Map<String, CountryDetails> mapvalue = new HashMap<>();
-    List<String> preCampaignsCategories = List.of("FLW", "MODALITY_PRE", "TRAINING");
+    List<String> preCampaignsCategories = List.of("FLW", "MODALITY_PRE", "TRAINING", "MONITORING");
     List<String> intraCampaignsCategories = List.of("ICM", "ADMIN", "EAG-ICM", "EAG-ADMIN");
     List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION");
     private boolean daywise = false;

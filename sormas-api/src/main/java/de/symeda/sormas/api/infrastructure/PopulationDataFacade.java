@@ -96,17 +96,9 @@ public interface PopulationDataFacade {
 	void deletePopulationDataByClusterAndAgeGroup(List<Long> populationDataList, String campaignUUID, String ageGroup);
 	void updateClusterSelectionByClusterIds(List<String> clusterUuids, String campaignUUID, boolean selected);
 
-
-
-	
-
 	List<PopulationDataDto> fetchPopulationDataSelectionByUserDistricts(List<String> uuids);
 	
 	List<PopulationDataDto> fetchPopulationDataSelectionByCampaign(String clusterUuid);
-	
-	boolean generatePopulationDataForCamapign(String campaignUuid);
-
-	boolean generatePopulationDataForCamapign(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups);
 	
 	boolean generatePopulationDataForCamapignByRegionAndPopulationType(CampaignDto campaignDto, List<AgeGroup> selectedAgeGroups, List<AreaReferenceDto> selectedRegions);
 
