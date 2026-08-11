@@ -75,7 +75,7 @@ public final class DownloadFlowUtilityView {
 					Map<AgeGroup, Integer> ageGroupPositions = new HashMap<>();
 					int ageGroupIndex = columnNames.size();
 					for (AgeGroup ageGroup : AgeGroup.values()) {
-						if (ageGroup.equals(AgeGroup.AGE_0_4) || ageGroup.equals(AgeGroup.AGE_5_10) || ageGroup.equals(AgeGroup.AGE_4_23M)) {
+						if (ageGroup.equals(AgeGroup.AGE_0_4) || ageGroup.equals(AgeGroup.AGE_5_10) || ageGroup.equals(AgeGroup.AGE_4_23M) || ageGroup.equals(AgeGroup.AGE_4_59M)) {
 							columnNames.add(DataHelper.getSexAndAgeGroupString(ageGroup, null));
 							ageGroupPositions.put(ageGroup, ageGroupIndex);
 							ageGroupIndex += 1;
