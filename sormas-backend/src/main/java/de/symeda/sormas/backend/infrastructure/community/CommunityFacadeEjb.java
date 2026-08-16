@@ -995,6 +995,7 @@ public class CommunityFacadeEjb extends AbstractInfrastructureEjb<Community, Com
 		dto.setPopulationData(entity.getPopulationdata_0_4());
 		dto.setPopulationData5_10(entity.getPopulationdata_5_10());		
 		dto.setPopulationData4_23M(entity.getPopulationdata_4_23M());
+		dto.setPopulationData4_59M(entity.getPopulationdata_4_59M());
 		dto.setModality(entity.getModality());
 		dto.setStatus(entity.getStatus());
 
