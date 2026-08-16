@@ -4,7 +4,7 @@
 name: Java CI with Maven
 
 env:
-  JAVA: 11
+  JAVA: 17
   PRIVILEGED_RUN: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/development') || github.event.pull_request.head.repo.full_name == github.repository }}
 
 on:
@@ -24,7 +24,7 @@ jobs:
         # The token is only needed for privileged actions from within the repo, so no need
         # to make it available on 3rd party PRs
         if: ${{ fromJSON(env.PRIVILEGED_RUN) }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.SORMAS_VITAGROUP_TOKEN }}
 
@@ -33,19 +33,26 @@ jobs:
         # The token is only needed for privileged actions from within the repo, so no need
         # to make it available on 3rd party PRs
         if: ${{ !fromJSON(env.PRIVILEGED_RUN) }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Set up JDK ${{ env.JAVA }}
-        uses: actions/setup-java@v1
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          java-version: ${{ env.JAVA }}
+            distribution: zulu
+            java-version: '17'
+            
+      - name: Display Java version
+        run: java -version
+
+      - name: Display Maven version
+        run: mvn -version
 
       - name: Cache Maven packages
         # Check if PR results from the repository: if yes, it is safe to cache dependencies.
         # This is to keep us safe from cache poisoning through 3rd party PRs.
         if: ${{ fromJSON(env.PRIVILEGED_RUN) }}
         # FIXME(@JonasCir) #3733 remove '**/*.pom' once serverlib pom is renamed
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-java-${{ env.JAVA }}-m2-${{ hashFiles('**/pom.xml', '**/*.pom') }}
