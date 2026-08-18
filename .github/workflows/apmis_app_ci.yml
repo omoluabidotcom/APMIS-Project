@@ -90,6 +90,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Ensure Gradle wrapper is executable
+        working-directory: ./sormas-app
+        run: chmod +x gradlew
+
       - name: Run unit tests
         working-directory: ./sormas-app
         run: ./gradlew :app:clean :app:assembleDebug :app:test
