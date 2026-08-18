@@ -96,7 +96,7 @@ jobs:
 
       - name: Run unit tests
         working-directory: ./sormas-app
-        run: ./gradlew :app:clean :app:assembleDebug :app:test
+        run: ./gradlew :app:clean :app:assembleDebug :app:testDebugUnitTest -x processReleaseGoogleServices
 
       - name: AVD cache
         if: ${{ fromJSON(env.PRIVILEGED_RUN) }}
