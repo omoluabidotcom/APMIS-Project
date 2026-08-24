@@ -126,6 +126,11 @@ public class AssociateCampaign extends VerticalLayout {
 	boolean hasPendingChanges = false;
 	private final Span selectedClusterCountLabel = new Span("Selected clusters: 0");
 
+	
+	private boolean hasUnsavedChanges = false;
+	private boolean suppressUnsavedTracking = false;
+	private Runnable onDirtyStateChanged;
+
 
 	private FooterRow footerRow;
 
@@ -146,10 +151,6 @@ public class AssociateCampaign extends VerticalLayout {
 	}
 	
 
-/**
- * Updates the district-level delete checkbox state based on its child clusters
- * This ensures the district checkbox reflects the state of ALL children
- */
 private void updateDistrictDeleteCheckboxState(CampaignTreeGridDto cluster) {
     if (cluster == null) return;
     
@@ -361,6 +362,7 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 					}
 
 					hasPendingChanges = true;
+					 markDirty();
 
 					// If a cluster was clicked, only walk upward
 					if ("cluster".equals(currentDto.getLevelAssessed())) {
@@ -1205,7 +1207,7 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 				pendingSelectedClusters.clear();
 				pendingDeselectedClusters.clear();
 				hasPendingChanges = false;
-
+				markClean();
 				treeGrid.getDataProvider().refreshAll();
 				updateAllParentSelections();
 			}
@@ -1278,7 +1280,7 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 			pendingSelectedClusters.clear();
 			pendingDeselectedClusters.clear();
 			hasPendingChanges = false;
-
+			markClean();
 			Notification.show("Pending changes discarded", 2000, Notification.Position.MIDDLE)
 					.addThemeVariants(NotificationVariant.LUMO_ERROR);
 
@@ -1721,7 +1723,7 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 
 		districtModality = new ComboBox<String>("Modality");
 
-		districtModality.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed", "M2M S2S");
+		districtModality.setItems("H2H", "M2M", "S2S", "HF2HF", "Mixed", "M2M S2S", "General");
 
 		districtStatus = new ComboBox<String>("Status");
 		districtStatus.setPlaceholder(I18nProperties.getCaption(Captions.selectStatus));
@@ -2555,7 +2557,7 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 
 		});
 
-		VerticalLayout dialogLayout = new VerticalLayout(district, popData, popData5_10, popData4_23M,
+		VerticalLayout dialogLayout = new VerticalLayout(district, popData, popData5_10, popData4_23M, popData4_59M,
 				districtModalityCombo, districtStatusCombo);
 		dialogLayout.setPadding(false);
 		dialogLayout.setSpacing(false);
@@ -2806,5 +2808,50 @@ private CampaignTreeGridDto findParentDistrictRobust(CampaignTreeGridDto cluster
 	private void refreshSelectedClusterCountLabel() {
 	    selectedClusterCountLabel.setText("Selected clusters: " + getEffectiveSelectedClusterCount());
 	}
+	
+	
+	public boolean hasUnsavedChanges() {
+	    return hasUnsavedChanges;
+	}
+	
+	public void discardUnsavedChangesForNavigation() {
+	    if (hasPendingChanges) {
+	        discardPendingChanges(); // your existing method
+	    }
+	}
+
+
+	public void setOnDirtyStateChanged(Runnable onDirtyStateChanged) {
+	    this.onDirtyStateChanged = onDirtyStateChanged;
+	}
+
+	private void markDirty() {
+	    if (!suppressUnsavedTracking && !hasUnsavedChanges) {
+	        hasUnsavedChanges = true;
+	        if (onDirtyStateChanged != null) {
+	            onDirtyStateChanged.run();
+	        }
+	    }
+	}
+
+	private void markClean() {
+	    if (hasUnsavedChanges) {
+	        hasUnsavedChanges = false;
+	        if (onDirtyStateChanged != null) {
+	            onDirtyStateChanged.run();
+	        }
+	    }
+	}
+
+	private void runWithoutDirtyTracking(Runnable action) {
+	    boolean prev = suppressUnsavedTracking;
+	    suppressUnsavedTracking = true;
+	    try {
+	        action.run();
+	    } finally {
+	        suppressUnsavedTracking = prev;
+	    }
+	}
+
 
 }

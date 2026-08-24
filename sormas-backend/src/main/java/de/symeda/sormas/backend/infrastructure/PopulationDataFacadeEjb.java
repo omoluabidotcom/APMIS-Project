@@ -528,12 +528,12 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 				+ District.TABLE_NAME + "." + District.EXTERNAL_ID + " AS dcode, "
 				+ Community.TABLE_NAME + "." + Community.NAME + " AS communityname," 
 				+ Campaign.TABLE_NAME + "." + Campaign.UUID + " AS campaignname, " 
-				
-				+ PopulationData.AGE_GROUP + ", "
-				+ PopulationData.SEX + ", " 
 				+ PopulationData.TABLE_NAME  + "." + PopulationData.MODALITY  + " AS modality, "   
 				+ PopulationData.DISTRICT_STATUS  + ", "
+				+ PopulationData.AGE_GROUP + ", " 
+				+ PopulationData.SEX + ", " 
 				+ PopulationData.POPULATION 
+				
 				+ " FROM " + PopulationData.TABLE_NAME
 				+ " LEFT JOIN " + Campaign.TABLE_NAME + " ON " + PopulationData.CAMPAIGN + "_id = "
 				+ Campaign.TABLE_NAME + "." + Campaign.ID
@@ -1400,13 +1400,11 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
                 "        WHEN 'S2S' THEN 'S2S'\n" +
                 "        WHEN 'HF2HF' THEN 'HF2HF'\n" +
                 "        WHEN 'Mixed' THEN 'Mixed'\n" +
-                "        WHEN 'Mixed' THEN 'M2M S2S'\n" +
+                "        WHEN 'M2M S2S' THEN 'M2M S2S'\n" +
+                "        WHEN 'GENERAL' THEN 'General'\n" +
                 "        ELSE CAST(c.modality AS TEXT)\n" +
                 "    END,\n" +
-                
-                
-//					"    c.status,\n" + 
-//					"    c.modality,\n" + 
+
 					"     true \n" + 
 					"FROM community c\n" + 
 					"JOIN district d ON d.id = c.district_id\n" + 
@@ -1418,16 +1416,18 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 					"    VALUES\n" + 
 					"        ('AGE_0_4',  c.populationdata_0_4),\n" + 
 					"        ('AGE_5_10', c.populationdata_5_10),\n" + 
-					"        ('AGE_4_23M', c.populationdata_4_23M)\n" + 
+					"        ('AGE_4_23M', c.populationdata_4_23M),\n" + 
 					"        ('AGE_4_59M', c.populationdata_4_59M)\n" + 
 
 					") AS ag(agegroup, population)\n" + 
-					"WHERE c.archived = false AND a.uuid IN (:selectedRegionUuids);";
+					"WHERE c.archived = false AND a.uuid IN (:selectedRegionUuids)";
 
 			Query query = em.createNativeQuery(sql);
 			query.setParameter("campaignUuid", campaignDto.getUuid());
 			query.setParameter("selectedGroups", selectedGroupNames);
 			query.setParameter("selectedRegionUuids", selectedRegionUuids);
+			
+			System.out.println("Generated SQL to generate populationdata : " + sql);
 
 			query.executeUpdate();
 			
@@ -1487,7 +1487,7 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	            "       VALUES " +
 	            "           ('AGE_0_4', c.populationdata_0_4), " +
 	            "           ('AGE_5_10', c.populationdata_5_10), " +
-	            "           ('AGE_4_23M', c.populationdata_4_23m) " +
+	            "           ('AGE_4_23M', c.populationdata_4_23m), " +
 	            "           ('AGE_4_59M', c.populationdata_4_59m) " +
 
 	            "   ) AS ag(agegroup, population) " +
@@ -1526,6 +1526,9 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 	            "       WHEN c.modality = 'S2S' THEN 'S2S' " +
 	            "       WHEN c.modality = 'HF2HF' THEN 'HF2HF' " +
 	            "       WHEN c.modality = 'Mixed' THEN 'Mixed' " +
+	            "       WHEN c.modality = 'M2MS2S' THEN 'M2M S2S' " +
+	            "       WHEN c.modality = 'M2MS2S' THEN 'M2M S2S' " +
+	            "       WHEN c.modality = 'GENERAL' THEN 'General' " +
 	            "       ELSE COALESCE(CAST(c.modality AS varchar), '') " +
 	            "   END AS modality, " +
 	            "   TRUE " +

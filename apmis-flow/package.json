@@ -382,12 +382,12 @@
     "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
     "lit": "$lit",
     "@polymer/polymer": "$@polymer/polymer",
-    "@vaadin-component-factory/vcf-nav": "$@vaadin-component-factory/vcf-nav",
     "@vaadin-component-factory/vcf-tooltip": "$@vaadin-component-factory/vcf-tooltip",
     "date-fns": "$date-fns",
-    "lumo-css-framework": "$lumo-css-framework",
-    "line-awesome": "$line-awesome",
     "chokidar": "$chokidar",
-    "highcharts": "$highcharts"
+    "highcharts": "$highcharts",
+    "@vaadin-component-factory/vcf-nav": "$@vaadin-component-factory/vcf-nav",
+    "lumo-css-framework": "$lumo-css-framework",
+    "line-awesome": "$line-awesome"
   }
 }

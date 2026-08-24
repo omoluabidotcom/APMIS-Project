@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.Objects;
 
@@ -77,6 +78,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.component.shared.Tooltip;
@@ -89,6 +91,8 @@ import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.server.VaadinService;
@@ -102,6 +106,8 @@ import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
+import de.symeda.sormas.api.campaign.data.CampaignFormImageSource;
+import de.symeda.sormas.api.campaign.data.CampaignFormImageValue;
 import de.symeda.sormas.api.campaign.data.translation.TranslationElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormElementStyle;
@@ -148,6 +154,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 	private Map<String, String> userTranslationsHint = new HashMap<String, String>();
 	private Map<String, String> userOptTranslations = new HashMap<String, String>();
 	Map<String, Component> fields;
+	private final Map<String, CampaignFormImageValue> imageFieldValues = new HashMap<>();
 
 	private Map<String, String> optionsValues = new HashMap<String, String>();
 	private Map<String, String> optionsOrder = new HashMap<String, String>();
@@ -2156,6 +2163,22 @@ criteria.setCampaign(campaignReferenceDto);
 						validEmailField.setErrorMessage("Enter a valid email address");
 						validEmailField.setClearButtonVisible(true);
 
+					} else if (type == CampaignFormElementType.IMAGE) {
+						TextField imageStateField = new TextField();
+						imageStateField.setVisible(true);
+						imageStateField.setId(formElement.getId());
+
+						VerticalLayout imageUploadLayout = buildImageUploadField(formElement, value, imageStateField);
+						vertical.add(imageUploadLayout);
+						fields.put(formElement.getId(), imageStateField);
+
+						if (dependingOnId != null && dependingOnValues != null) {
+							setVisibilityDependency(imageStateField, dependingOnId, dependingOnValues, type,
+									formElement.isImportant());
+						} else {
+							imageStateField.setRequiredIndicatorVisible(formElement.isImportant());
+						}
+
 					} else if (type == CampaignFormElementType.TIME) {
 
 						TimePicker timePicker = new TimePicker();
@@ -2664,6 +2687,12 @@ criteria.setCampaign(campaignReferenceDto);
 			}
 			break;
 
+		case IMAGE:
+			if (field instanceof TextField) {
+				((TextField) field).setValue(value != null ? value.toString() : "");
+			}
+			break;
+
 		default:
 			throw new IllegalArgumentException(type.toString());
 		}
@@ -3120,6 +3149,11 @@ criteria.setCampaign(campaignReferenceDto);
 		return fields.keySet().stream().map(id -> {
 			Component field = fields.get(id);
 
+			if (imageFieldValues.containsKey(id)) {
+				CampaignFormImageValue imageValue = imageFieldValues.get(id);
+				return new CampaignFormDataEntry(id, imageValue != null ? imageValue.toMap() : null);
+			}
+
 			if (field instanceof DatePicker) {
 //				logger.debug(((DatePicker) field).getValue() + "______________________))");
 //
@@ -3184,6 +3218,243 @@ criteria.setCampaign(campaignReferenceDto);
 				}
 			}
 		}).collect(Collectors.toList());
+	}
+
+	private VerticalLayout buildImageUploadField(CampaignFormElement formElement, Object existingValue,
+			TextField imageStateField) {
+		VerticalLayout container = new VerticalLayout();
+		container.setPadding(false);
+		container.setSpacing(true);
+
+		Label caption = new Label(get18nCaption(formElement.getId(), formElement.getCaption()));
+		Label status = new Label("No image selected");
+		status.getStyle().set("font-size", "12px");
+
+		MemoryBuffer buffer = new MemoryBuffer();
+		Upload upload = new Upload(buffer);
+		upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/webp", ".jpg", ".jpeg", ".png", ".webp");
+		upload.setDropAllowed(true);
+		upload.setMaxFiles(formElement.getImageMaxCount() != null ? formElement.getImageMaxCount() : 1);
+
+		ProgressBar progressBar = new ProgressBar();
+		progressBar.setVisible(false);
+		progressBar.setMin(0);
+		progressBar.setMax(1);
+
+		com.vaadin.flow.component.html.Image inlineThumbnail = new com.vaadin.flow.component.html.Image();
+		inlineThumbnail.setWidth("140px");
+		inlineThumbnail.setHeight("100px");
+		inlineThumbnail.getStyle().set("object-fit", "cover");
+		inlineThumbnail.getStyle().set("border", "1px solid #d9d9d9");
+		inlineThumbnail.getStyle().set("border-radius", "4px");
+		inlineThumbnail.getStyle().set("cursor", "pointer");
+		inlineThumbnail.setVisible(false);
+		inlineThumbnail.getElement().addEventListener("click", e -> {
+			if (StringUtils.isNotBlank(inlineThumbnail.getSrc())) {
+				openImagePreviewDialog(inlineThumbnail.getSrc());
+			}
+		});
+
+		Button viewButton = new Button("View image");
+		viewButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+		viewButtonVisibility(viewButton, false);
+
+		Button removeButton = new Button("Remove image");
+		removeButton.addClickListener(e -> {
+			imageFieldValues.remove(formElement.getId());
+			imageStateField.clear();
+			status.setText("No image selected");
+			clearInlineThumbnail(inlineThumbnail);
+			upload.setVisible(true);
+			removeButtonVisibility(removeButton, false);
+			viewButtonVisibility(viewButton, false);
+		});
+		removeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+		removeButtonVisibility(removeButton, false);
+
+		upload.addStartedListener(event -> {
+			progressBar.setVisible(true);
+			progressBar.setValue(0);
+		});
+
+		upload.addProgressListener(event -> {
+			if (event.getContentLength() > 0) {
+				progressBar.setValue(Math.min(1d, (double) event.getReadBytes() / (double) event.getContentLength()));
+			}
+		});
+
+		upload.addSucceededListener(event -> {
+			try {
+				byte[] imageBytes = buffer.getInputStream().readAllBytes();
+				CampaignFormImageValue imageValue = new CampaignFormImageValue();
+				imageValue.setOriginalFileName(event.getFileName());
+				imageValue.setMimeType(event.getMIMEType());
+				imageValue.setOriginalSizeBytes((long) event.getContentLength());
+				imageValue.setCompressedSizeBytes((long) event.getContentLength());
+				imageValue.setSource(CampaignFormImageSource.WEB_UPLOAD);
+
+				if (openData && StringUtils.isNotBlank(uuidForm)) {
+					imageValue = FacadeProvider.getCampaignFormImageFacade().uploadImage(uuidForm, imageValue, imageBytes);
+				} else {
+					imageValue.setLocalId("web-" + UUID.randomUUID());
+					imageValue = FacadeProvider.getCampaignFormImageFacade().normalizeImageValue(imageValue,
+							buildCurrentNamingContext());
+				}
+
+				imageFieldValues.put(formElement.getId(), imageValue);
+				imageStateField.setValue(imageValue.isUploaded() ? imageValue.getImageId() : imageValue.getLocalId());
+				status.setText("Selected: " + safeImageName(imageValue));
+				setInlineThumbnail(inlineThumbnail, imageValue.getMimeType(), imageBytes);
+				upload.setVisible(false);
+				removeButtonVisibility(removeButton, true);
+				viewButtonVisibility(viewButton, imageValue.isUploaded());
+			} catch (Exception ex) {
+				logger.error("Image upload handling failed", ex);
+				Notification.show("Image upload failed: " + ex.getMessage(), 5000, Position.MIDDLE)
+						.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			}
+			progressBar.setVisible(false);
+		});
+
+		upload.addFileRejectedListener(event -> {
+			progressBar.setVisible(false);
+			viewButtonVisibility(viewButton, false);
+			Notification.show(event.getErrorMessage(), 5000, Position.MIDDLE)
+					.addThemeVariants(NotificationVariant.LUMO_ERROR);
+		});
+
+		prefillImageFieldValue(formElement.getId(), existingValue, imageStateField, status, removeButton, viewButton,
+				inlineThumbnail, upload);
+
+		viewButton.addClickListener(e -> {
+			CampaignFormImageValue current = imageFieldValues.get(formElement.getId());
+			if (current == null || !current.isUploaded() || StringUtils.isBlank(current.getImageId())) {
+				Notification.show("No uploaded image to preview", 3000, Position.MIDDLE);
+				return;
+			}
+
+			try {
+				byte[] bytes = FacadeProvider.getCampaignFormImageFacade().readImage(current.getImageId());
+				if (bytes == null || bytes.length == 0) {
+					Notification.show("Image content not found", 3000, Position.MIDDLE);
+					return;
+				}
+
+				String mime = StringUtils.isNotBlank(current.getMimeType()) ? current.getMimeType() : "image/jpeg";
+				openImagePreviewDialog(createImageDataUrl(mime, bytes));
+			} catch (Exception ex) {
+				Notification.show("Failed to load image: " + ex.getMessage(), 5000, Position.MIDDLE)
+					.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			}
+		});
+
+		container.add(caption, upload, progressBar, status, inlineThumbnail, viewButton, removeButton);
+		return container;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void prefillImageFieldValue(String fieldId, Object existingValue, TextField imageStateField, Label status,
+			Button removeButton, Button viewButton, com.vaadin.flow.component.html.Image inlineThumbnail, Upload upload) {
+		if (existingValue == null) {
+			upload.setVisible(true);
+			return;
+		}
+
+		try {
+			CampaignFormImageValue imageValue = null;
+			if (existingValue instanceof Map<?, ?>) {
+				imageValue = CampaignFormImageValue.fromMap((Map<?, ?>) existingValue);
+			} else if (existingValue instanceof List<?>) {
+				List<?> values = (List<?>) existingValue;
+				if (!values.isEmpty() && values.get(0) instanceof Map<?, ?>) {
+					imageValue = CampaignFormImageValue.fromMap((Map<?, ?>) values.get(0));
+				}
+			}
+
+			if (imageValue != null && imageValue.hasIdentifier()) {
+				imageFieldValues.put(fieldId, imageValue);
+				imageStateField.setValue(imageValue.isUploaded() ? imageValue.getImageId() : imageValue.getLocalId());
+				status.setText("Selected: " + safeImageName(imageValue));
+				upload.setVisible(false);
+				if (imageValue.isUploaded() && StringUtils.isNotBlank(imageValue.getImageId())) {
+					try {
+						byte[] bytes = FacadeProvider.getCampaignFormImageFacade().readImage(imageValue.getImageId());
+						if (bytes != null && bytes.length > 0) {
+							String mime = StringUtils.isNotBlank(imageValue.getMimeType()) ? imageValue.getMimeType()
+									: "image/jpeg";
+							setInlineThumbnail(inlineThumbnail, mime, bytes);
+						}
+					} catch (Exception ex) {
+						logger.warn("Unable to load inline thumbnail for {}", fieldId, ex);
+					}
+				}
+				removeButtonVisibility(removeButton, true);
+				viewButtonVisibility(viewButton, imageValue.isUploaded());
+			}
+		} catch (Exception e) {
+			logger.warn("Unable to preload image field value for {}", fieldId, e);
+		}
+	}
+
+	private String safeImageName(CampaignFormImageValue imageValue) {
+		if (StringUtils.isNotBlank(imageValue.getGeneratedFileName())) {
+			return imageValue.getGeneratedFileName();
+		}
+		if (StringUtils.isNotBlank(imageValue.getOriginalFileName())) {
+			return imageValue.getOriginalFileName();
+		}
+		return "image";
+	}
+
+	private String createImageDataUrl(String mimeType, byte[] bytes) {
+		String resolvedMimeType = StringUtils.isNotBlank(mimeType) ? mimeType : "image/jpeg";
+		String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
+		return "data:" + resolvedMimeType + ";base64," + base64;
+	}
+
+	private void setInlineThumbnail(com.vaadin.flow.component.html.Image inlineThumbnail, String mimeType, byte[] bytes) {
+		inlineThumbnail.setSrc(createImageDataUrl(mimeType, bytes));
+		inlineThumbnail.setAlt("Image thumbnail");
+		inlineThumbnail.setVisible(true);
+	}
+
+	private void clearInlineThumbnail(com.vaadin.flow.component.html.Image inlineThumbnail) {
+		inlineThumbnail.setSrc("");
+		inlineThumbnail.setVisible(false);
+	}
+
+	private void openImagePreviewDialog(String dataUrl) {
+		com.vaadin.flow.component.dialog.Dialog dlg = new com.vaadin.flow.component.dialog.Dialog();
+		dlg.setWidth("70vw");
+		dlg.setHeight("80vh");
+
+		com.vaadin.flow.component.html.Image preview = new com.vaadin.flow.component.html.Image(dataUrl, "Uploaded image");
+		preview.setWidth("100%");
+		preview.getStyle().set("object-fit", "contain");
+
+		Button close = new Button("Close", ev -> dlg.close());
+		dlg.add(preview, close);
+		dlg.open();
+	}
+
+	private void removeButtonVisibility(Button removeButton, boolean visible) {
+		removeButton.setVisible(visible);
+	}
+
+	private void viewButtonVisibility(Button viewButton, boolean visible) {
+		viewButton.setVisible(visible);
+	}
+
+	private de.symeda.sormas.api.campaign.data.CampaignFormImageNamingContext buildCurrentNamingContext() {
+		de.symeda.sormas.api.campaign.data.CampaignFormImageNamingContext context = new de.symeda.sormas.api.campaign.data.CampaignFormImageNamingContext();
+		context.setRegion(cbArea.getValue() != null ? cbArea.getValue().getCaption() : null);
+		context.setProvince(cbRegion.getValue() != null ? cbRegion.getValue().getCaption() : null);
+		context.setDistrict(cbDistrict.getValue() != null ? cbDistrict.getValue().getCaption() : null);
+		context.setClusterName(cbCommunity.getValue() != null ? cbCommunity.getValue().getCaption() : null);
+		context.setClusterNumber(cbCommunity.getValue() != null && cbCommunity.getValue().getNumber() != null
+				? String.valueOf(cbCommunity.getValue().getNumber())
+				: null);
+		return context;
 	}
 
 	private void checkForNegativeValuesSimple() {
