@@ -128,15 +128,25 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           arch: x86_64
+          target: google_apis
+          profile: Nexus 6
           ram-size: 2048M
           heap-size: 512M
+          disk-size: 4096M
           force-avd-creation: false
+          emulator-boot-timeout: 900
           emulator-options: >-
             -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio
             -no-boot-anim -camera-back none -memory 2048
           disable-animations: true
           working-directory: ./sormas-app
-          script: ./gradlew connectedAndroidTest
+          script: |
+            adb wait-for-device
+            adb devices
+            adb shell settings put global window_animation_scale 0
+            adb shell settings put global transition_animation_scale 0
+            adb shell settings put global animator_duration_scale 0
+            ./gradlew :app:connectedDebugAndroidTest -x processReleaseGoogleServices --stacktrace info
 
       - name: Run mobsfscan
         uses: MobSF/mobsfscan@main
