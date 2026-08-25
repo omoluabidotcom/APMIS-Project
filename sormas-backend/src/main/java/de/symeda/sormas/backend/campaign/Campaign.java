@@ -50,6 +50,7 @@ public class Campaign extends CoreAdo {
 	public static final String NAME = "name";
 	public static final String ROUND = "round";
 	public static final String DESCRIPTION = "description";
+	public static final String VACCINETYPE = "vaccineType";
 	public static final String CAMPAIGN_YEAR = "campaignYear";
 
 	public static final String PRE_CAMPAIGN_START_DATE = "preCampStartDate";
@@ -68,6 +69,8 @@ public class Campaign extends CoreAdo {
 	private String name;
 	private String round;
 	private String description;
+	private String vaccineType;
+
 	private String campaignYear;
 
 	private Date preCampStartDate;
@@ -293,6 +296,15 @@ public class Campaign extends CoreAdo {
 
 	public void setPostCampEndDate(Date postCampEndDate) {
 		this.postCampEndDate = postCampEndDate;
+	}
+
+	@Column(length = 50)
+	public String getVaccineType() {
+		return vaccineType;
+	}
+
+	public void setVaccineType(String vaccineType) {
+		this.vaccineType = vaccineType;
 	}
 
 

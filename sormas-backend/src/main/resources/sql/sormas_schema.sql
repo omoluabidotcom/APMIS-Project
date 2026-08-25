@@ -11720,6 +11720,22 @@ INSERT INTO schema_version (version_number, comment)
 VALUES (494, 'Addition of Modality and Status column to Cluster #937');
 
 
+ALTER TABLE public.campaigns ADD COLUMN vaccineType VARCHAR(50) NULL DEFAULT '';
+INSERT INTO schema_version (version_number, comment) VALUES (495, 'Addition of vaccine type column to Campaign');
+
+
+ALTER TABLE community ADD COLUMN populationdata_4_59M int8 NOT NULL DEFAULT 0;
+
+UPDATE public.populationdata SET agegroup = 'AGE_4_59M' WHERE agegroup = 'AGE_4_23M';
+
+UPDATE public.community SET populationdata_4_59m = populationdata_4_59m + populationdata_4_23m, populationdata_4_23m = 0 WHERE populationdata_4_23m <> 0;
+
+INSERT INTO schema_version (version_number, comment) VALUES (496, 'Addition of Population target 4-59m column to Campaign');
+
+
+
+
+
 
 -- *** Insert new sql commands BEFORE this line. Remember to always consider _history tables. ***
 

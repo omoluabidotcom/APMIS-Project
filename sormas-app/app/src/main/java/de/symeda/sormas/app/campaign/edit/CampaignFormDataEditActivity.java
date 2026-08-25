@@ -78,9 +78,9 @@ public class CampaignFormDataEditActivity extends BaseEditActivity<CampaignFormD
     private CampaignFormDataCriteria criteria = new CampaignFormDataCriteria();
     private final ExpressionParser expressionParser = new SpelExpressionParser();
 
-    List<String> preCampaignsCategories = List.of("FLW", "MODALITY_PRE", "TRAINING");
+    List<String> preCampaignsCategories = List.of("FLW", "MODALITY_PRE", "TRAINING", "MONITORING");
     List<String> intraCampaignsCategories = List.of("ICM", "ADMIN", "EAG-ICM", "EAG-ADMIN");
-    List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION", "MICROPLANNING");
+    List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION");
 
     private Locale currentLocale;
 

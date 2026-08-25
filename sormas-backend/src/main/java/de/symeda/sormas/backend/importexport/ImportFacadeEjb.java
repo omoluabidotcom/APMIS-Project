@@ -480,6 +480,7 @@ System.out.println("YESSSS");
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TOTAL_AGE_0_4", Integer.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TOTAL_AGE_5_10", Integer.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TOTAL_AGE_4_23M", Integer.class, separator));
+			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TOTAL_AGE_4_59M", Integer.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, PopulationDataDto.MODALITY, String.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, PopulationDataDto.DISTRICT_STATUS, String.class, separator));
 
@@ -505,6 +506,7 @@ System.out.println("YESSSS");
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TARGET_0_59M", Integer.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TARGET_60_120M", Integer.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TARGET_4_23M", Integer.class, separator));
+			importColumns.add(ImportColumn.from(PopulationDataDto.class, "TARGET_4_59M", Integer.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, PopulationDataDto.MODALITY, String.class, separator));
 			importColumns.add(ImportColumn.from(PopulationDataDto.class, PopulationDataDto.CAMPAIGN_STATUS, String.class, separator));
 
@@ -617,6 +619,8 @@ System.out.println("YESSSS");
 		importColumns.add(ImportColumn.from(CommunityDto.class, "PopulationData_0_59M",Integer.class, separator));
 		importColumns.add(ImportColumn.from(CommunityDto.class, "PopulationData_60_120M",Integer.class, separator));
 		importColumns.add(ImportColumn.from(CommunityDto.class, "PopulationData_4_23M",Integer.class, separator));
+		importColumns.add(ImportColumn.from(CommunityDto.class, "PopulationData_4_59M",Integer.class, separator));
+
 		importColumns.add(ImportColumn.from(CommunityDto.class, "Modality",String.class, separator));
 		importColumns.add(ImportColumn.from(CommunityDto.class, "Status",String.class, separator));
 		

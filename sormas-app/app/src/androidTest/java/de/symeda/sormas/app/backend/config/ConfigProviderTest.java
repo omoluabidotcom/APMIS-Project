@@ -15,6 +15,7 @@ import org.junit.Test;
 import de.symeda.sormas.api.CountryHelper;
 import de.symeda.sormas.app.TestHelper;
 
+
 public class ConfigProviderTest {
 
 	@Before

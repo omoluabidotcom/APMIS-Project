@@ -1868,6 +1868,14 @@ public interface Captions {
 	String Region_population = "Region.population";
 	String regionActiveRegions = "regionActiveRegions";
 	String regionAllRegions = "regionAllRegions";
+	String selectRegions = "selectRegions";
+	String selectProvinces= "selectProvinces";
+	String selectDistricts= "selectDistricts";
+	String selectClusters= "selectClusters";
+	String selectModality= "selectModality";
+	String selectStatus= "selectStatus";
+
+
 	String regionArchivedRegions = "regionArchivedRegions";
 	String regionName = "regionName";
 	String registerInPatientDiaryButton = "registerInPatientDiaryButton";
