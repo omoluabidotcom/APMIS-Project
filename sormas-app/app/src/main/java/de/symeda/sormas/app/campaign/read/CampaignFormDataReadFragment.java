@@ -54,7 +54,9 @@ import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormElementOptions;
 import de.symeda.sormas.api.campaign.form.CampaignFormElementType;
+import de.symeda.sormas.api.campaign.form.CampaignFormMetaGeographyLevel;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
+import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlImageReadField;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.utils.DataHelper;
 import de.symeda.sormas.app.BaseReadFragment;
@@ -71,9 +73,11 @@ import de.symeda.sormas.app.util.TextViewBindingAdapters;
 
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlDateEditField;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlTextReadField;
+import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.createControlImageReadField;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.getExpressionValue;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.getUserTranslations;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.setVisibilityDependency;
+import de.symeda.sormas.app.component.controls.ControlImageEditField;
 
 public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampaignDataReadLayoutBinding, CampaignFormData, CampaignFormData> {
 
@@ -114,7 +118,11 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
         final List<CampaignFormTranslations> translationsOpt = record.getCampaignFormMeta().getCampaignFormTranslations();
 
         final Map<String, String> formValuesMap = new HashMap<>();
-        formValues.forEach(campaignFormDataEntry -> formValuesMap.put(campaignFormDataEntry.getId(), DataHelper.toStringNullable(campaignFormDataEntry.getValue())));
+        final Map<String, Object> rawFormValuesMap = new HashMap<>();
+        formValues.forEach(campaignFormDataEntry -> {
+            formValuesMap.put(campaignFormDataEntry.getId(), DataHelper.toStringNullable(campaignFormDataEntry.getValue()));
+            rawFormValuesMap.put(campaignFormDataEntry.getId(), campaignFormDataEntry.getValue());
+        });
         final Map<String, ControlPropertyField> fieldMap = new HashMap<>();
 
         boolean daywise = false;
@@ -1207,11 +1215,22 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                 final LinearLayout dynamicLayout = view.findViewById(R.id.dynamicLayoutxXRd);
                 if (type != CampaignFormElementType.SECTION && type != CampaignFormElementType.LABEL) {
                     String value = formValuesMap.get(campaignFormElement.getId());
-//                    value = value == null ? null : value.endsWith(".0") ?  value.replace(".0", "") : value;
+                    ControlPropertyField dynamicField;
 
-
-                    ControlPropertyField dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
-                    dynamicField.setShowCaption(true);
+                    if (type == CampaignFormElementType.IMAGE) {
+                        ControlImageEditField imageField = createControlImageReadField(
+                                campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
+                        imageField.setShowCaption(true);
+                        Object imageValue = rawFormValuesMap.get(campaignFormElement.getId());
+                        if (imageValue != null) {
+                            imageField.setValue(imageValue);      // raw Map/List, not the stringified value
+                        }
+                        dynamicField = imageField;
+                    }else{
+                        dynamicField = createControlTextReadField(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta));
+                        dynamicField.setShowCaption(true);
+                    }
+//                    dynamicField.setShowCaption(true);
 
 
                     Resources resources = this.getContext().getResources();
@@ -1281,9 +1300,13 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                             }else {
                                 ControlTextReadField.setValue((ControlTextReadField) dynamicField, value, null, null, null, false);
                             }
-                            }else if (type == CampaignFormElementType.RANGE){
+                        }else if (type == CampaignFormElementType.RANGE){
                             ControlTextReadField.setValue((ControlTextReadField) dynamicField, value, null, null, null, true);
-                        }else{
+                        }
+                        else if (type == CampaignFormElementType.IMAGE){
+                            ControlImageEditField.setValue((ControlImageEditField) dynamicField, rawFormValuesMap.get(campaignFormElement.getId()));
+                        }
+                        else{
                             ControlTextReadField.setValue((ControlTextReadField) dynamicField, value, null, null, null);
                         }
                     }
@@ -1589,8 +1612,32 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
 
     @Override
     protected void onLayoutBinding(FragmentCampaignDataReadLayoutBinding contentBinding) {
-        record.setArea(record.getRegion().getArea());
+        if (record.getRegion() != null) {
+            record.setArea(record.getRegion().getArea());
+        }
         contentBinding.setData(record);
+        applyGeographyLevelVisibility(contentBinding);
+    }
+
+    private void applyGeographyLevelVisibility(FragmentCampaignDataReadLayoutBinding contentBinding) {
+        String geographyLevel = record.getCampaignFormMeta() != null
+                ? record.getCampaignFormMeta().getGeographylevel()
+                : null;
+
+        if (geographyLevel == null) {
+            return;
+        }
+
+        if (CampaignFormMetaGeographyLevel.REGION.toString().equals(geographyLevel)) {
+            contentBinding.campaignFormDataRegion.setVisibility(View.GONE);
+            contentBinding.campaignFormDataDistrict.setVisibility(View.GONE);
+            contentBinding.campaignFormDataCommunity.setVisibility(View.GONE);
+        } else if (CampaignFormMetaGeographyLevel.PROVINCE.toString().equals(geographyLevel)) {
+            contentBinding.campaignFormDataDistrict.setVisibility(View.GONE);
+            contentBinding.campaignFormDataCommunity.setVisibility(View.GONE);
+        } else if (CampaignFormMetaGeographyLevel.DISTRICT.toString().equals(geographyLevel)) {
+            contentBinding.campaignFormDataCommunity.setVisibility(View.GONE);
+        }
     }
 
     @Override

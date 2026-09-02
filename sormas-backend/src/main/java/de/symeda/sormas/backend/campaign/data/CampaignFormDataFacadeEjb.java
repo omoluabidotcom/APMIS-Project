@@ -86,6 +86,7 @@ import de.symeda.sormas.api.campaign.diagram.CampaignDiagramSeries;
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormElementType;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
+import de.symeda.sormas.api.campaign.form.CampaignFormMetaGeographyLevel;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.i18n.Strings;
@@ -146,6 +147,11 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 	private FormAccess frmsAccess;
 
 	private Integer popAddiontions = 0;
+	
+	private static final String IMAGE_ID = "imageId";
+	
+	private static final String PREVIEW_URL = "previewUrl";
+
 
 	@PersistenceContext(unitName = ModelConstants.PERSISTENCE_UNIT_NAME)
 	private EntityManager em;
@@ -264,6 +270,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 		target.setIspublished(source.isIspublished());
 		target.setIsverified(source.isIsverified());
 		target.setRecordversion(source.getRecordversion());
+		enrichImagePreviewUrls(target);
 
 		return target;
 	}
@@ -291,6 +298,7 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 		target.setIsverified(source.isIsverified());
 //		target.setRecordgroupuuid(source.getRecordgroupuuid());
 		target.setRecordversion(source.getRecordversion());
+		enrichImagePreviewUrls(target);
 
 		return target;
 	}
@@ -328,32 +336,54 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 	}
 
 	private void validate(CampaignFormDataDto campaignFormDataDto) {
-		boolean isDistrictLevelForm = campaignFormMetaService
-				.getDistrictEntryStatusByUuid(campaignFormDataDto.getCampaignFormMeta().getUuid());
-		System.out.println("Checking Districtb Level Form Entry in Validation point at EJB --------------------");
+		String isDistrictLevelForm = campaignFormMetaService
+				.getGeographyLevelStatusByUuid(campaignFormDataDto.getCampaignFormMeta().getUuid());
+		System.out.println(isDistrictLevelForm + "Checking Districtb Level Form Entry in Validation point at EJB --------------------");
 
 		if (campaignFormDataDto.getCampaign() == null) {
 			throw new ValidationRuntimeException(I18nProperties.getValidationError("Campaign_id now valid!"));
 		}
-		if (campaignFormDataDto.getArea() == null) {
-			throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validArea));
-		}
-		if (campaignFormDataDto.getRegion() == null) {
-			throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validRegion));
-		}
-		if (campaignFormDataDto.getDistrict() == null) {
-			throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validDistrict));
-		}
-
-		if (!isDistrictLevelForm) {
-
+		
+		if(isDistrictLevelForm.equals(CampaignFormMetaGeographyLevel.REGION.toString())) {
+			if (campaignFormDataDto.getArea() == null) {
+				throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validArea));
+			}
+		}else if(isDistrictLevelForm.equals(CampaignFormMetaGeographyLevel.PROVINCE.toString())) {
+			if (campaignFormDataDto.getArea() == null) {
+				throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validArea));
+			}
+			
+			if (campaignFormDataDto.getRegion() == null) {
+				throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validRegion));
+			}
+		}else if(isDistrictLevelForm.equals(CampaignFormMetaGeographyLevel.DISTRICT.toString())) {
+			if (campaignFormDataDto.getArea() == null) {
+				throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validArea));
+			}
+			
+			if (campaignFormDataDto.getRegion() == null) {
+				throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validRegion));
+			}
+			
+			if (campaignFormDataDto.getDistrict() == null) {
+				throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validDistrict));
+			}
+		} else {
+			if (campaignFormDataDto.getArea() == null) {
+				throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validArea));
+			}
+			
+			if (campaignFormDataDto.getRegion() == null) {
+				throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validRegion));
+			}
+			
+			if (campaignFormDataDto.getDistrict() == null) {
+				throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validDistrict));
+			}
 			System.out.println("Not District Entry Form Point 3333333333333333333333333333333");
 			if (campaignFormDataDto.getCommunity() == null) {
 				throw new ValidationRuntimeException(I18nProperties.getValidationError(Validations.validCommunity));
 			}
-		} else {
-			System.out.println("District Entry Form Point 3333333333333333333333333333333 Skipping validation check ");
-
 		}
 
 		validateImageFieldValues(campaignFormDataDto);
@@ -395,6 +425,18 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 
 			boolean imageMultiple = Boolean.TRUE.equals(element.getImageMultiple());
 			if (imageMultiple) {
+				if(element.isImportant()) {
+					if (value instanceof List<?>) {
+						List<?> imageValues = (List<?>) value;
+						if (imageValues.isEmpty()) {
+							throw new ValidationRuntimeException(
+									"Required image field '" + element.getId() + "' must contain at least one image.");
+						}
+					} else {
+						throw new ValidationRuntimeException(
+								"Required image field '" + element.getId() + "' must contain at least one image.");
+					}
+				}
 				if (!(value instanceof List<?>)) {
 					throw new ValidationRuntimeException(
 							"Image field '" + element.getId() + "' expects a list of images.");
@@ -479,6 +521,11 @@ public class CampaignFormDataFacadeEjb implements CampaignFormDataFacade {
 		if (StringUtils.isNotBlank(normalizedImage.getGeneratedFileName())) {
 			imageMap.put(CampaignFormImageValue.GENERATED_FILE_NAME, normalizedImage.getGeneratedFileName());
 		}
+		
+		if (StringUtils.isNotBlank(normalizedImage.getImageId())) {
+		   imageMap.put(CampaignFormImageValue.IMAGE_ID, normalizedImage.getImageId());
+		}
+		
 		if (normalizedImage.getCapturedAt() != null) {
 			imageMap.put(CampaignFormImageValue.CAPTURED_AT, normalizedImage.getCapturedAt());
 		}
@@ -4828,6 +4875,65 @@ resultData.addAll(resultList.stream()
 
 	    return resultData;
 	}
+	
+	
+	@SuppressWarnings("unchecked")
+	private void enrichImagePreviewUrls(CampaignFormDataDto dto) {
+	    if (dto == null || CollectionUtils.isEmpty(dto.getFormValues())   || dto.getCampaignFormMeta() == null) {
+	        return;
+	    }
+
+	    CampaignFormMeta formMeta = campaignFormMetaService.getByUuid(dto.getCampaignFormMeta().getUuid());
+	    if (formMeta == null || CollectionUtils.isEmpty(formMeta.getCampaignFormElements())) {
+	        return;
+	    }
+
+	    Map<String, CampaignFormElement> imageElementsById = new HashMap<>();
+	    for (CampaignFormElement element : formMeta.getCampaignFormElements()) {
+	        if (StringUtils.equals(element.getType(), CampaignFormElementType.IMAGE.toString())) {
+	            imageElementsById.put(element.getId(), element);
+	        }
+	    }
+
+	    for (CampaignFormDataEntry entry : dto.getFormValues()) {
+	        if (entry == null || StringUtils.isBlank(entry.getId()) ||!imageElementsById.containsKey(entry.getId())) {
+	            continue;
+	        }
+//	        CampaignFormElement imageElement = imageElementsById.get(entry.getId());
+//	        if (imageElement == null) {
+//	            continue;
+//	        }
+
+	        Object value = entry.getValue();
+	        if (value instanceof Map<?, ?>) {
+	            enrichSingleImageMap((Map<String, Object>) value);
+	        } else if (value instanceof List<?>) {
+	            for (Object item : (List<?>) value) {
+	                if (item instanceof Map<?, ?>) {
+	                    enrichSingleImageMap((Map<String, Object>) item);
+	                }
+	            }
+	        }
+	    }
+	}
+
+	@SuppressWarnings("unchecked")
+	private void enrichSingleImageMap(Map<String, Object> imageMap) {
+    if (imageMap == null) return;
+    Object existing = imageMap.get(PREVIEW_URL);
+    if (existing != null && StringUtils.isNotBlank(existing.toString())) return;
+    Object imageIdObj = imageMap.get(IMAGE_ID);
+    if (imageIdObj == null) return;
+    String imageId = imageIdObj.toString().trim();
+    if (!imageId.isEmpty()) {
+        // Use the correct REST context (adjust if your deployment differs)
+        String previewUrl = "/sormas-rest/apmisrestserver/image/" + imageId;
+        imageMap.put(PREVIEW_URL, previewUrl);
+    	}
+	}
+
+
+	
 
 	
 

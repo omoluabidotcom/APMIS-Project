@@ -1,6 +1,7 @@
 package de.symeda.sormas.backend.campaign.data;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -163,6 +164,41 @@ public class CampaignFormImageFacadeEjb implements CampaignFormImageFacade {
 		}
 
 		return imageValues;
+	}
+
+	@Override
+	public String resolvePreviewUrl(String imageId) {
+		if (StringUtils.isBlank(imageId)) {
+			return null;
+		}
+
+//		try {
+//			byte[] imageBytes = readImage(imageId);
+//			if (imageBytes == null || imageBytes.length == 0) {
+//				return null;
+//			}
+//
+//			DocumentDto documentDto = documentFacade.getDocumentByUuid(imageId);
+//			String mimeType = documentDto != null && StringUtils.isNotBlank(documentDto.getMimeType())
+//					? documentDto.getMimeType()
+//					: "image/jpeg";
+//
+//			return "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(imageBytes);
+//		} 
+		  try {
+		        byte[] imageBytes = readImage(imageId);
+		        if (imageBytes == null || imageBytes.length == 0) {
+		        	System.out.println("Image {} has zero bytes." +  imageId);
+//		            System.out.print("Image {} has zero bytes.", imageId);
+		            return null;
+		        }
+		        DocumentDto doc = documentFacade.getDocumentByUuid(imageId);
+		        String mime = doc != null ? doc.getMimeType() : "image/jpeg";
+		        // Optionally detect MIME from bytes as fallback
+		        return "data:" + mime + ";base64," + Base64.getEncoder().encodeToString(imageBytes);
+		    }catch (IOException e) {
+			throw new ValidationRuntimeException("Unable to resolve preview URL for image " + imageId + ".", e);
+		}
 	}
 
 	private String sanitizeSegment(String input) {

@@ -45,6 +45,7 @@ import de.symeda.sormas.api.campaign.CampaignReferenceDto;
 import de.symeda.sormas.api.campaign.CampaignTreeFlatDto;
 import de.symeda.sormas.api.campaign.CampaignTreeGridDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataCriteria;
+import de.symeda.sormas.api.campaign.data.CampaignFormDataHistoryExtractDto;
 import de.symeda.sormas.api.campaign.diagram.CampaignDiagramCriteria;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaExpiryDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
@@ -345,27 +346,47 @@ public class PopulationDataFacadeEjb implements PopulationDataFacade {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
 		Root<PopulationData> root = cq.from(PopulationData.class);
-		// System.out.println("DEBUGGER ----- "+ criteria.getCampaign()!= null);
-
-//		Predicate filter = service.buildCriteriaFilter( cb, root);
-//		if (criteria.getCampaign() != null) {
-//			Predicate filter_ = CriteriaBuilderHelper.and(cb, filter,
-//					cb.equal(root.join(PopulationData.CAMPAIGN, JoinType.LEFT).get(Campaign.UUID),
-//							criteria.getCampaign().getUuid()));
-//			Predicate filterx = CriteriaBuilderHelper.and(cb, filter_);
-//
-//			cq.where(filterx);
-//		} else {
-//			cq.where(filter);
-//		}
 
 		System.out.println("zzzzzzDEBUGGER 5678ijhyuio" + SQLExtractor.from(em.createQuery(cq)));
 
 		return em.createQuery(cq).getResultStream().map(populationData -> toDto(populationData))
 				.collect(Collectors.toList());
-//		return null;
 	}
+	
 
+
+	
+	@Override
+	public List<PopulationDataDto> getAllPopulationDataByLimit(Integer fetchFromIndex, Integer fetchSize) {
+		
+	    List<PopulationDataDto> resultData = new ArrayList<>();
+
+	    
+		if (fetchSize > 5000 || fetchSize < 0 || fetchFromIndex < 0) {
+			return resultData;
+		}
+		
+	    CriteriaBuilder cb = em.getCriteriaBuilder();
+	    CriteriaQuery<PopulationData> cq = cb.createQuery(PopulationData.class);
+	    Root<PopulationData> root = cq.from(PopulationData.class);
+	    cq.select(root);
+	    TypedQuery<PopulationData> query = em.createQuery(cq);
+	    
+	    // Pagination
+	    if (fetchFromIndex != null && fetchFromIndex >= 0) {
+	        query.setFirstResult(fetchFromIndex);
+	    }
+
+	    if (fetchSize != null && fetchSize > 0) {
+	        query.setMaxResults(fetchSize);
+	    }
+
+	    System.out.println("zzzzzzDEBUGGER SQL: " + SQLExtractor.from(query));
+
+	    return query.getResultStream().map(populationData -> toDto(populationData)).collect(Collectors.toList());
+	}
+	
+	
 	@Override
 	public List<PopulationDataDto> getPopulationData(PopulationDataCriteria criteria) {
 
