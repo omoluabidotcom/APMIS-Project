@@ -302,6 +302,74 @@ public class ImportFacadeEjb implements ImportFacade {
 
 		writeTemplate(Paths.get(getEventParticipantImportTemplateFilePath()), importColumns, true);
 	}
+	
+	@Override
+	public void generateRegionLevelCampaignFormImportTemplateFile(String campaignFormUuid) throws IOException {
+
+		createExportDirectoryIfNecessary();
+
+		List<ImportColumn> importColumns = new ArrayList<>();
+		char separator = configFacade.getCsvSeparator();
+//		importColumns.add(ImportColumn.from(AreaDto.class, "RCode", Integer.class, separator));
+		/* importColumns.add(ImportColumn.from(CampaignFormDataDto.class, CAMPAIGN, CampaignReferenceDto.class, separator)); */
+		importColumns.add(ImportColumn.from(CampaignFormDataDto.class, FORM_DATE, Date.class, separator));
+		importColumns.add(ImportColumn.from(CampaignFormDataDto.class, "RCode", AreaReferenceDto.class, separator));
+//		importColumns.add(ImportColumn.from(CampaignFormDataDto.class, "PCode", RegionReferenceDto.class, separator));
+//		importColumns.add(ImportColumn.from(CampaignFormDataDto.class, "DCode", DistrictReferenceDto.class, separator));
+System.out.println("YESSSS");
+		CampaignFormMetaDto campaignFormMetaDto = campaignFormMetaFacade.getCampaignFormMetaByUuid(campaignFormUuid);
+		campaignFormMetaDto.getCampaignFormElements()
+			.stream()
+			.filter(
+				e -> !(CampaignFormElementType.SECTION.name().equalsIgnoreCase(e.getType())
+						|| CampaignFormElementType.DAYWISE.name().equalsIgnoreCase(e.getType()) || CampaignFormElementType.LABEL.name().equalsIgnoreCase(e.getType())))
+			.forEach(
+					formElement -> {
+						 String elementType =  formElement.getType();
+					        if (elementType != null && elementType.equalsIgnoreCase("Date")) {
+					        	elementType += " : dd/mm/yyyy";
+					        }
+					        
+						importColumns.add(new ImportColumn(formElement.getId(), formElement.getCaption(), elementType));
+						});
+		writeTemplate(Paths.get(getRegionLevelCampaignFormImportTemplateFilePath()), importColumns, false);
+
+	}
+	
+	
+	@Override
+	public void generateProvinceLevelCampaignFormImportTemplateFile(String campaignFormUuid) throws IOException {
+
+		createExportDirectoryIfNecessary();
+
+		List<ImportColumn> importColumns = new ArrayList<>();
+		char separator = configFacade.getCsvSeparator();
+//		importColumns.add(ImportColumn.from(AreaDto.class, "RCode", Integer.class, separator));
+		/* importColumns.add(ImportColumn.from(CampaignFormDataDto.class, CAMPAIGN, CampaignReferenceDto.class, separator)); */
+		importColumns.add(ImportColumn.from(CampaignFormDataDto.class, FORM_DATE, Date.class, separator));
+		importColumns.add(ImportColumn.from(CampaignFormDataDto.class, "RCode", AreaReferenceDto.class, separator));
+		importColumns.add(ImportColumn.from(CampaignFormDataDto.class, "PCode", RegionReferenceDto.class, separator));
+//		importColumns.add(ImportColumn.from(CampaignFormDataDto.class, "DCode", DistrictReferenceDto.class, separator));
+System.out.println("YESSSS");
+		CampaignFormMetaDto campaignFormMetaDto = campaignFormMetaFacade.getCampaignFormMetaByUuid(campaignFormUuid);
+		campaignFormMetaDto.getCampaignFormElements()
+			.stream()
+			.filter(
+				e -> !(CampaignFormElementType.SECTION.name().equalsIgnoreCase(e.getType())
+						|| CampaignFormElementType.DAYWISE.name().equalsIgnoreCase(e.getType()) || CampaignFormElementType.LABEL.name().equalsIgnoreCase(e.getType())))
+			.forEach(
+					formElement -> {
+						 String elementType =  formElement.getType();
+					        if (elementType != null && elementType.equalsIgnoreCase("Date")) {
+					        	elementType += " : dd/mm/yyyy";
+					        }
+					        
+						importColumns.add(new ImportColumn(formElement.getId(), formElement.getCaption(), elementType));
+						});
+		writeTemplate(Paths.get(getProvinceLevelCampaignFormImportTemplateFilePath()), importColumns, false);
+
+	}
+	
 
 	
 	@Override
@@ -720,7 +788,17 @@ System.out.println("YESSSS");
 	public String getDistrictLevelCampaignFormImportTemplateFilePath() {
 		return getImportTemplateFilePath(DISTRICT_LEVEL_CAMPAIGN_FORM_IMPORT_TEMPLATE_FILE_NAME);
 	}
-	
+		
+	@Override
+	public String getRegionLevelCampaignFormImportTemplateFilePath() {
+		return getImportTemplateFilePath(CAMPAIGN_FORM_IMPORT_TEMPLATE_FILE_NAME);
+	}
+
+	@Override
+	public String getProvinceLevelCampaignFormImportTemplateFilePath() {
+		return getImportTemplateFilePath(CAMPAIGN_FORM_IMPORT_TEMPLATE_FILE_NAME);
+	}
+		
 	@Override
 	public String getUserImportTemplateFilePath() {
 		return getImportTemplateFilePath(USER_FORM_IMPORT_TEMPLATE_FILE_NAME);
@@ -1208,6 +1286,10 @@ System.out.println("YESSSS");
 	@Stateless
 	public static class ImportFacadeEjbLocal extends ImportFacadeEjb {
 	}
+
+
+
+
 
 
 }

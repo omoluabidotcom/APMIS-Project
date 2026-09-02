@@ -22,6 +22,7 @@ package de.symeda.sormas.app.campaign.edit;
 import static androidx.databinding.DataBindingUtil.setContentView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
@@ -36,6 +37,7 @@ import android.widget.HorizontalScrollView;
 import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.expression.ExpressionParser;
@@ -75,6 +77,8 @@ import de.symeda.sormas.app.backend.region.District;
 import de.symeda.sormas.app.backend.region.PopulationData;
 import de.symeda.sormas.app.backend.user.User;
 import de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils;
+import de.symeda.sormas.app.component.controls.ControlCameraImageField;
+import de.symeda.sormas.app.component.controls.ControlImageEditField;
 import de.symeda.sormas.app.component.controls.ControlPropertyEditField;
 import de.symeda.sormas.app.component.controls.ControlPropertyField;
 import de.symeda.sormas.app.component.validation.FragmentValidator;
@@ -92,6 +96,9 @@ import de.symeda.sormas.app.databinding.FragmentCampaignDataNewLayoutBinding;
 
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handleDependingOn;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampaignDataNewLayoutBinding, CampaignFormData, CampaignFormData> {
@@ -126,8 +133,15 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
     List<String> preCampaignsCategories = List.of("FLW", "MODALITY_PRE", "TRAINING", "MONITORING");
     List<String> intraCampaignsCategories = List.of("ICM", "ADMIN", "EAG-ICM", "EAG-ADMIN");
     List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION");
-    private boolean daywise = false;
+
+    private ActivityResultLauncher<Intent> cameraLauncher;
+    private ActivityResultLauncher<String> cameraPermissionLauncher;
+
+    private ControlImageEditField currentImageField = null;
+
     private TabHost mTabHost;
+
+    private boolean daywise;
     public void addMapValue() {
 
         mapvalue.put("Afghanistan", new CountryDetails("+93", 9, 9));
@@ -185,6 +199,35 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
 
     public static BaseEditFragment newInstance(CampaignFormData activityRootData) {
         return newInstance(CampaignFormDataNewFragment.class, null, activityRootData);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Register the camera launcher ONCE, before the view is created.
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    // Forward the result to the currently active image field
+                    if (currentImageField != null) {
+                        currentImageField.handleCameraResult(result.getResultCode());
+                        currentImageField = null; // clear after use
+                    }
+                }
+        );
+
+        cameraPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                granted -> {
+                    if (granted && currentImageField != null) {
+                        currentImageField.launchCamera();
+                    } else if (!granted) {
+                        Toast.makeText(requireContext(),
+                                "Camera permission is required to capture an image",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     @Override
@@ -371,6 +414,23 @@ public class CampaignFormDataNewFragment extends BaseEditFragment<FragmentCampai
                                 if (maxDate != null) {
                                     ((de.symeda.sormas.app.component.controls.ControlDateField) dynamicField).setMaxDate(maxDate);
                                 }
+                            }
+                        } else if (type == CampaignFormElementType.IMAGE) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlImageEditField(
+                                    campaignFormElement,
+                                    requireContext(),
+                                    CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta),
+                                    userHints,
+                                    campaignFormElement.isImportant(),     // not hardcoded true
+                                    cameraLauncher,
+                                    cameraPermissionLauncher
+                            );
+
+                            if (dynamicField instanceof ControlImageEditField) {
+                                ((ControlImageEditField) dynamicField).setCampaignFormDataUuid(record.getUuid());
+                                ((ControlImageEditField) dynamicField).setRecord(record);
+                                ((ControlImageEditField) dynamicField).setOnCaptureRequestListener(
+                                        f -> currentImageField = f);
                             }
                         } else {
                             dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints,false, campaignFormElement.isImportant());
@@ -2306,7 +2366,24 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
                                 true,
                                 this.getFragmentManager(),
                                 campaignFormElement.isImportant());
-                    }  else {
+                    } else if (type == CampaignFormElementType.IMAGE) {
+                        dynamicField = CampaignFormDataFragmentUtils.createControlImageEditField(
+                                campaignFormElement,
+                                requireContext(),
+                                CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta),
+                                userHints,
+                                campaignFormElement.isImportant(),     // not hardcoded true
+                                cameraLauncher,
+                                cameraPermissionLauncher
+                        );
+
+                        if (dynamicField instanceof ControlImageEditField) {
+                            ((ControlImageEditField) dynamicField).setCampaignFormDataUuid(record.getUuid());
+                            ((ControlImageEditField) dynamicField).setRecord(record);
+                            ((ControlImageEditField) dynamicField).setOnCaptureRequestListener(
+                                    f -> currentImageField = f);
+                        }
+                    } else {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTextEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints,false, campaignFormElement.isImportant());
                     }
 
@@ -2934,6 +3011,7 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
     protected void onLayoutBinding(FragmentCampaignDataNewLayoutBinding contentBinding) {
         contentBinding.setData(record);
 
+
         Item campaignItem = record.getCampaign() != null ? DataUtils.toItem(record.getCampaign()) : null;
 
         if (campaignItem != null && !initialCampaigns.contains(campaignItem)) {
@@ -3003,9 +3081,7 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
             }
         }
 
-
-
-        InfrastructureDaoHelper.initializeRegionAreaFields(
+        InfrastructureDaoHelper.initializeRegionAreaFieldsByGeographyLevel(
                 contentBinding.campaignFormDataArea,
                 initialAreas,
                 record.getArea(),
@@ -3017,7 +3093,22 @@ if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
                 record.getDistrict(),
                 contentBinding.campaignFormDataCommunity,
                 initialCommunities,
-                record.getCommunity(), false);
+                record.getCommunity(), record.getCampaignFormMeta().getGeographylevel(),  false);
+
+
+//        InfrastructureDaoHelper.initializeRegionAreaFields(
+//                contentBinding.campaignFormDataArea,
+//                initialAreas,
+//                record.getArea(),
+//                contentBinding.campaignFormDataRegion,
+//                initialRegions,
+//                record.getRegion(),
+//                contentBinding.campaignFormDataDistrict,
+//                initialDistricts,
+//                record.getDistrict(),
+//                contentBinding.campaignFormDataCommunity,
+//                initialCommunities,
+//                record.getCommunity(), false);
     }
 
     protected Date getDateValue(String input) {

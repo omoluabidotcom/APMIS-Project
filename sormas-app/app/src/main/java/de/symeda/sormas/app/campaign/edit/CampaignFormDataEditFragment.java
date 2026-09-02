@@ -19,6 +19,7 @@
 package de.symeda.sormas.app.campaign.edit;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -81,6 +82,7 @@ import de.symeda.sormas.app.component.controls.ControlCheckBoxField;
 import de.symeda.sormas.app.component.controls.ControlCheckBoxGroupField;
 import de.symeda.sormas.app.component.controls.ControlDateField;
 import de.symeda.sormas.app.component.controls.ControlDecimalEditField;
+import de.symeda.sormas.app.component.controls.ControlImageEditField;
 import de.symeda.sormas.app.component.controls.ControlPhoneField;
 import de.symeda.sormas.app.component.controls.ControlPropertyEditField;
 import de.symeda.sormas.app.component.controls.ControlPropertyField;
@@ -109,6 +111,7 @@ import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.getUse
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handleDependingOn;
 import static de.symeda.sormas.app.campaign.CampaignFormDataFragmentUtils.handleExpression;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AlertDialog;
 
 public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampaignDataEditLayoutBinding, CampaignFormData, CampaignFormData> {
@@ -170,6 +173,9 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
     List<String> preCampaignsCategories = List.of("FLW", "MODALITY_PRE", "TRAINING", "MONITORING");
     List<String> intraCampaignsCategories = List.of("ICM", "ADMIN", "EAG-ICM", "EAG-ADMIN");
     List<String> postCampaignsCategories = List.of("PCA", "FMS", "LQAS", "EAG-PCA", "EAG-FMS", "EAG-LQAS", "MODALITY_POST", "VALIDATION");
+
+    private ActivityResultLauncher<Intent> cameraLauncher;
+    private ActivityResultLauncher<String> cameraPermissionLauncher;
     private TabHost mTabHost;
     private boolean daywise = false;
     public void addMapValue() {
@@ -261,7 +267,11 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
 
         final Map<String, String> formValuesMap = new HashMap<>();
-        formValues.forEach(campaignFormDataEntry -> formValuesMap.put(campaignFormDataEntry.getId(), DataHelper.toStringNullable(campaignFormDataEntry.getValue())));
+        final Map<String, Object> rawFormValuesMap = new HashMap<>();
+        formValues.forEach(campaignFormDataEntry -> {
+            formValuesMap.put(campaignFormDataEntry.getId(), DataHelper.toStringNullable(campaignFormDataEntry.getValue()));
+            rawFormValuesMap.put(campaignFormDataEntry.getId(), campaignFormDataEntry.getValue());
+        });
 
         final Map<String, ControlPropertyField> fieldMap = new HashMap<>();
         final Map<CampaignFormElement, ControlPropertyField> expressionMap = new HashMap<>();
@@ -3133,7 +3143,20 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                     } else if (type == CampaignFormElementType.TIME) {
                         dynamicField = CampaignFormDataFragmentUtils.createControlTimeEditField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), true, this.getFragmentManager(), campaignFormElement.isImportant());
                         ControlTimeField.setValue((ControlTimeField) dynamicField, value);
-                    } else {
+                    }  else if (type == CampaignFormElementType.IMAGE) {
+                        dynamicField = CampaignFormDataFragmentUtils.createControlImageEditField(
+                                campaignFormElement,
+                                requireContext(),
+                                CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta),
+                                userHints,
+                                campaignFormElement.isImportant(),     // not hardcoded true
+                                cameraLauncher,
+                                cameraPermissionLauncher
+                        );
+                        ((ControlImageEditField) dynamicField).setCampaignFormDataUuid(record.getUuid());
+                        ((ControlImageEditField) dynamicField).setRecord(record);
+                        ControlImageEditField.setValue((ControlImageEditField) dynamicField, rawFormValuesMap.get(campaignFormElement.getId()));
+                    }else {
                         if(campaignFormElement.getId().equalsIgnoreCase("villageCode")){
                             dynamicField = createControlTextEditFieldAllowStartingZero(campaignFormElement, requireContext(), getUserTranslations(campaignFormMeta), false, campaignFormElement.isImportant());
                             ControlTextEditFieldAllowZeroInput.setValue((ControlTextEditFieldAllowZeroInput) dynamicField, value, "");
@@ -4226,7 +4249,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
             }
         }
 
-        InfrastructureDaoHelper.initializeRegionAreaFields(
+        InfrastructureDaoHelper.initializeRegionAreaFieldsByGeographyLevel(
                 contentBinding.campaignFormDataArea,
                 initialAreas,
                 record.getArea(),
@@ -4238,7 +4261,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                 record.getDistrict(),
                 contentBinding.campaignFormDataCommunity,
                 initialCommunities,
-                record.getCommunity(), true);
+                record.getCommunity(),
+                record.getCampaignFormMeta().getGeographylevel(), true);
     }
 
     @Override

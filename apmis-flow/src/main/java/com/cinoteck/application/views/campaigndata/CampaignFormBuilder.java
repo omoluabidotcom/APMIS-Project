@@ -2,6 +2,11 @@ package com.cinoteck.application.views.campaigndata;
 
 import static de.symeda.sormas.api.campaign.ExpressionProcessorUtils.refreshEvaluationContext;
 
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -34,6 +39,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+
 import java.util.Objects;
 
 import org.apache.commons.beanutils.ConversionException;
@@ -50,7 +61,9 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.vaadin.addons.taefi.component.ToggleButtonGroup;
 
 import com.cinoteck.application.UserProvider;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Sets;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 //import org.hibernate.internal.build.AllowSysOut;
 
@@ -65,10 +78,13 @@ import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -95,6 +111,7 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinService;
 
 import de.symeda.sormas.api.AgeGroup;
@@ -108,6 +125,7 @@ import de.symeda.sormas.api.campaign.data.CampaignFormDataEntry;
 import de.symeda.sormas.api.campaign.data.CampaignFormDataIndexDto;
 import de.symeda.sormas.api.campaign.data.CampaignFormImageSource;
 import de.symeda.sormas.api.campaign.data.CampaignFormImageValue;
+import de.symeda.sormas.api.campaign.data.CampaignFormImageNamingContext;
 import de.symeda.sormas.api.campaign.data.translation.TranslationElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormElement;
 import de.symeda.sormas.api.campaign.form.CampaignFormElementStyle;
@@ -115,9 +133,11 @@ import de.symeda.sormas.api.campaign.form.CampaignFormElementOptions;
 import de.symeda.sormas.api.campaign.form.CampaignFormElementType;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaExpiryDto;
+import de.symeda.sormas.api.campaign.form.CampaignFormMetaGeographyLevel;
 import de.symeda.sormas.api.campaign.form.CampaignFormMetaReferenceDto;
 import de.symeda.sormas.api.campaign.form.CampaignFormTranslations;
 import de.symeda.sormas.api.campaign.form.DialingCodeDto;
+import de.symeda.sormas.api.document.DocumentDto;
 import de.symeda.sormas.api.i18n.Captions;
 import de.symeda.sormas.api.i18n.Descriptions;
 import de.symeda.sormas.api.i18n.I18nProperties;
@@ -154,7 +174,10 @@ public class CampaignFormBuilder extends VerticalLayout {
 	private Map<String, String> userTranslationsHint = new HashMap<String, String>();
 	private Map<String, String> userOptTranslations = new HashMap<String, String>();
 	Map<String, Component> fields;
-	private final Map<String, CampaignFormImageValue> imageFieldValues = new HashMap<>();
+	private final Map<String, List<CampaignFormImageValue>> imageFieldValues = new HashMap<>();
+	private final Map<String, byte[]> imagePreviewCache = new HashMap<>();
+	private static final ObjectMapper IMAGE_VALUE_OBJECT_MAPPER = new ObjectMapper();
+	private final Map<String, Component> imageLayouts = new HashMap<>();
 
 	private Map<String, String> optionsValues = new HashMap<String, String>();
 	private Map<String, String> optionsOrder = new HashMap<String, String>();
@@ -167,7 +190,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-	private boolean isDistrictEntry;
+	private CampaignFormMetaGeographyLevel geographyLevel;
 	private CampaignFormMetaReferenceDto campaignFormMeta;
 
 	List<AreaReferenceDto> regions;
@@ -201,7 +224,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 	TextField formDate = new TextField();
 	private boolean openData = false;
 	private String uuidForm;
-	private boolean checkDistrictEntry = false;
+	private String imageUploadTargetUuid;
 	private String formName;
 	private DialingCodeDto dialingCodeDto = new DialingCodeDto();
 	private int min = 0;
@@ -214,25 +237,27 @@ public class CampaignFormBuilder extends VerticalLayout {
 	CampaignFormMetaExpiryDto expiryDto;
 
 	DateTimeFormatter dateformatter = DateTimeFormatter.ofPattern("dd-MM-uuuu").withResolverStyle(ResolverStyle.STRICT);
-	
+
 	private CampaignFormDataCriteria criteria = new CampaignFormDataCriteria();
 
 	public CampaignFormBuilder(List<CampaignFormElement> formElements, List<CampaignFormDataEntry> formValues,
 			CampaignReferenceDto campaignReferenceDto, List<CampaignFormTranslations> translations, String formName,
 			CampaignFormMetaReferenceDto campaignFormMetaUUID, boolean openData, String uuidForm,
-			boolean isDistrictEntry, CampaignDto campaignDto, CampaignFormMetaExpiryDto expiryDto, List<PopulationDataDto> popDtox) {
+			CampaignFormMetaGeographyLevel geographyLevel, CampaignDto campaignDto, CampaignFormMetaExpiryDto expiryDto,
+			List<PopulationDataDto> popDtox) {
 
 		logger.debug("+++++++++++CampaignFormBuilder+++++: " + openData);
 
 		// ADD THIS after setting up userLocale:
-	    injectRTLHelperTextCSS();
-	    
+		injectRTLHelperTextCSS();
+
 		this.openData = openData;
 		this.uuidForm = uuidForm;
+		this.imageUploadTargetUuid = StringUtils.isNotBlank(uuidForm) ? uuidForm : UUID.randomUUID().toString();
 		this.formElements = formElements;
 		this.campaignReferenceDto = campaignReferenceDto;
 		this.campaignFormMeta = campaignFormMetaUUID;
-		this.isDistrictEntry = isDistrictEntry;
+		this.geographyLevel = geographyLevel;
 		this.campaignDto = campaignDto;
 		this.expiryDto = expiryDto;
 		this.formName = formName;
@@ -250,9 +275,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 		UserProvider userProvider = new UserProvider();
 		I18nProperties.setUserLanguage(userProvider.getUser().getLanguage());
 		this.userLocale = I18nProperties.getUserLanguage().getLocale();
-		
+
 		this.popDto = popDtox;
-criteria.setCampaign(campaignReferenceDto);
+		criteria.setCampaign(campaignReferenceDto);
 //		logger.debug(userProvider.getUser().getLanguage() +" : I18nProperties.getUserLanguage().getLocale(): "+I18nProperties.getUserLanguage().getLocale());
 
 		if (userLocale != null) {
@@ -262,20 +287,14 @@ criteria.setCampaign(campaignReferenceDto);
 								.stream().collect(Collectors.toMap(TranslationElement::getElementId,
 										TranslationElement::getCaption)));
 			}
-			
+
 			if (translationsHint != null) {
-			    translationsHint.stream()
-			        .filter(t -> t.getLanguageCode().equals(userLocale.toString()))
-			        .findFirst()
-			        .ifPresent(filteredTranslations -> {
-			            userTranslationsHint = filteredTranslations.getTranslations()
-			                .stream()
-			                .filter(te -> te.getElementId() != null && te.getHint() != null)
-			                .collect(Collectors.toMap(
-			                    TranslationElement::getElementId,
-			                    TranslationElement::getHint
-			                ));
-			        });
+				translationsHint.stream().filter(t -> t.getLanguageCode().equals(userLocale.toString())).findFirst()
+						.ifPresent(filteredTranslations -> {
+							userTranslationsHint = filteredTranslations.getTranslations().stream()
+									.filter(te -> te.getElementId() != null && te.getHint() != null).collect(Collectors
+											.toMap(TranslationElement::getElementId, TranslationElement::getHint));
+						});
 			}
 		}
 
@@ -316,7 +335,6 @@ criteria.setCampaign(campaignReferenceDto);
 		//
 		logger.debug("++++++++++++++++++++++++++++++++campaignReferenceDto.getUuid(" + campaignReferenceDto.getUuid());
 
-
 //		popDto = FacadeProvider.getPopulationDataFacade().getPopulationDataWithCriteria(campaignReferenceDto.getUuid());
 
 //		logger.debug("++++++++++++++++++++++++++++++++" + popDto.size());
@@ -339,15 +357,16 @@ criteria.setCampaign(campaignReferenceDto);
 				String lang = userProvider.getUser().getLanguage().toString();
 
 				if (lang.equals("Pashto")) {
-					cbArea.setItems(FacadeProvider.getAreaFacade()
-							.getAllSelectedAreasByFormUuidAndLocaleAndPopulation(campaignFormMetaUUID.getUuid(), criteria.getCampaign().getUuid(), "Pashto"));
+					cbArea.setItems(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocaleAndPopulation(
+							campaignFormMetaUUID.getUuid(), criteria.getCampaign().getUuid(), "Pashto"));
 				} else if (lang.equals("Dari")) {
-					cbArea.setItems(FacadeProvider.getAreaFacade()
-							.getAllSelectedAreasByFormUuidAndLocaleAndPopulation(campaignFormMetaUUID.getUuid(),criteria.getCampaign().getUuid(), "Dari"));
+					cbArea.setItems(FacadeProvider.getAreaFacade().getAllSelectedAreasByFormUuidAndLocaleAndPopulation(
+							campaignFormMetaUUID.getUuid(), criteria.getCampaign().getUuid(), "Dari"));
 				} else {
 					// English or default
 					for (AreaReferenceDto dto : FacadeProvider.getAreaFacade()
-							.getAllSelectedAreasByFormUuidAndLocaleAndPopulation(campaignFormMetaUUID.getUuid(),criteria.getCampaign().getUuid(), "English")) {
+							.getAllSelectedAreasByFormUuidAndLocaleAndPopulation(campaignFormMetaUUID.getUuid(),
+									criteria.getCampaign().getUuid(), "English")) {
 						areaNamesExtract.add(dto.getCaption());
 					}
 
@@ -368,7 +387,6 @@ criteria.setCampaign(campaignReferenceDto);
 
 		cbRegion = new ComboBox<>(I18nProperties.getCaption(Captions.region));
 		cbRegion.setReadOnly(true);
-		;
 		cbRegion.setRequired(true);
 		cbRegion.setId("my-disabled-textfield");
 		cbRegion.getStyle().set("-webkit-text-fill-color", "green !important");
@@ -391,30 +409,47 @@ criteria.setCampaign(campaignReferenceDto);
 		cbArea.addValueChangeListener(e -> {
 			System.out.println("Area Value changed ------------------------------");
 			if (e.getValue() != null) {
-				criteria.area(e.getValue());
-				List<RegionReferenceDto> regionsList = new ArrayList<>();
-				List<RegionReferenceDto> allRegionList = new ArrayList<>();
-				if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-					regionsList = FacadeProvider.getRegionFacade().getAllActiveByAreaAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "Pashto");
-					provinces = regionsList;// filteredRegionList;
+				if (geographyLevel.equals(CampaignFormMetaGeographyLevel.REGION)) {
+					System.out.println("Areais not null and geography level is area  ------------------------------");
 
-				} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-					regionsList = FacadeProvider.getRegionFacade().getAllActiveByAreaAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "Dari");
-					provinces = regionsList; //filteredRegionList;
+					criteria.area(e.getValue());
+					if (!openData) {
+						remove(vertical);
+						buildForm(true);
+						vertical.setVisible(true);
+					}
+
 				} else {
-					regionsList = FacadeProvider.getRegionFacade().getAllActiveByAreaAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
-					provinces = regionsList; // filteredRegionList;
+					System.out
+							.println("Areais not null and geography level is not area  ------------------------------");
 
+					criteria.area(e.getValue());
+					List<RegionReferenceDto> regionsList = new ArrayList<>();
+					if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
+						regionsList = FacadeProvider.getRegionFacade().getAllActiveByAreaAndSelectedInCampaign(
+								e.getValue().getUuid(), criteria.getCampaign().getUuid(), "Pashto");
+						provinces = regionsList;// filteredRegionList;
+					} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
+						regionsList = FacadeProvider.getRegionFacade().getAllActiveByAreaAndSelectedInCampaign(
+								e.getValue().getUuid(), criteria.getCampaign().getUuid(), "Dari");
+						provinces = regionsList; // filteredRegionList;
+					} else {
+						regionsList = FacadeProvider.getRegionFacade().getAllActiveByAreaAndSelectedInCampaign(
+								e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
+						provinces = regionsList; // filteredRegionList;
+					}
+
+					cbRegion.clear();
+					cbRegion.setReadOnly(false);
+					cbRegion.setItems(provinces);
+					cbDistrict.clear();
+					cbDistrict.setReadOnly(true);
+					cbCommunity.clear();
+					cbCommunity.setReadOnly(true);
 				}
-
-				cbRegion.clear();
-				cbRegion.setReadOnly(false);
-				cbRegion.setItems(provinces);
-				cbDistrict.clear();
-				cbDistrict.setReadOnly(true);
-				cbCommunity.clear();
-				cbCommunity.setReadOnly(true);
 			} else {
+				System.out.println("Areais null and  ------------------------------");
+
 				criteria.area(null);
 				cbRegion.clear();
 				cbRegion.setReadOnly(true);
@@ -428,105 +463,123 @@ criteria.setCampaign(campaignReferenceDto);
 
 		cbRegion.addValueChangeListener(e -> {
 			if (e.getValue() != null) {
-				criteria.region(e.getValue());
-				List<DistrictReferenceDto> districtsList = new ArrayList<>();
-				List<DistrictReferenceDto> allDistrictList = new ArrayList<>();
 
-				if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
-					districtsList = FacadeProvider.getDistrictFacade().getAllActiveByRegionAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "Pashto");
+				if (geographyLevel.equals(CampaignFormMetaGeographyLevel.PROVINCE)) {
 
-					List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
-					if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
-						if (userProvider.getUser().getDistricts() != null
-								&& !userProvider.getUser().getDistricts().isEmpty()) {
-							// if the user selected district is amonths the active distgricts add them
-							for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
-								if (districtsList.contains(userDistrict)) {
-									filteredDistrictListByUserDistrict.add(userDistrict);
-								}
-							}
-							districts = filteredDistrictListByUserDistrict;
-						}
-					} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
-							&& userProvider.getUser().getDistrict() != null) {
-						DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
-						if (districtsList.contains(userDistrict)) {
-							filteredDistrictListByUserDistrict.add(userDistrict);
-						}
-						districts = filteredDistrictListByUserDistrict;
-					} else {
-						districts = districtsList;
+					System.out.println(
+							"province is  not null and geography level is  province  ------------------------------");
 
+					criteria.region(e.getValue());
+					if (!openData) {
+						remove(vertical);
+
+						buildForm(true);
+						vertical.setVisible(true);
 					}
 
-				} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
-					districtsList = FacadeProvider.getDistrictFacade().getAllActiveByRegionAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "Dari");
-			
-					List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
-					if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
-						if (userProvider.getUser().getDistricts() != null
-								&& !userProvider.getUser().getDistricts().isEmpty()) {
-							// if the user selected district is amonths the active distgricts add them
-							for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
-								if (districtsList.contains(userDistrict)) {
-									filteredDistrictListByUserDistrict.add(userDistrict);
-								}
-							}
-							districts = filteredDistrictListByUserDistrict;
-						}
-					} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
-							&& userProvider.getUser().getDistrict() != null) {
-						DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
-						if (districtsList.contains(userDistrict)) {
-							filteredDistrictListByUserDistrict.add(userDistrict);
-						}
-						districts = filteredDistrictListByUserDistrict;
-					} else {
-						districts = districtsList;
-
-					}
 				} else {
-					districtsList = FacadeProvider.getDistrictFacade().getAllActiveByRegionAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
-		
-					
-//					System.out.println("34343434343488888888888888888888" + districtsList);
 
-					
-					List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
-					if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
-						if (userProvider.getUser().getDistricts() != null
-								&& !userProvider.getUser().getDistricts().isEmpty()) {
-							// if the user selected district is amonths the active distgricts add them
-							for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
-								if (districtsList.contains(userDistrict)) {
-									filteredDistrictListByUserDistrict.add(userDistrict);
+					System.out.println(
+							"province is  not null and geography level is not province  ------------------------------");
+
+					criteria.region(e.getValue());
+					List<DistrictReferenceDto> districtsList = new ArrayList<>();
+
+					if (userProvider.getUser().getLanguage().toString().equals("Pashto")) {
+						districtsList = FacadeProvider.getDistrictFacade().getAllActiveByRegionAndSelectedInCampaign(
+								e.getValue().getUuid(), criteria.getCampaign().getUuid(), "Pashto");
+						List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
+						if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
+							if (userProvider.getUser().getDistricts() != null
+									&& !userProvider.getUser().getDistricts().isEmpty()) {
+								// if the user selected district is amonths the active distgricts add them
+								for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
+									if (districtsList.contains(userDistrict)) {
+										filteredDistrictListByUserDistrict.add(userDistrict);
+									}
 								}
+								districts = filteredDistrictListByUserDistrict;
+							}
+						} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
+								&& userProvider.getUser().getDistrict() != null) {
+							DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
+							if (districtsList.contains(userDistrict)) {
+								filteredDistrictListByUserDistrict.add(userDistrict);
 							}
 							districts = filteredDistrictListByUserDistrict;
+						} else {
+							districts = districtsList;
+
 						}
-						
+
+					} else if (userProvider.getUser().getLanguage().toString().equals("Dari")) {
+						districtsList = FacadeProvider.getDistrictFacade().getAllActiveByRegionAndSelectedInCampaign(
+								e.getValue().getUuid(), criteria.getCampaign().getUuid(), "Dari");
+
+						List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
+						if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
+							if (userProvider.getUser().getDistricts() != null
+									&& !userProvider.getUser().getDistricts().isEmpty()) {
+								// if the user selected district is amonths the active distgricts add them
+								for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
+									if (districtsList.contains(userDistrict)) {
+										filteredDistrictListByUserDistrict.add(userDistrict);
+									}
+								}
+								districts = filteredDistrictListByUserDistrict;
+							}
+						} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
+								&& userProvider.getUser().getDistrict() != null) {
+							DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
+							if (districtsList.contains(userDistrict)) {
+								filteredDistrictListByUserDistrict.add(userDistrict);
+							}
+							districts = filteredDistrictListByUserDistrict;
+						} else {
+							districts = districtsList;
+
+						}
+					} else {
+						districtsList = FacadeProvider.getDistrictFacade().getAllActiveByRegionAndSelectedInCampaign(
+								e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
+
+						List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
+						if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
+							if (userProvider.getUser().getDistricts() != null
+									&& !userProvider.getUser().getDistricts().isEmpty()) {
+								// if the user selected district is amonths the active distgricts add them
+								for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
+									if (districtsList.contains(userDistrict)) {
+										filteredDistrictListByUserDistrict.add(userDistrict);
+									}
+								}
+								districts = filteredDistrictListByUserDistrict;
+							}
+
 //						System.out.println("000000000088888888888888888888");
 
-					} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
-							&& userProvider.getUser().getDistrict() != null) {
+						} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
+								&& userProvider.getUser().getDistrict() != null) {
 //						System.out.println("12212121212121288888888888888888888");
-						DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
-						if (districtsList.contains(userDistrict)) {
-							filteredDistrictListByUserDistrict.add(userDistrict);
-						}
-						districts = filteredDistrictListByUserDistrict;
-					} else {
+							DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
+							if (districtsList.contains(userDistrict)) {
+								filteredDistrictListByUserDistrict.add(userDistrict);
+							}
+							districts = filteredDistrictListByUserDistrict;
+						} else {
 //						System.out.println("3434343434348888888888888888888899999" + districtsList);
 
-						districts = districtsList;
+							districts = districtsList;
 
+						}
 					}
-				}
-				cbDistrict.setReadOnly(false);
+					cbDistrict.setReadOnly(false);
 
-				cbDistrict.setItems(districts);
-				cbCommunity.clear();
-				cbCommunity.setReadOnly(true);
+					cbDistrict.setItems(districts);
+					cbCommunity.clear();
+					cbCommunity.setReadOnly(true);
+
+				}
 			} else {
 				criteria.region(null);
 				cbDistrict.clear();
@@ -537,50 +590,31 @@ criteria.setCampaign(campaignReferenceDto);
 
 		});
 
-//		logger.debug(checkDistrictEntry + "checkingggggggggggggggggggggggggggggg" + campaignFormMetaDto);
-		if (isDistrictEntry) {
-			cbDistrict.addValueChangeListener(e -> {
-				if (e.getValue() != null) {
-					communities = FacadeProvider.getCommunityFacade().getAllActiveClustersDistrictAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
-					cbCommunity.clear();
-					cbCommunity.setReadOnly(false);
-					;
-					communities.sort(Comparator.comparingInt(CommunityReferenceDto::getNumber));
+		cbDistrict.addValueChangeListener(e -> {
+			if (e.getValue() != null) {
 
-					cbCommunity.setItems(communities);
-					cbCommunity.setValue(communities.get(0));
-					cbCommunity.setItemLabelGenerator(itm -> {
-						CommunityReferenceDto dcfv = (CommunityReferenceDto) itm;
-						return dcfv.getNumber() + " | " + dcfv.getCaption();
-					});
+				if (geographyLevel.equals(CampaignFormMetaGeographyLevel.DISTRICT)) {
 
-//					CampaignReferenceDto campaignReferenceDto = (CampaignReferenceDto) cbCampaign.getValue();
+					System.out.println(
+							"district is  not null and geography level is district  ------------------------------");
 
-					logger.debug(e.getValue().getUuid() + "11111111-------- " + campaignReferenceDto.getUuid()
-							+ " ----!!!!!!!!!!!!!!!!!!!!!!: " + AgeGroup.AGE_0_4);
-					// Incase theses a problem with population group reenable this and set it up for
-					// clusters
-//					Integer comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationCountByType(
-//							e.getValue().getUuid(), campaignReferenceDto.getUuid(), AgeGroup.AGE_0_4);
+					criteria.district(e.getValue());
+					if (!openData) {
+						remove(vertical);
 
-					Long comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationCountByType(
-							e.getValue().getUuid(), campaignReferenceDto.getUuid(), AgeGroup.AGE_0_4);
+						buildForm(true);
+						vertical.setVisible(true);
+					}
 
-					logger.debug(" ========================== " + campaignReferenceDto.getUuid());
-
-					VaadinService.getCurrentRequest().getWrappedSession().setAttribute("populationdata", comdto);
 				} else {
-					cbCommunity.clear();
-					cbCommunity.setReadOnly(true);
-					;
-				}
-			});
-		} else {
-			cbDistrict.addValueChangeListener(e -> {
-				if (e.getValue() != null) {
+
+					System.out.println(
+							"district is  not null and geography level is not district  ------------------------------");
+
 					criteria.district(e.getValue());
 
-					communities = FacadeProvider.getCommunityFacade().getAllActiveClustersDistrictAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
+					communities = FacadeProvider.getCommunityFacade().getAllActiveClustersDistrictAndSelectedInCampaign(
+							e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
 					cbCommunity.clear();
 					cbCommunity.setReadOnly(false);
 					;
@@ -591,27 +625,73 @@ criteria.setCampaign(campaignReferenceDto);
 						CommunityReferenceDto dcfv = (CommunityReferenceDto) itm;
 						return dcfv.getNumber() + " | " + dcfv.getCaption();
 					});
-
-					logger.debug(
-							e.getValue().getUuid() + "11111111xxxxxxxxxxxx-------- " + campaignReferenceDto.getUuid()
-									+ " ----!!!!!!xxxxxxxxxxxxxxxxx!!!!!!!!!!!!!!!!: " + AgeGroup.AGE_0_4);
-
-//					Integer comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationByType(
-//							e.getValue().getUuid(), campaignReferenceDto.getUuid(), AgeGroup.AGE_0_4);
-
 					Long comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationCountByType(
 							e.getValue().getUuid(), campaignReferenceDto.getUuid(), AgeGroup.AGE_0_4);
-
-					logger.debug(" ============xxxxxxxxxxxxx============== " + campaignReferenceDto.getUuid());
-
 					VaadinService.getCurrentRequest().getWrappedSession().setAttribute("populationdata", comdto);
-				} else {
-					criteria.district(null);
-					cbCommunity.clear();
-					cbCommunity.setReadOnly(true);
 				}
-			});
-		}
+
+			} else {
+
+				System.out.println("district is  null   ------------------------------");
+
+				criteria.district(null);
+				cbCommunity.clear();
+				cbCommunity.setReadOnly(true);
+			}
+		});
+
+//		if (geographyLevel == CampaignFormMetaGeographyLevel.DISTRICT) {
+//			cbDistrict.addValueChangeListener(e -> {
+//				if (e.getValue() != null) {
+//					communities = FacadeProvider.getCommunityFacade().getAllActiveClustersDistrictAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
+//					cbCommunity.clear();
+//					cbCommunity.setReadOnly(false);
+//					;
+//					communities.sort(Comparator.comparingInt(CommunityReferenceDto::getNumber));
+//
+//					cbCommunity.setItems(communities);
+//					cbCommunity.setValue(communities.get(0));
+//					cbCommunity.setItemLabelGenerator(itm -> {
+//						CommunityReferenceDto dcfv = (CommunityReferenceDto) itm;
+//						return dcfv.getNumber() + " | " + dcfv.getCaption();
+//					});
+// 
+//					Long comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationCountByType(
+//							e.getValue().getUuid(), campaignReferenceDto.getUuid(), AgeGroup.AGE_0_4);
+// 
+//					VaadinService.getCurrentRequest().getWrappedSession().setAttribute("populationdata", comdto);
+//				} else {
+//					cbCommunity.clear();
+//					cbCommunity.setReadOnly(true);
+//					;
+//				}
+//			});
+//		} else {
+//			cbDistrict.addValueChangeListener(e -> {
+//				if (e.getValue() != null) {
+//					criteria.district(e.getValue());
+//
+//					communities = FacadeProvider.getCommunityFacade().getAllActiveClustersDistrictAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
+//					cbCommunity.clear();
+//					cbCommunity.setReadOnly(false);
+//					;
+//					communities.sort(Comparator.comparingInt(CommunityReferenceDto::getNumber));
+//
+//					cbCommunity.setItems(communities);
+//					cbCommunity.setItemLabelGenerator(itm -> {
+//						CommunityReferenceDto dcfv = (CommunityReferenceDto) itm;
+//						return dcfv.getNumber() + " | " + dcfv.getCaption();
+//					});
+//					Long comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationCountByType(
+//							e.getValue().getUuid(), campaignReferenceDto.getUuid(), AgeGroup.AGE_0_4);
+//					VaadinService.getCurrentRequest().getWrappedSession().setAttribute("populationdata", comdto);
+//				} else {
+//					criteria.district(null);
+//					cbCommunity.clear();
+//					cbCommunity.setReadOnly(true);
+//				}
+//			});
+//		}
 		cbCommunity.addValueChangeListener(e -> {
 
 			if (!openData) {
@@ -693,7 +773,7 @@ criteria.setCampaign(campaignReferenceDto);
 //		this.formElements = formElements;
 		this.campaignReferenceDto = campaignReferenceDto;
 		this.campaignFormMeta = campaignFormMetaUUID;
-		this.isDistrictEntry = isDistrictEntry;
+		this.geographyLevel = geographyLevel;
 		this.formName = formName;
 
 		cancelFormDataUnitAssignment.addClickListener(e -> {
@@ -731,33 +811,35 @@ criteria.setCampaign(campaignReferenceDto);
 			}
 		});
 
-		System.out.println(isDistrictEntry + "campaignFormBuildercampaignFormBuildercampaignFormBuilder");
+		System.out.println(geographyLevel + "campaignFormBuildercampaignFormBuildercampaignFormBuilder");
 
-		if (!isDistrictEntry) {
+		if (geographyLevel.equals(CampaignFormMetaGeographyLevel.CLUSTER)) {
 			if (userProvider.hasUserRight(UserRight.REASSIGN_CAMPAIGN_FORM_DATA_CLUSTER)) {
 				reassigmentLayout.add(reassignDataConfigUnit, updateFormDataUnitAssignment,
 						cancelFormDataUnitAssignment);
-
 			}
 
 		} else {
-			cbCommunity.setVisible(false);
+			if (geographyLevel.equals(CampaignFormMetaGeographyLevel.REGION)) {
+				cbRegion.setVisible(false);
+				cbDistrict.setVisible(false);
+				cbCommunity.setVisible(false);
+
+			} else if (geographyLevel.equals(CampaignFormMetaGeographyLevel.PROVINCE)) {
+				cbDistrict.setVisible(false);
+				cbCommunity.setVisible(false);
+			} else if (geographyLevel.equals(CampaignFormMetaGeographyLevel.DISTRICT)) {
+				cbCommunity.setVisible(false);
+			}
 		}
 
 		if (uuidForm != null) {
 
 			if (userProvider.hasUserRight(UserRight.REASSIGN_CAMPAIGN_FORM_DATA_CLUSTER)) {
-//			if (currentUser.getUserRoles().contains(UserRole.ADMIN)
-//					|| currentUser.getUserRoles().contains(UserRole.COMMUNITY_INFORMANT)) {
-				System.out.println(isDistrictEntry + "campaignFormBuildercampaignFormBuildercampaignFormBuilder");
+				System.out.println(geographyLevel + "campaignFormBuildercampaignFormBuildercampaignFormBuilder");
 
-//				
-//					vertical_.add(cbCampaign, formDate, cbArea, cbRegion, cbDistrict, cbCommunity);
-//
-//				}else {
 				vertical_.add(cbCampaign, formDate, cbArea, cbRegion, cbDistrict, cbCommunity, reassigmentLayout);
 
-//				}
 			} else {
 				vertical_.add(cbCampaign, formDate, cbArea, cbRegion, cbDistrict, cbCommunity);
 
@@ -824,65 +906,54 @@ criteria.setCampaign(campaignReferenceDto);
 
 			List<DistrictReferenceDto> districtsList = FacadeProvider.getDistrictFacade()
 					.getAllActiveByRegion(userProvider.getUser().getRegion().getUuid());
-		
-			
-
 
 			Map<String, DistrictReferenceDto> uniqueMap = new LinkedHashMap<>();
 			for (PopulationDataDto popDtoc : popDto) {
-				System.out.println(popDtoc.getDistrict_id() + " districtsList districtsList -------" + popDtoc.getDistrict());
+				System.out.println(
+						popDtoc.getDistrict_id() + " districtsList districtsList -------" + popDtoc.getDistrict());
 
-				
-			    if (popDtoc == null || popDtoc.getDistrict_id() == null) {
-			        continue;
-			    }
-			    DistrictReferenceDto district = FacadeProvider.getDistrictFacade().getDistrictReferenceByUuid(popDtoc.getDistrict_id());
-			    if (district.getUuid() == null) {
-			        continue;
-			    }
-			    // keeps FIRST occurrence only
-			    uniqueMap.putIfAbsent(district.getUuid(), district);
+				if (popDtoc == null || popDtoc.getDistrict_id() == null) {
+					continue;
+				}
+				DistrictReferenceDto district = FacadeProvider.getDistrictFacade()
+						.getDistrictReferenceByUuid(popDtoc.getDistrict_id());
+				if (district.getUuid() == null) {
+					continue;
+				}
+				// keeps FIRST occurrence only
+				uniqueMap.putIfAbsent(district.getUuid(), district);
 			}
 
 			List<DistrictReferenceDto> allDistrictList = new ArrayList<>(uniqueMap.values());
-			
+
 			System.out.println(districtsList + " districtsList districtsList -------");
 
 			System.out.println(allDistrictList + " allDistrictList allDistrictList -------");
 
-	
-			Set<String> populationDistrictUuids = allDistrictList.stream()
-			        .filter(Objects::nonNull)
-			        .map(DistrictReferenceDto::getUuid)
-			        .filter(Objects::nonNull)
-			        .collect(Collectors.toSet());
-			
- 
-			List<DistrictReferenceDto> filteredDistrictList = districtsList.stream()
-				    .filter(Objects::nonNull)
-				    .filter(d -> d.getUuid() != null)
-				    .filter(d -> populationDistrictUuids.contains(d.getUuid()))
-				    .distinct()
-				    .collect(Collectors.toList());
-			
- 
+			Set<String> populationDistrictUuids = allDistrictList.stream().filter(Objects::nonNull)
+					.map(DistrictReferenceDto::getUuid).filter(Objects::nonNull).collect(Collectors.toSet());
+
+			List<DistrictReferenceDto> filteredDistrictList = districtsList.stream().filter(Objects::nonNull)
+					.filter(d -> d.getUuid() != null).filter(d -> populationDistrictUuids.contains(d.getUuid()))
+					.distinct().collect(Collectors.toList());
 
 			List<DistrictReferenceDto> filteredDistrictListByUserDistrict = new ArrayList<>();
 
-			if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) { 
+			if (userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)) {
 				if (userProvider.getUser().getDistricts() != null && !userProvider.getUser().getDistricts().isEmpty()) {
 					// if the user selected district is amonths the active distgricts add them
 					for (DistrictReferenceDto userDistrict : userProvider.getUser().getDistricts()) {
 						if (filteredDistrictList.contains(userDistrict)) {
 							filteredDistrictListByUserDistrict.add(userDistrict);
 						}
-						System.out.println(filteredDistrictListByUserDistrict + " filteredDistrictListByUserDistrictfilteredDistrictListByUserDistrict");
+						System.out.println(filteredDistrictListByUserDistrict
+								+ " filteredDistrictListByUserDistrictfilteredDistrictListByUserDistrict");
 					}
 					districts = filteredDistrictListByUserDistrict;
 				}
 			} else if (!userProvider.getUser().getUserRoles().contains(UserRole.SURVEILLANCE_OFFICER)
 					&& userProvider.getUser().getDistrict() != null) {
-				
+
 				DistrictReferenceDto userDistrict = userProvider.getUser().getDistrict();
 				if (filteredDistrictList.contains(userDistrict)) {
 					filteredDistrictListByUserDistrict.add(userDistrict);
@@ -891,8 +962,9 @@ criteria.setCampaign(campaignReferenceDto);
 			} else {
 				System.out.println("3434343434348888888888888888888899999" + filteredDistrictList);
 				districts = filteredDistrictList;
-			};
-			
+			}
+			;
+
 			cbDistrict.setItems(districts);
 		}
 
@@ -968,14 +1040,41 @@ criteria.setCampaign(campaignReferenceDto);
 			String formattedDatex = localDate.format(formatterx);
 
 			formDate.setValue(formattedDatex);
-			cbArea.clear();
-			cbArea.setValue(formData.getArea());
-			cbRegion.clear();
-			cbRegion.setValue(formData.getRegion());
-			cbDistrict.clear();
-			cbDistrict.setValue(formData.getDistrict());
-			cbCommunity.clear();
-			cbCommunity.setValue(formData.getCommunity());
+			switch (geographyLevel.toString()) {
+			case "CLUSTER" -> {
+				cbArea.clear();
+				cbArea.setValue(formData.getArea());
+				cbRegion.clear();
+				cbRegion.setValue(formData.getRegion());
+				cbDistrict.clear();
+				cbDistrict.setValue(formData.getDistrict());
+				cbCommunity.clear();
+				cbCommunity.setValue(formData.getCommunity());
+			}
+
+			case "DISTRICT" -> {
+				cbArea.clear();
+				cbArea.setValue(formData.getArea());
+				cbRegion.clear();
+				cbRegion.setValue(formData.getRegion());
+				cbDistrict.clear();
+				cbDistrict.setValue(formData.getDistrict());
+
+			}
+
+			case "PROVINCE" -> {
+				cbArea.clear();
+				cbArea.setValue(formData.getArea());
+				cbRegion.clear();
+				cbRegion.setValue(formData.getRegion());
+
+			}
+
+			case "REGION" -> {
+				cbArea.clear();
+				cbArea.setValue(formData.getArea());
+			}
+			}
 
 			if (formData.getFormValues() != null) {
 				System.out.println("gggggggggggggggggggggggggggggg");
@@ -1046,22 +1145,22 @@ criteria.setCampaign(campaignReferenceDto);
 
 //					optionsValues = formElement.getOptions().stream()
 //							.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));
-					
-					//Updating the method that fetchest opttion for multiselects and dropdowns to always follow 
-					//order if it's provided 
-					
-				optionsValues = formElement.getOptions().stream()
-						    .sorted(Comparator.comparing(o -> {
-						        if (o.getOrder() == null || o.getOrder().isEmpty()) {
-						            return Integer.MAX_VALUE;
-						        }
-						        try {
-						            return Integer.parseInt(o.getOrder());
-						        } catch (NumberFormatException e) {
-						            return Integer.MAX_VALUE;
-						        }
-						    }))
-						    .collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption, (e1, e2) -> e1, LinkedHashMap::new));
+
+					// Updating the method that fetchest opttion for multiselects and dropdowns to
+					// always follow
+					// order if it's provided
+
+					optionsValues = formElement.getOptions().stream().sorted(Comparator.comparing(o -> {
+						if (o.getOrder() == null || o.getOrder().isEmpty()) {
+							return Integer.MAX_VALUE;
+						}
+						try {
+							return Integer.parseInt(o.getOrder());
+						} catch (NumberFormatException e) {
+							return Integer.MAX_VALUE;
+						}
+					})).collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption, (e1, e2) -> e1,
+							LinkedHashMap::new));
 
 					if (userLocale != null) {
 						if (translationsOpt != null) {
@@ -1075,19 +1174,21 @@ criteria.setCampaign(campaignReferenceDto);
 //															.filter(c -> c != null && c.getCaption() != null)
 //															.collect(Collectors.toMap(MapperUtil::getKey,
 //																	MapperUtil::getCaption));
-													//DOing the same update to the ordering with translation
+													// DOing the same update to the ordering with translation
 													userOptTranslations = optionsList.getOptions().stream()
-														    .sorted(Comparator.comparing(o -> {
-														        if (o.getOrder() == null || o.getOrder().isEmpty()) {
-														            return Integer.MAX_VALUE;
-														        }
-														        try {
-														            return Integer.parseInt(o.getOrder());
-														        } catch (NumberFormatException e) {
-														            return Integer.MAX_VALUE;
-														        }
-														    }))
-														    .collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption, (e1, e2) -> e1, LinkedHashMap::new));
+															.sorted(Comparator.comparing(o -> {
+																if (o.getOrder() == null || o.getOrder().isEmpty()) {
+																	return Integer.MAX_VALUE;
+																}
+																try {
+																	return Integer.parseInt(o.getOrder());
+																} catch (NumberFormatException e) {
+																	return Integer.MAX_VALUE;
+																}
+															}))
+															.collect(Collectors.toMap(MapperUtil::getKey,
+																	MapperUtil::getCaption, (e1, e2) -> e1,
+																	LinkedHashMap::new));
 
 												}
 											}));
@@ -1227,12 +1328,12 @@ criteria.setCampaign(campaignReferenceDto);
 						toggle.getStyle().set("color", "Green");
 						toggle.getStyle().set("background", "white");
 //						toggle.setHelperText(formElement.getHint());
-						toggle.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));							
+						toggle.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	toggle.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(toggle);
-					    }					    
+						if (isRTLLanguage()) {
+							toggle.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(toggle);
+						}
 						setFieldValue(toggle, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 
 						vertical.add(toggle);
@@ -1262,10 +1363,10 @@ criteria.setCampaign(campaignReferenceDto);
 						textField.setSizeFull();
 						textField.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	textField.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(textField);
-					    }
+						if (isRTLLanguage()) {
+							textField.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(textField);
+						}
 						setFieldValue(textField, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(textField);
@@ -1352,10 +1453,10 @@ criteria.setCampaign(campaignReferenceDto);
 						numberField.setSizeFull();
 						numberField.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	numberField.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(numberField);
-					    }
+						if (isRTLLanguage()) {
+							numberField.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(numberField);
+						}
 						numberField.setAllowedCharPattern("[0-9.]*"); // allow digits and one decimal point
 
 //					setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
@@ -1532,10 +1633,10 @@ criteria.setCampaign(campaignReferenceDto);
 						numberField.setSizeFull();
 						numberField.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	numberField.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(numberField);
-					    }
+						if (isRTLLanguage()) {
+							numberField.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(numberField);
+						}
 						setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(availableCountries, numberField);
@@ -1616,10 +1717,10 @@ criteria.setCampaign(campaignReferenceDto);
 						integerField.setMin(0);
 						integerField.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	integerField.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(integerField);
-					    }
+						if (isRTLLanguage()) {
+							integerField.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(integerField);
+						}
 						integerField.setAllowedCharPattern("[0-9.]*"); // allow digits and one decimal point
 
 						setFieldValue(integerField, type, value, optionsValues, formElement.getDefaultvalue(), false,
@@ -1695,10 +1796,10 @@ criteria.setCampaign(campaignReferenceDto);
 						numberField.setMin(0);
 						numberField.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	numberField.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(numberField);
-					    }
+						if (isRTLLanguage()) {
+							numberField.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(numberField);
+						}
 						setFieldValue(numberField, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(numberField);
@@ -1822,10 +1923,10 @@ criteria.setCampaign(campaignReferenceDto);
 						textArea.setSizeFull();
 						textArea.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	textArea.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(textArea);
-					    }
+						if (isRTLLanguage()) {
+							textArea.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(textArea);
+						}
 						setFieldValue(textArea, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 						vertical.add(textArea);
 						fields.put(formElement.getId(), textArea);
@@ -1852,10 +1953,10 @@ criteria.setCampaign(campaignReferenceDto);
 						radioGroup.setSizeFull();
 						radioGroup.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	radioGroup.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(radioGroup);
-					    }
+						if (isRTLLanguage()) {
+							radioGroup.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(radioGroup);
+						}
 						setFieldValue(radioGroup, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(radioGroup);
@@ -1884,10 +1985,10 @@ criteria.setCampaign(campaignReferenceDto);
 						radioGroupVert.setSizeFull();
 						radioGroupVert.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	radioGroupVert.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(radioGroupVert);
-					    }
+						if (isRTLLanguage()) {
+							radioGroupVert.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(radioGroupVert);
+						}
 						setFieldValue(radioGroupVert, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(radioGroupVert);
@@ -1952,7 +2053,7 @@ criteria.setCampaign(campaignReferenceDto);
 						List<String> sortedKeys = new ArrayList<>(data.keySet()); // Create a list of keys
 						if (!isNotSorted) {
 							if (dataOrder != null) {
-								data.keySet();		 
+								data.keySet();
 							}
 						}
 
@@ -1965,10 +2066,10 @@ criteria.setCampaign(campaignReferenceDto);
 						});
 						select.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	select.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(select);
-					    }
+						if (isRTLLanguage()) {
+							select.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(select);
+						}
 						setFieldValue(select, type, value, optionsValues, formElement.getDefaultvalue(), false, null);
 
 						vertical.add(select);
@@ -2004,10 +2105,10 @@ criteria.setCampaign(campaignReferenceDto);
 						checkboxGroup.setSizeFull();
 						checkboxGroup.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	checkboxGroup.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(checkboxGroup);
-					    }
+						if (isRTLLanguage()) {
+							checkboxGroup.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(checkboxGroup);
+						}
 						setFieldValue(checkboxGroup, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(checkboxGroup);
@@ -2027,10 +2128,10 @@ criteria.setCampaign(campaignReferenceDto);
 						checkboxGroup.setClassName("customTextWrap");
 						checkboxGroup.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	checkboxGroup.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(checkboxGroup);
-					    }
+						if (isRTLLanguage()) {
+							checkboxGroup.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(checkboxGroup);
+						}
 						boolean isNotSorted = false;
 						try {
 							if (formElement.getOptions().stream()
@@ -2047,10 +2148,10 @@ criteria.setCampaign(campaignReferenceDto);
 									.collect(Collectors.toMap(MapperUtil::getKey, MapperUtil::getCaption));
 							isNotSorted = true;
 						}
-						
+
 						final HashMap<String, String> dataOrder = (HashMap<String, String>) campaignFormElementOptions
 								.getOptionsListOrder();
-						
+
 						List<String> sortedKeys = new ArrayList<>(data.keySet()); // Create a list of keys
 						if (!isNotSorted) {
 							if (dataOrder != null) {
@@ -2124,10 +2225,10 @@ criteria.setCampaign(campaignReferenceDto);
 						}
 						datePicker.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	datePicker.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(datePicker);
-					    }
+						if (isRTLLanguage()) {
+							datePicker.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(datePicker);
+						}
 						setFieldValue(datePicker, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(datePicker);
@@ -2149,10 +2250,10 @@ criteria.setCampaign(campaignReferenceDto);
 						validEmailField.setId(formElement.getId());
 						validEmailField.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	validEmailField.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(validEmailField);
-					    }
+						if (isRTLLanguage()) {
+							validEmailField.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(validEmailField);
+						}
 						setFieldValue(validEmailField, type, value, optionsValues, formElement.getDefaultvalue(), false,
 								null);
 						vertical.add(validEmailField);
@@ -2189,10 +2290,10 @@ criteria.setCampaign(campaignReferenceDto);
 						timePicker.setAutoOpen(true);
 						timePicker.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
 						// ADD RTL STYLING
-					    if (isRTLLanguage()) {
-					    	timePicker.getElement().setAttribute("dir", "rtl");
-					        applyRTLStylingToField(timePicker);
-					    }
+						if (isRTLLanguage()) {
+							timePicker.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(timePicker);
+						}
 						timePicker.addValueChangeListener(e -> {
 							System.out.println("Value Changed-------" + e.getValue());
 
@@ -2854,8 +2955,8 @@ criteria.setCampaign(campaignReferenceDto);
 						|| type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.EMAIL
 						|| type == CampaignFormElementType.TIME || type == CampaignFormElementType.PHONE
 						|| type == CampaignFormElementType.DECIMAL || type == CampaignFormElementType.RANGE
-						|| type == CampaignFormElementType.LINEBREAK)) {// &&
-																		// styles.contains(CampaignFormElementStyle.ROW))
+						|| type == CampaignFormElementType.LINEBREAK || type == CampaignFormElementType.IMAGE)) {// &&
+			// styles.contains(CampaignFormElementStyle.ROW))
 
 			return 12;
 		}
@@ -2889,7 +2990,7 @@ criteria.setCampaign(campaignReferenceDto);
 						|| type == CampaignFormElementType.DECIMAL || type == CampaignFormElementType.EMAIL
 						|| type == CampaignFormElementType.TIME || type == CampaignFormElementType.PHONE
 						|| type == CampaignFormElementType.RANGE || type == CampaignFormElementType.DATE
-						|| type == CampaignFormElementType.TEXTBOX)
+						|| type == CampaignFormElementType.TEXTBOX || type == CampaignFormElementType.IMAGE)
 				// && !styles.contains(CampaignFormElementStyle.ROW)
 				|| type == CampaignFormElementType.LABEL || type == CampaignFormElementType.SECTION) {
 			return 100f;
@@ -3136,7 +3237,7 @@ criteria.setCampaign(campaignReferenceDto);
 
 		return defaultCaption;
 	}
-	
+
 	public String get18nHint(String hintId, String defaultHint) {
 		if (userTranslationsHint != null && userTranslationsHint.containsKey(hintId)) {
 			return userTranslationsHint.get(hintId);
@@ -3150,8 +3251,25 @@ criteria.setCampaign(campaignReferenceDto);
 			Component field = fields.get(id);
 
 			if (imageFieldValues.containsKey(id)) {
-				CampaignFormImageValue imageValue = imageFieldValues.get(id);
-				return new CampaignFormDataEntry(id, imageValue != null ? imageValue.toMap() : null);
+				List<CampaignFormImageValue> images = imageFieldValues.get(id);
+
+				CampaignFormElement element = formElements.stream().filter(e -> id.equals(e.getId())).findFirst()
+						.orElse(null);
+
+				boolean isMultiple = element != null && Boolean.TRUE.equals(element.getImageMultiple());
+
+				if (images == null || images.isEmpty()) {
+					return new CampaignFormDataEntry(id, null);
+				}
+
+				if (isMultiple) {
+					List<Map<String, Object>> mapped = images.stream().filter(Objects::nonNull)
+							.map(CampaignFormImageValue::toMap).collect(Collectors.toList());
+					return new CampaignFormDataEntry(id, mapped);
+				} else {
+					CampaignFormImageValue first = images.get(0);
+					return new CampaignFormDataEntry(id, first != null ? first.toMap() : null);
+				}
 			}
 
 			if (field instanceof DatePicker) {
@@ -3220,20 +3338,77 @@ criteria.setCampaign(campaignReferenceDto);
 		}).collect(Collectors.toList());
 	}
 
+	private String buildImageUrl(String imageId) {
+		if (StringUtils.isBlank(imageId)) {
+			return null;
+		}
+		// Use the same REST context as in enrichSingleImageMap
+		return "/sormas-rest/apmisrestserver/image/" + imageId;
+	}
+
+	private StreamResource buildImageResource(String imageId) {
+		if (StringUtils.isBlank(imageId)) {
+			return null;
+		}
+
+		StreamResource resource = new StreamResource("image_" + imageId, () -> {
+			try {
+				byte[] bytes = FacadeProvider.getCampaignFormImageFacade().readImage(imageId);
+				if (bytes == null || bytes.length == 0) {
+					return new ByteArrayInputStream(new byte[0]);
+				}
+				return new ByteArrayInputStream(bytes);
+			} catch (IOException e) {
+				return new ByteArrayInputStream(new byte[0]);
+			}
+		});
+
+		// Set the content type correctly
+		try {
+			DocumentDto doc = FacadeProvider.getDocumentFacade().getDocumentByUuid(imageId);
+			if (doc != null && StringUtils.isNotBlank(doc.getMimeType())) {
+				resource.setContentType(doc.getMimeType());
+			} else {
+				resource.setContentType("image/jpeg");
+			}
+		} catch (Exception e) {
+			resource.setContentType("image/jpeg");
+		}
+
+		return resource;
+	}
+
 	private VerticalLayout buildImageUploadField(CampaignFormElement formElement, Object existingValue,
 			TextField imageStateField) {
 		VerticalLayout container = new VerticalLayout();
 		container.setPadding(false);
 		container.setSpacing(true);
+		container.setId(formElement.getId() + "-image-layout"); // optional
+		imageLayouts.put(formElement.getId(), container);
 
-		Label caption = new Label(get18nCaption(formElement.getId(), formElement.getCaption()));
-		Label status = new Label("No image selected");
+		HorizontalLayout captionLayout = new HorizontalLayout();
+		Label captionLabel = new Label(get18nCaption(formElement.getId(), formElement.getCaption()));
+		Span requiredIndicator = new Span("*");
+		requiredIndicator.getStyle().set("color", "var(--lumo-required-field-indicator-color)");
+		if (Boolean.TRUE.equals(formElement.isImportant())) {
+			captionLayout.add(captionLabel, requiredIndicator);
+		} else {
+			captionLayout.add(captionLabel);
+		}
+
+		Integer maxSizeMb = formElement.getImageMaxUploadSizeMb() != null ? formElement.getImageMaxUploadSizeMb() : 2;
+		long maxSizeBytes = (maxSizeMb != null && maxSizeMb > 0) ? maxSizeMb * 1024L * 1024L : 2 * 1024L * 1024L;
+
+		String sizeInfo = (maxSizeMb != null && maxSizeMb > 0) ? " (max " + maxSizeMb + " MB)" : maxSizeMb + " MB max";
+		Label status = new Label("No image selected" + sizeInfo);
+
 		status.getStyle().set("font-size", "12px");
 
 		MemoryBuffer buffer = new MemoryBuffer();
 		Upload upload = new Upload(buffer);
 		upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/webp", ".jpg", ".jpeg", ".png", ".webp");
 		upload.setDropAllowed(true);
+//		upload.getElement().setProperty("maxFileSize", maxSizeMb != null && maxSizeMb > 0 ? maxSizeMb * 1024L * 1024L : 2 * 1024 * 1024); // Set max file size in bytes
 		upload.setMaxFiles(formElement.getImageMaxCount() != null ? formElement.getImageMaxCount() : 1);
 
 		ProgressBar progressBar = new ProgressBar();
@@ -3241,35 +3416,45 @@ criteria.setCampaign(campaignReferenceDto);
 		progressBar.setMin(0);
 		progressBar.setMax(1);
 
-		com.vaadin.flow.component.html.Image inlineThumbnail = new com.vaadin.flow.component.html.Image();
-		inlineThumbnail.setWidth("140px");
-		inlineThumbnail.setHeight("100px");
-		inlineThumbnail.getStyle().set("object-fit", "cover");
-		inlineThumbnail.getStyle().set("border", "1px solid #d9d9d9");
-		inlineThumbnail.getStyle().set("border-radius", "4px");
-		inlineThumbnail.getStyle().set("cursor", "pointer");
-		inlineThumbnail.setVisible(false);
-		inlineThumbnail.getElement().addEventListener("click", e -> {
-			if (StringUtils.isNotBlank(inlineThumbnail.getSrc())) {
-				openImagePreviewDialog(inlineThumbnail.getSrc());
-			}
-		});
+		HorizontalLayout thumbnails = new HorizontalLayout();
+		thumbnails.setSpacing(true);
+		thumbnails.getStyle().set("flex-wrap", "wrap");
 
-		Button viewButton = new Button("View image");
-		viewButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+		Button viewButton = new Button("Preview");
+		viewButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		viewButtonVisibility(viewButton, false);
 
-		Button removeButton = new Button("Remove image");
+		Button removeButton = new Button("Clear");
 		removeButton.addClickListener(e -> {
 			imageFieldValues.remove(formElement.getId());
 			imageStateField.clear();
 			status.setText("No image selected");
-			clearInlineThumbnail(inlineThumbnail);
+			thumbnails.removeAll();
 			upload.setVisible(true);
 			removeButtonVisibility(removeButton, false);
 			viewButtonVisibility(viewButton, false);
+
+			List<CampaignFormImageValue> remaining = imageFieldValues.get(formElement.getId());
+			boolean hasValue = remaining != null && !remaining.isEmpty();
+			if (Boolean.TRUE.equals(formElement.isImportant()) && !hasValue) {
+				Component layout = imageLayouts.get(formElement.getId());
+				if (layout != null) {
+					layout.getElement().getStyle().set("border", "1px solid red");
+					layout.getElement().getStyle().set("background", "#ffe5e5");
+					layout.getElement().setProperty("error-background-set", "true");
+				}
+			} else {
+				// clear if already set
+				Component layout = imageLayouts.get(formElement.getId());
+				if (layout != null) {
+					layout.getElement().getStyle().remove("border");
+					layout.getElement().getStyle().remove("background");
+					layout.getElement().setProperty("error-background-set", null);
+				}
+			}
+
 		});
-		removeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+		removeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		removeButtonVisibility(removeButton, false);
 
 		upload.addStartedListener(event -> {
@@ -3285,35 +3470,115 @@ criteria.setCampaign(campaignReferenceDto);
 
 		upload.addSucceededListener(event -> {
 			try {
-				byte[] imageBytes = buffer.getInputStream().readAllBytes();
-				CampaignFormImageValue imageValue = new CampaignFormImageValue();
-				imageValue.setOriginalFileName(event.getFileName());
-				imageValue.setMimeType(event.getMIMEType());
-				imageValue.setOriginalSizeBytes((long) event.getContentLength());
-				imageValue.setCompressedSizeBytes((long) event.getContentLength());
-				imageValue.setSource(CampaignFormImageSource.WEB_UPLOAD);
+				byte[] originalBytes = buffer.getInputStream().readAllBytes();
+				long originalSize = originalBytes.length;
+				byte[] finalBytes = originalBytes;
+				boolean wasCompressed = false;
+				String detectedMime = detectMimeType(finalBytes, event.getFileName());
 
-				if (openData && StringUtils.isNotBlank(uuidForm)) {
-					imageValue = FacadeProvider.getCampaignFormImageFacade().uploadImage(uuidForm, imageValue, imageBytes);
-				} else {
-					imageValue.setLocalId("web-" + UUID.randomUUID());
-					imageValue = FacadeProvider.getCampaignFormImageFacade().normalizeImageValue(imageValue,
-							buildCurrentNamingContext());
+				if (originalSize > maxSizeBytes) {
+					// Compress/resize using compress image helper method
+					finalBytes = compressImage(originalBytes, maxSizeBytes);
+					wasCompressed = true;
 				}
 
-				imageFieldValues.put(formElement.getId(), imageValue);
-				imageStateField.setValue(imageValue.isUploaded() ? imageValue.getImageId() : imageValue.getLocalId());
-				status.setText("Selected: " + safeImageName(imageValue));
-				setInlineThumbnail(inlineThumbnail, imageValue.getMimeType(), imageBytes);
-				upload.setVisible(false);
+				CampaignFormImageValue uploaded = new CampaignFormImageValue();
+				uploaded.setOriginalFileName(event.getFileName());
+				uploaded.setMimeType(event.getMIMEType());
+				uploaded.setOriginalSizeBytes(originalSize);
+				uploaded.setCompressedSizeBytes((long) finalBytes.length);
+				uploaded.setSource(CampaignFormImageSource.WEB_UPLOAD);
+
+				// Generate the file name from the currently selected geography so the stored
+				// name reflects area/province/district/cluster instead of NA placeholders.
+				CampaignFormImageNamingContext namingContext = buildCurrentNamingContext();
+				String generatedBaseName = FacadeProvider.getCampaignFormImageFacade()
+						.generateImageFileName(namingContext);
+				uploaded.setGeneratedFileName(generatedBaseName + "."
+						+ resolveImageExtension(event.getFileName(), event.getMIMEType()));
+
+				uploaded = FacadeProvider.getCampaignFormImageFacade().uploadImage(imageUploadTargetUuid, uploaded,
+						finalBytes);
+
+				if (wasCompressed) {
+					Notification.show("Image was compressed/resized to meet the size limit (" + maxSizeMb + " MB).",
+							5000, Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
+				}
+
+				// If field supports multiple images, keep existing values and append current
+				// upload.
+				// With current map type (single value), we store latest in map but keep
+				// serialized
+				// list in imageStateField so backend receives list-compatible payload.
+				boolean isMultiple = Boolean.TRUE.equals(formElement.getImageMultiple());
+
+				Object existingRawState = imageStateField.getValue();
+				List<Map<String, Object>> imageListState = new ArrayList<>();
+
+				if (isMultiple) {
+					String rawState = existingRawState != null ? existingRawState.toString() : null;
+					if (StringUtils.isNotBlank(rawState)) {
+						try {
+							@SuppressWarnings("unchecked")
+							List<Map<String, Object>> parsed = IMAGE_VALUE_OBJECT_MAPPER.readValue(rawState,
+									new TypeReference<List<Map<String, Object>>>() {
+									});
+							if (parsed != null) {
+								imageListState.addAll(parsed);
+							}
+						} catch (Exception ignore) {
+							// keep empty state if parsing fails
+						}
+					}
+				}
+
+				imageListState.add(uploaded.toMap());
+
+				// Keep latest for immediate preview/actions
+				List<CampaignFormImageValue> currentImages = imageFieldValues.computeIfAbsent(formElement.getId(),
+						k -> new ArrayList<>());
+//		        imageFieldValues.put(formElement.getId(), uploaded);
+
+				if (isMultiple) {
+					currentImages.add(uploaded); // append for multiple
+				} else {
+					currentImages.clear(); // replace for single
+					currentImages.add(uploaded);
+				}
+
+				if (isMultiple) {
+					imageStateField.setValue(IMAGE_VALUE_OBJECT_MAPPER.writeValueAsString(imageListState));
+					status.setText("Selected: " + imageListState.size() + " image(s)");
+					// keep upload visible for adding more files
+					upload.setVisible(true);
+				} else {
+					imageStateField.setValue(uploaded.getImageId());
+					status.setText("Selected: " + safeImageName(uploaded));
+					// single-image mode hides uploader after first success
+					upload.setVisible(false);
+				}
+
+				imagePreviewCache.put(formElement.getId(), finalBytes);
+
+				// render all thumbnails for this field
+				renderThumbnails(formElement.getId(), thumbnails);
+
+				Component layout = imageLayouts.get(formElement.getId());
+				if (layout != null) {
+					layout.getElement().getStyle().remove("border");
+					layout.getElement().getStyle().remove("background");
+					layout.getElement().setProperty("error-background-set", null);
+				}
+
 				removeButtonVisibility(removeButton, true);
-				viewButtonVisibility(viewButton, imageValue.isUploaded());
+				viewButtonVisibility(viewButton, true);
 			} catch (Exception ex) {
 				logger.error("Image upload handling failed", ex);
 				Notification.show("Image upload failed: " + ex.getMessage(), 5000, Position.MIDDLE)
 						.addThemeVariants(NotificationVariant.LUMO_ERROR);
+			} finally {
+				progressBar.setVisible(false);
 			}
-			progressBar.setVisible(false);
 		});
 
 		upload.addFileRejectedListener(event -> {
@@ -3324,75 +3589,172 @@ criteria.setCampaign(campaignReferenceDto);
 		});
 
 		prefillImageFieldValue(formElement.getId(), existingValue, imageStateField, status, removeButton, viewButton,
-				inlineThumbnail, upload);
+				thumbnails, upload);
 
 		viewButton.addClickListener(e -> {
-			CampaignFormImageValue current = imageFieldValues.get(formElement.getId());
-			if (current == null || !current.isUploaded() || StringUtils.isBlank(current.getImageId())) {
+			List<CampaignFormImageValue> currentImages = imageFieldValues.get(formElement.getId());
+			if (currentImages == null || currentImages.isEmpty()) {
 				Notification.show("No uploaded image to preview", 3000, Position.MIDDLE);
 				return;
 			}
-
-			try {
-				byte[] bytes = FacadeProvider.getCampaignFormImageFacade().readImage(current.getImageId());
-				if (bytes == null || bytes.length == 0) {
-					Notification.show("Image content not found", 3000, Position.MIDDLE);
-					return;
-				}
-
-				String mime = StringUtils.isNotBlank(current.getMimeType()) ? current.getMimeType() : "image/jpeg";
-				openImagePreviewDialog(createImageDataUrl(mime, bytes));
-			} catch (Exception ex) {
-				Notification.show("Failed to load image: " + ex.getMessage(), 5000, Position.MIDDLE)
-					.addThemeVariants(NotificationVariant.LUMO_ERROR);
-			}
+			openImagePreviewDialog(currentImages);
 		});
 
-		container.add(caption, upload, progressBar, status, inlineThumbnail, viewButton, removeButton);
+		HorizontalLayout buttonRow = new HorizontalLayout(viewButton, removeButton);
+		buttonRow.setSpacing(true);
+		container.add(captionLayout, upload, progressBar, status, thumbnails, buttonRow);
 		return container;
+	}
+
+	private byte[] compressImage(byte[] imageBytes, long maxSizeBytes) throws IOException {
+		// Read image
+		BufferedImage original = ImageIO.read(new ByteArrayInputStream(imageBytes));
+		if (original == null) {
+			return imageBytes; // fallback
+		}
+
+		// Determine target dimensions (scale down to reduce size)
+		int targetWidth = original.getWidth();
+		int targetHeight = original.getHeight();
+		// You can implement a scaling strategy (e.g., max 1200px width)
+		int maxDimension = 1200;
+		if (targetWidth > maxDimension || targetHeight > maxDimension) {
+			double scale = Math.min((double) maxDimension / targetWidth, (double) maxDimension / targetHeight);
+			targetWidth = (int) (targetWidth * scale);
+			targetHeight = (int) (targetHeight * scale);
+		}
+
+		// Resize
+		BufferedImage scaled = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g = scaled.createGraphics();
+		g.drawImage(original, 0, 0, targetWidth, targetHeight, null);
+		g.dispose();
+
+		// Write to JPEG with quality 0.8 (adjust as needed)
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+		ImageWriteParam param = writer.getDefaultWriteParam();
+		param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+		param.setCompressionQuality(0.8f);
+		writer.setOutput(ImageIO.createImageOutputStream(baos));
+		writer.write(null, new IIOImage(scaled, null, null), param);
+		writer.dispose();
+
+		byte[] compressed = baos.toByteArray();
+
+		// If still too large, reduce quality iteratively (optional)
+		if (compressed.length > maxSizeBytes) {
+			// Further reduce quality or dimensions
+		}
+
+		return compressed;
+	}
+
+	private void openImagePreviewDialog(String URL) {
+		Dialog dlg = new Dialog();
+		dlg.setWidth("70vw");
+		dlg.setHeight("80vh");
+		Image preview = new Image(URL, "Uploaded image");
+		preview.setWidth("100%");
+		preview.getStyle().set("object-fit", "contain");
+		Button close = new Button("Close", ev -> dlg.close());
+		dlg.add(preview, close);
+		dlg.open();
+
+	}
+
+	private String detectMimeType(byte[] bytes, String fileName) {
+		if (bytes != null && bytes.length > 4) {
+			// JPEG
+			if ((bytes[0] & 0xFF) == 0xFF && (bytes[1] & 0xFF) == 0xD8) {
+				return "image/jpeg";
+			}
+			// PNG
+			if ((bytes[0] & 0xFF) == 0x89 && (bytes[1] & 0xFF) == 0x50 && (bytes[2] & 0xFF) == 0x4E
+					&& (bytes[3] & 0xFF) == 0x47) {
+				return "image/png";
+			}
+			// WebP (RIFF header + WEBP marker)
+			if ((bytes[0] & 0xFF) == 0x52 && (bytes[1] & 0xFF) == 0x49 && (bytes[2] & 0xFF) == 0x46
+					&& (bytes[3] & 0xFF) == 0x46) {
+				if (bytes.length > 12 && (bytes[8] & 0xFF) == 0x57 && (bytes[9] & 0xFF) == 0x45
+						&& (bytes[10] & 0xFF) == 0x42 && (bytes[11] & 0xFF) == 0x50) {
+					return "image/webp";
+				}
+			}
+		}
+		// Fallback to file extension
+		if (StringUtils.isNotBlank(fileName)) {
+			String ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+			switch (ext) {
+			case "jpg":
+			case "jpeg":
+				return "image/jpeg";
+			case "png":
+				return "image/png";
+			case "webp":
+				return "image/webp";
+			case "gif":
+				return "image/gif";
+			}
+		}
+		return "image/jpeg"; // safe default
 	}
 
 	@SuppressWarnings("unchecked")
 	private void prefillImageFieldValue(String fieldId, Object existingValue, TextField imageStateField, Label status,
-			Button removeButton, Button viewButton, com.vaadin.flow.component.html.Image inlineThumbnail, Upload upload) {
+			Button removeButton, Button viewButton, HorizontalLayout thumbnails, Upload upload) {
 		if (existingValue == null) {
 			upload.setVisible(true);
 			return;
 		}
 
 		try {
-			CampaignFormImageValue imageValue = null;
+			CampaignFormElement formElement = formElements.stream().filter(e -> fieldId.equals(e.getId())).findFirst()
+					.orElse(null);
+			boolean isMultiple = formElement != null && Boolean.TRUE.equals(formElement.getImageMultiple());
+
+			List<CampaignFormImageValue> parsedImages = new ArrayList<>();
+
 			if (existingValue instanceof Map<?, ?>) {
-				imageValue = CampaignFormImageValue.fromMap((Map<?, ?>) existingValue);
+				parsedImages.add(CampaignFormImageValue.fromMap((Map<?, ?>) existingValue));
 			} else if (existingValue instanceof List<?>) {
-				List<?> values = (List<?>) existingValue;
-				if (!values.isEmpty() && values.get(0) instanceof Map<?, ?>) {
-					imageValue = CampaignFormImageValue.fromMap((Map<?, ?>) values.get(0));
+				for (Object item : (List<?>) existingValue) {
+					if (item instanceof Map<?, ?>) {
+						parsedImages.add(CampaignFormImageValue.fromMap((Map<?, ?>) item));
+					}
 				}
 			}
 
-			if (imageValue != null && imageValue.hasIdentifier()) {
-				imageFieldValues.put(fieldId, imageValue);
-				imageStateField.setValue(imageValue.isUploaded() ? imageValue.getImageId() : imageValue.getLocalId());
-				status.setText("Selected: " + safeImageName(imageValue));
-				upload.setVisible(false);
-				if (imageValue.isUploaded() && StringUtils.isNotBlank(imageValue.getImageId())) {
-					try {
-						byte[] bytes = FacadeProvider.getCampaignFormImageFacade().readImage(imageValue.getImageId());
-						if (bytes != null && bytes.length > 0) {
-							String mime = StringUtils.isNotBlank(imageValue.getMimeType()) ? imageValue.getMimeType()
-									: "image/jpeg";
-							setInlineThumbnail(inlineThumbnail, mime, bytes);
-						}
-					} catch (Exception ex) {
-						logger.warn("Unable to load inline thumbnail for {}", fieldId, ex);
-					}
-				}
-				removeButtonVisibility(removeButton, true);
-				viewButtonVisibility(viewButton, imageValue.isUploaded());
+			parsedImages.removeIf(img -> img == null || !img.hasIdentifier());
+
+			if (parsedImages.isEmpty()) {
+				upload.setVisible(true);
+				return;
 			}
+
+			imageFieldValues.put(fieldId, parsedImages);
+
+			if (isMultiple) {
+				imageStateField.setValue(String.valueOf(parsedImages.size()));
+				status.setText("Selected: " + parsedImages.size() + " image(s)");
+				Integer maxCount = formElement != null ? formElement.getImageMaxCount() : null;
+				upload.setVisible(maxCount == null || parsedImages.size() < maxCount);
+			} else {
+				CampaignFormImageValue first = parsedImages.get(0);
+				imageStateField.setValue(first.isUploaded() ? first.getImageId() : first.getLocalId());
+				status.setText("Selected: " + safeImageName(first));
+				upload.setVisible(false);
+			}
+
+			renderThumbnails(fieldId, thumbnails);
+
+			removeButtonVisibility(removeButton, true);
+			viewButtonVisibility(viewButton, true);
+
 		} catch (Exception e) {
 			logger.warn("Unable to preload image field value for {}", fieldId, e);
+			upload.setVisible(true);
 		}
 	}
 
@@ -3412,7 +3774,8 @@ criteria.setCampaign(campaignReferenceDto);
 		return "data:" + resolvedMimeType + ";base64," + base64;
 	}
 
-	private void setInlineThumbnail(com.vaadin.flow.component.html.Image inlineThumbnail, String mimeType, byte[] bytes) {
+	private void setInlineThumbnail(com.vaadin.flow.component.html.Image inlineThumbnail, String mimeType,
+			byte[] bytes) {
 		inlineThumbnail.setSrc(createImageDataUrl(mimeType, bytes));
 		inlineThumbnail.setAlt("Image thumbnail");
 		inlineThumbnail.setVisible(true);
@@ -3423,17 +3786,81 @@ criteria.setCampaign(campaignReferenceDto);
 		inlineThumbnail.setVisible(false);
 	}
 
-	private void openImagePreviewDialog(String dataUrl) {
-		com.vaadin.flow.component.dialog.Dialog dlg = new com.vaadin.flow.component.dialog.Dialog();
+	private void openImagePreviewDialog(StreamResource resource) {
+		Dialog dlg = new Dialog();
+		dlg.setWidth("70vw");
+		dlg.setHeight("80vh");
+		Image preview = new Image(resource, "Uploaded image");
+		preview.setWidth("100%");
+		preview.getStyle().set("object-fit", "contain");
+		Button close = new Button("Close", ev -> dlg.close());
+		dlg.add(preview, close);
+		dlg.open();
+	}
+
+//	private void openImagePreviewDialog(String url) {
+//	    Dialog dlg = new Dialog();
+//	    dlg.setWidth("70vw");
+//	    dlg.setHeight("80vh");
+//	    Image preview = new Image(url, "Uploaded image");
+//	    preview.setWidth("100%");
+//	    preview.getStyle().set("object-fit", "contain");
+//	    Button close = new Button("Close", ev -> dlg.close());
+//	    dlg.add(preview, close);
+//	    dlg.open();
+//	}
+
+	private void renderThumbnails(String fieldId, HorizontalLayout strip) {
+		strip.removeAll();
+		List<CampaignFormImageValue> images = imageFieldValues.get(fieldId);
+		if (images == null || images.isEmpty()) {
+			return;
+		}
+		for (CampaignFormImageValue img : images) {
+			if (img == null || !img.isUploaded() || StringUtils.isBlank(img.getImageId())) {
+				continue;
+			}
+			StreamResource resource = buildImageResource(img.getImageId());
+			if (resource == null) {
+				continue;
+			}
+			com.vaadin.flow.component.html.Image thumb = new com.vaadin.flow.component.html.Image();
+			thumb.setWidth("70px");
+			thumb.setHeight("70px");
+			thumb.getStyle().set("object-fit", "cover");
+			thumb.getStyle().set("border", "1px solid #d9d9d9");
+			thumb.getStyle().set("border-radius", "4px");
+			thumb.setSrc(resource);
+			thumb.setAlt("Image thumbnail");
+			strip.add(thumb);
+		}
+	}
+
+	private void openImagePreviewDialog(List<CampaignFormImageValue> images) {
+		Dialog dlg = new Dialog();
 		dlg.setWidth("70vw");
 		dlg.setHeight("80vh");
 
-		com.vaadin.flow.component.html.Image preview = new com.vaadin.flow.component.html.Image(dataUrl, "Uploaded image");
-		preview.setWidth("100%");
-		preview.getStyle().set("object-fit", "contain");
+		VerticalLayout content = new VerticalLayout();
+		content.setSpacing(true);
+
+		for (CampaignFormImageValue img : images) {
+			if (img == null || !img.isUploaded() || StringUtils.isBlank(img.getImageId())) {
+				continue;
+			}
+			StreamResource resource = buildImageResource(img.getImageId());
+			if (resource == null) {
+				continue;
+			}
+			Image preview = new Image(resource, "Uploaded image");
+			preview.setWidth("100%");
+			preview.getStyle().set("object-fit", "contain");
+			content.add(preview);
+		}
 
 		Button close = new Button("Close", ev -> dlg.close());
-		dlg.add(preview, close);
+		content.add(close);
+		dlg.add(content);
 		dlg.open();
 	}
 
@@ -3455,6 +3882,34 @@ criteria.setCampaign(campaignReferenceDto);
 				? String.valueOf(cbCommunity.getValue().getNumber())
 				: null);
 		return context;
+	}
+
+	private String resolveImageExtension(String fileName, String mimeType) {
+		if (StringUtils.isNotBlank(fileName)) {
+			int dotIndex = fileName.lastIndexOf('.');
+			if (dotIndex >= 0 && dotIndex < fileName.length() - 1) {
+				String extension = fileName.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
+				if ("jpeg".equals(extension)) {
+					return "jpg";
+				}
+				return extension.replaceAll("[^a-z0-9]", "");
+			}
+		}
+
+		if (StringUtils.isNotBlank(mimeType)) {
+			String normalizedMime = mimeType.trim().toLowerCase(Locale.ROOT);
+			if (normalizedMime.startsWith("image/")) {
+				String extension = normalizedMime.substring("image/".length());
+				if ("jpeg".equals(extension)) {
+					return "jpg";
+				}
+				if (StringUtils.isNotBlank(extension)) {
+					return extension;
+				}
+			}
+		}
+
+		return "jpg";
 	}
 
 	private void checkForNegativeValuesSimple() {
@@ -3752,7 +4207,7 @@ criteria.setCampaign(campaignReferenceDto);
 					cbDistrict.getElement().setProperty("invalid", true);
 					hasErrorFormValues(3);
 				}
-				if (!isDistrictEntry) {
+				if (!geographyLevel.equals(CampaignFormMetaGeographyLevel.DISTRICT)) {
 					System.out.println(currentDay + " Not a district entry form QQQQQQQQQQQQQQQQ " + key);
 					if (cbCommunity.getValue() == null) {
 						cbCommunity.getElement().setProperty("invalid", true);
@@ -3812,29 +4267,58 @@ criteria.setCampaign(campaignReferenceDto);
 			System.out.println("NOTSUPPOSETORUNNINGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG");
 			fields.forEach((key, value) -> {
 				Component formField = fields.get(key);
+				if (geographyLevel.equals(CampaignFormMetaGeographyLevel.REGION)) {
+					if (cbArea.getValue() == null) {
+						cbArea.getElement().setProperty("invalid", true);
+						hasErrorFormValues(1);
+					}
+				} else if (geographyLevel.equals(CampaignFormMetaGeographyLevel.PROVINCE)) {
+					if (cbArea.getValue() == null) {
+						cbArea.getElement().setProperty("invalid", true);
+						hasErrorFormValues(1);
+					}
 
-				if (cbArea.getValue() == null) {
-					cbArea.getElement().setProperty("invalid", true);
-					hasErrorFormValues(1);
-				}
-				if (cbRegion.getValue() == null) {
-					cbRegion.getElement().setProperty("invalid", true);
-					hasErrorFormValues(2);
-				}
-				if (cbDistrict.getValue() == null) {
-					cbDistrict.getElement().setProperty("invalid", true);
-					hasErrorFormValues(3);
-				}
-				if (!isDistrictEntry) {
-					System.out.println("Not a district entry form 1111111");
+					if (cbRegion.getValue() == null) {
+						cbRegion.getElement().setProperty("invalid", true);
+						hasErrorFormValues(2);
+					}
+				} else if (geographyLevel.equals(CampaignFormMetaGeographyLevel.DISTRICT)) {
+					if (cbArea.getValue() == null) {
+						cbArea.getElement().setProperty("invalid", true);
+						hasErrorFormValues(1);
+					}
+
+					if (cbRegion.getValue() == null) {
+						cbRegion.getElement().setProperty("invalid", true);
+						hasErrorFormValues(2);
+					}
+
+					if (cbDistrict.getValue() == null) {
+						cbDistrict.getElement().setProperty("invalid", true);
+						hasErrorFormValues(3);
+					}
+				} else {
+					if (cbArea.getValue() == null) {
+						cbArea.getElement().setProperty("invalid", true);
+						hasErrorFormValues(1);
+					}
+
+					if (cbRegion.getValue() == null) {
+						cbRegion.getElement().setProperty("invalid", true);
+						hasErrorFormValues(2);
+					}
+
+					if (cbDistrict.getValue() == null) {
+						cbDistrict.getElement().setProperty("invalid", true);
+						hasErrorFormValues(3);
+					}
+
 					if (cbCommunity.getValue() == null) {
 						cbCommunity.getElement().setProperty("invalid", true);
 						hasErrorFormValues(4);
 					}
-				} else {
-					System.out.println(" district entry form 1111111");
-
 				}
+
 				if (formDate.getValue() == null) {
 					formDate.getElement().setProperty("invalid", true);
 					hasErrorFormValues(5);
@@ -3867,45 +4351,54 @@ criteria.setCampaign(campaignReferenceDto);
 						}
 					}
 				}
-//			
-//			if (formField instanceof AbstractField) {
-//			    AbstractField<?, ?> field = (AbstractField<?, ?>) formField;
-//
-//			    if (field.isRequiredIndicatorVisible()) {
-//			        Object fieldvalue = field.getValue();
-//			        boolean invalid = false;
-//
-//			        if (fieldvalue == null) {
-//			            invalid = true;
-//			        } else if (fieldvalue instanceof String && ((String) fieldvalue).trim().isEmpty()) {
-//			            invalid = true;
-//			        } else if (fieldvalue instanceof Set && ((Set<?>) fieldvalue).isEmpty()) {
-//			            invalid = true;
-//				        formField.getElement().getStyle().set("background", "#ffe5e5");
-//
-//			        }
-//
-//			        
-//			        if (invalid) {
-//			            hasErrorFormValues(6);
-//			            formField.getElement().setProperty("invalid", true);
-//			        }
-//			    }
-//			}
-
 			});
 
 		}
 
 		fields.forEach((key, value) -> {
 			Component formField = fields.get(key);
-			if (formField.getElement().getProperty("invalid", false)) {
+			CampaignFormElement element = formElements.stream().filter(e -> e.getId().equals(key)).findFirst()
+					.orElse(null);
+			if (element != null
+					&& CampaignFormElementType.IMAGE == CampaignFormElementType.fromString(element.getType())) {
+				return;
+			} else if (formField.getElement().getProperty("invalid", false)) {
 				hasErrorFormValues(7);
-				Notification.show("Error on field: " + formField.getElement().getProperty("label"));
+				String label = element != null ? get18nCaption(element.getId(), element.getCaption()) : key;
+				Notification.show("Error on fieldyyy: " + formField.getElement().getProperty("label"));
 				return;
 			}
 
 		});
+
+		for (CampaignFormElement element : formElements) {
+			if (CampaignFormElementType.IMAGE != CampaignFormElementType.fromString(element.getType())) {
+				continue;
+			}
+
+			List<CampaignFormImageValue> imageValues = imageFieldValues.get(element.getId());
+			boolean hasValue = imageValues != null
+					&& imageValues.stream().anyMatch(v -> v != null && v.hasIdentifier());
+
+			Component layout = imageLayouts.get(element.getId());
+
+			if (Boolean.TRUE.equals(element.isImportant()) && !hasValue) {
+				hasErrorFormValues(7);
+				if (layout != null) {
+					layout.getElement().getStyle().set("border", "1px solid red");
+					layout.getElement().getStyle().set("background", "#ffe5e5");
+					layout.getElement().setProperty("error-background-set", "true");
+				}
+				Notification.show("Error on field: " + get18nCaption(element.getId(), element.getCaption()));
+			} else {
+				// Clear any previous error styling
+				if (layout != null) {
+					layout.getElement().getStyle().remove("border");
+					layout.getElement().getStyle().remove("background");
+					layout.getElement().setProperty("error-background-set", null);
+				}
+			}
+		}
 
 		checkForDateFieldValuesOutsideValidityPeriod();
 
@@ -3935,7 +4428,7 @@ criteria.setCampaign(campaignReferenceDto);
 				boolean saveChecker = true;
 				UserProvider userProvider = new UserProvider();
 				List<CampaignFormDataEntry> entries = getFormValues();
-				if (!isDistrictEntry) {
+				if (!geographyLevel.equals(CampaignFormMetaGeographyLevel.DISTRICT)) {
 					CampaignFormDataEntry lotNo = new CampaignFormDataEntry();
 					CampaignFormDataEntry lotClusterNo = new CampaignFormDataEntry();
 
@@ -3974,7 +4467,8 @@ criteria.setCampaign(campaignReferenceDto);
 						}
 					}
 
-					System.out.println(isDistrictEntry + " isDistrictEntryvalueeeeeeeeeeeeeeeee");
+					System.out.println(!geographyLevel.equals(CampaignFormMetaGeographyLevel.DISTRICT)
+							+ " isDistrictEntryvalueeeeeeeeeeeeeeeee");
 
 					for (String string : listLotClusterNo) {
 						if (listLotNo.size() > 0) {
@@ -4004,34 +4498,31 @@ criteria.setCampaign(campaignReferenceDto);
 //					dataDto.setRecordgroupuuid(dataDto.getRecordgroupuuid());
 					dataDto.setRecordversion(incrementedVersion);
 					dataDto.setFormValues(entries);
-					
+
 					boolean proceedWithUnPublishaandUnVerify = false;
 					try {
 						dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
-	
+
 						proceedWithUnPublishaandUnVerify = true;
-					} catch (Exception e){
+					} catch (Exception e) {
 						proceedWithUnPublishaandUnVerify = false;
 
-					}finally {
-						
-						if(proceedWithUnPublishaandUnVerify) {
-						List<String> uuidList = new ArrayList<>();
-						uuidList.add(dataDto.getUuid());
-	
-						if(dataDto.getCampaignFormMeta().getFormType().equalsIgnoreCase("post-campaign")) {
-							if(dataDto.isIsverified()) {
-								FacadeProvider.getCampaignFormDataFacade().verifyCampaignData(uuidList, true);
+					} finally {
+
+						if (proceedWithUnPublishaandUnVerify) {
+							List<String> uuidList = new ArrayList<>();
+							uuidList.add(dataDto.getUuid());
+
+							if (dataDto.getCampaignFormMeta().getFormType().equalsIgnoreCase("post-campaign")) {
+								if (dataDto.isIsverified()) {
+									FacadeProvider.getCampaignFormDataFacade().verifyCampaignData(uuidList, true);
+								}
+								if (dataDto.isIspublished()) {
+									FacadeProvider.getCampaignFormDataFacade().publishCampaignData(uuidList, true);
+								}
 							}
-							if(dataDto.isIspublished()) {
-								FacadeProvider.getCampaignFormDataFacade().publishCampaignData(uuidList, true);
-							}	
-						}
 						}
 					}
-
-
-					
 
 					Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
 					return true;
@@ -4066,8 +4557,7 @@ criteria.setCampaign(campaignReferenceDto);
 				UserProvider userProvider = new UserProvider();
 				List<CampaignFormDataEntry> entries = getFormValues();
 
-				System.out.println(isDistrictEntry + " gdgdgdtdgststsggtegstsgsgsfs");
-				if (!isDistrictEntry) {
+				if (geographyLevel.equals(CampaignFormMetaGeographyLevel.CLUSTER)) {
 
 					CampaignFormDataEntry lotNo = new CampaignFormDataEntry();
 					CampaignFormDataEntry lotClusterNo = new CampaignFormDataEntry();
@@ -4129,43 +4619,57 @@ criteria.setCampaign(campaignReferenceDto);
 //					CampaignFormDataDto dataDto = CampaignFormDataDto.build(campaignReferenceDto, campaignFormMeta,
 //							cbArea.getValue(), cbRegion.getValue(), cbDistrict.getValue(), cbCommunity.getValue());
 
-					if (isDistrictEntry) {
-						System.out.println("District Enry form point 2222222222222222222222222");
+//					if (!geographyLevel.equals(CampaignFormMetaGeographyLevel.DISTRICT)) {
+//						System.out.println("District Enry form point 2222222222222222222222222");
+//
+//						CampaignFormDataDto dataDto = CampaignFormDataDto.buildDistrictLevelForm(campaignReferenceDto,
+//								campaignFormMeta, cbArea.getValue(), cbRegion.getValue(), cbDistrict.getValue());
+//
+////						dataDto.setDistrictEntryForm(isDistrictEntry);
+//						dataDto.setFormDate(date);
+//						dataDto.setUuid(imageUploadTargetUuid);
+//						dataDto.setCreatingUser(userProvider.getUserReference());
+//						dataDto.setFormValues(entries);
+//						dataDto.setSource("WEB");
+////						dataDto.setRecordgroupuuid(dataDto.getUuid());
+//						dataDto.setRecordversion(1L);
+////						if (dataDto.getFormType())
+//						dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
+//						Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
+//						return true;
+//
+//					} else {
 
-						CampaignFormDataDto dataDto = CampaignFormDataDto.buildDistrictLevelForm(campaignReferenceDto,
-								campaignFormMeta, cbArea.getValue(), cbRegion.getValue(), cbDistrict.getValue());
+					System.out.println("nOT   District Enry form point 2222222222222222222222222");
 
-//						dataDto.setDistrictEntryForm(isDistrictEntry);
-						dataDto.setFormDate(date);
-						dataDto.setCreatingUser(userProvider.getUserReference());
-						dataDto.setFormValues(entries);
-						dataDto.setSource("WEB");
-//						dataDto.setRecordgroupuuid(dataDto.getUuid());
-						dataDto.setRecordversion(1L);
-//						if (dataDto.getFormType())
-						dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
-						Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
-						return true;
-
+					CampaignFormDataDto dataDto;
+					if (geographyLevel.equals(CampaignFormMetaGeographyLevel.REGION)) {
+						dataDto = CampaignFormDataDto.build(campaignReferenceDto, campaignFormMeta, cbArea.getValue(),
+								null, null, null);
+					} else if (geographyLevel.equals(CampaignFormMetaGeographyLevel.PROVINCE)) {
+						dataDto = CampaignFormDataDto.build(campaignReferenceDto, campaignFormMeta, cbArea.getValue(),
+								cbRegion.getValue(), null, null);
+					} else if (geographyLevel.equals(CampaignFormMetaGeographyLevel.PROVINCE)) {
+						dataDto = CampaignFormDataDto.build(campaignReferenceDto, campaignFormMeta, cbArea.getValue(),
+								cbRegion.getValue(), cbDistrict.getValue(), null);
 					} else {
-
-						System.out.println("nOT   District Enry form point 2222222222222222222222222");
-
-						CampaignFormDataDto dataDto = CampaignFormDataDto.build(campaignReferenceDto, campaignFormMeta,
-								cbArea.getValue(), cbRegion.getValue(), cbDistrict.getValue(), cbCommunity.getValue());
-
-//						dataDto.setDistrictEntryForm(!isDistrictEntry);
-						dataDto.setFormDate(date);
-						dataDto.setCreatingUser(userProvider.getUserReference());
-						dataDto.setFormValues(entries);
-						dataDto.setSource("WEB");
-//						dataDto.setRecordgroupuuid(dataDto.getUuid());
-						dataDto.setRecordversion(1L);
-//						if (dataDto.getFormType())
-						dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
-						Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
-						return true;
+						dataDto = CampaignFormDataDto.build(campaignReferenceDto, campaignFormMeta, cbArea.getValue(),
+								cbRegion.getValue(), cbDistrict.getValue(), cbCommunity.getValue());
 					}
+//						dataDto.setDistrictEntryForm(!isDistrictEntry);
+
+					dataDto.setFormDate(date);
+					dataDto.setUuid(imageUploadTargetUuid);
+					dataDto.setCreatingUser(userProvider.getUserReference());
+					dataDto.setFormValues(entries);
+					dataDto.setSource("WEB");
+//						dataDto.setRecordgroupuuid(dataDto.getUuid());
+					dataDto.setRecordversion(1L);
+//						if (dataDto.getFormType())
+					dataDto = FacadeProvider.getCampaignFormDataFacade().saveCampaignFormData(dataDto);
+					Notification.show(I18nProperties.getString(Strings.dataSavedSuccessfully));
+					return true;
+//					}
 
 				} else {
 					Notification notification = new Notification();
@@ -4317,6 +4821,25 @@ criteria.setCampaign(campaignReferenceDto);
 
 	}
 
+	private String resolveImagePreviewUrl(Map<String, Object> imageMap) {
+		if (imageMap == null) {
+			return null;
+		}
+
+		Object previewUrl = imageMap.get("previewUrl");
+		if (previewUrl != null && !previewUrl.toString().trim().isEmpty()) {
+			return previewUrl.toString().trim();
+		}
+
+		Object imageId = imageMap.get("imageId");
+		if (imageId != null && !imageId.toString().trim().isEmpty()) {
+			// Fallback: ask backend when old records have no previewUrl
+			return FacadeProvider.getCampaignFormImageFacade().resolvePreviewUrl(imageId.toString().trim());
+		}
+
+		return null;
+	}
+
 	public void disableExpressionFieldsForEditing() {
 		final Map<String, Component> fields_ = getFields();
 		getFormElements().stream().filter(formElement -> formElement.getExpression() != null)
@@ -4364,97 +4887,78 @@ criteria.setCampaign(campaignReferenceDto);
 								StringUtils.join(fieldNamesInExpression, ", ")))
 				.withPosition(Tooltip.TooltipPosition.TOP_START);
 	}
-		
+
 	private boolean isRTLLanguage() {
-	    try {
-	        String language = currentUser.getUser().getLanguage().toString();
-	        return language.equalsIgnoreCase("Pashto") || language.equalsIgnoreCase("Dari");
-	    } catch (Exception e) {
-	        return false;
-	    }
+		try {
+			String language = currentUser.getUser().getLanguage().toString();
+			return language.equalsIgnoreCase("Pashto") || language.equalsIgnoreCase("Dari");
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	private void applyRTLStylingToField(Component component) {
-	    if (!isRTLLanguage()) {
-	        return;
-	    }
-	    
-	    if (component instanceof AbstractField) {
-	        AbstractField field = (AbstractField) component;
-	        
-	        // Set text direction on the field itself
-	        field.getElement().setAttribute("dir", "rtl");
-	        field.getElement().getStyle().set("direction", "rtl");
-	        field.getElement().getStyle().set("text-align", "right");
-	        
-	        // Apply styles to all input elements within
-	        field.getElement().executeJs(
-	            "const inputs = this.querySelectorAll('input, textarea, [role=combobox]'); " +
-	            "inputs.forEach(input => { " +
-	            "  input.style.direction = 'rtl'; " +
-	            "  input.style.textAlign = 'right'; " +
-	            "  input.style.unicodeBidi = 'plaintext'; " +
-	            "});"
-	        );
-	    }
+		if (!isRTLLanguage()) {
+			return;
+		}
+
+		if (component instanceof AbstractField) {
+			AbstractField field = (AbstractField) component;
+
+			// Set text direction on the field itself
+			field.getElement().setAttribute("dir", "rtl");
+			field.getElement().getStyle().set("direction", "rtl");
+			field.getElement().getStyle().set("text-align", "right");
+
+			// Apply styles to all input elements within
+			field.getElement().executeJs("const inputs = this.querySelectorAll('input, textarea, [role=combobox]'); "
+					+ "inputs.forEach(input => { " + "  input.style.direction = 'rtl'; "
+					+ "  input.style.textAlign = 'right'; " + "  input.style.unicodeBidi = 'plaintext'; " + "});");
+		}
 	}
 
 	private void injectRTLHelperTextCSS() {
-	    if (!isRTLLanguage()) {
-	        return;
-	    }
-	    
-	    // Inject RTL-specific CSS directly using executeJs
-	    UI.getCurrent().getPage().executeJs(
-	        "const style = document.createElement('style'); " +
-	        "style.textContent = `" +
-	        "  /* RTL Helper Text Styling for Pashto and Dari */ " +
-	        "  [dir='rtl'] vaadin-text-field::part(helper-text), " +
-	        "  [dir='rtl'] vaadin-number-field::part(helper-text), " +
-	        "  [dir='rtl'] vaadin-text-area::part(helper-text), " +
-	        "  [dir='rtl'] vaadin-date-picker::part(helper-text), " +
-	        "  [dir='rtl'] vaadin-email-field::part(helper-text), " +
-	        "  [dir='rtl'] vaadin-integer-field::part(helper-text), " +
-	        "  [dir='rtl'] vaadin-combo-box::part(helper-text), " +
-	        "  [dir='rtl'] vaadin-radio-group::part(helper-text), " +
-	        "  [dir='rtl'] vaadin-checkbox-group::part(helper-text), " +
-	        "  [dir='rtl'] vaadin-time-picker::part(helper-text) { " +
-	        "    direction: rtl !important; " +
-	        "    text-align: right !important; " +
-	        "    unicode-bidi: plaintext; " +
-	        "  } " +
-	        "  /* RTL Error Message Styling */ " +
-	        "  [dir='rtl'] vaadin-text-field::part(error-message), " +
-	        "  [dir='rtl'] vaadin-number-field::part(error-message), " +
-	        "  [dir='rtl'] vaadin-text-area::part(error-message), " +
-	        "  [dir='rtl'] vaadin-date-picker::part(error-message), " +
-	        "  [dir='rtl'] vaadin-email-field::part(error-message), " +
-	        "  [dir='rtl'] vaadin-integer-field::part(error-message), " +
-	        "  [dir='rtl'] vaadin-combo-box::part(error-message), " +
-	        "  [dir='rtl'] vaadin-radio-group::part(error-message), " +
-	        "  [dir='rtl'] vaadin-checkbox-group::part(error-message), " +
-	        "  [dir='rtl'] vaadin-time-picker::part(error-message) { " +
-	        "    direction: rtl !important; " +
-	        "    text-align: right !important; " +
-	        "    unicode-bidi: plaintext; " +
-	        "  } " +
-	        "  /* RTL Label Styling */ " +
-	        "  [dir='rtl'] vaadin-text-field::part(label), " +
-	        "  [dir='rtl'] vaadin-number-field::part(label), " +
-	        "  [dir='rtl'] vaadin-text-area::part(label), " +
-	        "  [dir='rtl'] vaadin-date-picker::part(label), " +
-	        "  [dir='rtl'] vaadin-email-field::part(label), " +
-	        "  [dir='rtl'] vaadin-integer-field::part(label), " +
-	        "  [dir='rtl'] vaadin-combo-box::part(label), " +
-	        "  [dir='rtl'] vaadin-radio-group::part(label), " +
-	        "  [dir='rtl'] vaadin-checkbox-group::part(label), " +
-	        "  [dir='rtl'] vaadin-time-picker::part(label) { " +
-	        "    direction: rtl !important; " +
-	        "    text-align: right !important; " +
-	        "  } " +
-	        "`; " +
-	        "document.head.appendChild(style);"
-	    );
+		if (!isRTLLanguage()) {
+			return;
+		}
+
+		// Inject RTL-specific CSS directly using executeJs
+		UI.getCurrent().getPage().executeJs("const style = document.createElement('style'); " + "style.textContent = `"
+				+ "  /* RTL Helper Text Styling for Pashto and Dari */ "
+				+ "  [dir='rtl'] vaadin-text-field::part(helper-text), "
+				+ "  [dir='rtl'] vaadin-number-field::part(helper-text), "
+				+ "  [dir='rtl'] vaadin-text-area::part(helper-text), "
+				+ "  [dir='rtl'] vaadin-date-picker::part(helper-text), "
+				+ "  [dir='rtl'] vaadin-email-field::part(helper-text), "
+				+ "  [dir='rtl'] vaadin-integer-field::part(helper-text), "
+				+ "  [dir='rtl'] vaadin-combo-box::part(helper-text), "
+				+ "  [dir='rtl'] vaadin-radio-group::part(helper-text), "
+				+ "  [dir='rtl'] vaadin-checkbox-group::part(helper-text), "
+				+ "  [dir='rtl'] vaadin-time-picker::part(helper-text) { " + "    direction: rtl !important; "
+				+ "    text-align: right !important; " + "    unicode-bidi: plaintext; " + "  } "
+				+ "  /* RTL Error Message Styling */ " + "  [dir='rtl'] vaadin-text-field::part(error-message), "
+				+ "  [dir='rtl'] vaadin-number-field::part(error-message), "
+				+ "  [dir='rtl'] vaadin-text-area::part(error-message), "
+				+ "  [dir='rtl'] vaadin-date-picker::part(error-message), "
+				+ "  [dir='rtl'] vaadin-email-field::part(error-message), "
+				+ "  [dir='rtl'] vaadin-integer-field::part(error-message), "
+				+ "  [dir='rtl'] vaadin-combo-box::part(error-message), "
+				+ "  [dir='rtl'] vaadin-radio-group::part(error-message), "
+				+ "  [dir='rtl'] vaadin-checkbox-group::part(error-message), "
+				+ "  [dir='rtl'] vaadin-time-picker::part(error-message) { " + "    direction: rtl !important; "
+				+ "    text-align: right !important; " + "    unicode-bidi: plaintext; " + "  } "
+				+ "  /* RTL Label Styling */ " + "  [dir='rtl'] vaadin-text-field::part(label), "
+				+ "  [dir='rtl'] vaadin-number-field::part(label), " + "  [dir='rtl'] vaadin-text-area::part(label), "
+				+ "  [dir='rtl'] vaadin-date-picker::part(label), " + "  [dir='rtl'] vaadin-email-field::part(label), "
+				+ "  [dir='rtl'] vaadin-integer-field::part(label), " + "  [dir='rtl'] vaadin-combo-box::part(label), "
+				+ "  [dir='rtl'] vaadin-radio-group::part(label), "
+				+ "  [dir='rtl'] vaadin-checkbox-group::part(label), "
+				+ "  [dir='rtl'] vaadin-time-picker::part(label) { " + "    direction: rtl !important; "
+				+ "    text-align: right !important; " + "  } " + "`; " + "document.head.appendChild(style);");
+	}
+
+	private List<CampaignFormImageValue> getOrCreateImageList(String fieldId) {
+		return imageFieldValues.computeIfAbsent(fieldId, k -> new ArrayList<>());
 	}
 
 }

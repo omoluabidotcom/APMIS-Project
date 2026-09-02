@@ -24,4 +24,7 @@ public interface CampaignFormImageFacade {
 	void deleteImage(String imageId);
 
 	List<CampaignFormImageValue> getImages(String campaignFormDataUuid);
+	
+	String resolvePreviewUrl(String imageId);
+
 }

@@ -109,4 +109,8 @@ public interface PopulationDataFacade {
 	List<CampaignTreeFlatDto> getAllTreeDataForCampaign(String campaignUuid);
 
 	List<PopulationDataDto> getPopulationDataByClusterandCampaign(String campaignUuid, String communityUuid);
+	
+//	List<PopulationDataDto> getAllPopulationData();
+
+	List<PopulationDataDto> getAllPopulationDataByLimit(Integer fetchFromIndex, Integer fetchSize);
 }

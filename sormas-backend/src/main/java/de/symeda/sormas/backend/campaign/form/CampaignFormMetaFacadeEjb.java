@@ -144,7 +144,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		target.setCampaignFormElements(source.getCampaignFormElements());
 		target.setCampaignFormTranslations(source.getCampaignFormTranslations());
 		target.setDaysExpired(source.getDaysExpired());
-		target.setDistrictentry(source.isDistrictentry());
+		target.setGeographyLevel(source.getGeographyLevel());
 		target.setFormversion(source.getFormversion());
 		target.setFormGroupUuid(source.getFormGroupUuid());
 
@@ -220,7 +220,7 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 		target.setCampaignFormElements(source.getCampaignFormElements());
 		target.setCampaignFormTranslations(source.getCampaignFormTranslations());
 		target.setDaysExpired(source.getDaysExpired());
-		target.setDistrictentry(source.isDistrictentry());
+		target.setGeographyLevel(source.getGeographyLevel());
 		target.setFormversion(source.getFormversion());
 		target.setFormGroupUuid(source.getFormGroupUuid());
 
@@ -594,8 +594,8 @@ public class CampaignFormMetaFacadeEjb implements CampaignFormMetaFacade {
 				case CampaignFormMeta.DAYSTOEXPIRE:
 					expression = campaignFormMeta.get(CampaignFormMeta.DAYSTOEXPIRE);
 					break;
-				case CampaignFormMeta.DISTRICTENTRY:
-					expression = campaignFormMeta.get(CampaignFormMeta.DISTRICTENTRY);
+				case CampaignFormMeta.GEOGRAPHYLEVEL:
+					expression = campaignFormMeta.get(CampaignFormMeta.GEOGRAPHYLEVEL);
 					break;
 				case CampaignFormMeta.FORM_TYPE:
 					expression = campaignFormMeta.get(CampaignFormMeta.FORM_TYPE);
