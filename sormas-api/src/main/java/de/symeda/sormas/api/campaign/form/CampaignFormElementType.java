@@ -23,7 +23,8 @@ public enum CampaignFormElementType {
 	PHONE,
 	LINEBREAK,
 	ARRAY,
-	IMAGE;
+	IMAGE,
+	VALIDATEDTEXT;
 
 	
 

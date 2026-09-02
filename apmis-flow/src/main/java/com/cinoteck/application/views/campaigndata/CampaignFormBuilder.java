@@ -3,6 +3,8 @@ package com.cinoteck.application.views.campaigndata;
 import static de.symeda.sormas.api.campaign.ExpressionProcessorUtils.refreshEvaluationContext;
 
 import java.math.BigDecimal;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -35,6 +37,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.Objects;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.lang3.StringUtils;
@@ -155,6 +159,12 @@ public class CampaignFormBuilder extends VerticalLayout {
 	private Map<String, String> userOptTranslations = new HashMap<String, String>();
 	Map<String, Component> fields;
 	private final Map<String, CampaignFormImageValue> imageFieldValues = new HashMap<>();
+	private final Map<String, byte[]> imageFieldBytes = new HashMap<>();
+	private static final int MIN_IMAGE_WIDTH = 640;
+	private static final int MIN_IMAGE_HEIGHT = 480;
+	private static final double MIN_IMAGE_BRIGHTNESS = 25.0;
+	private static final double MAX_IMAGE_BRIGHTNESS = 235.0;
+	private static final double MIN_IMAGE_SHARPNESS_VARIANCE = 40.0;
 
 	private Map<String, String> optionsValues = new HashMap<String, String>();
 	private Map<String, String> optionsOrder = new HashMap<String, String>();
@@ -1343,6 +1353,30 @@ criteria.setCampaign(campaignReferenceDto);
 							textField.setRequiredIndicatorVisible(formElement.isImportant());
 						}
 
+					} else if (type == CampaignFormElementType.VALIDATEDTEXT) {
+						TextField validatedTextField = new TextField();
+						validatedTextField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
+						validatedTextField.setClassName("customTextWrap");
+						validatedTextField.setId(formElement.getId());
+						validatedTextField.setSizeFull();
+						validatedTextField.setHelperText(get18nHint(formElement.getId(), formElement.getHint()));
+						validatedTextField.setClearButtonVisible(false);
+						validatedTextField.setReadOnly(true);
+
+						if (isRTLLanguage()) {
+							validatedTextField.getElement().setAttribute("dir", "rtl");
+							applyRTLStylingToField(validatedTextField);
+						}
+
+						setFieldValue(validatedTextField, type, value, optionsValues,
+								formElement.getDefaultvalue(), false, null);
+						vertical.add(validatedTextField);
+						fields.put(formElement.getId(), validatedTextField);
+
+						if (dependingOnId != null && dependingOnValues != null) {
+							setVisibilityDependency(validatedTextField, dependingOnId, dependingOnValues, type, false);
+						}
+
 					} else if (type == CampaignFormElementType.NUMBER) {
 						NumberField numberField = new NumberField();
 						numberField.setLabel(get18nCaption(formElement.getId(), formElement.getCaption()));
@@ -2356,6 +2390,15 @@ criteria.setCampaign(campaignReferenceDto);
 			}
 			break;
 
+		case VALIDATEDTEXT:
+			TextField validatedTextField = (TextField) field;
+			String calculatedTextValue = value != null ? value.toString() : "";
+			if (!Objects.equals(validatedTextField.getValue(), calculatedTextValue)) {
+				validatedTextField.setValue(calculatedTextValue);
+			}
+			validatedTextField.setReadOnly(true);
+			break;
+
 		case NUMBER:
 			if (field instanceof NumberField) {
 				NumberField numberField = (NumberField) field;
@@ -2468,8 +2511,7 @@ criteria.setCampaign(campaignReferenceDto);
 					// Notification.show("Warning:", Title "Expression resulted in wrong value
 					// please check your data 1", Notification.TYPE_WARNING_MESSAGE);
 				}
-			}
-			;
+			};
 			((TextArea) field).setValue(value != null ? value.toString() : null);
 			break;
 		case DATE:
@@ -2850,7 +2892,8 @@ criteria.setCampaign(campaignReferenceDto);
 				|| type == CampaignFormElementType.CHECKBOXBASIC && !styles.contains(CampaignFormElementStyle.INLINE)
 				|| type == CampaignFormElementType.RADIOBASIC && !styles.contains(CampaignFormElementStyle.INLINE)
 				|| type == CampaignFormElementType.TEXTBOX && !styles.contains(CampaignFormElementStyle.INLINE)
-				|| (type == CampaignFormElementType.TEXT || type == CampaignFormElementType.DATE
+					|| (type == CampaignFormElementType.TEXT || type == CampaignFormElementType.VALIDATEDTEXT
+							|| type == CampaignFormElementType.DATE
 						|| type == CampaignFormElementType.NUMBER || type == CampaignFormElementType.EMAIL
 						|| type == CampaignFormElementType.TIME || type == CampaignFormElementType.PHONE
 						|| type == CampaignFormElementType.DECIMAL || type == CampaignFormElementType.RANGE
@@ -2885,7 +2928,8 @@ criteria.setCampaign(campaignReferenceDto);
 				|| type == CampaignFormElementType.CHECKBOX && styles.contains(CampaignFormElementStyle.INLINE)
 				|| type == CampaignFormElementType.CHECKBOXBASIC && styles.contains(CampaignFormElementStyle.INLINE)
 				|| type == CampaignFormElementType.DROPDOWN && styles.contains(CampaignFormElementStyle.INLINE)
-				|| (type == CampaignFormElementType.TEXT || type == CampaignFormElementType.NUMBER
+				|| (type == CampaignFormElementType.TEXT || type == CampaignFormElementType.VALIDATEDTEXT
+						|| type == CampaignFormElementType.NUMBER
 						|| type == CampaignFormElementType.DECIMAL || type == CampaignFormElementType.EMAIL
 						|| type == CampaignFormElementType.TIME || type == CampaignFormElementType.PHONE
 						|| type == CampaignFormElementType.RANGE || type == CampaignFormElementType.DATE
@@ -3149,9 +3193,23 @@ criteria.setCampaign(campaignReferenceDto);
 		return fields.keySet().stream().map(id -> {
 			Component field = fields.get(id);
 
-			if (imageFieldValues.containsKey(id)) {
+			CampaignFormElement imageElement = formElements.stream()
+					.filter(element -> Objects.equals(element.getId(), id))
+					.filter(element -> CampaignFormElementType.IMAGE.toString().equalsIgnoreCase(element.getType()))
+					.findFirst().orElse(null);
+
+			if (imageElement != null) {
 				CampaignFormImageValue imageValue = imageFieldValues.get(id);
-				return new CampaignFormDataEntry(id, imageValue != null ? imageValue.toMap() : null);
+				if (imageValue == null) {
+					return new CampaignFormDataEntry(id, null);
+				}
+
+				Map<String, Object> imageMap = imageValue.toMap();
+				if (Boolean.TRUE.equals(imageElement.getImageMultiple())) {
+					return new CampaignFormDataEntry(id, Collections.singletonList(imageMap));
+				}
+
+				return new CampaignFormDataEntry(id, imageMap);
 			}
 
 			if (field instanceof DatePicker) {
@@ -3236,6 +3294,49 @@ criteria.setCampaign(campaignReferenceDto);
 		upload.setDropAllowed(true);
 		upload.setMaxFiles(formElement.getImageMaxCount() != null ? formElement.getImageMaxCount() : 1);
 
+		Button uploadButton = new Button("Upload image");
+		upload.setUploadButton(uploadButton);
+
+		Button cameraButton = new Button("Take photo", VaadinIcon.CAMERA.create());
+		cameraButton.getElement().addEventListener("desktop-camera-request",
+				event -> openCameraCaptureDialog(upload));
+		cameraButton.addAttachListener(event -> cameraButton.getElement().executeJs(
+				"if (this.__cameraRoutingInstalled) return;"
+						+ "this.__cameraRoutingInstalled = true;"
+						+ "this.addEventListener('click', () => {"
+						+ " const ua = navigator.userAgent || '';"
+						+ " const mobile = (navigator.userAgentData && navigator.userAgentData.mobile === true)"
+						+ "  || /Android|iPhone|iPad|iPod|IEMobile|Opera Mini|Mobile/i.test(ua)"
+						+ "  || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);"
+						+ " if (mobile) {"
+						+ "  const upload = $0;"
+						+ "  const input = upload.shadowRoot && upload.shadowRoot.querySelector('input[type=file]');"
+						+ "  if (!input) {"
+						+ "   upload.dispatchEvent(new CustomEvent('camera-capture-error',"
+						+ "    {detail: {message: 'The mobile camera could not be opened.'}}));"
+						+ "   return;"
+						+ "  }"
+						+ "  const previousAccept = input.getAttribute('accept');"
+						+ "  input.setAttribute('accept', 'image/*');"
+						+ "  input.setAttribute('capture', 'environment');"
+						+ "  input.click();"
+						+ "  window.setTimeout(() => {"
+						+ "   input.removeAttribute('capture');"
+						+ "   if (previousAccept === null) input.removeAttribute('accept');"
+						+ "   else input.setAttribute('accept', previousAccept);"
+						+ "  }, 1500);"
+						+ " } else {"
+						+ "  this.dispatchEvent(new CustomEvent('desktop-camera-request'));"
+						+ " }"
+						+ "});",
+				upload.getElement()));
+
+		upload.getElement().addEventListener("camera-capture-error", event -> {
+			String message = event.getEventData().getString("event.detail.message");
+			Notification.show(StringUtils.defaultIfBlank(message, "Camera is not available on this device"), 5000,
+					Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
+		}).addEventData("event.detail.message");
+
 		ProgressBar progressBar = new ProgressBar();
 		progressBar.setVisible(false);
 		progressBar.setMin(0);
@@ -3262,10 +3363,12 @@ criteria.setCampaign(campaignReferenceDto);
 		Button removeButton = new Button("Remove image");
 		removeButton.addClickListener(e -> {
 			imageFieldValues.remove(formElement.getId());
+			imageFieldBytes.remove(formElement.getId());
 			imageStateField.clear();
 			status.setText("No image selected");
 			clearInlineThumbnail(inlineThumbnail);
 			upload.setVisible(true);
+			cameraButton.setVisible(true);
 			removeButtonVisibility(removeButton, false);
 			viewButtonVisibility(viewButton, false);
 		});
@@ -3302,10 +3405,12 @@ criteria.setCampaign(campaignReferenceDto);
 				}
 
 				imageFieldValues.put(formElement.getId(), imageValue);
+				imageFieldBytes.put(formElement.getId(), imageBytes);
 				imageStateField.setValue(imageValue.isUploaded() ? imageValue.getImageId() : imageValue.getLocalId());
 				status.setText("Selected: " + safeImageName(imageValue));
 				setInlineThumbnail(inlineThumbnail, imageValue.getMimeType(), imageBytes);
 				upload.setVisible(false);
+				cameraButton.setVisible(false);
 				removeButtonVisibility(removeButton, true);
 				viewButtonVisibility(viewButton, imageValue.isUploaded());
 			} catch (Exception ex) {
@@ -3324,7 +3429,7 @@ criteria.setCampaign(campaignReferenceDto);
 		});
 
 		prefillImageFieldValue(formElement.getId(), existingValue, imageStateField, status, removeButton, viewButton,
-				inlineThumbnail, upload);
+				inlineThumbnail, upload, cameraButton);
 
 		viewButton.addClickListener(e -> {
 			CampaignFormImageValue current = imageFieldValues.get(formElement.getId());
@@ -3348,13 +3453,104 @@ criteria.setCampaign(campaignReferenceDto);
 			}
 		});
 
-		container.add(caption, upload, progressBar, status, inlineThumbnail, viewButton, removeButton);
+		container.add(caption, cameraButton, upload, progressBar, status, inlineThumbnail, viewButton, removeButton);
 		return container;
+	}
+
+	private void openCameraCaptureDialog(Upload upload) {
+		com.vaadin.flow.component.dialog.Dialog cameraDialog = new com.vaadin.flow.component.dialog.Dialog();
+		cameraDialog.setWidth("min(720px, 95vw)");
+		cameraDialog.setCloseOnEsc(true);
+		cameraDialog.setCloseOnOutsideClick(false);
+
+		Label title = new Label("Take photo");
+		title.getStyle().set("font-size", "var(--lumo-font-size-l)");
+		title.getStyle().set("font-weight", "600");
+
+		com.vaadin.flow.dom.Element videoElement = new com.vaadin.flow.dom.Element("video");
+		videoElement.setAttribute("autoplay", true);
+		videoElement.setAttribute("playsinline", true);
+		videoElement.getStyle().set("width", "100%");
+		videoElement.getStyle().set("max-height", "65vh");
+		videoElement.getStyle().set("background", "#000");
+		videoElement.getStyle().set("border-radius", "4px");
+		Component video = new Component(videoElement) {
+			private static final long serialVersionUID = 1L;
+		};
+
+		Button captureButton = new Button("Capture photo", VaadinIcon.CAMERA.create());
+		captureButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		Button closeButton = new Button("Cancel", event -> cameraDialog.close());
+
+		captureButton.addClickListener(event -> {
+			videoElement.executeJs(
+					"const video = this;"
+							+ "const upload = $0;"
+							+ "if (!video.srcObject || !video.videoWidth || !video.videoHeight) {"
+							+ " upload.dispatchEvent(new CustomEvent('camera-capture-error',"
+							+ " {detail: {message: 'The camera is not ready. Please wait and try again.'}}));"
+							+ " return;"
+							+ "}"
+							+ "const canvas = document.createElement('canvas');"
+							+ "canvas.width = video.videoWidth; canvas.height = video.videoHeight;"
+							+ "canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);"
+							+ "canvas.toBlob(blob => {"
+							+ " if (!blob) {"
+							+ "  upload.dispatchEvent(new CustomEvent('camera-capture-error',"
+							+ "   {detail: {message: 'The captured photo could not be created.'}})); return;"
+							+ " }"
+							+ " const input = upload.shadowRoot && upload.shadowRoot.querySelector('input[type=file]');"
+							+ " if (!input) {"
+							+ "  upload.dispatchEvent(new CustomEvent('camera-capture-error',"
+							+ "   {detail: {message: 'The captured photo could not be attached.'}})); return;"
+							+ " }"
+							+ " const file = new File([blob], 'camera-' + Date.now() + '.jpg', {type: 'image/jpeg'});"
+							+ " const transfer = new DataTransfer(); transfer.items.add(file);"
+							+ " input.files = transfer.files; input.dispatchEvent(new Event('change', {bubbles: true}));"
+							+ "}, 'image/jpeg', 0.92);",
+					upload.getElement());
+			cameraDialog.close();
+		});
+
+		cameraDialog.addOpenedChangeListener(event -> {
+			if (!event.isOpened()) {
+				videoElement.executeJs(
+						"if (this.srcObject) { this.srcObject.getTracks().forEach(track => track.stop()); this.srcObject = null; }");
+			}
+		});
+
+		HorizontalLayout actions = new HorizontalLayout(captureButton, closeButton);
+		cameraDialog.add(title, video, actions);
+		cameraDialog.open();
+
+		videoElement.executeJs(
+				"const video = this;"
+						+ "const upload = $0;"
+						+ "const report = message => upload.dispatchEvent(new CustomEvent('camera-capture-error',"
+						+ " {detail: {message: message}}));"
+						+ "if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {"
+						+ " report('Camera capture is not supported by this browser or device.');"
+						+ "} else {"
+						+ " navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: 'environment'}}, audio: false})"
+						+ "  .then(stream => { video.srcObject = stream; return video.play(); })"
+						+ "  .catch(error => {"
+						+ "   let message = 'Unable to open the camera.';"
+						+ "   if (error.name === 'NotAllowedError' || error.name === 'SecurityError')"
+						+ "    message = 'Camera access was denied. Allow camera permission and try again.';"
+						+ "   else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError')"
+						+ "    message = 'No camera was found on this device.';"
+						+ "   else if (error.name === 'NotReadableError' || error.name === 'TrackStartError')"
+						+ "    message = 'The camera is unavailable or is being used by another application.';"
+						+ "   report(message);"
+						+ "  });"
+						+ "}",
+				upload.getElement());
 	}
 
 	@SuppressWarnings("unchecked")
 	private void prefillImageFieldValue(String fieldId, Object existingValue, TextField imageStateField, Label status,
-			Button removeButton, Button viewButton, com.vaadin.flow.component.html.Image inlineThumbnail, Upload upload) {
+			Button removeButton, Button viewButton, com.vaadin.flow.component.html.Image inlineThumbnail, Upload upload,
+			Button cameraButton) {
 		if (existingValue == null) {
 			upload.setVisible(true);
 			return;
@@ -3376,10 +3572,12 @@ criteria.setCampaign(campaignReferenceDto);
 				imageStateField.setValue(imageValue.isUploaded() ? imageValue.getImageId() : imageValue.getLocalId());
 				status.setText("Selected: " + safeImageName(imageValue));
 				upload.setVisible(false);
+				cameraButton.setVisible(false);
 				if (imageValue.isUploaded() && StringUtils.isNotBlank(imageValue.getImageId())) {
 					try {
 						byte[] bytes = FacadeProvider.getCampaignFormImageFacade().readImage(imageValue.getImageId());
 						if (bytes != null && bytes.length > 0) {
+							imageFieldBytes.put(fieldId, bytes);
 							String mime = StringUtils.isNotBlank(imageValue.getMimeType()) ? imageValue.getMimeType()
 									: "image/jpeg";
 							setInlineThumbnail(inlineThumbnail, mime, bytes);
@@ -3478,6 +3676,143 @@ criteria.setCampaign(campaignReferenceDto);
 			}
 			// Add similar checks for other numeric field types if needed
 		}
+	}
+
+	private boolean validateImageQualityBeforeSave() {
+		boolean allImagesValid = true;
+		List<String> validationMessages = new ArrayList<>();
+
+		for (CampaignFormElement element : formElements) {
+			if (!CampaignFormElementType.IMAGE.toString().equalsIgnoreCase(element.getType())) {
+				continue;
+			}
+
+			CampaignFormImageValue imageValue = imageFieldValues.get(element.getId());
+			if (imageValue == null) {
+				continue;
+			}
+
+			Component component = fields.get(element.getId());
+			TextField imageStateField = component instanceof TextField ? (TextField) component : null;
+			List<String> failedChecks = new ArrayList<>();
+
+			try {
+				byte[] imageBytes = imageFieldBytes.get(element.getId());
+				if ((imageBytes == null || imageBytes.length == 0) && imageValue.isUploaded()
+						&& StringUtils.isNotBlank(imageValue.getImageId())) {
+					imageBytes = FacadeProvider.getCampaignFormImageFacade().readImage(imageValue.getImageId());
+					if (imageBytes != null && imageBytes.length > 0) {
+						imageFieldBytes.put(element.getId(), imageBytes);
+					}
+				}
+
+				if (imageBytes == null || imageBytes.length == 0) {
+					failedChecks.add("Image content could not be loaded for validation.");
+				} else {
+					BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
+					if (image == null) {
+						failedChecks.add("The selected file is not a readable image.");
+					} else {
+						int width = image.getWidth();
+						int height = image.getHeight();
+						int shortEdge = Math.min(width, height);
+						int longEdge = Math.max(width, height);
+
+						if (shortEdge < MIN_IMAGE_HEIGHT || longEdge < MIN_IMAGE_WIDTH) {
+							failedChecks.add("Resolution validation failed: image is " + width + "x" + height
+									+ "; minimum required resolution is 640x480.");
+						}
+
+						double brightness = calculateAverageBrightness(image);
+						if (brightness < MIN_IMAGE_BRIGHTNESS) {
+							failedChecks.add("Brightness validation failed: image is too dark (brightness "
+									+ Math.round(brightness) + ").");
+						} else if (brightness > MAX_IMAGE_BRIGHTNESS) {
+							failedChecks.add("Brightness validation failed: image is too bright (brightness "
+									+ Math.round(brightness) + ").");
+						}
+
+						double sharpnessVariance = calculateLaplacianVariance(image);
+						if (sharpnessVariance < MIN_IMAGE_SHARPNESS_VARIANCE) {
+							failedChecks.add("Blur validation failed: image is not sufficiently sharp (sharpness "
+									+ Math.round(sharpnessVariance) + ").");
+						}
+					}
+				}
+			} catch (Exception exception) {
+				logger.error("Unable to validate image field {}", element.getId(), exception);
+				failedChecks.add("Image quality validation could not be completed.");
+			}
+
+			if (!failedChecks.isEmpty()) {
+				allImagesValid = false;
+				String fieldCaption = StringUtils.defaultIfBlank(
+						get18nCaption(element.getId(), element.getCaption()), element.getId());
+				String fieldMessage = fieldCaption + ": " + String.join(" ", failedChecks);
+				validationMessages.add(fieldMessage);
+				if (imageStateField != null) {
+					imageStateField.setInvalid(true);
+					imageStateField.setErrorMessage(String.join(" ", failedChecks));
+				}
+			} else if (imageStateField != null) {
+				imageStateField.setInvalid(false);
+				imageStateField.setErrorMessage(null);
+			}
+		}
+
+		if (!allImagesValid) {
+			hasErrorFormValues(14);
+			Notification.show(String.join("\n", validationMessages), 8000, Position.MIDDLE)
+					.addThemeVariants(NotificationVariant.LUMO_ERROR);
+		}
+
+		return allImagesValid;
+	}
+
+	private double calculateAverageBrightness(BufferedImage image) {
+		long sampleCount = 0;
+		double brightnessTotal = 0;
+		int sampleStep = Math.max(1, Math.max(image.getWidth(), image.getHeight()) / 1000);
+
+		for (int y = 0; y < image.getHeight(); y += sampleStep) {
+			for (int x = 0; x < image.getWidth(); x += sampleStep) {
+				brightnessTotal += pixelBrightness(image.getRGB(x, y));
+				sampleCount++;
+			}
+		}
+
+		return sampleCount == 0 ? 0 : brightnessTotal / sampleCount;
+	}
+
+	private double calculateLaplacianVariance(BufferedImage image) {
+		long sampleCount = 0;
+		double mean = 0;
+		double sumSquaredDifference = 0;
+		int sampleStep = Math.max(1, Math.max(image.getWidth(), image.getHeight()) / 1000);
+
+		for (int y = 1; y < image.getHeight() - 1; y += sampleStep) {
+			for (int x = 1; x < image.getWidth() - 1; x += sampleStep) {
+				double center = pixelBrightness(image.getRGB(x, y));
+				double laplacian = pixelBrightness(image.getRGB(x - 1, y))
+						+ pixelBrightness(image.getRGB(x + 1, y))
+						+ pixelBrightness(image.getRGB(x, y - 1))
+						+ pixelBrightness(image.getRGB(x, y + 1)) - (4 * center);
+
+				sampleCount++;
+				double difference = laplacian - mean;
+				mean += difference / sampleCount;
+				sumSquaredDifference += difference * (laplacian - mean);
+			}
+		}
+
+		return sampleCount > 1 ? sumSquaredDifference / (sampleCount - 1) : 0;
+	}
+
+	private double pixelBrightness(int rgb) {
+		int red = (rgb >> 16) & 0xFF;
+		int green = (rgb >> 8) & 0xFF;
+		int blue = rgb & 0xFF;
+		return (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
 	}
 
 	private boolean validateTextInputFormDate(String formDateFieldValue) {
@@ -3897,6 +4232,8 @@ criteria.setCampaign(campaignReferenceDto);
 
 		}
 
+		validateImageQualityBeforeSave();
+
 		fields.forEach((key, value) -> {
 			Component formField = fields.get(key);
 			if (formField.getElement().getProperty("invalid", false)) {
@@ -4240,6 +4577,13 @@ criteria.setCampaign(campaignReferenceDto);
 				// logger.debug("------: "+expression.getExpressionString());
 				final Class<?> valueType = expression.getValueType(context);
 				final Object value = expression.getValue(context, valueType);
+
+				if (CampaignFormElementType.VALIDATEDTEXT.toString().equalsIgnoreCase(e.getType())) {
+					setFieldValue(getFields().get(e.getId()), CampaignFormElementType.VALIDATEDTEXT,
+							value != null ? value.toString() : "", null, null, false, null);
+					return;
+				}
+
 				String valuex = value + "";
 
 				if (!valuex.isBlank() && value != null) {
@@ -4310,8 +4654,12 @@ criteria.setCampaign(campaignReferenceDto);
 				} else if (e.getType().toString().equals("range") && valuex == null && e.getDefaultvalue() != null) {
 				}
 			} catch (SpelEvaluationException evaluationException) {
-				// LOG.error("Error evaluating expression: {} / {}",
-				// evaluationEx0rception.getMessageCode(), evaluationException.getMessage());
+				logger.error("Error evaluating expression for field {}: {}", e.getId(), e.getExpression(),
+						evaluationException);
+				if (CampaignFormElementType.VALIDATEDTEXT.toString().equalsIgnoreCase(e.getType())) {
+					setFieldValue(getFields().get(e.getId()), CampaignFormElementType.VALIDATEDTEXT, "", null,
+							null, false, null);
+				}
 			}
 		});
 
@@ -4323,6 +4671,8 @@ criteria.setCampaign(campaignReferenceDto);
 				.filter(formElement -> fields_.get(formElement.getId()) != null)
 				.filter(formElement -> !formElement.getType().equals("range"))
 				.filter(formElement -> !formElement.getType().equals("decimal"))
+				.filter(formElement -> !CampaignFormElementType.VALIDATEDTEXT.toString()
+						.equalsIgnoreCase(formElement.getType()))
 				.filter(formElement -> !formElement.isIgnoredisable())
 				.forEach(formElement -> ((AbstractField) fields_.get(formElement.getId())).setEnabled(false));
 		addExpressionListener();
