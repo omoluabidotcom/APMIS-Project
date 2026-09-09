@@ -68,6 +68,7 @@ import de.symeda.sormas.app.component.controls.ControlDateField;
 import de.symeda.sormas.app.component.controls.ControlPropertyField;
 import de.symeda.sormas.app.component.controls.ControlSpinnerField;
 import de.symeda.sormas.app.component.controls.ControlTextReadField;
+import de.symeda.sormas.app.component.controls.ControlValidatedTextField;
 import de.symeda.sormas.app.databinding.FragmentCampaignDataReadLayoutBinding;
 import de.symeda.sormas.app.util.TextViewBindingAdapters;
 
@@ -1300,6 +1301,8 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
                             }else {
                                 ControlTextReadField.setValue((ControlTextReadField) dynamicField, value, null, null, null, false);
                             }
+                        }else if (type == CampaignFormElementType.VALIDATEDTEXT){
+                            ControlTextReadField.setValue((ControlValidatedTextField) dynamicField, value, null, null, null, true);
                         }else if (type == CampaignFormElementType.RANGE){
                             ControlTextReadField.setValue((ControlTextReadField) dynamicField, value, null, null, null, true);
                         }

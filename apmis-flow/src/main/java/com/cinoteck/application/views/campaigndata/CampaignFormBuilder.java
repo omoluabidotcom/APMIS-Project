@@ -2617,7 +2617,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 					// please check your data 1", Notification.TYPE_WARNING_MESSAGE);
 				}
 			};
-			((TextArea) field).setValue(value != null ? value.toString() : null);
+			((TextArea) field).setValue(value != null ? value.toString() : "");
 			break;
 		case DATE:
 			DatePicker datePicker = (DatePicker) field;
@@ -4161,96 +4161,96 @@ public class CampaignFormBuilder extends VerticalLayout {
 		}
 	}
 
-//	private boolean validateImageQualityBeforeSave() {
-//		boolean allImagesValid = true;
-//		List<String> validationMessages = new ArrayList<>();
-//
-//		for (CampaignFormElement element : formElements) {
-//			if (!CampaignFormElementType.IMAGE.toString().equalsIgnoreCase(element.getType())) {
-//				continue;
-//			}
-//
-//			List<CampaignFormImageValue> imageValue = imageFieldValues.get(element.getId());
-//			if (imageValue == null) {
-//				continue;
-//			}
-//
-//			Component component = fields.get(element.getId());
-//			TextField imageStateField = component instanceof TextField ? (TextField) component : null;
-//			List<String> failedChecks = new ArrayList<>();
-//
-//			try {
-//				byte[] imageBytes = imagePreviewCache.get(element.getId());
-//				if ((imageBytes == null || imageBytes.length == 0) && imageValue.isUploaded()
-//						&& StringUtils.isNotBlank(imageValue.getImageId())) {
-//					imageBytes = FacadeProvider.getCampaignFormImageFacade().readImage(imageValue.getImageId());
-//					if (imageBytes != null && imageBytes.length > 0) {
-//						imagePreviewCache.put(element.getId(), imageBytes);
-//					}
-//				}
-//
-//				if (imageBytes == null || imageBytes.length == 0) {
-//					failedChecks.add("Image content could not be loaded for validation.");
-//				} else {
-//					BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
-//					if (image == null) {
-//						failedChecks.add("The selected file is not a readable image.");
-//					} else {
-//						int width = image.getWidth();
-//						int height = image.getHeight();
-//						int shortEdge = Math.min(width, height);
-//						int longEdge = Math.max(width, height);
-//
-//						if (shortEdge < MIN_IMAGE_HEIGHT || longEdge < MIN_IMAGE_WIDTH) {
-//							failedChecks.add("Resolution validation failed: image is " + width + "x" + height
-//									+ "; minimum required resolution is 640x480.");
-//						}
-//
-//						double brightness = calculateAverageBrightness(image);
-//						if (brightness < MIN_IMAGE_BRIGHTNESS) {
-//							failedChecks.add("Brightness validation failed: image is too dark (brightness "
-//									+ Math.round(brightness) + ").");
-//						} else if (brightness > MAX_IMAGE_BRIGHTNESS) {
-//							failedChecks.add("Brightness validation failed: image is too bright (brightness "
-//									+ Math.round(brightness) + ").");
-//						}
-//
-//						double sharpnessVariance = calculateLaplacianVariance(image);
-//						if (sharpnessVariance < MIN_IMAGE_SHARPNESS_VARIANCE) {
-//							failedChecks.add("Blur validation failed: image is not sufficiently sharp (sharpness "
-//									+ Math.round(sharpnessVariance) + ").");
-//						}
-//					}
-//				}
-//			} catch (Exception exception) {
-//				logger.error("Unable to validate image field {}", element.getId(), exception);
-//				failedChecks.add("Image quality validation could not be completed.");
-//			}
-//
-//			if (!failedChecks.isEmpty()) {
-//				allImagesValid = false;
-//				String fieldCaption = StringUtils.defaultIfBlank(
-//						get18nCaption(element.getId(), element.getCaption()), element.getId());
-//				String fieldMessage = fieldCaption + ": " + String.join(" ", failedChecks);
-//				validationMessages.add(fieldMessage);
-//				if (imageStateField != null) {
-//					imageStateField.setInvalid(true);
-//					imageStateField.setErrorMessage(String.join(" ", failedChecks));
-//				}
-//			} else if (imageStateField != null) {
-//				imageStateField.setInvalid(false);
-//				imageStateField.setErrorMessage(null);
-//			}
-//		}
-//
-//		if (!allImagesValid) {
-//			hasErrorFormValues(14);
-//			Notification.show(String.join("\n", validationMessages), 8000, Position.MIDDLE)
-//					.addThemeVariants(NotificationVariant.LUMO_ERROR);
-//		}
-//
-//		return allImagesValid;
-//	}
+	private boolean validateImageQualityBeforeSave() {
+		boolean allImagesValid = true;
+		List<String> validationMessages = new ArrayList<>();
+
+		for (CampaignFormElement element : formElements) {
+			if (!CampaignFormElementType.IMAGE.toString().equalsIgnoreCase(element.getType())) {
+				continue;
+			}
+
+			List<CampaignFormImageValue> imageValue = imageFieldValues.get(element.getId());
+			if (imageValue == null) {
+				continue;
+			}
+
+			Component component = fields.get(element.getId());
+			TextField imageStateField = component instanceof TextField ? (TextField) component : null;
+			List<String> failedChecks = new ArrayList<>();
+
+			try {
+				byte[] imageBytes = imagePreviewCache.get(element.getId());
+				if ((imageBytes == null || imageBytes.length == 0) && ((CampaignFormImageValue) imageValue).isUploaded()
+						&& StringUtils.isNotBlank(((CampaignFormImageValue) imageValue).getImageId())) {
+					imageBytes = FacadeProvider.getCampaignFormImageFacade().readImage(((CampaignFormImageValue) imageValue).getImageId());
+					if (imageBytes != null && imageBytes.length > 0) {
+						imagePreviewCache.put(element.getId(), imageBytes);
+					}
+				}
+
+				if (imageBytes == null || imageBytes.length == 0) {
+					failedChecks.add("Image content could not be loaded for validation.");
+				} else {
+					BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
+					if (image == null) {
+						failedChecks.add("The selected file is not a readable image.");
+					} else {
+						int width = image.getWidth();
+						int height = image.getHeight();
+						int shortEdge = Math.min(width, height);
+						int longEdge = Math.max(width, height);
+
+						if (shortEdge < MIN_IMAGE_HEIGHT || longEdge < MIN_IMAGE_WIDTH) {
+							failedChecks.add("Resolution validation failed: image is " + width + "x" + height
+									+ "; minimum required resolution is 640x480.");
+						}
+
+						double brightness = calculateAverageBrightness(image);
+						if (brightness < MIN_IMAGE_BRIGHTNESS) {
+							failedChecks.add("Brightness validation failed: image is too dark (brightness "
+									+ Math.round(brightness) + ").");
+						} else if (brightness > MAX_IMAGE_BRIGHTNESS) {
+							failedChecks.add("Brightness validation failed: image is too bright (brightness "
+									+ Math.round(brightness) + ").");
+						}
+
+						double sharpnessVariance = calculateLaplacianVariance(image);
+						if (sharpnessVariance < MIN_IMAGE_SHARPNESS_VARIANCE) {
+							failedChecks.add("Blur validation failed: image is not sufficiently sharp (sharpness "
+									+ Math.round(sharpnessVariance) + ").");
+						}
+					}
+				}
+			} catch (Exception exception) {
+				logger.error("Unable to validate image field {}", element.getId(), exception);
+				failedChecks.add("Image quality validation could not be completed.");
+			}
+
+			if (!failedChecks.isEmpty()) {
+				allImagesValid = false;
+				String fieldCaption = StringUtils.defaultIfBlank(
+						get18nCaption(element.getId(), element.getCaption()), element.getId());
+				String fieldMessage = fieldCaption + ": " + String.join(" ", failedChecks);
+				validationMessages.add(fieldMessage);
+				if (imageStateField != null) {
+					imageStateField.setInvalid(true);
+					imageStateField.setErrorMessage(String.join(" ", failedChecks));
+				}
+			} else if (imageStateField != null) {
+				imageStateField.setInvalid(false);
+				imageStateField.setErrorMessage(null);
+			}
+		}
+
+		if (!allImagesValid) {
+			hasErrorFormValues(14);
+			Notification.show(String.join("\n", validationMessages), 8000, Position.MIDDLE)
+					.addThemeVariants(NotificationVariant.LUMO_ERROR);
+		}
+
+		return allImagesValid;
+	}
 
 	private double calculateAverageBrightness(BufferedImage image) {
 		long sampleCount = 0;
@@ -4718,7 +4718,7 @@ public class CampaignFormBuilder extends VerticalLayout {
 
 		}
 
-//		validateImageQualityBeforeSave();
+		validateImageQualityBeforeSave();
 
 		fields.forEach((key, value) -> {
 			Component formField = fields.get(key);

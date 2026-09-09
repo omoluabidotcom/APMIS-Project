@@ -5,21 +5,6 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public enum FormAccess {
-
-//	ICM,
-//	PCA,
-//	ARCHIVE,
-//	FLW,
-//	ADMIN,
-//	FMS,
-//	LQAS,
-//	TRAINING,
-//	EAG,
-//	EAG_ADMIN,
-//	EAG_ICM,
-//	EAG_PCA,
-//	EAG_FMS,
-//	EAG_LQAS;
 	
 	ICM("ICM"),
     PCA("PCA"),
@@ -39,7 +24,10 @@ public enum FormAccess {
     MODALITY_POST("MODALITY_POST"),
 	VALIDATION("VALIDATION"),
 	MONITORING("MONITORING"),
-	MICROPLANNING("MICROPLANNING");
+	MICROPLANNING("MICROPLANNING"),
+	DISTRICT_READINESS("District Readiness"),
+	TF_REPORT("TF Report"),
+	EVENING_REVIEW("Evening Review");
 
     private String displayName;
 
