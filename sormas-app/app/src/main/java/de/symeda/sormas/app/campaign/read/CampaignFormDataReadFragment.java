@@ -1615,6 +1615,7 @@ public class CampaignFormDataReadFragment extends BaseReadFragment<FragmentCampa
         if (record.getRegion() != null) {
             record.setArea(record.getRegion().getArea());
         }
+
         contentBinding.setData(record);
         applyGeographyLevelVisibility(contentBinding);
     }
