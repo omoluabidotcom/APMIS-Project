@@ -451,6 +451,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
                             ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlValidatedTextField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
                             System.out.println( exprx + " exprxexprxexprxexprxexprx");
@@ -694,6 +696,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
                             ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlValidatedTextField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
@@ -955,6 +959,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
                             ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlValidatedTextField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
@@ -1193,6 +1199,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
                             ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlValidatedTextField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
@@ -1449,6 +1457,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
                             ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlValidatedTextField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
@@ -1684,6 +1694,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
                             ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlValidatedTextField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
@@ -1917,6 +1929,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
                             ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlValidatedTextField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
@@ -2151,6 +2165,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
                             ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlValidatedTextField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
@@ -2384,6 +2400,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
                             ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlValidatedTextField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
@@ -2617,6 +2635,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
                             ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlValidatedTextField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
@@ -2849,6 +2869,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                                 isRangeandExpression = true;
                             }
                             ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
+                        } else if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                            dynamicField = CampaignFormDataFragmentUtils.createControlValidatedTextField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints);
                         } else if (type == CampaignFormElementType.RANGE) {
                             final boolean exprx = expressionx;
 
@@ -3082,6 +3104,8 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
                             isRangeandExpression = true;
                         }
                         ControlDecimalEditField.setValue((ControlDecimalEditField) dynamicField, value);
+                    } else if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                        dynamicField = CampaignFormDataFragmentUtils.createControlValidatedTextField(campaignFormElement, requireContext(), CampaignFormDataFragmentUtils.getUserTranslations(campaignFormMeta), userHints);
                     } else if (type == CampaignFormElementType.RANGE) {
                         final boolean exprx = expressionx;
                         if (!exprx) {

@@ -78,6 +78,7 @@ import de.symeda.sormas.app.component.controls.ControlTextEditFieldAllowZeroInpu
 import de.symeda.sormas.app.component.controls.ControlTextEditFieldRange;
 import de.symeda.sormas.app.component.controls.ControlTextReadField;
 import de.symeda.sormas.app.component.controls.ControlTimeField;
+import de.symeda.sormas.app.component.controls.ControlValidatedTextField;
 import de.symeda.sormas.app.component.controls.ValueChangeListener;
 import de.symeda.sormas.app.util.YesNo;
 
@@ -181,11 +182,15 @@ public class CampaignFormDataFragmentUtils {
             Boolean isDisIgnore,
             Object orginalValue) {
         try {
-            if (!expressionString.isEmpty() && expressionString != null && !expressionString.equals("")) {
+            if (expressionString != null && !expressionString.trim().isEmpty()) {
                 final Object expressionValue = getExpressionValue(expressionParser, formValues, expressionString);
                 String valuex = expressionValue + "";
 
-                if (!valuex.isEmpty() && !valuex.equals("") && expressionValue != null) {//&& !valuex.equals("0")
+                // VALIDATEDTEXT must accept an empty string because the outermost
+                // ternary intentionally clears the calculated field when the row is blank.
+                if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                    ((ControlValidatedTextField) dynamicField).setExpressionValue(expressionValue);
+                } else if (!valuex.isEmpty() && !valuex.equals("") && expressionValue != null) {//&& !valuex.equals("0")
 
                     if (expressionValue != null) { //we need to see how to check and filter when its blank or empty
                         System.out.println(dynamicField.getCaption() + " : " + expressionString + " =====)))))))))))))))==== " + expressionValue);
@@ -442,12 +447,16 @@ public class CampaignFormDataFragmentUtils {
             String expressionString,
             Boolean isDisIgnore) {
         try {
-            if (!expressionString.isEmpty() && expressionString != null && !expressionString.equals("")) {
+            if (expressionString != null && !expressionString.trim().isEmpty()) {
                 final Object expressionValue = getExpressionValue(expressionParser, formValues, expressionString);
                 String valuex = expressionValue + "";
                 ;
                 System.out.println("second method ___))))))))))))   )))))))))))))))))))))))))))))))))-----= " + valuex);
-                if (!valuex.isEmpty() && !valuex.equals("") && expressionValue != null) {
+                // Do this before the non-empty guard so a calculated blank can clear
+                // a value that was produced by an earlier expression evaluation.
+                if (type == CampaignFormElementType.VALIDATEDTEXT) {
+                    ((ControlValidatedTextField) dynamicField).setExpressionValue(expressionValue);
+                } else if (!valuex.isEmpty() && !valuex.equals("") && expressionValue != null) {
                     if (expressionValue != null) { //we need to see how to check and filter when its blank or empty
 
                         if (type == CampaignFormElementType.YES_NO) {
@@ -591,7 +600,17 @@ public class CampaignFormDataFragmentUtils {
 
         System.out.println("22222222222222 getExpressionValue" + cleanedexpressionString);
 
-        final EvaluationContext context = refreshEvaluationContext(formValues);
+        // ControlSwitchField stores YES/NO as enum values on Android, while
+        // JSON expressions for a yes-no element use true/false. Build a
+        // temporary expression-only view so persistence keeps its original
+        // enum values but SpEL receives platform-neutral booleans.
+        final List<CampaignFormDataEntry> expressionFormValues = new ArrayList<>();
+        for (CampaignFormDataEntry entry : formValues) {
+            Object normalizedValue = normalizeExpressionValue(entry.getValue());
+            expressionFormValues.add(new CampaignFormDataEntry(entry.getId(), normalizedValue));
+        }
+
+        final EvaluationContext context = refreshEvaluationContext(expressionFormValues);
         final Expression expression = expressionParser.parseExpression(cleanedexpressionString);
         final Class<?> valueType = expression.getValueType(context);
         final Object valueFin = expression.getValue(context, valueType);
@@ -604,6 +623,22 @@ public class CampaignFormDataFragmentUtils {
             throw new SpelEvaluationException(SpelMessage.NOT_A_REAL);
         }
         return expression.getValue(context, valueType);
+    }
+
+    private static Object normalizeExpressionValue(Object value) {
+        if (!(value instanceof Enum<?>)) {
+            return value;
+        }
+
+        String enumName = ((Enum<?>) value).name();
+        if ("YES".equalsIgnoreCase(enumName) || "Y".equalsIgnoreCase(enumName)) {
+            return Boolean.TRUE;
+        }
+        if ("NO".equalsIgnoreCase(enumName) || "N".equalsIgnoreCase(enumName)) {
+            return Boolean.FALSE;
+        }
+
+        return value;
     }
     public static void handleDependingOnSectionAndLabel(
             Map<String, ControlPropertyField> fieldMap,
@@ -1048,6 +1083,61 @@ public class CampaignFormDataFragmentUtils {
                 if (isRequired) {
                     setRequired(true);
                 }
+            }
+        };
+    }
+
+    public static ControlValidatedTextField createControlValidatedTextField(
+            CampaignFormElement campaignFormElement,
+            Context context,
+            Map<String, String> userTranslations,
+            Map<String, String> userHints) {
+        return new ControlValidatedTextField(context) {
+
+            @Override
+            protected String getPrefixDescription() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getPrefixCaption() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getHelpText() {
+                return getUserLanguageHint(userHints, campaignFormElement);
+            }
+
+            @Override
+            public int getTextAlignment() {
+                return View.TEXT_ALIGNMENT_VIEW_START;
+            }
+
+            @Override
+            public int getGravity() {
+                return Gravity.CENTER_VERTICAL;
+            }
+
+            @Override
+            public int getMaxLines() {
+                return 1;
+            }
+
+            @Override
+            public int getMaxLength() {
+                return CHARACTER_LIMIT_DEFAULT;
+            }
+
+            @Override
+            protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
+                super.inflateView(context, attrs, defStyle);
+                initLabel();
+                initLabelAndValidationListeners();
+                setLiveValidationDisabled(true);
+                initInput(false, false, false, null, null, false, false);
+                displayHelpText();
+                setEnabled(false);
             }
         };
     }

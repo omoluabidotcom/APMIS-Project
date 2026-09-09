@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -128,7 +129,9 @@ public class FormBuilderLayout extends VerticalLayout {
 		formType = new ComboBox<CampaignPhase>("Form Type");
 		formType.setItems(CampaignPhase.values());
 		formCategory = new ComboBox<FormAccess>("Form Category");
-		formCategory.setItems(FormAccess.values());
+		formCategory.setItems(Arrays.stream(FormAccess.values())
+                .filter(value -> value != FormAccess.MODALITY_PRE  && value != FormAccess.MODALITY_POST)
+                .collect(Collectors.toList()));
 		areaSelector = new MultiSelectComboBox<AreaReferenceDto>("Region");
 		areaSelector.setItems(regions);
 		modality = new ComboBox<Modality>("Modality");

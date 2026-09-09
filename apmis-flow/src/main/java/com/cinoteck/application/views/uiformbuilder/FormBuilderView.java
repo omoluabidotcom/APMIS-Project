@@ -151,7 +151,9 @@ public class FormBuilderView extends VerticalLayout {
 		formType.setItems(CampaignPhase.values());
 		formType.setClearButtonVisible(true);
 		formAccess = new ComboBox<>("Form Access");
-		formAccess.setItems(FormAccess.values());
+		formAccess.setItems(Arrays.stream(FormAccess.values())
+                .filter(value -> value != FormAccess.MODALITY_PRE  && value != FormAccess.MODALITY_POST)
+                .collect(Collectors.toList()));
 		formAccess.setClearButtonVisible(true);
 		modality = new ComboBox<>("Modality");
 		modality.setItems(Modality.values());
