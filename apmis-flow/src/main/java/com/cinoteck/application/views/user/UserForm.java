@@ -628,6 +628,13 @@ public class UserForm extends FormLayout {
 		// NOTE: Disabling FormAccess restriction for EOC Users
 
 		formAccessesList.add(FormAccess.ARCHIVE);
+		
+		formAccessesList.add(FormAccess.DISTRICT_READINESS);
+		formAccessesList.add(FormAccess.TF_REPORT);
+		formAccessesList.add(FormAccess.EVENING_REVIEW);
+		formAccessesList.add(FormAccess.MICROPLANNING);
+
+		
 		formAccessesList.add(FormAccess.FLW);
 //		formAccessesList.add(FormAccess.MODALITY_PRE);
 		formAccessesList.add(FormAccess.TRAINING);
@@ -644,10 +651,7 @@ public class UserForm extends FormLayout {
 		formAccessesList.add(FormAccess.EAG_LQAS);
 //		formAccessesList.add(FormAccess.MODALITY_POST);
 		formAccessesList.add(FormAccess.VALIDATION);
-		formAccessesList.add(FormAccess.MICROPLANNING);
-		formAccessesList.add(FormAccess.TF_REPORT);
-		formAccessesList.add(FormAccess.DISTRICT_READINESS);
-		formAccessesList.add(FormAccess.EVENING_REVIEW);
+
 		formAccess.setItems(formAccessesList);
 
 
@@ -674,19 +678,49 @@ public class UserForm extends FormLayout {
 				activeCheck, commusr, userRoles, allFieldLayout, districtMulti, clusterNo);
 
 		createButtonsLayout();
+//		String checkBoxDivider = "var parentDiv = document.getElementById(\"formaccesschkid\");\n"
+//				+ "if (parentDiv) {\n" + "var children = parentDiv.querySelectorAll(\"vaadin-checkbox\");\n"
+//				+ "for (var i = 0; i < children.length; i++) {\n" + "console.log(children[i]);\n" + "if (i === 0) {\n"
+//				+ "var newContentL = '<hr><b class=\"formaccesschkbox\">Pre-Campaign</b><hr>';\n"
+//				+ "children[i].insertAdjacentHTML('afterend', newContentL);\n" + "}\n"
+//
+//				+ "if (i === 4) {\n" + "var newContentL = '<hr><b class=\"formaccesschkbox\">Intra-Campaign</b><hr>';\n"
+//				+ "children[i].insertAdjacentHTML('afterend', newContentL);\n" + "}\n"
+//
+//				+ "if (i === 8) {\n" + "var newContentL = '<hr><b class=\"formaccesschkbox\">Post-Campaign</b><hr>';\n"
+//				+ "children[i].insertAdjacentHTML('afterend', newContentL);\n" + "}\n"
+//
+//				+ "}}";
+		
 		String checkBoxDivider = "var parentDiv = document.getElementById(\"formaccesschkid\");\n"
-				+ "if (parentDiv) {\n" + "var children = parentDiv.querySelectorAll(\"vaadin-checkbox\");\n"
-				+ "for (var i = 0; i < children.length; i++) {\n" + "console.log(children[i]);\n" + "if (i === 0) {\n"
+				+ "if (parentDiv) {\n" 
+				+ "var children = parentDiv.querySelectorAll(\"vaadin-checkbox\");\n"
+				+ "for (var i = 0; i < children.length; i++) {\n" 
+				+ "console.log(children[i]);\n" 
+				+ "if (i === 0) {\n"
+				+ "var newContentL = '<hr><b class=\"formaccesschkbox\">Report</b><hr>';\n"
+				+ "children[i].insertAdjacentHTML('afterend', newContentL);\n" 
+				+ "}\n"
+				
+				+ "if (i === 4) {\n"
 				+ "var newContentL = '<hr><b class=\"formaccesschkbox\">Pre-Campaign</b><hr>';\n"
-				+ "children[i].insertAdjacentHTML('afterend', newContentL);\n" + "}\n"
+				+ "children[i].insertAdjacentHTML('afterend', newContentL);\n" 
+				+ "}\n"
+				
 
-				+ "if (i === 4) {\n" + "var newContentL = '<hr><b class=\"formaccesschkbox\">Intra-Campaign</b><hr>';\n"
-				+ "children[i].insertAdjacentHTML('afterend', newContentL);\n" + "}\n"
+				+ "if (i === 7) {\n" 
+				+ "var newContentL = '<hr><b class=\"formaccesschkbox\">Intra-Campaign</b><hr>';\n"
+				+ "children[i].insertAdjacentHTML('afterend', newContentL);\n" 
+				+ "}\n"
 
-				+ "if (i === 8) {\n" + "var newContentL = '<hr><b class=\"formaccesschkbox\">Post-Campaign</b><hr>';\n"
-				+ "children[i].insertAdjacentHTML('afterend', newContentL);\n" + "}\n"
+				+ "if (i === 11) {\n" 
+				+ "var newContentL = '<hr><b class=\"formaccesschkbox\">Post-Campaign</b><hr>';\n"
+				+ "children[i].insertAdjacentHTML('afterend', newContentL);\n" 
+				+ "}\n"
 
 				+ "}}";
+		
+		
 
 		UI.getCurrent().getPage().executeJs(checkBoxDivider);
 
