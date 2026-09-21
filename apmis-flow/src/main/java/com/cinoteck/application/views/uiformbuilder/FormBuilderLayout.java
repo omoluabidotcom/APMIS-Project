@@ -130,7 +130,7 @@ public class FormBuilderLayout extends VerticalLayout {
 		formType.setItems(CampaignPhase.values());
 		formCategory = new ComboBox<FormAccess>("Form Category");
 		formCategory.setItems(Arrays.stream(FormAccess.values())
-                .filter(value -> value != FormAccess.MODALITY_PRE  && value != FormAccess.MODALITY_POST)
+                .filter(value -> value != FormAccess.MODALITY_PRE  && value != FormAccess.MODALITY_POST  && value != FormAccess.EAG)
                 .collect(Collectors.toList()));
 		areaSelector = new MultiSelectComboBox<AreaReferenceDto>("Region");
 		areaSelector.setItems(regions);
