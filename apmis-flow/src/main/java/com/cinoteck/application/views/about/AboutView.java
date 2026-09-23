@@ -222,7 +222,7 @@ public class AboutView extends VerticalLayout {
 	            .set("width", "52px")
 	            .set("height", "52px")
 	            .set("min-width", "52px")
-	            .set("background-color", "#dce7f4")
+	            .set("background-color", "#0D6938")
 	            .set("border-radius", "10px")
 	            .set("display", "flex")
 	            .set("align-items", "center")

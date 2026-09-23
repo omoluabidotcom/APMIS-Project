@@ -636,7 +636,6 @@ public class UserForm extends FormLayout {
 
 		
 		formAccessesList.add(FormAccess.FLW);
-//		formAccessesList.add(FormAccess.MODALITY_PRE);
 		formAccessesList.add(FormAccess.TRAINING);
 		formAccessesList.add(FormAccess.MONITORING);
 		formAccessesList.add(FormAccess.ICM);
@@ -649,7 +648,6 @@ public class UserForm extends FormLayout {
 		formAccessesList.add(FormAccess.EAG_PCA);
 		formAccessesList.add(FormAccess.EAG_FMS);
 		formAccessesList.add(FormAccess.EAG_LQAS);
-//		formAccessesList.add(FormAccess.MODALITY_POST);
 		formAccessesList.add(FormAccess.VALIDATION);
 
 		formAccess.setItems(formAccessesList);

@@ -11,7 +11,7 @@ public enum FormAccess {
     ARCHIVE("ARCHIVE"),
     FLW("FLW"),
     ADMIN("ADMIN"),
-    FMS("FMS"),
+    FMS("FMS"),	
     LQAS("LQAS"),
     TRAINING("TRAINING"),
     EAG("EAG"),
@@ -24,7 +24,7 @@ public enum FormAccess {
     MODALITY_POST("MODALITY_POST"),
 	VALIDATION("VALIDATION"),
 	MONITORING("MONITORING"),
-	MICROPLANNING("MICROPLANNING"),
+	MICROPLANNING("MICROPLAN"),
 	DISTRICT_READINESS("District Readiness"),
 	TF_REPORT("TF Report"),
 	EVENING_REVIEW("Evening Review");
