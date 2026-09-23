@@ -252,7 +252,7 @@ public class SentMessageView extends VerticalLayout implements RouterLayout {
 
 		formAccessFilter = new ComboBox<FormAccess>("Form Access");
 		formAccessFilter.setItems(Arrays.stream(FormAccess.values())
-                .filter(value -> value != FormAccess.MODALITY_PRE  && value != FormAccess.MODALITY_POST)
+                .filter(value -> value != FormAccess.MODALITY_PRE  && value != FormAccess.MODALITY_POST && value != FormAccess.EAG)
                 .collect(Collectors.toList()));
 		formAccessFilter.setClearButtonVisible(true);
 		formAccessFilter.addValueChangeListener(e -> {

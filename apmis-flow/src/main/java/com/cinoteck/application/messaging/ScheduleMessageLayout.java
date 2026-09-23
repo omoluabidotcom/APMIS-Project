@@ -155,7 +155,7 @@ public class ScheduleMessageLayout extends VerticalLayout{
 		regionSelector.setItems(provinces);
 		districtSelector.setItems(districts);
 		formAccessSelector.setItems(Arrays.stream(FormAccess.values())
-                .filter(value -> value != FormAccess.MODALITY_PRE  && value != FormAccess.MODALITY_POST)
+                .filter(value -> value != FormAccess.MODALITY_PRE  && value != FormAccess.MODALITY_POST  && value != FormAccess.EAG)
                 .collect(Collectors.toList()));
 		formAccessSelector.setClearButtonVisible(true);
 
