@@ -173,7 +173,10 @@ public class UserForm extends FormLayout {
 		hor.setHeight("5px");
 		hor.setId("backLayout");
 		hor.getStyle().set("width", "none !important");
-		layout.addClickListener(event -> fireEvent(new CloseEvent(this)));
+		layout.addClickListener(event -> {
+		    VaadinSession.getCurrent().setAttribute("contact-form", null);
+		    fireEvent(new CloseEvent(this));
+		});
 		add(hor);
 		configureFields(user);
 		System.out.println("____TRSTING LANGUAGE TRANSLATOR : " + I18nProperties.getUserLanguage());
@@ -268,31 +271,21 @@ public class UserForm extends FormLayout {
 			}
 		}
 
-//		// --- ENFORCING HIERARCHICAL DOWNWARD CONTROL ---
-//		roles = getHierarchicalManageableRoles(userProvider.getUser().getUserRoles(), roles);
-//
-//		List<UserRole> rolesz = new ArrayList<>(roles);
-//		roles.remove(UserRole.BAG_USER);
-//
-//		Collections.sort(rolesz, new UserRoleCustomComparator());
-//
-//		Set<UserRole> sortedUserRoles = new TreeSet<>(rolesz);
-//
-//		userRoles.setItems(sortedUserRoles);
+		Set<UserRole> loggedInRoles = null;
+		try {
+			loggedInRoles = UserProvider.getCurrent().getUserRoles();
+		} catch (Exception e) {
+			loggedInRoles = userProvider.getUser().getUserRoles();
+		}
 
-		// --- ENFORCING HIERARCHICAL DOWNWARD CONTROL ---
-		roles = getHierarchicalManageableRoles(userProvider.getUser().getUserRoles(), roles);
+		roles = getHierarchicalManageableRoles(loggedInRoles, user != null ? user.getUserRoles() : null, roles);
 
 		List<UserRole> rolesz = new ArrayList<>(roles);
 		rolesz.remove(UserRole.BAG_USER);
 
-		// Sorting the user roles using comparator
 		Collections.sort(rolesz, new UserRoleCustomComparator());
 
-		// CRITICAL FIX: Use LinkedHashSet to preserve the Collections.sort() order.
-		// A TreeSet destroys the custom sort and applies natural enum ordering.
 		Set<UserRole> sortedUserRoles = new LinkedHashSet<>(rolesz);
-
 		userRoles.setItems(sortedUserRoles);
 
 		this.setColspan(userRoles, 1);
@@ -506,23 +499,46 @@ public class UserForm extends FormLayout {
 			}
 		});
 
+//		commusr.addValueChangeListener(e -> {
+//			if ((boolean) e.getValue() == true) {
+//				userTypes.setValue(UserType.COMMON_USER);
+//				sortedUserRoles.remove(UserRole.ADMIN);
+//				sortedUserRoles.remove(UserRole.COMMUNITY_INFORMANT);
+//				sortedUserRoles.remove(UserRole.AREA_ADMIN_SUPERVISOR);
+//				sortedUserRoles.remove(UserRole.ADMIN_SUPERVISOR);
+//				sortedUserRoles.remove(UserRole.BAG_USER);
+//				sortedUserRoles.remove(UserRole.PUBLISH_USER);
+//				sortedUserRoles.remove(UserRole.EDITOR_USER);
+//
+//				userRoles.setItems(sortedUserRoles);
+//			}
+//
+//			if ((boolean) e.getValue() == false) {
+//				Set<UserRole> sortedUserRoless = new TreeSet<>(rolesz);
+//				userRoles.setItems(sortedUserRoless);
+//			}
+//		});
+
 		commusr.addValueChangeListener(e -> {
 			if ((boolean) e.getValue() == true) {
 				userTypes.setValue(UserType.COMMON_USER);
-				sortedUserRoles.remove(UserRole.ADMIN);
-				sortedUserRoles.remove(UserRole.COMMUNITY_INFORMANT);
-				sortedUserRoles.remove(UserRole.AREA_ADMIN_SUPERVISOR);
-				sortedUserRoles.remove(UserRole.ADMIN_SUPERVISOR);
-				sortedUserRoles.remove(UserRole.BAG_USER);
-				sortedUserRoles.remove(UserRole.PUBLISH_USER);
-				sortedUserRoles.remove(UserRole.EDITOR_USER);
 
-				userRoles.setItems(sortedUserRoles);
+				// Create a temporary copy so we don't permanently destroy the admin's role list
+				Set<UserRole> filteredCommonRoles = new LinkedHashSet<>(sortedUserRoles);
+				filteredCommonRoles.remove(UserRole.ADMIN);
+				filteredCommonRoles.remove(UserRole.COMMUNITY_INFORMANT);
+				filteredCommonRoles.remove(UserRole.AREA_ADMIN_SUPERVISOR);
+				filteredCommonRoles.remove(UserRole.ADMIN_SUPERVISOR);
+				filteredCommonRoles.remove(UserRole.BAG_USER);
+				filteredCommonRoles.remove(UserRole.PUBLISH_USER);
+				filteredCommonRoles.remove(UserRole.EDITOR_USER);
+
+				userRoles.setItems(filteredCommonRoles);
 			}
 
 			if ((boolean) e.getValue() == false) {
-				Set<UserRole> sortedUserRoless = new TreeSet<>(rolesz);
-				userRoles.setItems(sortedUserRoless);
+				// Restore the original sorted list cleanly
+				userRoles.setItems(sortedUserRoles);
 			}
 		});
 
@@ -1010,7 +1026,7 @@ public class UserForm extends FormLayout {
 //			return customOrder.length;
 //		}
 //	}
-	
+
 	class UserRoleCustomComparator implements Comparator<UserRole> {
 		private final String[] customOrder = { "Admin", "National Data Manager", "National Officer",
 				"National Observer / Partner", "Regional Observer", "Regional Data Manager", "Regional Officer",
@@ -1021,8 +1037,9 @@ public class UserForm extends FormLayout {
 		public int compare(UserRole role1, UserRole role2) {
 			int index1 = indexOfRole(role1);
 			int index2 = indexOfRole(role2);
-			
-			// If neither role is explicitly listed in the customOrder array, sort them alphabetically
+
+			// If neither role is explicitly listed in the customOrder array, sort them
+			// alphabetically
 			if (index1 == customOrder.length && index2 == customOrder.length) {
 				return role1.toString().compareToIgnoreCase(role2.toString());
 			}
@@ -1036,7 +1053,7 @@ public class UserForm extends FormLayout {
 					return i;
 				}
 			}
-			return customOrder.length; 
+			return customOrder.length;
 		}
 	}
 
@@ -1223,9 +1240,12 @@ public class UserForm extends FormLayout {
 
 		return allRoles;
 	}
-
+	
+	/**
+	 * Reusable utility to enforce downward hierarchical control on User Roles.
+	 */
 	public static Set<UserRole> getHierarchicalManageableRoles(Set<UserRole> loggedInUserRoles,
-			Set<UserRole> availableRoles) {
+			Set<UserRole> targetUserRoles, Set<UserRole> availableRoles) {
 		Set<UserRole> assignableRoles = new HashSet<>(availableRoles);
 
 		if (loggedInUserRoles == null || loggedInUserRoles.isEmpty()) {
@@ -1234,6 +1254,7 @@ public class UserForm extends FormLayout {
 
 		// Bypass hierarchy restrictions if the user is a system Admin
 		if (loggedInUserRoles.contains(UserRole.ADMIN)) {
+			assignableRoles.add(UserRole.ADMIN);
 			return assignableRoles;
 		}
 
@@ -1249,14 +1270,17 @@ public class UserForm extends FormLayout {
 		final int userRank = maxRank;
 
 		assignableRoles.removeIf(targetRole -> {
+			// ALWAYS preserve the edited user's existing roles so Vaadin binding doesn't
+			// crash the form
+			if (targetUserRoles != null && targetUserRoles.contains(targetRole)) {
+				return false;
+			}
+
 			if (targetRole == UserRole.ADMIN) {
 				return true; // Non-Admins cannot assign the Admin role
 			}
-			int targetRank = getRoleRank(targetRole);
 
-			// Diagnostic log to prove the math
-			System.out.println("EVALUATING: " + targetRole.toString() + " (Target Rank " + targetRank
-					+ ") against User Rank " + userRank);
+			int targetRank = getRoleRank(targetRole);
 
 			// Retain only if the target role's rank is strictly lower (<) than the logged
 			// in user's rank
@@ -1265,11 +1289,10 @@ public class UserForm extends FormLayout {
 
 		return assignableRoles;
 	}
-
+	
 	/**
 	 * Maps Roles to a comparable integer rank using explicit UserRole Enum
-	 * matching. Avoids string manipulation and ensures repurposed backend enums are
-	 * accurately ranked.
+	 * matching.
 	 */
 	private static int getRoleRank(UserRole role) {
 		if (role == null)
@@ -1315,8 +1338,6 @@ public class UserForm extends FormLayout {
 			return 10;
 
 		// --- BASELINE / OTHER (0) ---
-		// Mobile Users, Publishers, Editors, Lab Staff, etc. Manageable by higher
-		// levels.
 		case REST_USER:
 		case PUBLISH_USER:
 		case EDITOR_USER:
@@ -1328,7 +1349,6 @@ public class UserForm extends FormLayout {
 			return 0;
 
 		default:
-			// Ultimate fallback to JurisdictionLevel for any unmapped or newly added roles
 			if (role.getJurisdictionLevel() != null) {
 				switch (role.getJurisdictionLevel()) {
 				case NATION:

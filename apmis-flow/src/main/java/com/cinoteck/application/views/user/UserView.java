@@ -174,11 +174,6 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
         // Preserves the custom sort order for the Vaadin dropdown
 		sortedUserRoles = new LinkedHashSet<>(rolesList);
 		
-//		Set<UserRole> rolesssss = FacadeProvider.getUserRoleConfigFacade().getEnabledUserRoles();
-//		rolesssss.remove(UserRole.BAG_USER);
-//              
-//		rolesssss = getHierarchicalManageableRoles(userProvider.getUser().getUserRoles(), rolesssss);		
-
 		criteria.setUserType(userProvider.getUser().getUsertype());
 		criteria.userRoleSet(sortedUserRoles);
 		filterDataProvider = usersDataProvider.withConfigurableFilter();
@@ -194,7 +189,6 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 	}
 
 	public void addFilters() {
-//		criteria = new UserCriteria();
 
 		int numberOfRows = filterDataProvider.size(new Query<>());
 		countRowItems = new Paragraph(I18nProperties.getCaption(Captions.rows) + numberOfRows);
@@ -399,19 +393,6 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 		userRolesFilter.getStyle().set("margin-left", "0.1rem");
 		userRolesFilter.getStyle().set("padding-top", "0px!important");
 		userRolesFilter.setClearButtonVisible(true);
-
-//		Set<UserRole> roles = FacadeProvider.getUserRoleConfigFacade().getEnabledUserRoles();
-//		roles.remove(UserRole.BAG_USER);
-//                
-//        roles = getHierarchicalManageableRoles(userProvider.getUser().getUserRoles(), roles);
-//
-//		List<UserRole> rolesList = new ArrayList<>(roles);
-//
-//		// Sorting the user roles using comparator
-//		Collections.sort(rolesList, new UserRoleCustomComparator());
-//        
-//        // Preserves the custom sort order for the Vaadin dropdown
-//		Set<UserRole> sortedUserRoles = new LinkedHashSet<>(rolesList);
 
 		userRolesFilter.setItems(sortedUserRoles);
 
@@ -876,7 +857,61 @@ public class UserView extends VerticalLayout implements RouterLayout, BeforeEnte
 
 			grid.addSelectionListener(event -> {
 				event.getFirstSelectedItem().ifPresent(item -> {
-					editUser(item, false);
+					
+					Set<UserRole> loggedInRoles = userProvider.getUser().getUserRoles();
+					Set<UserRole> targetRoles = item.getUserRoles();
+
+					boolean isAdmin = loggedInRoles != null && loggedInRoles.contains(UserRole.ADMIN);
+
+					if (isAdmin) {
+						// Admins are exempt and can open anyone (including other Admins)
+						editUser(item, false);
+					} else {
+						// Calculate max rank of logged-in user
+						int loggedInMaxRank = -1;
+						if (loggedInRoles != null) {
+							for (UserRole r : loggedInRoles) {
+								int rank = getRoleRank(r);
+								if (rank > loggedInMaxRank) {
+									loggedInMaxRank = rank;
+								}
+							}
+						}
+
+						// Calculate max rank of the target user being clicked
+						int targetMaxRank = -1;
+						if (targetRoles != null) {
+							for (UserRole r : targetRoles) {
+								int rank = getRoleRank(r);
+								if (rank > targetMaxRank) {
+									targetMaxRank = rank;
+								}
+							}
+						}
+
+						// Block access if target user is at the same or higher jurisdiction level
+						if (targetMaxRank >= loggedInMaxRank) {
+							Notification notification = new Notification();
+							notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+							notification.setPosition(Position.MIDDLE);
+							
+							Button closeButton = new Button(new Icon("lumo", "cross"));
+							closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+							closeButton.getElement().setAttribute("aria-label", "Close");
+							closeButton.addClickListener(e -> notification.close());
+							
+							Paragraph text = new Paragraph("Access Denied: You cannot edit users at or above your jurisdiction level.");
+							HorizontalLayout noteLayout = new HorizontalLayout(text, closeButton);
+							noteLayout.setAlignItems(Alignment.CENTER);
+							
+							notification.add(noteLayout);
+							notification.open();
+						} else {
+							// Allow edit for subordinate users
+							editUser(item, false);
+						}
+					}
+
 					grid.deselectAll(); // Deselect all items after processing the selected item
 				});
 			});
