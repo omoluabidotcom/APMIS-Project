@@ -17,7 +17,6 @@ package de.symeda.sormas.app.campaign;
 
 import static de.symeda.sormas.api.campaign.ExpressionProcessorUtils.refreshEvaluationContext;
 import static de.symeda.sormas.api.utils.FieldConstraints.CHARACTER_LIMIT_DEFAULT;
-import static de.symeda.sormas.app.BR.callback;
 
 import android.content.Context;
 import android.content.Intent;
@@ -31,7 +30,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.FragmentManager;
 
 import org.springframework.expression.EvaluationContext;
@@ -63,7 +61,6 @@ import de.symeda.sormas.api.i18n.I18nProperties;
 import de.symeda.sormas.api.utils.YesNoUnknown;
 import de.symeda.sormas.app.R;
 import de.symeda.sormas.app.backend.campaign.form.CampaignFormMeta;
-import de.symeda.sormas.app.component.controls.ControlCameraImageField;
 import de.symeda.sormas.app.component.controls.ControlCheckBoxField;
 import de.symeda.sormas.app.component.controls.ControlCheckBoxGroupField;
 import de.symeda.sormas.app.component.controls.ControlDateField;
@@ -73,6 +70,7 @@ import de.symeda.sormas.app.component.controls.ControlPhoneField;
 import de.symeda.sormas.app.component.controls.ControlPropertyField;
 import de.symeda.sormas.app.component.controls.ControlSpinnerField;
 import de.symeda.sormas.app.component.controls.ControlSwitchField;
+import de.symeda.sormas.app.component.controls.ControlTextBoxField;
 import de.symeda.sormas.app.component.controls.ControlTextEditField;
 import de.symeda.sormas.app.component.controls.ControlTextEditFieldAllowZeroInput;
 import de.symeda.sormas.app.component.controls.ControlTextEditFieldRange;
@@ -1141,6 +1139,116 @@ public class CampaignFormDataFragmentUtils {
             }
         };
     }
+
+    public static ControlTextBoxField createControlTextBoxField(
+            CampaignFormElement campaignFormElement,
+            Context context,
+            Map<String, String> userTranslations,
+            Map<String, String> userHints) {
+        return new ControlTextBoxField(context) {
+
+            @Override
+            protected String getPrefixDescription() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getPrefixCaption() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getHelpText() {
+                return getUserLanguageHint(userHints, campaignFormElement);
+            }
+
+            @Override
+            public int getTextAlignment() {
+                return View.TEXT_ALIGNMENT_VIEW_START;
+            }
+
+            @Override
+            public int getGravity() {
+                return Gravity.CENTER_VERTICAL;
+            }
+
+            @Override
+            public int getMaxLines() {
+                return Integer.MAX_VALUE;
+            }
+
+            @Override
+            public int getMaxLength() {
+                return CHARACTER_LIMIT_DEFAULT;
+            }
+
+            @Override
+            protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
+                super.inflateView(context, attrs, defStyle);
+                initLabel();
+                initLabelAndValidationListeners();
+                setLiveValidationDisabled(true);
+                initInput(campaignFormElement.isImportant());
+//                initInput(false, false, false, null, null, false, false);
+                displayHelpText();
+                setEnabled(true);
+            }
+        };
+    }
+
+    public static ControlTextBoxField createControlTextBoxReadField(
+            CampaignFormElement campaignFormElement,
+            Context context,
+            Map<String, String> userTranslations) {
+        return new ControlTextBoxField(context) {
+
+            @Override
+            protected String getPrefixDescription() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+            @Override
+            protected String getPrefixCaption() {
+                return getUserLanguageCaption(userTranslations, campaignFormElement);
+            }
+
+//            @Override
+//            protected String getHelpText() {
+//                return getUserLanguageHint(userHints, campaignFormElement);
+//            }
+
+            @Override
+            public int getTextAlignment() {
+                return View.TEXT_ALIGNMENT_VIEW_START;
+            }
+
+            @Override
+            public int getGravity() {
+                return Gravity.CENTER_VERTICAL;
+            }
+
+            @Override
+            public int getMaxLines() {
+                return Integer.MAX_VALUE;
+            }
+
+            @Override
+            public int getMaxLength() {
+                return CHARACTER_LIMIT_DEFAULT;
+            }
+
+            @Override
+            protected void inflateView(Context context, AttributeSet attrs, int defStyle) {
+                super.inflateView(context, attrs, defStyle);
+                initLabel();
+                initLabelAndValidationListeners();
+                setLiveValidationDisabled(true);
+                initInput(campaignFormElement.isImportant());
+                setEnabled(false);
+            }
+        };
+    }
+
     public static ControlTextEditFieldAllowZeroInput createControlTextEditFieldAllowStartingZero(
             CampaignFormElement campaignFormElement,
             Context context,
