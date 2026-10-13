@@ -654,58 +654,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 			}
 		});
 
-//		if (geographyLevel == CampaignFormMetaGeographyLevel.DISTRICT) {
-//			cbDistrict.addValueChangeListener(e -> {
-//				if (e.getValue() != null) {
-//					communities = FacadeProvider.getCommunityFacade().getAllActiveClustersDistrictAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
-//					cbCommunity.clear();
-//					cbCommunity.setReadOnly(false);
-//					;
-//					communities.sort(Comparator.comparingInt(CommunityReferenceDto::getNumber));
-//
-//					cbCommunity.setItems(communities);
-//					cbCommunity.setValue(communities.get(0));
-//					cbCommunity.setItemLabelGenerator(itm -> {
-//						CommunityReferenceDto dcfv = (CommunityReferenceDto) itm;
-//						return dcfv.getNumber() + " | " + dcfv.getCaption();
-//					});
-// 
-//					Long comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationCountByType(
-//							e.getValue().getUuid(), campaignReferenceDto.getUuid(), AgeGroup.AGE_0_4);
-// 
-//					VaadinService.getCurrentRequest().getWrappedSession().setAttribute("populationdata", comdto);
-//				} else {
-//					cbCommunity.clear();
-//					cbCommunity.setReadOnly(true);
-//					;
-//				}
-//			});
-//		} else {
-//			cbDistrict.addValueChangeListener(e -> {
-//				if (e.getValue() != null) {
-//					criteria.district(e.getValue());
-//
-//					communities = FacadeProvider.getCommunityFacade().getAllActiveClustersDistrictAndSelectedInCampaign(e.getValue().getUuid(), criteria.getCampaign().getUuid(), "English");
-//					cbCommunity.clear();
-//					cbCommunity.setReadOnly(false);
-//					;
-//					communities.sort(Comparator.comparingInt(CommunityReferenceDto::getNumber));
-//
-//					cbCommunity.setItems(communities);
-//					cbCommunity.setItemLabelGenerator(itm -> {
-//						CommunityReferenceDto dcfv = (CommunityReferenceDto) itm;
-//						return dcfv.getNumber() + " | " + dcfv.getCaption();
-//					});
-//					Long comdto = FacadeProvider.getPopulationDataFacade().getDistrictPopulationCountByType(
-//							e.getValue().getUuid(), campaignReferenceDto.getUuid(), AgeGroup.AGE_0_4);
-//					VaadinService.getCurrentRequest().getWrappedSession().setAttribute("populationdata", comdto);
-//				} else {
-//					criteria.district(null);
-//					cbCommunity.clear();
-//					cbCommunity.setReadOnly(true);
-//				}
-//			});
-//		}
 		cbCommunity.addValueChangeListener(e -> {
 
 			if (!openData) {
@@ -2384,36 +2332,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 		return orderValue;
 	}
 
-	private static Date parseDateFromString(Object value) throws Exception {
-		if (value instanceof Date) {
-			return (Date) value;
-		} else if (value instanceof LocalDate) {
-			return Date.from(((LocalDate) value).atStartOfDay(ZoneId.systemDefault()).toInstant());
-		} else if (value instanceof String) {
-			String stringValue = ((String) value).trim();
-
-			if (stringValue.isEmpty()) {
-				return null;
-			}
-
-			// Try known formats in order
-			List<String> formats = Arrays.asList("dd-MM-yyyy", "yyyy-MM-dd", "MM/dd/yyyy");
-
-			for (String format : formats) {
-				try {
-					DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-					LocalDate localDate = LocalDate.parse(stringValue, formatter);
-					return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-				} catch (DateTimeParseException e) {
-
-				}
-			}
-			throw new IllegalArgumentException("Unrecognized date format: " + stringValue);
-		} else {
-			throw new IllegalArgumentException("Unsupported date value type: " + value.getClass());
-		}
-	}
-
 	public <T extends Component> void setFieldValue(T field, CampaignFormElementType type, Object value,
 			Map<String, String> options, String defaultvalue, Boolean isErrored, Object defaultErrorMsgr) {
 
@@ -3056,77 +2974,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 		return Integer.parseInt(colStyle.substring(colStyle.indexOf("-") + 1)) / 12f * 100;
 	}
 
-	private Date dateFormatterLongAndMobile(Object value) {
-
-		String dateStr = value + "";
-		DateFormat formatter = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss a");
-		DateFormat formatter_ = new SimpleDateFormat("MMM d, yyyy HH:mm:ss");
-		DateFormat formatter_x = new SimpleDateFormat("MMM d, yyyy HH:mm:ss a");
-		DateFormat formattercx = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
-		DateFormat formatterx = new SimpleDateFormat("dd/MM/yyyy");
-		DateFormat formatterxn = new SimpleDateFormat("yyyy-MM-dd");
-		Date date;
-		logger.debug("date in question " + value);
-		// +++++++++++++++++++++++===========
-//date = (Date) formatterxn.parse(dateStr);
-		try {
-			date = (Date) formatterxn.parse(dateStr);
-		} catch (ParseException ne) {
-			logger.debug("date wont parse on " + ne.getMessage());
-			try {
-				date = (Date) formatter.parse(dateStr);
-			} catch (ParseException e) {
-				logger.debug("date wont parse on " + e.getMessage());
-				try {
-					date = (Date) formatter_.parse(dateStr);
-				} catch (ParseException ex) {
-					logger.debug("date wont parse on " + ex.getMessage());
-					try {
-						date = (Date) formatter_x.parse(dateStr);
-					} catch (ParseException edz) {
-						logger.debug("date wont parse on " + edz.getMessage());
-						try {
-							date = (Date) formatterx.parse(dateStr);
-						} catch (ParseException ed) {
-							logger.debug("date wont parse on " + ed.getMessage());
-
-							try {
-								date = (Date) formattercx.parse(dateStr);
-							} catch (ParseException edx) {
-								logger.debug("date wont parse on " + edx.getMessage());
-
-								date = new Date((Long) value);
-
-							}
-						}
-					}
-				}
-			}
-		}
-		return date;
-	}
-
-	private Date dateFormatter(Object value) throws ParseException {
-		// TODO Auto-generated method stub
-
-		String dateStr = value + "";
-		DateFormat formatter = new SimpleDateFormat("E MMM dd HH:mm:ss Z yyyy");
-		Date date;
-
-		date = (Date) formatter.parse(dateStr);
-
-		// logger.debug(date);
-
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		String formatedDate = cal.get(Calendar.DATE) + "/" + (cal.get(Calendar.MONTH) + 1) + "/"
-				+ cal.get(Calendar.YEAR);
-		// logger.debug("formatedDate : " + formatedDate);
-
-		Date res = new Date(formatedDate + "");
-
-		return res;
-	}
 
 	private void setVisibilityDependency(Component component, String dependingOnId, Object[] dependingOnValues,
 			CampaignFormElementType typex, boolean isRequiredField) {
@@ -3386,13 +3233,6 @@ public class CampaignFormBuilder extends VerticalLayout {
 		}).collect(Collectors.toList());
 	}
 
-	private String buildImageUrl(String imageId) {
-		if (StringUtils.isBlank(imageId)) {
-			return null;
-		}
-		// Use the same REST context as in enrichSingleImageMap
-		return "/sormas-rest/apmisrestserver/image/" + imageId;
-	}
 
 	private StreamResource buildImageResource(String imageId) {
 		if (StringUtils.isBlank(imageId)) {

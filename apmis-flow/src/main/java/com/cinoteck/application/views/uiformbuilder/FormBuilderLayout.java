@@ -99,20 +99,7 @@ public class FormBuilderLayout extends VerticalLayout {
 		configureFields(campaignFormMetaDto_);
 	}
 
-	private List<CampaignFormElement> getFormListDashboard() {
 
-		List<CampaignFormMetaDto> empty = FacadeProvider.getCampaignFormMetaFacade().getAllFormElement().stream()
-				.collect(Collectors.toList());
-
-		List<CampaignFormElement> list = new ArrayList<>();
-		for (CampaignFormMetaDto campaignFormElement : empty) {
-
-			CampaignFormElement makeList = new CampaignFormElement();
-			makeList.setId(campaignFormElement.getFormId());
-			list.add(makeList);
-		}
-		return list;
-	}
 
 	private void discardChanges() {
 		UI currentUI = UI.getCurrent();
@@ -132,6 +119,7 @@ public class FormBuilderLayout extends VerticalLayout {
 		formCategory.setItems(Arrays.stream(FormAccess.values())
                 .filter(value -> value != FormAccess.MODALITY_PRE  && value != FormAccess.MODALITY_POST  && value != FormAccess.EAG)
                 .collect(Collectors.toList()));
+		formCategory.setItemLabelGenerator(e-> e.getDisplayName());
 		areaSelector = new MultiSelectComboBox<AreaReferenceDto>("Region");
 		areaSelector.setItems(regions);
 		modality = new ComboBox<Modality>("Modality");
