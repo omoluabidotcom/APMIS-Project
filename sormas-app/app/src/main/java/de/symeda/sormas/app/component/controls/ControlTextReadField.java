@@ -91,9 +91,9 @@ public class ControlTextReadField extends ControlPropertyField<String> {
 			"defaultValue",
 			"isRange"}, requireAll = false)
 	public static void setValue(ControlValidatedTextField textField, String stringValue, String appendValue, String valueFormat, String defaultValue, boolean isRange) {
-		System.out.println(stringValue +" validatedtext");
+//		System.out.println(stringValue +" validatedtext");
 		String cleanStringValue  = stringValue != null ? stringValue : "";
-		System.out.println(stringValue +" validatedtextvalidatedtextvalidatedtextvalidatedtextvalidatedtext" + cleanStringValue);
+//		System.out.println(stringValue +" validatedtextvalidatedtextvalidatedtextvalidatedtextvalidatedtext" + cleanStringValue);
 		setValue(textField, cleanStringValue, appendValue, valueFormat, defaultValue, Boolean.parseBoolean(cleanStringValue));
 	}
 

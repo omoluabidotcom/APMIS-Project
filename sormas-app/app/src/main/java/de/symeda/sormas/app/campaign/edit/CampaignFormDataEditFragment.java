@@ -4328,7 +4328,7 @@ public class CampaignFormDataEditFragment extends BaseEditFragment<FragmentCampa
 
     @Override
     protected void onLayoutBinding(FragmentCampaignDataEditLayoutBinding contentBinding) {
-        System.out.println(record.getArea() +"ecord.getarea().getArea()ecord.getRegion().getArea()");
+//        System.out.println(record.getArea() +"ecord.getarea().getArea()ecord.getRegion().getRegionArea()");
 
         record.setArea(record.getArea() != null ? record.getArea() : record.getRegion().getArea());
         contentBinding.setData(record);

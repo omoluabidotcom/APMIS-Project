@@ -408,8 +408,8 @@ public class CampaignFormDataNewActivity extends BaseEditActivity<CampaignFormDa
 
                     FragmentValidator.validate(getContext(), getActiveFragment().getContentBinding(), minDate, maxDate, formDate);
                 }catch (ValidationException e) {
-                    System.out.println("About to fetch validation error from activity ------");
-                    System.out.println(" meaage validation error from activity ------" + e.getMessage());
+//                    System.out.println("About to fetch validation error from activity ------");
+//                    System.out.println(" meaage validation error from activity ------" + e.getMessage());
 
                     NotificationHelper.showNotification(this, ERROR, e.getMessage());
                         return;
