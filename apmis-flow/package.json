@@ -282,7 +282,11 @@
       "workbox-precaching": "6.5.4",
       "workbox-webpack-plugin": "6.5.0"
     },
+<<<<<<< HEAD
     "hash": "90aa05cca41241ab712c8e2121d60079e4c6013750069a57cb185a98502d90e5"
+=======
+    "hash": "8605c236d6c0580ccb4396daf0054c961aa50ba4317e9ca6fda45c5ed3ae4fd9"
+>>>>>>> branch 'development' of https://github.com/omoluabidotcom/APMIS-Project.git
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
