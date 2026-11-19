@@ -271,12 +271,14 @@ public class CampaignDataView extends VerticalLayout
 		newForm.setPlaceholder(I18nProperties.getCaption(Captions.dataEntry));
 		newForm.setTooltipText(I18nProperties.getDescription(Descriptions.campaign_dataEntry));
 		newForm.setClearButtonVisible(true);
+		newForm.setItemLabelGenerator(item -> item.getCaption() != null ? item.getCaption() : "");
 		newForm.getStyle().set("padding-top", "0px !important");
 
 		importFormData.setLabel(I18nProperties.getCaption(Captions.actionImport));
 		importFormData.setPlaceholder(I18nProperties.getCaption(Captions.dataImport));
 		importFormData.setTooltipText(I18nProperties.getDescription(Descriptions.campaign_dataImport));
 		importFormData.setClearButtonVisible(true);
+		importFormData.setItemLabelGenerator(item -> item.getCaption() != null ? item.getCaption() : "");
 		importFormData.getStyle().set("padding-top", "0px !important");
 
 		exportTransposedDataButton = new Button("Export Transposed Data");

@@ -3908,36 +3908,9 @@ public class CampaignFormBuilder extends VerticalLayout {
 			strip.add(thumb);
 		}
 	}
-
-//	private void openImagePreviewDialog(List<CampaignFormImageValue> images) {
-//		Dialog dlg = new Dialog();
-//		dlg.setWidth("70vw");
-//		dlg.setHeight("80vh");
-//
-//		VerticalLayout content = new VerticalLayout();
-//		content.setSpacing(true);
-//
-//		for (CampaignFormImageValue img : images) {
-//			if (img == null || !img.isUploaded() || StringUtils.isBlank(img.getImageId())) {
-//				continue;
-//			}
-//			StreamResource resource = buildImageResource(img.getImageId());
-//			if (resource == null) {
-//				continue;
-//			}
-//			Image preview = new Image(resource, "Uploaded image");
-//			preview.setWidth("100%");
-//			preview.getStyle().set("object-fit", "contain");
-//			content.add(preview);
-//		}
-//
-//		Button close = new Button("Close", ev -> dlg.close());
-//		content.add(close);
-//		dlg.add(content);
-//		dlg.open();
-//	}
 	
 	private void openImagePreviewDialog(List<CampaignFormImageValue> images) {
+		
 		Dialog dlg = new Dialog();
 		dlg.setWidth("80vw");
 		dlg.setMaxWidth("1000px");

@@ -10,9 +10,11 @@ import javax.ejb.Stateless;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.ParameterExpression;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
@@ -54,8 +56,6 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 	public Predicate createUserFilter(CriteriaBuilder cb, CriteriaQuery cq, From<?, CampaignFormMeta> from) {
 		return null;
 	}
-	
-	
 
 	public Predicate buildCriteriaFilter(CampaignFormCriteria campaignFormCriteria, CriteriaBuilder cb,
 			Root<CampaignFormMeta> from) {
@@ -126,9 +126,6 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 		List<CampaignFormMeta> resultList = em.createQuery(cq).getResultList();
 		return resultList;
 	}
-	
-
-	
 
 	public List<CampaignFormMeta> getAllFormElements(User user) {
 
@@ -137,14 +134,14 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 		Root<CampaignFormMeta> root = cq.from(getElementClass());
 
 		Predicate filter = createUserFilter(cb, cq, root);
-//		if (since != null) {
-//			Predicate dateFilter = createChangeDateFilter(cb, root, since);
-//			if (filter != null) {
-//				filter = cb.and(filter, dateFilter);
-//			} else {
-//				filter = dateFilter;
-//			}
-//		}
+		// if (since != null) {
+		// Predicate dateFilter = createChangeDateFilter(cb, root, since);
+		// if (filter != null) {
+		// filter = cb.and(filter, dateFilter);
+		// } else {
+		// filter = dateFilter;
+		// }
+		// }
 		if (filter != null) {
 			cq.where(filter);
 		}
@@ -166,7 +163,9 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 		// "intra-campaign"); //
 
 		cq = cq.where(filter);
-		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID), campaignFormMetaJoin.get(CampaignFormMeta.FORMGROUPUUID), campaignFormMetaJoin.get(CampaignFormMeta.FORMVERSION),
+		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID),
+				campaignFormMetaJoin.get(CampaignFormMeta.FORMGROUPUUID),
+				campaignFormMetaJoin.get(CampaignFormMeta.FORMVERSION),
 				campaignFormMetaJoin.get(CampaignFormMeta.FORM_NAME));
 
 		return em.createQuery(cq).getResultList();
@@ -260,12 +259,13 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 
 		Predicate filter = cb.equal(campaignRoot.get(Campaign.UUID), uuid);
 		Predicate typefilter = cb.equal(campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE), "post-campaign");// cb.and
-//		Predicate filterxx = cb.equal(campaignRoot.get(Campaign.PUBLISHED), true);
+		// Predicate filterxx = cb.equal(campaignRoot.get(Campaign.PUBLISHED), true);
 		cq = cq.where(filter, typefilter);// filterxx);
 		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID),
 				campaignFormMetaJoin.get(CampaignFormMeta.FORM_NAME));
 
-//		System.out.println("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" + SQLExtractor.from(em.createQuery(cq)));
+		// System.out.println("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" +
+		// SQLExtractor.from(em.createQuery(cq)));
 
 		return em.createQuery(cq).getResultList();
 	}
@@ -330,7 +330,7 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 		// TODO: post campaign implementations
 		cq = cq.where(filter);
 		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID),
-				campaignFormMetaJoin.get(CampaignFormMeta.FORM_NAME_PASHTO),
+				getLocalizedFormNameExpression(cb, campaignFormMetaJoin, CampaignFormMeta.FORM_NAME_PASHTO),
 				campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
 				campaignFormMetaJoin.get(CampaignFormMeta.FORM_CATEGORY),
 				campaignFormMetaJoin.get(CampaignFormMeta.DAYSTOEXPIRE));
@@ -357,7 +357,7 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 		// TODO: post campaign implementations
 		cq = cq.where(filter);
 		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID),
-				campaignFormMetaJoin.get(CampaignFormMeta.FORM_NAME_PASHTO),
+				getLocalizedFormNameExpression(cb, campaignFormMetaJoin, CampaignFormMeta.FORM_NAME_PASHTO),
 				campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
 				campaignFormMetaJoin.get(CampaignFormMeta.FORM_CATEGORY),
 				campaignFormMetaJoin.get(CampaignFormMeta.DAYSTOEXPIRE));
@@ -380,14 +380,14 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 		// TODO: post campaign implementations
 		cq = cq.where(filter);
 		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID),
-				campaignFormMetaJoin.get(CampaignFormMeta.FORM_NAME_DARI),
+				getLocalizedFormNameExpression(cb, campaignFormMetaJoin, CampaignFormMeta.FORM_NAME_DARI),
 				campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
 				campaignFormMetaJoin.get(CampaignFormMeta.FORM_CATEGORY),
 				campaignFormMetaJoin.get(CampaignFormMeta.DAYSTOEXPIRE));
 
 		return em.createQuery(cq).getResultList();
 	}
-	
+
 	public List<CampaignFormMetaReferenceDto> getCampaignFormMetasAsReferencesByCampaignandRoundAndDarix(String round,
 			String uuid, AreaReferenceDto areaReferenceDto) {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -401,19 +401,31 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 		if (areaReferenceDto != null) {
 			filtery = buildCriteriaFilterArea(areaReferenceDto, cb, campaignFormMetaJoin);
 		}
-		
+
 		Predicate filter = cb.and(filterc, filterx, filtery);
 		// TODO: post campaign implementations
 		cq = cq.where(filter);
 		cq.multiselect(campaignFormMetaJoin.get(CampaignFormMeta.UUID),
-				campaignFormMetaJoin.get(CampaignFormMeta.FORM_NAME_DARI),
+				getLocalizedFormNameExpression(cb, campaignFormMetaJoin, CampaignFormMeta.FORM_NAME_DARI),
 				campaignFormMetaJoin.get(CampaignFormMeta.FORM_TYPE),
 				campaignFormMetaJoin.get(CampaignFormMeta.FORM_CATEGORY),
 				campaignFormMetaJoin.get(CampaignFormMeta.DAYSTOEXPIRE));
 
 		return em.createQuery(cq).getResultList();
 	}
-	
+
+	private Expression<String> getLocalizedFormNameExpression(
+			CriteriaBuilder cb,
+			Join<Campaign, CampaignFormMeta> join,
+			String localizedField) {
+		Path<String> localizedName = join.get(localizedField);
+		Path<String> defaultName = join.get(CampaignFormMeta.FORM_NAME);
+		return cb.selectCase()
+				.when(cb.or(cb.isNull(localizedName), cb.equal(cb.trim(localizedName), "")), defaultName)
+				.otherwise(localizedName)
+				.as(String.class);
+	}
+
 	public Predicate buildCriteriaFilterArea(AreaReferenceDto areaReferenceDto, CriteriaBuilder cb, Join from) {
 
 		Predicate filter = null;
@@ -443,63 +455,65 @@ public class CampaignFormMetaService extends AdoServiceWithUserFilter<CampaignFo
 
 		return em.createQuery(cq).getResultList();
 	}
-	
-	
-//	public Boolean getDistrictEntryStatusByUuid(String formUUid) {
-//	    CriteriaBuilder cb = em.getCriteriaBuilder();
-//	    CriteriaQuery<Boolean> cq = cb.createQuery(Boolean.class);
-//	    Root<CampaignFormMeta> root = cq.from(CampaignFormMeta.class);
-//
-//	    // Assuming there's a UUID column called "uuid" that you're matching against
-//	    cq.select(root.get(CampaignFormMeta.GEOGRAPHYLEVEL))
-//	      .where(cb.equal(root.get(CampaignFormMeta.UUID), formUUid));
-//        return em.createQuery(cq).getSingleResult();
-//
-//	}
-	
-    public String getGeographyLevelStatusByUuid(String formUUid) {
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<CampaignFormMetaGeographyLevel> cq = cb.createQuery(CampaignFormMetaGeographyLevel.class);
-        Root<CampaignFormMeta> root = cq.from(CampaignFormMeta.class);
 
-        cq.select(root.get(CampaignFormMeta.GEOGRAPHYLEVEL))
-          .where(cb.equal(root.get(CampaignFormMeta.UUID), formUUid));
+	// public Boolean getDistrictEntryStatusByUuid(String formUUid) {
+	// CriteriaBuilder cb = em.getCriteriaBuilder();
+	// CriteriaQuery<Boolean> cq = cb.createQuery(Boolean.class);
+	// Root<CampaignFormMeta> root = cq.from(CampaignFormMeta.class);
+	//
+	// // Assuming there's a UUID column called "uuid" that you're matching against
+	// cq.select(root.get(CampaignFormMeta.GEOGRAPHYLEVEL))
+	// .where(cb.equal(root.get(CampaignFormMeta.UUID), formUUid));
+	// return em.createQuery(cq).getSingleResult();
+	//
+	// }
 
-        CampaignFormMetaGeographyLevel level = em.createQuery(cq).getSingleResult();
-        return level == null ? null : level.name();
-    }
+	public String getGeographyLevelStatusByUuid(String formUUid) {
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<CampaignFormMetaGeographyLevel> cq = cb.createQuery(CampaignFormMetaGeographyLevel.class);
+		Root<CampaignFormMeta> root = cq.from(CampaignFormMeta.class);
 
-	
-//	@Override
-//	public CampaignFormMeta getByUuidAndFormVersionUuid(String uuid, String formVersionUuid) {
-//
-//	    if (uuid == null || formVersionUuid == null) {
-//	        return null;
-//	    }
-//
-//	    CriteriaBuilder cb = em.getCriteriaBuilder();
-//	    CriteriaQuery<CampaignFormMeta> cq = cb.createQuery(CampaignFormMeta.class);
-//	    Root<CampaignFormMeta> from = cq.from(CampaignFormMeta.class);
-//
-//	    // Define parameters
-//	    ParameterExpression<String> uuidParam = cb.parameter(String.class, AbstractDomainObject.UUID);
-//	    ParameterExpression<String> formVersionUuidParam = cb.parameter(String.class, "formversionuuid");
-//
-//	    // Build the query
-//	    cq.where(
-//	        cb.equal(from.get(AbstractDomainObject.UUID), uuidParam),
-//	        cb.equal(from.get(CampaignFormMeta.FORMGROUPUUID), formVersionUuidParam)
-//	    );
-//
-//	    // Create and execute the query
-//	    TypedQuery<CampaignFormMeta> q = em.createQuery(cq)
-//	        .setParameter(uuidParam, uuid)
-//	        .setParameter(formVersionUuidParam, formVersionUuid);
-//	    
-//		System.out.println("eewwwwwwwwwwwwwwwwwwwwwww" + SQLExtractor.from(em.createQuery(cq)));
-//
-//
-//	    return q.getResultList().stream().findFirst().orElse(null);
-//	}
+		cq.select(root.get(CampaignFormMeta.GEOGRAPHYLEVEL))
+				.where(cb.equal(root.get(CampaignFormMeta.UUID), formUUid));
+
+		CampaignFormMetaGeographyLevel level = em.createQuery(cq).getSingleResult();
+		return level == null ? null : level.name();
+	}
+
+	// @Override
+	// public CampaignFormMeta getByUuidAndFormVersionUuid(String uuid, String
+	// formVersionUuid) {
+	//
+	// if (uuid == null || formVersionUuid == null) {
+	// return null;
+	// }
+	//
+	// CriteriaBuilder cb = em.getCriteriaBuilder();
+	// CriteriaQuery<CampaignFormMeta> cq = cb.createQuery(CampaignFormMeta.class);
+	// Root<CampaignFormMeta> from = cq.from(CampaignFormMeta.class);
+	//
+	// // Define parameters
+	// ParameterExpression<String> uuidParam = cb.parameter(String.class,
+	// AbstractDomainObject.UUID);
+	// ParameterExpression<String> formVersionUuidParam = cb.parameter(String.class,
+	// "formversionuuid");
+	//
+	// // Build the query
+	// cq.where(
+	// cb.equal(from.get(AbstractDomainObject.UUID), uuidParam),
+	// cb.equal(from.get(CampaignFormMeta.FORMGROUPUUID), formVersionUuidParam)
+	// );
+	//
+	// // Create and execute the query
+	// TypedQuery<CampaignFormMeta> q = em.createQuery(cq)
+	// .setParameter(uuidParam, uuid)
+	// .setParameter(formVersionUuidParam, formVersionUuid);
+	//
+	// System.out.println("eewwwwwwwwwwwwwwwwwwwwwww" +
+	// SQLExtractor.from(em.createQuery(cq)));
+	//
+	//
+	// return q.getResultList().stream().findFirst().orElse(null);
+	// }
 
 }
